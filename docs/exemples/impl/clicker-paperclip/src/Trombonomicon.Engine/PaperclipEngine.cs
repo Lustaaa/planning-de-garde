@@ -14,7 +14,7 @@ public class PaperclipEngine
     {
         if (state.WireMeters <= 0)
         {
-            return new ProduceResult { Produced = 0, WireConsumed = 0, Blocked = true };
+            return new ProduceResult { Produced = 0, WireConsumed = 0, Blocked = true, Message = "Fil de fer insuffisant" };
         }
 
         state.WireMeters--;
