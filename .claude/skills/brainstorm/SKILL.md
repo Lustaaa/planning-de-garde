@@ -1,5 +1,5 @@
 ---
-name: challenge-po
+name: brainstorm
 description: À utiliser quand une idée produit, une spec ou une demande de feature doit être testée sous pression avant d'être écrite — quand le PO (souvent l'utilisateur) énonce ce qu'il veut et qu'il faut faire émerger les angles morts, forcer une vraie priorisation et exposer les risques tus, au lieu de prendre la demande pour argent comptant.
 ---
 

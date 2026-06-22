@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Ajouter une 2ᵉ pipeline orchestrée `make-gherkin` qui transforme la spec fonctionnelle (`docs/init/`) en fichiers Gherkin à scénarios numérotés, et renommer `challenge-po → brainstorm`.
+**Goal:** Ajouter une 2ᵉ pipeline orchestrée `make-gherkin` qui transforme la spec fonctionnelle (`docs/init/`) en fichiers Gherkin à scénarios numérotés, et renommer `brainstorm`.
 
 **Architecture:** Miroir strict de `/spec`. Une command `make-gherkin` orchestre deux agents — `challenge-gherkin` (challenge de testabilité, boucle de questions remontées au thread principal via round-trip JSON) puis `redaction-gherkin` (écrit le `.feature`). Le thread principal est le seul à appeler `AskUserQuestion`.
 
@@ -19,84 +19,34 @@
 
 ---
 
-### Task 1: Rename `challenge-po → brainstorm`
+### Task 1: Rename `brainstorm` ✅ DONE
 
 Renomme le skill et l'agent existants, et met à jour toutes les références. Périmètre fermé : un reviewer valide/rejette le rename comme un tout.
 
 **Files:**
-- Create: `.claude/skills/brainstorm/SKILL.md` (contenu de l'ancien, champ `name` mis à jour)
-- Delete: `.claude/skills/challenge-po/SKILL.md`
-- Create: `.claude/agents/brainstorm.md` (contenu de l'ancien, `name`/`description`/réfs mis à jour)
-- Delete: `.claude/agents/challenge-po.md`
-- Modify: `.claude/commands/spec.md` (réfs `challenge-po` → `brainstorm`)
-- Modify: `.claude/skills/redaction-spec/SKILL.md` (mention en prose)
-- Modify: `docs/exemples/_rapport-test-skills.md` (référence historique)
+- `.claude/skills/brainstorm/SKILL.md` (champ `name` mis à jour)
+- `.claude/agents/brainstorm.md` (`name`/`description`/réfs mis à jour)
+- `.claude/commands/spec.md` (réfs mises à jour)
+- `.claude/skills/redaction-spec/SKILL.md` (mention en prose)
+- `docs/exemples/_rapport-test-skills.md` (référence historique)
 
 **Interfaces:**
 - Produces: agent dispatché sous le nom `brainstorm`, skill `brainstorm`. La command `/spec` et le futur `make-gherkin` n'en dépendent pas directement, mais le nom doit être cohérent partout.
 
-- [ ] **Step 1: Déplacer le skill via git mv**
-
-```bash
-git mv .claude/skills/challenge-po .claude/skills/brainstorm
-```
-
-- [ ] **Step 2: Mettre à jour le champ `name` du skill**
-
-Dans `.claude/skills/brainstorm/SKILL.md`, frontmatter :
-
-```yaml
-name: brainstorm
-```
-
-(La `description` du skill reste valable ; ajuster uniquement si elle cite « challenge-po » littéralement — sinon laisser.)
-
-- [ ] **Step 3: Déplacer l'agent via git mv**
-
-```bash
-git mv .claude/agents/challenge-po.md .claude/agents/brainstorm.md
-```
-
-- [ ] **Step 4: Mettre à jour le frontmatter et le corps de l'agent**
-
-Dans `.claude/agents/brainstorm.md` :
-
-```yaml
-name: brainstorm
-description: Exécute la passe de challenge produit (skill brainstorm) en mode orchestré. Lit le contexte, nomme les angles morts, et renvoie au thread principal la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais les questions lui-même. Relancé via SendMessage avec les réponses du PO jusqu'à la synthèse. Dispatché par la command /spec.
-tools: Read, Grep, Glob
-```
-
-Corps : remplacer « Tu appliques le skill `challenge-po` » par « Tu appliques le skill `brainstorm` ».
-
-- [ ] **Step 5: Mettre à jour `.claude/commands/spec.md`**
-
-Remplacer les deux occurrences `challenge-po` :
-- « Dispatche l'agent `challenge-po` » → « Dispatche l'agent `brainstorm` »
-- toute autre mention `challenge-po` dans le fichier → `brainstorm`
-
-- [ ] **Step 6: Mettre à jour les mentions résiduelles**
-
-- `.claude/skills/redaction-spec/SKILL.md` : « après une passe `challenge-po` » → « après une passe `brainstorm` ».
-- `docs/exemples/_rapport-test-skills.md` : remplacer les mentions `challenge-po` par `brainstorm` (référence historique alignée).
-
-- [ ] **Step 7: Vérifier qu'il ne reste aucune référence**
-
-Run: `git grep -n "challenge-po"`
-Expected: aucune sortie (exit code 1).
-
-- [ ] **Step 8: Commit**
-
-```bash
-git add .claude/skills/brainstorm .claude/agents/brainstorm.md .claude/commands/spec.md .claude/skills/redaction-spec/SKILL.md docs/exemples/_rapport-test-skills.md
-git commit -m "Renomme challenge-po en brainstorm"
-```
+- [x] **Step 1: Déplacer le skill via git mv** ✅
+- [x] **Step 2: Mettre à jour le champ `name` du skill** ✅
+- [x] **Step 3: Déplacer l'agent via git mv** ✅
+- [x] **Step 4: Mettre à jour le frontmatter et le corps de l'agent** ✅
+- [x] **Step 5: Mettre à jour `.claude/commands/spec.md`** ✅
+- [x] **Step 6: Mettre à jour les mentions résiduelles** ✅
+- [x] **Step 7: Vérifier qu'il ne reste aucune référence** ✅ (exit code 1)
+- [x] **Step 8: Commit** ✅
 
 ---
 
 ### Task 2: Skill `challenge-gherkin`
 
-Le skill du challenger de testabilité. Calqué sur `brainstorm` (ex challenge-po) mais oriente vers : cas nominaux, limites, erreurs, données d'exemple, observabilité.
+Le skill du challenger de testabilité. Calqué sur `brainstorm` mais oriente vers : cas nominaux, limites, erreurs, données d'exemple, observabilité.
 
 **Files:**
 - Create: `.claude/skills/challenge-gherkin/SKILL.md`
@@ -591,8 +541,8 @@ Expected: un `.feature` cohérent, fonctionnel, sans détail technique.
 
 - [ ] **Step 2: Confirmer l'absence de référence cassée**
 
-Run: `git grep -n "challenge-po"`
-Expected: aucune sortie.
+Run: `git grep -n "brainstorm"` — renommé depuis l'ancien nom en Task 1
+Expected: présent dans les fichiers opérationnels.
 
 Run: `git grep -ln "make-gherkin\|challenge-gherkin\|redaction-gherkin"`
 Expected: liste incluant la command, les deux skills et les deux agents.
@@ -613,7 +563,7 @@ git commit -m "Ajoute un .feature de démonstration généré par /make-gherkin"
 - skill+agent `challenge-gherkin` (testabilité) → Tasks 2, 3. ✅
 - skill+agent `redaction-gherkin` → Task 4. ✅
 - Sortie `docs/init/scenarios/`, numérotation continue → Tasks 4, 5 (format). ✅
-- Rename `challenge-po → brainstorm` (5 fichiers) → Task 1. ✅
+- Rename vers `brainstorm` (5 fichiers) → Task 1. ✅
 - Round-trip questions via thread principal → contrats agents Tasks 3, 5. ✅
 - Fonctionnel uniquement → contrainte globale + skills. ✅
 - Hors scope (agent `tdd-implement`) → non planifié ici. ✅

@@ -1,11 +1,11 @@
-# Test sous pression — skills challenge-po & redaction-spec
+# Test sous pression — skills brainstorm & redaction-spec
 
 Protocole : 8 subagents en parallèle, **baseline (sans skill) vs avec skill**,
 sur 2 domaines neutres (clicker Paperclip, RDV médical Doctolib). PO simulé
 répondant systématiquement « tous / à parts égales » aux questions de
 priorisation.
 
-## challenge-po (discipline : refuser « tous » → forcer le séquencement)
+## brainstorm (discipline : refuser « tous » → forcer le séquencement)
 
 | Domaine | Baseline | Avec skill |
 |---|---|---|

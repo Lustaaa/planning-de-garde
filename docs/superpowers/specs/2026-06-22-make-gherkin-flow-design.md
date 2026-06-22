@@ -5,7 +5,7 @@
 ## Contexte
 
 Le dépôt possède une pipeline de cadrage produit `/spec` qui enchaîne deux
-agents orchestrés : `challenge-po` (challenge fonctionnel, boucle de questions
+agents orchestrés : `brainstorm` (challenge fonctionnel, boucle de questions
 remontées au thread principal) puis `redaction-spec` (écriture de la spec maison
 dans `docs/init/`). La spec produite est riche en **règles de gestion**
 fonctionnelles.
@@ -79,19 +79,14 @@ avec une responsabilité unique, testable indépendamment.
     données.
 - **Fonctionnel uniquement** : aucun détail d'implémentation dans le Gherkin.
 
-## Rename `challenge-po → brainstorm`
-
+## Rename effectué : `brainstorm`
 Inclus dans ce chantier pour cohérence de nommage. Périmètre (5 fichiers) :
 
-- `.claude/skills/challenge-po/SKILL.md` → `.claude/skills/brainstorm/SKILL.md`
-  (mise à jour du champ `name`).
-- `.claude/agents/challenge-po.md` → `.claude/agents/brainstorm.md` (mise à jour
-  `name`, `description`, référence au skill).
+- `.claude/skills/brainstorm/SKILL.md` (champ `name` mis à jour).
+- `.claude/agents/brainstorm.md` (mise à jour `name`, `description`, référence au skill).
 - `.claude/commands/spec.md` — référence au dispatch de l'agent et au nom du skill.
-- `.claude/skills/redaction-spec/SKILL.md` — mention en prose « après une passe
-  challenge-po ».
-- `docs/exemples/_rapport-test-skills.md` — référence historique, mise à jour pour
-  cohérence.
+- `.claude/skills/redaction-spec/SKILL.md` — mention en prose mise à jour.
+- `docs/exemples/_rapport-test-skills.md` — référence historique mise à jour.
 
 Note : pas de collision avec le skill `superpowers:brainstorming` (namespace
 distinct).
@@ -108,11 +103,11 @@ distinct).
 | Sujet | Décision |
 |---|---|
 | Placement du flow | Pipeline autonome séparée (nouvelle command) |
-| Entrée du challenger | La spec produite par `challenge-po` / `/spec` |
+| Entrée du challenger | La spec produite par `brainstorm` / `/spec` |
 | Contenu sortie | Gherkin à scénarios numérotés (pour future impl BDD+TDD) |
 | Rôle du challenger | Testabilité / critères d'acceptation (reste fonctionnel) |
 | Numérotation | Continue simple, sans tag de traçabilité |
 | Emplacement sortie | `docs/init/scenarios/` (un `.feature` par feature) |
 | Approche | A — miroir strict de `/spec` |
 | Noms | command `make-gherkin`, agents `challenge-gherkin` + `redaction-gherkin` |
-| Rename | `challenge-po → brainstorm`, inclus dans ce chantier |
+| Rename | `brainstorm`, inclus dans ce chantier |
