@@ -32,7 +32,9 @@ Cible technique : `.NET` backend, `Blazor` + `SignalR` front, tests `xUnit`
    la section `## Analyse technique` (composants, contrats, points TDD) et la
    section `## Scénarios`. Repère le **prochain scénario non implémenté** =
    **premier scénario sans tag `@vert`** (ordre de numérotation continue), ou le
-   scénario demandé.
+   scénario demandé. **Marque-le aussitôt `@pending`** dans le fichier (working
+   tree uniquement, **non commité**) pour signaler le travail en cours — il
+   redevient visible si le run est interrompu avant le vert.
 
 2. **Vérifie la solution .NET.** Si aucune solution n'existe et que rien n'a
    encore été scaffoldé → **pose la question de scaffolding** (round-trip) :
@@ -50,7 +52,8 @@ Cible technique : `.NET` backend, `Blazor` + `SignalR` front, tests `xUnit`
      met à jour »).
 
 4. **Confirme le ROUGE.** Lance le test → il **doit** échouer (sinon le test
-   n'observe rien : réécris-le).
+   n'observe rien : réécris-le). **Remplace `@pending` par `@rouge`** dans le
+   fichier (working tree, non commité) : le test d'acceptation existe et échoue.
 
 5. **Boucle interne (TDD).** Écris l'**implémentation minimale** (YAGNI) pour
    satisfaire le scénario, en t'appuyant au besoin sur des cycles unitaires
@@ -59,19 +62,57 @@ Cible technique : `.NET` backend, `Blazor` + `SignalR` front, tests `xUnit`
 6. **Confirme le VERT.** Lance le test d'acceptation **et** la suite complète
    (non-régression). Tout doit être vert.
 
-7. **Marque le scénario vert dans le fichier de scénarios.** Édite
-   `docs/init/scenarios/<sujet>.md` : ajoute le tag `@vert` au-dessus du scénario
-   livré (à côté de son tag de type) et une ligne `# vert — <commit court>`.
-   C'est l'**état d'avancement** : un scénario taggé `@vert` est implémenté et au
-   vert ; les autres restent à faire. (Détection du « prochain » à l'étape 1.)
+7. **Passe le scénario au vert dans le fichier de scénarios.** Édite
+   `docs/init/scenarios/<sujet>.md` : **remplace le tag `@rouge`** (posé à
+   l'étape 4) par `@vert` au-dessus du scénario livré (à côté de son tag de type)
+   et ajoute une ligne `# vert — <commit court>`. (Détection du « prochain » à
+   l'étape 1 = 1er sans `@vert`.) Voir le cycle de vie ci-dessous.
 
-8. **Commit.** Test(s) + implémentation **+ la mise à jour du fichier de
+8. **Commit.** Test(s) + implémentation **+ la mise à jour `@vert` du fichier de
    scénarios**, message référant le scénario
    (ex. `feat: scénario 3 — réservation d'un créneau libre`).
 
 9. **Checkpoint.** Rends la main avec le récap (rouge → vert → commit). Sur une
    **ambiguïté technique réelle** (choix structurant non tranché par l'analyse
    technique), pose une question (round-trip) plutôt que de deviner en silence.
+
+## États du scénario (cycle de vie du test)
+
+Chaque scénario porte un tag qui reflète l'**état de son test d'acceptation**.
+Seul `@vert` est commité ; `@pending` et `@rouge` vivent dans le working tree
+(visibles si un run est interrompu, jamais dans l'historique).
+
+```mermaid
+stateDiagram-v2
+    [*] --> AFaire : scénario écrit par make-gherkin
+    AFaire --> Pending : l'agent prend le scénario (étape 1)
+    Pending --> Rouge : test d'acceptation écrit, il échoue (étape 4)
+    Rouge --> Vert : implémentation minimale, le test passe (étape 6)
+    Vert --> [*] : commit (étape 8)
+
+    note right of AFaire
+        aucun tag — pas encore de test
+    end note
+    note right of Pending
+        @pending — working tree, NON commité
+    end note
+    note right of Rouge
+        @rouge — test échoue ; working tree, NON commité
+    end note
+    note right of Vert
+        @vert — test passe ; COMMITÉ (+ # vert — &lt;commit&gt;)
+    end note
+```
+
+| Tag | État du test | Commité ? |
+|---|---|---|
+| *(aucun)* | pas de test | — |
+| `@pending` | travail démarré, test pas encore écrit | non (working tree) |
+| `@rouge` | test d'acceptation écrit, **échoue** | non (working tree) |
+| `@vert` | test d'acceptation **passe** | oui |
+
+Reprise après interruption : un scénario laissé `@pending` ou `@rouge` est repris
+au prochain run (il n'a pas de `@vert`) ; l'agent repart de l'état observé.
 
 ## Mode agent (orchestré)
 
