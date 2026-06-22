@@ -40,7 +40,8 @@ Feature: Trombonomicon — boucle clicker / idle
   # Boucle manuelle
   # ──────────────────────────────────────────────
 
-  @nominal
+  @nominal @vert
+  # vert — 1e064b9
   Scenario 1: Clic producteur avec fil disponible
     Given une partie initialisée avec 100 m de fil de fer, 0 trombone en stock et 0 €
     And le prix de vente est fixé à 0,10 €

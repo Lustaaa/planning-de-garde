@@ -28,8 +28,9 @@ scénario.
    - Sinon il renvoie `{ "type": "result", ... }`.
 
 3. **Checkpoint.** Présente le récap du scénario : cycle rouge → vert → commit,
-   fichiers de test et d'implémentation, état de la suite. Demande l'accord pour
-   **enchaîner le scénario suivant** (`next_scenario`).
+   fichiers de test et d'implémentation, état de la suite, et le scénario marqué
+   `@vert` dans le fichier de scénarios. Demande l'accord pour **enchaîner le
+   scénario suivant** (`next_scenario`).
 
 4. **Boucle.** Si l'utilisateur valide, relance pour le scénario suivant. Sinon,
    stoppe.
@@ -39,6 +40,8 @@ scénario.
 - `AskUserQuestion` est appelé **par toi** (thread principal), jamais par l'agent.
 - **Un scénario par run** — red-green-commit, puis checkpoint. Pas d'implémentation
   en bloc.
+- Chaque scénario livré est taggé `@vert` dans le fichier de scénarios (état
+  d'avancement) ; le prochain run cible le 1er scénario sans `@vert`.
 - **BDD + TDD** : chaque scénario Gherkin → test d'acceptation exécutable (boucle
   externe), satisfait par des cycles unitaires rouge/vert (boucle interne).
 - Le test d'acceptation **doit** échouer d'abord (rouge), sinon il n'observe rien.

@@ -29,10 +29,14 @@ thread principal pose. Le cycle BDD+TDD lui-même est **autonome**.
    - Écris l'**implémentation minimale** (YAGNI), avec cycles unitaires rouge/vert
      pour les briques métier si utile.
    - Relance le test d'acceptation **et la suite complète** → tout **vert**.
-   - **Commit** test + implémentation, message référant le scénario.
+   - **Marque le scénario `@vert`** dans `docs/init/scenarios/<sujet>.md` (tag
+     `@vert` + ligne `# vert — <commit court>`), pour matérialiser l'avancement.
+   - **Commit** test + implémentation **+ la mise à jour du fichier de scénarios**,
+     message référant le scénario.
 
-4. **Un seul scénario par invocation.** Sur ambiguïté technique structurante non
-   tranchée par l'analyse technique, renvoie une question plutôt que deviner.
+4. **Un seul scénario par invocation.** Le prochain scénario = premier sans tag
+   `@vert`. Sur ambiguïté technique structurante non tranchée par l'analyse
+   technique, renvoie une question plutôt que deviner.
 
 ## Sortie
 

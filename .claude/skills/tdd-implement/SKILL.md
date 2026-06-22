@@ -30,8 +30,9 @@ Cible technique : `.NET` backend, `Blazor` + `SignalR` front, tests `xUnit`
 
 1. **Lis le fichier de scénarios.** Charge `docs/init/scenarios/<sujet>.md` :
    la section `## Analyse technique` (composants, contrats, points TDD) et la
-   section `## Scénarios`. Repère le **prochain scénario non implémenté** (ordre
-   de numérotation continue), ou le scénario demandé.
+   section `## Scénarios`. Repère le **prochain scénario non implémenté** =
+   **premier scénario sans tag `@vert`** (ordre de numérotation continue), ou le
+   scénario demandé.
 
 2. **Vérifie la solution .NET.** Si aucune solution n'existe et que rien n'a
    encore été scaffoldé → **pose la question de scaffolding** (round-trip) :
@@ -58,10 +59,17 @@ Cible technique : `.NET` backend, `Blazor` + `SignalR` front, tests `xUnit`
 6. **Confirme le VERT.** Lance le test d'acceptation **et** la suite complète
    (non-régression). Tout doit être vert.
 
-7. **Commit.** Test(s) + implémentation, message référant le scénario
+7. **Marque le scénario vert dans le fichier de scénarios.** Édite
+   `docs/init/scenarios/<sujet>.md` : ajoute le tag `@vert` au-dessus du scénario
+   livré (à côté de son tag de type) et une ligne `# vert — <commit court>`.
+   C'est l'**état d'avancement** : un scénario taggé `@vert` est implémenté et au
+   vert ; les autres restent à faire. (Détection du « prochain » à l'étape 1.)
+
+8. **Commit.** Test(s) + implémentation **+ la mise à jour du fichier de
+   scénarios**, message référant le scénario
    (ex. `feat: scénario 3 — réservation d'un créneau libre`).
 
-8. **Checkpoint.** Rends la main avec le récap (rouge → vert → commit). Sur une
+9. **Checkpoint.** Rends la main avec le récap (rouge → vert → commit). Sur une
    **ambiguïté technique réelle** (choix structurant non tranché par l'analyse
    technique), pose une question (round-trip) plutôt que de deviner en silence.
 
@@ -102,6 +110,7 @@ Chaque invocation renvoie **uniquement** un objet JSON.
   "impl_files": ["src/.../ReservationService.cs"],
   "red": "dotnet test --filter … → 1 failed (attendu)",
   "green": "dotnet test → N passed, 0 failed",
+  "scenarios_file": "docs/init/scenarios/<sujet>.md (scénario 3 taggé @vert)",
   "commit": "<hash court> feat: scénario 3 — …",
   "next_scenario": 4,
   "notes": "<bref>"
