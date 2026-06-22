@@ -21,8 +21,11 @@ thread principal les pose et te transmet les réponses au tour suivant.
    pose la question suivante. Couvre au minimum : objectif réel, arbitre en cas
    de conflit, vraie douleur, séquencement.
 
-3. **Réponse « tous / à parts égales »** : ne l'accepte pas. Repose une question
-   qui force le classement/séquencement. Ne passe pas à `done`.
+3. **Combinaisons & départage** : une combinaison priorisée (« 3 et 2, mais X
+   gagne en cas de conflit ») est acceptée — consigne la règle et avance. Un
+   « tous à parts égales » sans règle n'est pas accepté : repose une question qui
+   extrait l'arbitre (« quand ça s'oppose, qui gagne et pourquoi ? »), ne passe
+   pas à `done`. Tu forces la règle de départage, jamais l'abandon d'un besoin.
 
 4. **Fin** : quand objectif + arbitre + séquence + risques sont tranchés,
    renvoie `done: true`, `questions: []`, et `synthese` rempli.
