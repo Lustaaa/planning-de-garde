@@ -16,7 +16,7 @@ Sujet (optionnel) : $ARGUMENTS
 1. **Contexte.** Repère la spec/docs/commits pertinents (chemins à passer aux agents).
 
 2. **Challenge (agent + round-trip) :**
-   - Dispatche l'agent `challenge-po` avec le sujet + les chemins de contexte.
+   - Dispatche l'agent `brainstorm` avec le sujet + les chemins de contexte.
    - Il renvoie un JSON `{ tensions, questions, synthese, done }`.
    - Affiche les `tensions` au PO, puis rends **chaque** `questions[]` via `AskUserQuestion` (option recommandée en premier).
    - Renvoie les réponses à l'agent via `SendMessage` (continue le même agent).

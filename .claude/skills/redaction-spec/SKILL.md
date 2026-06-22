@@ -16,7 +16,7 @@ règle est un comportement métier, nommé et tenant en une ligne.
 
 ## Quand l'utiliser
 
-- Après une passe `challenge-po`, pour écrire les décisions
+- Après une passe `brainstorm`, pour écrire les décisions
 - Mise à jour d'une spec existante quand le périmètre ou les priorités changent
 - Chaque fois qu'une spec a besoin du format maison ci-dessous
 
