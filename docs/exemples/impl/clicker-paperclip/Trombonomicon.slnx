@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Trombonomicon.Engine/Trombonomicon.Engine.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Trombonomicon.Engine.Tests/Trombonomicon.Engine.Tests.csproj" />
+  </Folder>
+</Solution>

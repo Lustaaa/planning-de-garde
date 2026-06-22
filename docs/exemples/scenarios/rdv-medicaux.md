@@ -15,7 +15,8 @@ Feature: Gestion de l'agenda médical
   Je veux configurer des plages de disponibilité et réserver des créneaux
   Afin de garantir un agenda fiable sans double-booking
 
-@nominal
+@nominal @vert
+# vert — 557cd31
 Scenario 1: Le praticien crée une plage de disponibilité
   Given le praticien "Dr Martin" n'a aucune plage configurée
   When il crée une plage du lundi 09h00 au lundi 12h00

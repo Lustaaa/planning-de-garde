@@ -40,7 +40,8 @@ Feature: Trombonomicon — boucle clicker / idle
   # Boucle manuelle
   # ──────────────────────────────────────────────
 
-  @nominal
+  @nominal @vert
+  # vert — 1e064b9
   Scenario 1: Clic producteur avec fil disponible
     Given une partie initialisée avec 100 m de fil de fer, 0 trombone en stock et 0 €
     And le prix de vente est fixé à 0,10 €
@@ -50,7 +51,8 @@ Feature: Trombonomicon — boucle clicker / idle
     And l'argent augmente de 0,10 € (vente automatique)
     And le stock de trombones reste à 0 (vendu immédiatement)
 
-  @limite
+  @limite @vert
+  # vert — 5d35121
   Scenario 2: Clic à vide sans fil de fer
     Given une partie avec 0 m de fil de fer et 5 trombones en stock
     When le joueur clique sur "Produire"
