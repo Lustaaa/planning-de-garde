@@ -1,113 +1,108 @@
 # Design — Flow `make-gherkin` (2ᵉ pipeline BDD)
 
-> Date : 2026-06-22 · Statut : design validé, prêt pour plan d'implémentation
+> Date : 2026-06-22 · Statut : design validé (révisé), prêt pour exécution
 
 ## Contexte
 
 Le dépôt possède une pipeline de cadrage produit `/spec` qui enchaîne deux
-agents orchestrés : `brainstorm` (challenge fonctionnel, boucle de questions
-remontées au thread principal) puis `redaction-spec` (écriture de la spec maison
-dans `docs/init/`). La spec produite est riche en **règles de gestion**
-fonctionnelles.
+subagents orchestrés : `brainstorm` (challenge fonctionnel, round-trip de
+questions) puis `redaction-spec` (écriture de la spec maison dans `docs/init/`).
+La spec produite est riche en **règles de gestion** fonctionnelles.
 
-Ce design ajoute une **2ᵉ pipeline autonome**, `make-gherkin`, qui part de cette
-spec fonctionnelle et produit une analyse de testabilité sous forme de **Gherkin
-à scénarios numérotés**. Cet artefact alimentera plus tard une 3ᵉ pipeline
-d'implémentation BDD + TDD (hors scope ici).
+Ce design ajoute une **2ᵉ pipeline**, `make-gherkin`, qui part de cette spec et
+produit **un seul fichier** mêlant une **analyse technique légère** et des
+**scénarios Gherkin numérotés**. Ce fichier sera l'entrée de la 3ᵉ pipeline
+d'implémentation.
 
-Décompte des pipelines : (1) `/spec` — cadrage produit (`brainstorm` →
-`redaction-spec`) ; (2) `make-gherkin` — ce design ; (3) `tdd-implement` —
-implémentation, à venir.
+Décompte des pipelines, chaînées par **fichiers** :
+1. `/spec` — prompt user → `docs/init/01-specification.md` (cadrage produit)
+2. `make-gherkin` — `01-specification.md` → `docs/init/scenarios/<sujet>.md`
+3. `tdd-implement` — ce `.md` → implémentation **scénario par scénario** (à venir)
 
 ## Objectif
 
-Transformer les règles de gestion d'une spec en **scénarios testables clairs et
-numérotés**, en restant strictement fonctionnel (aucun détail technique dans le
-Gherkin). Le flow réutilise le pattern éprouvé du duo agent + round-trip de
-`/spec` : un agent challenge la testabilité, un agent rédige, le thread principal
-est le seul à poser les questions via `AskUserQuestion`.
-
-Stack cible de la future implémentation (contexte transmis, **pas** codée dans le
-Gherkin) : `.NET` pour le backend, `Blazor` + `SignalR` pour le front.
+Transformer les règles de gestion d'une spec en **scénarios testables numérotés**,
+accompagnés d'une **analyse technique légère orientée implémentation** (composants
+impactés, contrats de données, points d'attention TDD), de quoi amorcer
+`tdd-implement`. Cible technique : `.NET` backend, `Blazor` + `SignalR` front.
 
 ## Architecture
 
-Miroir strict de `/spec` (approche A retenue). Trois nouvelles unités, chacune
-avec une responsabilité unique, testable indépendamment.
+`make-gherkin` reprend **exactement le pattern de `brainstorm`** : un skill + un
+**seul** subagent + une command fine qui le lance et gère le round-trip de
+questions. On **abandonne** l'idée d'un duo challenge/rédaction : un seul agent
+fait tout (lit la spec, challenge la testabilité en round-trip, écrit le fichier).
 
 | Unité | Type | Rôle | Tools |
 |---|---|---|---|
-| `make-gherkin` | command | Orchestre le flow ; **seul** à appeler `AskUserQuestion` ; dispatche les agents | — |
-| `challenge-gherkin` | skill + agent | Sonde la **testabilité** de chaque règle (nominal / limite / erreur + données d'exemple) ; boucle de questions remontées au thread | Read, Grep, Glob |
-| `redaction-gherkin` | skill + agent | Écrit le fichier `.feature` ; renvoie un récap JSON | Read, Write, Edit, Glob |
+| `make-gherkin` | command | Lance l'agent ; **seul** à appeler `AskUserQuestion` ; relaie les réponses via `SendMessage` ; propose le commit | — |
+| `make-gherkin` | skill | Le processus : challenge de testabilité + format du fichier de sortie (analyse + scénarios) | — |
+| `make-gherkin` | agent | Subagent autonome : lit `01-specification.md`, renvoie les questions en JSON (round-trip), puis **écrit** `docs/init/scenarios/<sujet>.md` | Read, Grep, Glob, Write, Edit |
 
-### Séparation des préoccupations
+### Pourquoi un seul agent (et pas un duo)
 
-- **`challenge-gherkin`** ne pose jamais les questions lui-même (ne peut pas
-  appeler `AskUserQuestion`). Il renvoie à chaque tour **un objet JSON**
-  `{ tensions, questions, synthese, done }`. Read-only.
-- **`redaction-gherkin`** reçoit les décisions tranchées (scénarios à couvrir),
-  écrit **uniquement** le fichier cible, renvoie
-  `{ path, features, scenarios, notes }`.
-- **`make-gherkin`** (command) ne fait que : lire le contexte, dispatcher,
-  rendre les questions via `AskUserQuestion`, relancer l'agent via `SendMessage`,
-  proposer le commit.
+`brainstorm` ne challenge que (il n'écrit pas — `redaction-spec` écrit). Ici on
+veut un étage **autonome** de bout en bout : le même agent challenge **et** écrit.
+La command reste fine, son seul rôle est le round-trip de questions (contrainte
+plateforme : un subagent ne peut pas appeler `AskUserQuestion`).
 
 ## Flux de données
 
-1. **Contexte.** La command repère la spec fonctionnelle (`docs/init/01-specification.md`)
-   et passe son chemin à l'agent.
-2. **Challenge (round-trip).** `challenge-gherkin` énonce les tensions de
-   testabilité, puis pose **une** question à la fois. Le thread principal la rend
-   via `AskUserQuestion` (option recommandée en premier), renvoie la réponse via
-   `SendMessage`. Boucle tant que `done` est faux.
-3. **Validation.** Quand `done: true`, le thread présente la `synthese` (liste des
-   scénarios à couvrir : nominaux, limites, erreurs) et demande l'accord.
-4. **Rédaction.** `redaction-gherkin` écrit `docs/init/scenarios/<sujet>.feature`
-   et renvoie le récap JSON.
-5. **Commit.** Le thread propose un commit (jamais de push sauf demande explicite).
+1. **Contexte.** La command repère `docs/init/01-specification.md` et le passe à
+   l'agent `make-gherkin`.
+2. **Challenge (round-trip).** L'agent renvoie `{ tensions, questions, synthese, done }`.
+   La command rend chaque question via `AskUserQuestion`, relaie via `SendMessage`.
+   Boucle tant que `done` est faux.
+3. **Validation.** À `done: true`, la command présente la `synthese` (scénarios à
+   couvrir + analyse technique pressentie) et demande l'accord.
+4. **Écriture.** La command **relance le même agent** avec la consigne d'écrire le
+   fichier ; l'agent écrit `docs/init/scenarios/<sujet>.md` et renvoie le récap
+   `{ path, scenarios, notes }`.
+5. **Commit.** La command propose un commit (jamais de push sauf demande explicite).
 
 ## Format de sortie
 
-- Emplacement : `docs/init/scenarios/`, un fichier `.feature` par feature si le
-  périmètre grossit.
-- Structure Gherkin standard :
-  - `Feature: <titre>` + courte description.
-  - `Scenario N: <titre>` — **numérotation continue simple** (1, 2, 3… à travers
-    tout le fichier), sans tag de traçabilité vers les règles.
-  - `Given / When / Then` ; `Scenario Outline` + `Examples` pour les jeux de
-    données.
-- **Fonctionnel uniquement** : aucun détail d'implémentation dans le Gherkin.
+`docs/init/scenarios/<sujet>.md`, un fichier par sujet. Structure :
 
-## Rename effectué : `brainstorm`
-Inclus dans ce chantier pour cohérence de nommage. Périmètre (5 fichiers) :
+1. `# <Sujet> — Analyse & scénarios`
+2. `## Analyse technique` — **légère**, orientée implémentation :
+   - Composants impactés (côté `.NET` / `Blazor` / `SignalR`).
+   - Contrats de données clés (entrées/sorties, entités cœur).
+   - Points d'attention TDD (ordre de test, dépendances, cas délicats).
+3. `## Scénarios` — bloc Gherkin :
+   - `Feature: <titre>` + courte description.
+   - `Scenario N: <titre>` — **numérotation continue simple** (1, 2, 3…).
+   - Tags de type `@nominal` / `@limite` / `@erreur` au-dessus de chaque scénario.
+   - `Given / When / Then` ; `Scenario Outline` + `Examples` pour les données.
 
-- `.claude/skills/brainstorm/SKILL.md` (champ `name` mis à jour).
-- `.claude/agents/brainstorm.md` (mise à jour `name`, `description`, référence au skill).
-- `.claude/commands/spec.md` — référence au dispatch de l'agent et au nom du skill.
-- `.claude/skills/redaction-spec/SKILL.md` — mention en prose mise à jour.
-- `docs/exemples/_rapport-test-skills.md` — référence historique mise à jour.
+**Note de portée** : contrairement à la spec (`/spec`, fonctionnel pur), ce
+fichier porte **volontairement** une analyse technique — c'est son rôle de
+préparer l'implémentation. Les pas Given/When/Then restent comportementaux
+(observables), la technique vit dans la section `## Analyse technique`.
 
-Note : pas de collision avec le skill `superpowers:brainstorming` (namespace
-distinct).
+## Rename effectué : `challenge-po → brainstorm`
+
+Réalisé (Task 1, commit `4671de8`). 5 fichiers : skill, agent, `/spec`, mention
+dans `redaction-spec`, rapport d'exemple. `git grep challenge-po` vide.
 
 ## Hors scope
 
-- La 3ᵉ pipeline d'**implémentation** BDD + TDD qui consommera les `.feature` —
-  chantier ultérieur, prévu sous forme d'un agent `tdd-implement`.
-- Tout choix d'outil d'exécution BDD (SpecFlow / Reqnroll) : le `.feature` est
-  écrit en Gherkin standard, le runner sera décidé au moment de l'implémentation.
+- La 3ᵉ pipeline `tdd-implement` (implémentation scénario par scénario) — chantier
+  ultérieur.
+- Tout choix d'outil d'exécution BDD (SpecFlow / Reqnroll) : décidé au moment de
+  l'implémentation.
 
 ## Décisions verrouillées
 
 | Sujet | Décision |
 |---|---|
-| Placement du flow | Pipeline autonome séparée (nouvelle command) |
-| Entrée du challenger | La spec produite par `brainstorm` / `/spec` |
-| Contenu sortie | Gherkin à scénarios numérotés (pour future impl BDD+TDD) |
-| Rôle du challenger | Testabilité / critères d'acceptation (reste fonctionnel) |
-| Numérotation | Continue simple, sans tag de traçabilité |
-| Emplacement sortie | `docs/init/scenarios/` (un `.feature` par feature) |
-| Approche | A — miroir strict de `/spec` |
-| Noms | command `make-gherkin`, agents `challenge-gherkin` + `redaction-gherkin` |
-| Rename | `brainstorm`, inclus dans ce chantier |
+| Chaînage | Par fichiers : prompt → spec.md → scénarios.md → impl |
+| Réalisation | Pattern `brainstorm` : skill + 1 agent + command fine (round-trip) |
+| Nombre d'agents | **Un seul** agent autonome (pas de duo) ; il challenge ET écrit |
+| Entrée | `docs/init/01-specification.md` |
+| Sortie | `docs/init/scenarios/<sujet>.md`, un fichier par sujet |
+| Contenu sortie | Analyse technique légère + scénarios Gherkin numérotés |
+| Numérotation | Continue simple, tags `@nominal/@limite/@erreur` |
+| Portée technique | Analyse technique autorisée dans ce fichier (cible .NET/Blazor/SignalR) |
+| `/spec` existant | Laissé tel quel |
+| Questions | Round-trip via la command (subagent ne peut pas `AskUserQuestion`) |
