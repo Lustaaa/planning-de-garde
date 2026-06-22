@@ -32,9 +32,15 @@ Cible technique : `.NET` backend, `Blazor` + `SignalR` front, tests `xUnit`
    la section `## Analyse technique` (composants, contrats, points TDD) et la
    section `## Scénarios`. Repère le **prochain scénario non implémenté** =
    **premier scénario sans tag `@vert`** (ordre de numérotation continue), ou le
-   scénario demandé. **Marque-le aussitôt `@pending`** dans le fichier (working
-   tree uniquement, **non commité**) pour signaler le travail en cours — il
-   redevient visible si le run est interrompu avant le vert.
+   scénario demandé. **Ajoute le tag `@pending`** à côté de son tag de type
+   (working tree uniquement, **non commité**) pour signaler le travail en cours —
+   il redevient visible si le run est interrompu avant le vert.
+
+   > **Deux tags indépendants.** Le tag de **type** (`@nominal` / `@limite` /
+   > `@erreur`) est **permanent** : ne l'enlève jamais. Le tag de **cycle**
+   > (`@pending` → `@rouge` → `@vert`) s'ajoute **à côté** et n'échange qu'entre
+   > eux. Exemple : `@limite` → `@limite @pending` → `@limite @rouge` →
+   > `@limite @vert`.
 
 2. **Vérifie la solution .NET.** Si aucune solution n'existe et que rien n'a
    encore été scaffoldé → **pose la question de scaffolding** (round-trip) :
@@ -52,8 +58,9 @@ Cible technique : `.NET` backend, `Blazor` + `SignalR` front, tests `xUnit`
      met à jour »).
 
 4. **Confirme le ROUGE.** Lance le test → il **doit** échouer (sinon le test
-   n'observe rien : réécris-le). **Remplace `@pending` par `@rouge`** dans le
-   fichier (working tree, non commité) : le test d'acceptation existe et échoue.
+   n'observe rien : réécris-le). **Remplace le tag de cycle `@pending` par
+   `@rouge`** (le tag de type reste) dans le fichier (working tree, non commité) :
+   le test d'acceptation existe et échoue.
 
 5. **Boucle interne (TDD).** Écris l'**implémentation minimale** (YAGNI) pour
    satisfaire le scénario, en t'appuyant au besoin sur des cycles unitaires
@@ -63,10 +70,11 @@ Cible technique : `.NET` backend, `Blazor` + `SignalR` front, tests `xUnit`
    (non-régression). Tout doit être vert.
 
 7. **Passe le scénario au vert dans le fichier de scénarios.** Édite
-   `docs/init/scenarios/<sujet>.md` : **remplace le tag `@rouge`** (posé à
-   l'étape 4) par `@vert` au-dessus du scénario livré (à côté de son tag de type)
-   et ajoute une ligne `# vert — <commit court>`. (Détection du « prochain » à
-   l'étape 1 = 1er sans `@vert`.) Voir le cycle de vie ci-dessous.
+   `docs/init/scenarios/<sujet>.md` : **remplace le tag de cycle `@rouge`** (posé à
+   l'étape 4) par `@vert` (le tag de type reste) et ajoute une ligne
+   `# vert — <commit court>` (le **hash** du commit, pas une description).
+   (Détection du « prochain » à l'étape 1 = 1er sans `@vert`.) Voir le cycle de vie
+   ci-dessous.
 
 8. **Commit.** Test(s) + implémentation **+ la mise à jour `@vert` du fichier de
    scénarios**, message référant le scénario
@@ -78,9 +86,12 @@ Cible technique : `.NET` backend, `Blazor` + `SignalR` front, tests `xUnit`
 
 ## États du scénario (cycle de vie du test)
 
-Chaque scénario porte un tag qui reflète l'**état de son test d'acceptation**.
-Seul `@vert` est commité ; `@pending` et `@rouge` vivent dans le working tree
-(visibles si un run est interrompu, jamais dans l'historique).
+Chaque scénario garde son **tag de type** permanent (`@nominal` / `@limite` /
+`@erreur`) et porte **en plus** un **tag de cycle** qui reflète l'**état de son
+test d'acceptation**. Seul `@vert` est commité ; `@pending` et `@rouge` vivent dans
+le working tree (visibles si un run est interrompu, jamais dans l'historique).
+Le tag de cycle s'échange uniquement entre ses valeurs ; le tag de type ne bouge
+jamais (ex. `@limite @pending` → `@limite @rouge` → `@limite @vert`).
 
 ```mermaid
 stateDiagram-v2

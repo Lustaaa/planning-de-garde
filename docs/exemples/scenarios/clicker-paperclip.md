@@ -51,8 +51,8 @@ Feature: Trombonomicon — boucle clicker / idle
     And l'argent augmente de 0,10 € (vente automatique)
     And le stock de trombones reste à 0 (vendu immédiatement)
 
-  @vert
-  # vert — Scénario 2 : ProduceResult.Message + PaperclipEngine cas wire=0
+  @limite @vert
+  # vert — 5d35121
   Scenario 2: Clic à vide sans fil de fer
     Given une partie avec 0 m de fil de fer et 5 trombones en stock
     When le joueur clique sur "Produire"

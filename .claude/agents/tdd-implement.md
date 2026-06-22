@@ -16,8 +16,10 @@ thread principal pose. Le cycle BDD+TDD lui-même est **autonome**.
 1. **Lis le fichier de scénarios** fourni (chemin dans le prompt, typiquement
    `docs/init/scenarios/<sujet>.md`) : section `## Analyse technique` puis
    `## Scénarios`. Identifie le **scénario cible** (le prochain sans tag `@vert`,
-   ou celui demandé). **Marque-le `@pending`** dans le fichier (working tree, **non
-   commité**) pour signaler le travail en cours.
+   ou celui demandé). **Ajoute le tag `@pending` à côté de son tag de type**
+   (`@nominal`/`@limite`/`@erreur`, qui reste **permanent**) — working tree, **non
+   commité**. Le tag de cycle `@pending → @rouge → @vert` n'échange qu'entre ses
+   valeurs ; ne supprime jamais le tag de type.
 
 2. **Solution .NET absente ?** Si rien n'est scaffoldé, **renvoie une question**
    `{ "type": "question", ... }` sur la structure des projets à créer
