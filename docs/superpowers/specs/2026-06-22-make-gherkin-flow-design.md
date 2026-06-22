@@ -1,4 +1,4 @@
-# Design — Flow `make-gherkin` (3ᵉ pipeline BDD)
+# Design — Flow `make-gherkin` (2ᵉ pipeline BDD)
 
 > Date : 2026-06-22 · Statut : design validé, prêt pour plan d'implémentation
 
@@ -10,10 +10,14 @@ remontées au thread principal) puis `redaction-spec` (écriture de la spec mais
 dans `docs/init/`). La spec produite est riche en **règles de gestion**
 fonctionnelles.
 
-Ce design ajoute une **3ᵉ pipeline autonome**, `make-gherkin`, qui part de cette
+Ce design ajoute une **2ᵉ pipeline autonome**, `make-gherkin`, qui part de cette
 spec fonctionnelle et produit une analyse de testabilité sous forme de **Gherkin
-à scénarios numérotés**. Cet artefact alimentera plus tard une 4ᵉ pipeline
+à scénarios numérotés**. Cet artefact alimentera plus tard une 3ᵉ pipeline
 d'implémentation BDD + TDD (hors scope ici).
+
+Décompte des pipelines : (1) `/spec` — cadrage produit (`brainstorm` →
+`redaction-spec`) ; (2) `make-gherkin` — ce design ; (3) `tdd-implement` —
+implémentation, à venir.
 
 ## Objectif
 
@@ -94,7 +98,7 @@ distinct).
 
 ## Hors scope
 
-- La 4ᵉ pipeline d'**implémentation** BDD + TDD qui consommera les `.feature` —
+- La 3ᵉ pipeline d'**implémentation** BDD + TDD qui consommera les `.feature` —
   chantier ultérieur, prévu sous forme d'un agent `tdd-implement`.
 - Tout choix d'outil d'exécution BDD (SpecFlow / Reqnroll) : le `.feature` est
   écrit en Gherkin standard, le runner sera décidé au moment de l'implémentation.
