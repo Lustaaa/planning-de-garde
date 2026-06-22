@@ -1,4 +1,41 @@
+# Dépendances
 node_modules/
+vendor/
+.venv/
+venv/
+__pycache__/
+
+# Build / sortie
 dist/
+build/
+out/
+target/
+bin/
+obj/
+
+# Environnement & secrets
 .env
+.env.*
+!.env.example
+*.key
+*.pem
+
+# Logs
 *.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Éditeurs / IDE
+.idea/
+.vscode/
+*.swp
+*~
+
+# Divers
+*.tmp
+.cache/
+coverage/
