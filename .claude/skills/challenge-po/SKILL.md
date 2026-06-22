@@ -43,6 +43,44 @@ Skip when the change is mechanical (typo, rename, bugfix) — there's nothing to
 
 5. **Synthesize.** End with: chosen objective + arbiter, the delivery sequence, and the open risks still untranched. Hand this to `redaction-spec`.
 
+## Mode agent (orchestré)
+
+Quand ce skill est exécuté par un **subagent** dispatché (pas le thread
+principal), l'agent **ne pose pas** les questions lui-même — il **ne peut pas**
+appeler `AskUserQuestion`. Il **renvoie** les questions au thread principal, qui
+les rend en `AskUserQuestion` et lui retourne les réponses (round-trip).
+
+À chaque appel, l'agent renvoie **uniquement** un objet JSON valide :
+
+```json
+{
+  "tensions": ["angle mort nommé", "..."],
+  "questions": [
+    {
+      "question": "Question complète, finissant par ?",
+      "header": "≤12 car",
+      "multiSelect": false,
+      "options": [
+        { "label": "Choix 1 (Recommandé)", "description": "implication / tradeoff" },
+        { "label": "Choix 2", "description": "..." }
+      ]
+    }
+  ],
+  "synthese": null,
+  "done": false
+}
+```
+
+Règles du mode agent :
+- **Une question par tour** (`questions` contient au plus 1 entrée), 2-4 options.
+- Mets l'**hypothèse par défaut en première option**, suffixée ` (Recommandé)`.
+- `tensions` : à remplir au 1er tour (avant la 1re question), `[]` ensuite.
+- Quand le cadrage est tranché : `done: true`, `questions: []`, et `synthese`
+  rempli `{ "objectif", "arbitre", "sequence": [...], "risques": [...] }`.
+- Refuse les réponses « tous » : si le thread renvoie une non-priorisation,
+  repose une question qui **force le séquencement** (ne passe pas à `done`).
+- Aucun texte hors du JSON.
+
 ## Red Flags — don't accept these as answers
 
 - "Les trois à la fois" / "tous" / "all of them" → force sequencing

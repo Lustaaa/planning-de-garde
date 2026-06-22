@@ -1,34 +1,40 @@
 ---
-description: Cadre un produit ou une feature de bout en bout — challenge le PO puis rédige/maj la spec au format maison.
+description: Cadre un produit ou une feature de bout en bout — challenge le PO (via agent) puis rédige/maj la spec (via agent) au format maison.
 argument-hint: "[sujet ou feature à cadrer] (optionnel)"
 ---
 
-# /spec — Cadrage produit
+# /spec — Cadrage produit orchestré
 
-Orchestration de bout en bout : challenger l'idée, puis la coucher en spec.
+Orchestration par **agents** : tu (thread principal) ne fais que dispatcher les
+agents et **poser les questions via `AskUserQuestion`**. Les agents ne posent
+jamais les questions eux-mêmes.
 
 Sujet (optionnel) : $ARGUMENTS
 
 ## Déroulé
 
-1. **Explorer le contexte.** Lis la spec existante, `docs/`, et les derniers commits avant toute chose.
+1. **Contexte.** Repère la spec/docs/commits pertinents (chemins à passer aux agents).
 
-2. **Passe de challenge.** Invoque le skill `challenge-po` et exécute-le entièrement :
-   - nomme les tensions / angles morts à voix haute,
-   - pose les questions une à une (objectif réel, arbitre, vraie douleur), avec hypothèse par défaut,
-   - refuse les réponses « tous / les trois à la fois » → force le séquencement,
-   - termine par une synthèse : objectif + arbitre, séquence, risques ouverts.
+2. **Challenge (agent + round-trip) :**
+   - Dispatche l'agent `challenge-po` avec le sujet + les chemins de contexte.
+   - Il renvoie un JSON `{ tensions, questions, synthese, done }`.
+   - Affiche les `tensions` au PO, puis rends **chaque** `questions[]` via `AskUserQuestion` (option recommandée en premier).
+   - Renvoie les réponses à l'agent via `SendMessage` (continue le même agent).
+   - Répète tant que `done` est faux. Si le PO répond « tous », l'agent reposera une question de séquencement — c'est voulu.
 
-3. **Validation PO.** Présente la synthèse et attends l'accord avant de rédiger.
+3. **Validation PO.** Quand `done: true`, présente la `synthese` (objectif, arbitre, séquence, risques) et demande l'accord avant de rédiger.
 
-4. **Rédaction.** Invoque le skill `redaction-spec` et produis/mets à jour la spec canonique au format Contexte / Objectif & arbitrage / Séquence / Mécaniques de base / Règles de gestion / Risques.
+4. **Rédaction (agent) :**
+   - Dispatche l'agent `redaction-spec` avec le chemin cible + la `synthese`.
+   - Il écrit le fichier et renvoie `{ path, sections, regles, notes }`.
 
-5. **Propagation.** Mets à jour les docs qui référencent la spec (README, roadmap) pour rester cohérents ; garde une seule source de vérité et pointe les brouillons obsolètes vers elle.
+5. **Propagation.** Mets à jour les docs qui référencent la spec (README, roadmap) ; garde une seule source de vérité, pointe les brouillons obsolètes vers elle.
 
 6. **Commit.** Propose un commit (sans pousser sauf demande explicite).
 
 ## Notes
 
-- Fonctionnel uniquement : aucun choix technique dans la spec.
+- `AskUserQuestion` est appelé **par toi** (thread principal), jamais par les agents.
 - Une question à la fois pendant le challenge — pas de rafale.
+- Fonctionnel uniquement dans la spec : aucun choix technique.
 - Le challenge n'est pas une formalité : pas de complaisance, on tranche.
