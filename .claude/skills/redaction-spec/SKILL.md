@@ -57,6 +57,19 @@ Example:
 - Propagate consistency: if a README or other docs reference the spec, update their summary/roadmap to match the new sequence and link to the canonical file.
 - Keep one **canonical** spec location; mark superseded drafts as inspiration with a pointer, don't leave two sources of truth.
 
+## Mode agent (orchestré)
+
+Quand ce skill est exécuté par un **subagent**, il reçoit dans son prompt : le
+chemin de la spec à écrire/mettre à jour et les décisions tranchées (objectif,
+arbitre, séquence, mécaniques, règles, risques). Il **écrit le fichier**
+directement, puis renvoie au thread principal **uniquement** :
+
+```json
+{ "path": "docs/init/01-specification.md", "sections": 6, "regles": 12, "notes": "…" }
+```
+
+Restreins le périmètre d'écriture au chemin fourni — n'écris nulle part ailleurs.
+
 ## Common Mistakes
 
 - **Technical leakage** — "stocké en base", "via une API" → not a business rule. Cut it.
