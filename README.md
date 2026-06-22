@@ -75,14 +75,19 @@ C'est pourquoi le **multi-enfants est dans le v1**, et non repoussé plus tard.
 
 ---
 
-## 🚀 Roadmap
+## 🚀 Séquence de livraison
 
-Le v1 reste volontairement simple. La suite, si le besoin se confirme :
+Tous les besoins comptent, mais ils sont **livrés par étapes** : chaque phase
+doit être adoptée avant la suivante. **L'usage réel tranche** : si ça n'aide
+pas le quotidien, c'est coupé.
 
-- 🔐 **Permissions fines** (proposer / modifier / valider, par personne)
-- 🤝 **Workflow d'échange** — proposer un changement, faire valider avant application
-- 📧 **Notifications push & email** en plus de l'in-app
-- ⏱️ **Suivi des heures** et paiement de la nounou
+1. 🧱 **Mémoire partagée fiable** — une seule source de vérité commune, à la place des SMS éparpillés *(socle)*
+2. ⏰ **Immédiat & rappels** — « qui récupère ce soir », où est l'enfant maintenant, rappels de transfert
+3. 🔁 **Anticipation & cycle** — cycle multi-semaines récurrent et projection sur les semaines à venir
+4. 🤝 **Imprévu & échange** — gérer malade / retard / échange de dernière minute, avec accord entre parents
+
+Plus tard, si le besoin se confirme : permissions fines, notifications push &
+email, suivi des heures de la nounou.
 
 ---
 

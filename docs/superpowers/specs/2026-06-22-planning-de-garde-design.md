@@ -1,5 +1,13 @@
 # Planning de garde — Spécification fonctionnelle
 
+> ⚠️ **Document de dégrossissage / inspiration.** La source de vérité est
+> désormais [`docs/init/01-specification.md`](../../init/01-specification.md).
+> Ce fichier est conservé pour mémoire et sera retiré à terme.
+>
+> **Arbitre produit : l'usage réel tranche** (3 buts : outil réel, vitrine,
+> apprentissage). Livraison **séquencée** : (1) mémoire partagée fiable →
+> (2) immédiat & rappels → (3) anticipation & cycle → (4) imprévu & échange.
+
 > Portée : fonctionnel uniquement. Aucun choix technique n'est fixé.
 
 ## 1. Objectif
