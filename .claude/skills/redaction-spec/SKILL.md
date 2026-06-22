@@ -1,46 +1,47 @@
 ---
 name: redaction-spec
-description: Use when producing or updating a functional product specification — after the idea has been challenged and decisions are made, when you need to capture business rules in a consistent, scannable format (Contexte / Objectif & arbitrage / Séquence / Mécaniques / Règles de gestion / Risques).
+description: À utiliser pour produire ou mettre à jour une spécification produit fonctionnelle — après que l'idée a été challengée et les décisions tranchées, quand il faut capturer les règles de gestion dans un format cohérent et scannable (Contexte / Objectif & arbitrage / Séquence / Mécaniques / Règles de gestion / Risques).
 ---
 
 # Rédaction spec
 
-## Overview
+## Vue d'ensemble
 
-Produce a functional spec that is short on prose and rich on **business rules**.
-The output has a fixed shape — fill the slots, don't improvise structure.
+Produire une spec fonctionnelle pauvre en prose et riche en **règles de
+gestion**. La sortie a une forme fixe — remplis les cases, n'improvise pas la
+structure.
 
-**Core principle:** functional only. No technical choices. Each rule is a
-business behavior, named and one line long.
+**Principe central :** fonctionnel uniquement. Aucun choix technique. Chaque
+règle est un comportement métier, nommé et tenant en une ligne.
 
-## When to Use
+## Quand l'utiliser
 
-- After a `challenge-po` pass, to write down the decisions
-- Updating an existing spec when scope or priorities change
-- Any time a spec needs the house format below
+- Après une passe `challenge-po`, pour écrire les décisions
+- Mise à jour d'une spec existante quand le périmètre ou les priorités changent
+- Chaque fois qu'une spec a besoin du format maison ci-dessous
 
-## The Output Contract
+## Le contrat de sortie
 
-Write the spec with these sections **in this order**. Omit a section only if it
-genuinely has no content.
+Écris la spec avec ces sections **dans cet ordre**. N'omets une section que si
+elle n'a réellement aucun contenu.
 
 1. `# <Titre> — <sous-titre court>`
-2. `## Contexte` — 2-3 lines max. What the product is, for whom. No history.
-3. `## Objectif & arbitrage` — the goals, and **the arbiter that decides when they conflict** (as a blockquote). Skip if there's a single uncontested goal.
-4. `## Séquence de livraison` — numbered phases, each with a one-line justification. Use when needs must be sequenced rather than shipped in a block.
-5. `## Mécaniques de base` — bulleted structural invariants (durations, limits, core entities). The fixed facts everything else builds on.
-6. `## Règles de gestion` — the heart. See format below.
-7. `## Risques & questions ouvertes` — bulleted; name what's unresolved.
+2. `## Contexte` — 2-3 lignes max. Ce qu'est le produit, pour qui. Pas d'historique.
+3. `## Objectif & arbitrage` — les objectifs, et **l'arbitre qui tranche quand ils s'opposent** (en blockquote). À sauter s'il y a un seul objectif incontesté.
+4. `## Séquence de livraison` — phases numérotées, chacune avec une justification d'une ligne. À utiliser quand les besoins doivent être séquencés plutôt que livrés en bloc.
+5. `## Mécaniques de base` — invariants structurels en puces (durées, limites, entités cœur). Les faits fixes sur lesquels tout le reste s'appuie.
+6. `## Règles de gestion` — le cœur. Voir le format ci-dessous.
+7. `## Risques & questions ouvertes` — en puces ; nomme ce qui n'est pas résolu.
 
 ### Règles de gestion — format
 
-- Group rules under `###` thematic categories.
-- **Number rules continuously across categories** (1, 2, 3… not restarting per category).
-- Each rule: `N. **Nom court** — description fonctionnelle en une phrase`.
-- Functional only — a rule describes a behavior, never an implementation.
-- Embed a short clarification in parentheses when it removes ambiguity; keep it on the rule line.
+- Regroupe les règles sous des catégories thématiques `###`.
+- **Numérote les règles en continu à travers les catégories** (1, 2, 3… sans recommencer à chaque catégorie).
+- Chaque règle : `N. **Nom court** — description fonctionnelle en une phrase`.
+- Fonctionnel uniquement — une règle décrit un comportement, jamais une implémentation.
+- Glisse une courte précision entre parenthèses quand elle lève une ambiguïté ; garde-la sur la ligne de la règle.
 
-Example:
+Exemple :
 
 ```markdown
 ### Foyer & enfants
@@ -52,10 +53,10 @@ Example:
 2. **Deux rôles** — Un Parent gère tout ; un Invité est en consultation seule
 ```
 
-## After Writing
+## Après l'écriture
 
-- Propagate consistency: if a README or other docs reference the spec, update their summary/roadmap to match the new sequence and link to the canonical file.
-- Keep one **canonical** spec location; mark superseded drafts as inspiration with a pointer, don't leave two sources of truth.
+- Propage la cohérence : si un README ou d'autres docs référencent la spec, mets à jour leur résumé/roadmap pour coller à la nouvelle séquence et lie le fichier canonique.
+- Garde une seule localisation **canonique** de la spec ; marque les brouillons remplacés comme inspiration avec un pointeur, ne laisse pas deux sources de vérité.
 
 ## Mode agent (orchestré)
 
@@ -70,10 +71,10 @@ directement, puis renvoie au thread principal **uniquement** :
 
 Restreins le périmètre d'écriture au chemin fourni — n'écris nulle part ailleurs.
 
-## Common Mistakes
+## Erreurs fréquentes
 
-- **Technical leakage** — "stocké en base", "via une API" → not a business rule. Cut it.
-- **Restarting numbering per category** — breaks cross-referencing. Keep it continuous.
-- **Long contexte** — if Contexte runs past 3 lines, it's eating the spec. Trim.
-- **Vague rules** — a rule without a clear subject and behavior isn't a rule. Name it precisely.
-- **Examples as separate prose** — keep clarification inline on the rule, not in a detached paragraph.
+- **Fuite technique** — « stocké en base », « via une API » → ce n'est pas une règle de gestion. Coupe.
+- **Recommencer la numérotation par catégorie** — casse les références croisées. Garde-la continue.
+- **Contexte trop long** — si le Contexte dépasse 3 lignes, il mange la spec. Élague.
+- **Règles vagues** — une règle sans sujet ni comportement clair n'est pas une règle. Nomme-la précisément.
+- **Exemples en prose détachée** — garde la précision en ligne sur la règle, pas dans un paragraphe séparé.
