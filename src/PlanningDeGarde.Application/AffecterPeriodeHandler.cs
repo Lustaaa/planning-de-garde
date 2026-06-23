@@ -20,7 +20,11 @@ public sealed class AffecterPeriodeHandler
 
     public Result<PeriodeSnapshot> Handle(AffecterPeriodeCommand commande)
     {
-        var periode = PeriodeDeGarde.Affecter(commande.ResponsableId, commande.Debut, commande.Fin);
+        var affectation = PeriodeDeGarde.Affecter(commande.ResponsableId, commande.Debut, commande.Fin);
+        if (!affectation.EstSucces)
+            return Result<PeriodeSnapshot>.Echec(affectation.Motif!);
+
+        var periode = affectation.Valeur!;
         _periodes.Enregistrer(periode);
         return Result<PeriodeSnapshot>.Succes(periode.ToSnapshot());
     }

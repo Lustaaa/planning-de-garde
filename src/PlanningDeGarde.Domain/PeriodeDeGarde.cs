@@ -24,8 +24,13 @@ public sealed class PeriodeDeGarde
         _fin = fin;
     }
 
-    public static PeriodeDeGarde Affecter(string responsableId, DateTime debut, DateTime fin)
-        => new(responsableId, debut, fin);
+    public static Result<PeriodeDeGarde> Affecter(string responsableId, DateTime debut, DateTime fin)
+    {
+        if (string.IsNullOrWhiteSpace(responsableId))
+            return Result<PeriodeDeGarde>.Echec("Un responsable est requis pour la période de garde.");
+
+        return Result<PeriodeDeGarde>.Succes(new PeriodeDeGarde(responsableId, debut, fin));
+    }
 
     public PeriodeSnapshot ToSnapshot() => new(_responsableId, _debut, _fin);
 }

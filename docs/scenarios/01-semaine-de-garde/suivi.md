@@ -18,7 +18,7 @@
 | 5 | [Chevauchement de localisation](05-chevauchement-localisation.md) | `@limite` | ✅ GREEN | 3/3 | ✅ GREEN |
 | 6 | [Un Invité tente d'éditer un slot](06-invite-edition-refusee.md) | `@erreur` | ✅ GREEN | 3/3 | ✅ GREEN |
 | 7 | [Affecter la responsabilité d'une période](07-affecter-periode.md) | `@nominal` | ✅ GREEN | 4/4 | ✅ GREEN |
-| 8 | [Période sans responsable refusée](08-periode-sans-responsable.md) | `@erreur` | ⏳ Pending | 0/2 | ⏳ Pending |
+| 8 | [Période sans responsable refusée](08-periode-sans-responsable.md) | `@erreur` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 9 | [Bornes de période paramétrables](09-bornes-parametrables.md) | `@limite` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 10 | [Édition concurrente d'une période](10-edition-concurrente.md) | `@erreur` | ⏳ Pending | 0/3 | ⏳ Pending |
 | 11 | [Définir le transfert de bascule](11-definir-transfert.md) | `@nominal` | ⏳ Pending | 0/4 | ⏳ Pending |
