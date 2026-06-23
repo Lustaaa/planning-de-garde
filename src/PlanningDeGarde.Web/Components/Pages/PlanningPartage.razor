@@ -1,0 +1,127 @@
+@page "/planning"
+@implements IAsyncDisposable
+@inject ISlotRepository Slots
+@inject IPeriodeRepository Periodes
+@inject ITransfertRepository Transferts
+@inject JourneeEnfantQuery JourneeEnfant
+@inject ResponsabiliteQuery Responsabilite
+@inject DeplacerSlotHandler DeplacerSlot
+@inject SessionPlanning Session
+@inject NavigationManager Nav
+
+<PageTitle>Planning partagé</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="m-0">Planning partagé du foyer</h1>
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted">Rôle :</span>
+        <select class="form-select form-select-sm w-auto" @bind="RoleSelectionne">
+            <option value="@RoleAuteur.Parent">Parent</option>
+            <option value="@RoleAuteur.Invite">Invité (consultation seule)</option>
+        </select>
+    </div>
+</div>
+
+@if (!Session.EstParent)
+{
+    <div class="alert alert-info py-2">Vous consultez en lecture seule. Les actions d'édition sont désactivées.</div>
+}
+
+<div class="mb-3 d-flex gap-2">
+    <a class="btn btn-primary @Desactive" href="planning/poser-slot">Poser un slot</a>
+    <a class="btn btn-primary @Desactive" href="planning/affecter-periode">Affecter une période</a>
+    <a class="btn btn-primary @Desactive" href="planning/definir-transfert">Définir un transfert</a>
+</div>
+
+@if (_messageAction is not null)
+{
+    <div class="alert @(_actionReussie ? "alert-success" : "alert-danger") py-2">@_messageAction</div>
+}
+
+<section class="mb-4">
+    <h2 class="h5">Localisation — slots de @Session.EnfantId</h2>
+    @if (_slots.Count == 0)
+    {
+        <p class="text-muted">Aucun slot.</p>
+    }
+    else
+    {
+        <table class="table table-sm align-middle">
+            <thead>
+                <tr><th>Enfant</th><th>Lieu</th><th>Début</th><th>Fin</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var slot in _slots)
+                {
+                    <tr>
+                        <td>@slot.EnfantId</td>
+                        <td>@slot.LieuId</td>
+                        <td>@slot.Debut.ToString("dd/MM HH:mm")</td>
+                        <td>@slot.Fin.ToString("dd/MM HH:mm")</td>
+                        <td>
+                            @if (Session.EstParent)
+                            {
+                                <div class="d-flex gap-1">
+                                    <select class="form-select form-select-sm w-auto"
+                                            @onchange="e => DeplacerVers(slot, e.Value?.ToString())">
+                                        <option value="">Déplacer vers…</option>
+                                        @foreach (var lieu in Foyer.Lieux)
+                                        {
+                                            <option value="@lieu">@lieu</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
+
+    @foreach (var jour in _joursAvecChevauchement)
+    {
+        <div class="alert alert-warning py-2" role="alert" data-testid="avertissement-chevauchement">
+            Avertissement : chevauchement entre les slots de @Session.EnfantId le @jour.ToString("dd/MM").
+        </div>
+    }
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Responsabilité — périodes de garde</h2>
+    @if (_periodes.Count == 0)
+    {
+        <p class="text-muted">Aucune période.</p>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var p in _periodes)
+            {
+                <li class="list-group-item">
+                    @p.ResponsableId responsable du @p.Debut.ToString("dd/MM") au @p.Fin.ToString("dd/MM")
+                </li>
+            }
+        </ul>
+    }
+</section>
+
+<section class="mb-4">
+    <h2 class="h5">Transferts de bascule</h2>
+    @if (_transferts.Count == 0)
+    {
+        <p class="text-muted">Aucun transfert.</p>
+    }
+    else
+    {
+        <ul class="list-group">
+            @foreach (var t in _transferts)
+            {
+                <li class="list-group-item">
+                    dépose @t.DeposeParId → récupère @t.RecupereParId, @t.LieuId,
+                    @t.Heure.ToString(@"hh\h") le @t.Date.ToString("dd/MM")
+                </li>
+            }
+        </ul>
+    }
+</section>

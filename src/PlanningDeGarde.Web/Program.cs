@@ -1,3 +1,4 @@
+using PlanningDeGarde.Infrastructure;
 using PlanningDeGarde.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +6,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddSignalR();
+
+// Application + Infrastructure (persistance en mémoire, SignalR réel, use cases).
+builder.Services.AjouterPlanningDeGarde();
+
+// État de session de consultation (rôle, enfant affiché) — par circuit Blazor.
+builder.Services.AddScoped<PlanningDeGarde.Web.State.SessionPlanning>();
 
 var app = builder.Build();
 
@@ -23,5 +32,7 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapHub<PlanningHub>("/hubs/planning");
 
 app.Run();
