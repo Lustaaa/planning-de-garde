@@ -29,21 +29,29 @@
 > Interface donnée au comportement déjà couvert. Les composants appellent les use cases
 > et rendent leur `Result<T>` — aucune règle métier dans l'UI, aucune dépendance inverse.
 
-| Vue / composant | Use case(s) consommé(s) | Scénarios servis |
+Le planning partagé est le **hub** : lecture (slots / périodes / transferts), avertissements,
+responsable courant, et toutes les actions d'écriture accessibles (boutons + édition inline).
+
+| Vue / composant | Use case(s) / read model(s) consommé(s) | Scénarios servis |
 |---|---|---|
-| `PlanningPartage.razor` (`/planning`) | lecture slots/périodes/transferts + `JourneeEnfantQuery` (chevauchement) + `ResponsabiliteQuery` ; `DeplacerSlotHandler` (action inline + garde Invité) | 1, 3, 5, 6, 7, 9, 11 |
+| `PlanningPartage.razor` (`/planning`) | `JourneeEnfantQuery` (avertissement chevauchement) + `ResponsabiliteQuery` (« Responsable maintenant ») ; `DeplacerSlotHandler` (déplacement inline + garde Invité) ; `ModifierPeriodeHandler` (édition inline d'une période + motif « recharger » sur état périmé) | 1, 3, 5, 6, 7, 9, 10, 11 |
 | `PoserSlot.razor` (`/planning/poser-slot`) | `PoserSlotHandler` | 1, 2, 3, 4 |
 | `AffecterPeriode.razor` (`/planning/affecter-periode`) | `AffecterPeriodeHandler` | 7, 8, 9 |
 | `DefinirTransfert.razor` (`/planning/definir-transfert`) | `DefinirTransfertHandler` | 11, 12 |
+
+**Exhaustivité (tous câblés depuis l'UI)** — handlers : `PoserSlotHandler`, `DeplacerSlotHandler`,
+`AffecterPeriodeHandler`, `ModifierPeriodeHandler`, `DefinirTransfertHandler` ; read models :
+`JourneeEnfantQuery`, `ResponsabiliteQuery`.
 
 **Port temps réel réel** — `SignalRNotificateurPlanning : INotificateurPlanning` (Infrastructure),
 poussant l'évènement `MiseAJour` via `PlanningHub` (mappé sur `/hubs/planning`). Remplace le
 fake des scénarios. Persistance réelle : repos `InMemory*` (singletons = source de vérité du
 foyer) + `Foyer*Repository` (référentiel lieux/responsables). DI : `AjouterPlanningDeGarde()`.
 
-**Tests UI** — projet `PlanningDeGarde.Web.Tests` (bUnit) : 4 tests verts (pose réussie +
-notification, lieu inexistant via Result, garde Invité, transfert incomplet via Result). On ne
-double que les ports (notificateur), jamais le domaine.
+**Tests UI** — projet `PlanningDeGarde.Web.Tests` (bUnit) : 8 tests verts — pose réussie +
+notification, lieu inexistant via Result, garde Invité (pose), transfert incomplet via Result,
+édition de période sur état à jour, édition rejetée sur état périmé (motif « recharger »),
+avertissement de chevauchement, responsable actuel affiché. On ne double que les ports.
 
-**Build** : `dotnet build PlanningDeGarde.slnx` → 0 erreur · **Suite** : 47/47 verts (43 backend + 4 UI).
+**Build** : `dotnet build PlanningDeGarde.slnx` → 0 erreur · **Suite** : 51/51 verts (43 backend + 8 UI).
 **Lancement** : `pwsh .claude/skills/run/scripts/run.ps1`.

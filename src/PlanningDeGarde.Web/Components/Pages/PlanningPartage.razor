@@ -6,6 +6,7 @@
 @inject JourneeEnfantQuery JourneeEnfant
 @inject ResponsabiliteQuery Responsabilite
 @inject DeplacerSlotHandler DeplacerSlot
+@inject ModifierPeriodeHandler ModifierPeriode
 @inject SessionPlanning Session
 @inject NavigationManager Nav
 
@@ -89,6 +90,22 @@
 
 <section class="mb-4">
     <h2 class="h5">Responsabilité — périodes de garde</h2>
+
+    <p class="mb-2" data-testid="responsable-actuel">
+        Responsable maintenant :
+        <strong>@(_responsableActuel ?? "— aucun")</strong>
+    </p>
+
+    @if (_motifEditionPeriode is not null)
+    {
+        <div class="alert alert-danger py-2" data-testid="motif-edition-periode">
+            @_motifEditionPeriode
+            <button type="button" class="btn btn-sm btn-outline-light ms-2" @onclick="RechargerPeriodes">
+                Recharger l'état à jour
+            </button>
+        </div>
+    }
+
     @if (_periodes.Count == 0)
     {
         <p class="text-muted">Aucune période.</p>
@@ -99,7 +116,47 @@
             @foreach (var p in _periodes)
             {
                 <li class="list-group-item">
-                    @p.ResponsableId responsable du @p.Debut.ToString("dd/MM") au @p.Fin.ToString("dd/MM")
+                    @if (_periodeEnEdition is not null && _periodeEnEdition.Equals(p))
+                    {
+                        <div class="row g-2 align-items-end">
+                            <div class="col-auto">
+                                <label class="form-label small mb-0">Responsable</label>
+                                <select class="form-select form-select-sm" @bind="_editResponsableId">
+                                    @foreach (var r in Foyer.Responsables)
+                                    {
+                                        <option value="@r">@r</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-auto">
+                                <label class="form-label small mb-0">Début</label>
+                                <input type="date" class="form-control form-control-sm"
+                                       @bind="_editDebut" @bind:format="yyyy-MM-dd" />
+                            </div>
+                            <div class="col-auto">
+                                <label class="form-label small mb-0">Fin</label>
+                                <input type="date" class="form-control form-control-sm"
+                                       @bind="_editFin" @bind:format="yyyy-MM-dd" />
+                            </div>
+                            <div class="col-auto">
+                                <button type="button" class="btn btn-sm btn-success"
+                                        @onclick="EnregistrerEditionPeriode">Enregistrer</button>
+                                <button type="button" class="btn btn-sm btn-secondary"
+                                        @onclick="AnnulerEditionPeriode">Annuler</button>
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>@p.ResponsableId responsable du @p.Debut.ToString("dd/MM") au @p.Fin.ToString("dd/MM")</span>
+                            @if (Session.EstParent)
+                            {
+                                <button type="button" class="btn btn-sm btn-outline-primary"
+                                        @onclick="() => OuvrirEditionPeriode(p)">Modifier</button>
+                            }
+                        </div>
+                    }
                 </li>
             }
         </ul>
