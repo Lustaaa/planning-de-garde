@@ -22,7 +22,11 @@ public sealed class PoserSlotHandler
 
     public Result<SlotSnapshot> Handle(PoserSlotCommand commande)
     {
-        var slot = SlotDeLocalisation.Poser(commande.EnfantId, commande.LieuId, commande.Debut, commande.Fin);
+        var pose = SlotDeLocalisation.Poser(commande.EnfantId, commande.LieuId, commande.Debut, commande.Fin);
+        if (!pose.EstSucces)
+            return Result<SlotSnapshot>.Echec(pose.Motif!);
+
+        var slot = pose.Valeur!;
         _slots.Enregistrer(slot);
         _notificateur.NotifierMiseAJour();
         return Result<SlotSnapshot>.Succes(slot.ToSnapshot());
