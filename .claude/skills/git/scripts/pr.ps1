@@ -22,8 +22,18 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-Location (git rev-parse --show-toplevel)
 
-if (-not (Get-Command gh -ErrorAction SilentlyContinue)) {
-    Write-Error "gh (GitHub CLI) introuvable."
+# Résout gh : PATH d'abord, sinon emplacements d'installation usuels.
+$gh = (Get-Command gh -ErrorAction SilentlyContinue)?.Source
+if (-not $gh) {
+    $candidates = @(
+        "$env:ProgramFiles\GitHub CLI\gh.exe",
+        "${env:ProgramFiles(x86)}\GitHub CLI\gh.exe",
+        "$env:LOCALAPPDATA\Programs\GitHub CLI\gh.exe"
+    )
+    $gh = $candidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+}
+if (-not $gh) {
+    Write-Error "gh (GitHub CLI) introuvable (ni dans PATH ni aux emplacements usuels)."
     exit 1
 }
 
@@ -49,4 +59,4 @@ if ($Body -notmatch [regex]::Escape('Generated with [Claude Code]')) {
 $ghArgs = @('pr', 'create', '--base', 'main', '--title', $Title, '--body', $finalBody)
 if ($Draft) { $ghArgs += '--draft' }
 
-& gh @ghArgs
+& $gh @ghArgs
