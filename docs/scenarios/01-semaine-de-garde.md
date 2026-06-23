@@ -93,7 +93,7 @@ Scenario: Affecter la responsabilité d'une période de garde
   And « Parent A » reste responsable quel que soit le lieu où se trouve Léa pendant la période
 ```
 
-### Scenario 8 — Période sans responsable refusée `@erreur` `@vert`
+### Scenario 8 — Période sans responsable refusée `@erreur` `@vert` <!-- vert — 590862b -->
 
 ```gherkin
 Scenario: Période sans responsable refusée
