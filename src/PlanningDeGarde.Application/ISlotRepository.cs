@@ -8,4 +8,7 @@ public interface ISlotRepository
 {
     void Enregistrer(SlotDeLocalisation slot);
     IReadOnlyList<SlotSnapshot> AllSnapshots();
+
+    /// <summary>Remplace un slot existant (même enfant, même début) par sa version déplacée.</summary>
+    void Remplacer(SlotSnapshot ancien, SlotDeLocalisation nouveau);
 }

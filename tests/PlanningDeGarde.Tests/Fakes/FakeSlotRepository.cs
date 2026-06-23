@@ -16,4 +16,10 @@ public sealed class FakeSlotRepository : ISlotRepository
     public void Enregistrer(SlotDeLocalisation slot) => _slots.Add(slot.ToSnapshot());
 
     public IReadOnlyList<SlotSnapshot> AllSnapshots() => _slots.ToList();
+
+    public void Remplacer(SlotSnapshot ancien, SlotDeLocalisation nouveau)
+    {
+        _slots.Remove(ancien);
+        _slots.Add(nouveau.ToSnapshot());
+    }
 }
