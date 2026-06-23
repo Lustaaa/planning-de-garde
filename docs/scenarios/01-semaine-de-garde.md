@@ -125,7 +125,7 @@ Scenario: Édition concurrente — la modification fondée sur un état périmé
   And le Parent Y est invité à recharger l'état à jour de la période
 ```
 
-### Scenario 11 — Définir le transfert de bascule entre deux parents `@nominal`
+### Scenario 11 — Définir le transfert de bascule entre deux parents `@nominal` `@vert`
 
 ```gherkin
 Scenario: Définir le transfert de bascule

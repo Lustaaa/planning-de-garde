@@ -21,5 +21,5 @@
 | 8 | [Période sans responsable refusée](08-periode-sans-responsable.md) | `@erreur` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 9 | [Bornes de période paramétrables](09-bornes-parametrables.md) | `@limite` | ✅ GREEN | 1/1 | ✅ GREEN |
 | 10 | [Édition concurrente d'une période](10-edition-concurrente.md) | `@erreur` | ✅ GREEN | 3/3 | ✅ GREEN |
-| 11 | [Définir le transfert de bascule](11-definir-transfert.md) | `@nominal` | ⏳ Pending | 0/4 | ⏳ Pending |
+| 11 | [Définir le transfert de bascule](11-definir-transfert.md) | `@nominal` | ✅ GREEN | 4/4 | ✅ GREEN |
 | 12 | [Transfert incomplet refusé](12-transfert-incomplet.md) | `@erreur` | ⏳ Pending | 0/2 | ⏳ Pending |
