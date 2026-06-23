@@ -32,11 +32,17 @@ PREP → [ RED_PHASE → GREEN_PHASE ]× (chaque test unitaire) → SCENARIO_DON
   l'analyse technique.
 - Vérifie la solution .NET. **Si rien n'est scaffoldé** (pas de projets) → **renvoie
   une question de scaffolding** (round-trip), ne scaffolde jamais en silence une
-  arborescence structurante.
-- Écris le **test d'acceptation** (boucle externe) traduisant le scénario
-  (`Given`→arrange via builders/`FromSnapshot`, `When`→act, chaque `Then`→assert
-  observable). Passe la ligne **Acceptation** du `NN-slug.md` à `🔴 RED`, le statut
-  agrégé du scénario dans `suivi.md` à `🔴 RED`, et le tag de cycle du scénario source
+  arborescence structurante. **Au scaffolding, génère aussi le lanceur** :
+  `.claude/skills/run/scripts/run.ps1` + `.claude/skills/run/SKILL.md` (cf. skill
+  `tdd-implement`, étape 2) ciblant le projet Web créé — sauf s'ils existent déjà.
+- Écris le **test d'acceptation** (boucle externe) traduisant le scénario **à la
+  frontière de l'Application** (use case / handler), **jamais** au niveau de l'IHM
+  Blazor (`Given`→arrange via builders/`FromSnapshot`, `When`→act sur le handler,
+  chaque `Then`→assert observable via retour du handler / état du repository fake /
+  **Spy** sur le port de notification). L'**IHM Blazor et le SignalR réel sont
+  repoussés à la phase finale** (`ihm-builder`) — n'écris pas de composant Blazor ici.
+  Passe la ligne **Acceptation** du `NN-slug.md` à `🔴 RED`, le statut agrégé du
+  scénario dans `suivi.md` à `🔴 RED`, et le tag de cycle du scénario source
   `@pending`→`@rouge`.
 
 ### RED_PHASE (par test unitaire de la table)

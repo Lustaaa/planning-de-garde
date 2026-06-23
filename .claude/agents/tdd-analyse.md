@@ -85,6 +85,11 @@ Tous les statuts à `⏳ Pending`.
 - **Ne PAS** sauter EXPLORE — le contexte code rend les design notes utiles et évite
   les doublons.
 - **Ne PAS** inclure de tests d'infra (persistance, HTTP) dans une liste *unit*.
+- **Ne PAS** lister de composants Blazor ni de câblage SignalR réel dans les
+  « Fichiers à créer » — l'IHM est une **phase finale** (agent `ihm-builder`, après
+  tous les scénarios verts). Les `NN-slug.md` ne couvrent que domaine / application /
+  ports doublés / tests ; la notification temps réel se vérifie par un **Spy** sur le
+  port, signalé en design note.
 
 ## Sortie (JSON seul, aucun texte autour)
 

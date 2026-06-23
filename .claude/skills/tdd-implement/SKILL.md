@@ -11,6 +11,11 @@ Implémenter un fichier de scénarios `make-gherkin` en **BDD + TDD**, **un scé
 à la fois**. C'est la 3ᵉ pipeline : entrée = `docs/scenarios/<sujet>.md`,
 sortie = du code testé, commité scénario par scénario.
 
+**Backend d'abord, IHM en fin.** Les scénarios couvrent le **backend** (domaine +
+use cases + ports doublés), l'acceptation s'arrêtant à la frontière de l'Application.
+L'**IHM Blazor** (vues + câblage SignalR réel) est construite en **une phase finale**,
+une fois tous les scénarios verts (cf. « Phase IHM finale »).
+
 **Principe central — la double boucle :**
 - **Boucle externe (BDD)** : chaque `Scenario N` Gherkin devient un **test
   d'acceptation exécutable** (Given/When/Then mappés 1:1). Il échoue d'abord, et
@@ -92,9 +97,19 @@ toute facilité d'implémentation.
    encore été scaffoldé → **pose la question de scaffolding** (round-trip) :
    structure des projets (backend, Blazor, tests), avant d'écrire le moindre test.
    Ne scaffolde jamais en silence une arborescence structurante.
+   - **Au scaffolding, génère aussi le lanceur** : le script
+     `.claude/skills/run/scripts/run.ps1` (build + démarrage de l'hôte Blazor) et le
+     skill `.claude/skills/run/SKILL.md` qui l'enrobe, pour lancer l'appli d'une
+     commande (`pwsh .claude/skills/run/scripts/run.ps1`). Cible le projet Web réel
+     créé. (S'ils existent déjà, ne les recrée pas.)
 
 3. **Boucle externe (BDD) — écris le test d'acceptation rouge.** Traduis le
-   scénario cible en un test exécutable :
+   scénario cible en un test exécutable **à la frontière de l'Application**
+   (use case / handler), **pas** au niveau de l'IHM Blazor. Pendant les scénarios on
+   ne construit **que le backend** (domaine + use cases + ports doublés) ; l'**IHM
+   Blazor et le câblage SignalR réel sont repoussés à la phase finale** (cf. « Phase
+   IHM finale »). L'observable d'un `Then` se vérifie donc via le retour du handler,
+   l'état exposé du repository (fake), ou un **Spy** sur le port de notification.
    - `Given` → arrange (Fakes / Givens, état initial) via **builders / `FromSnapshot`**,
      jamais via le mutateur métier testé (cf. *Discipline DDD*).
    - `When` → act (l'action déclenchée).
@@ -117,11 +132,11 @@ toute facilité d'implémentation.
      changer le comportement → tu mockes trop.
    - **Assertion sur le comportement observable**, via la frontière publique (état
      exposé, valeur de retour, événement émis), **jamais** sur un champ privé.
-   - Temps réel `SignalR` → test d'intégration où un **second client** observe
-     l'état (le critère de succès est l'état vu par l'autre client, pas « ça se
-     met à jour »). **Isolation par test** : infra partagée via fixture coûteuse une
-     fois, mais état **remis à zéro à chaque test** (transaction + rollback, ou
-     client/hub neuf) ; jamais de champ `static` partagé entre tests.
+   - Temps réel `SignalR` **pendant les scénarios** → doublé par un **Spy sur le port
+     de notification** (`INotificateurPlanning`) au niveau use case : on vérifie que la
+     notification est **émise** avec le bon contenu, pas le transport. Le **hub SignalR
+     réel** et le test d'intégration « second client » sont construits en **phase IHM
+     finale** (cf. section dédiée).
 
 4. **Confirme le ROUGE.** Lance le test → il **doit** échouer.
    - **EARLY GREEN** : s'il passe d'emblée, le test n'observe rien (ou le
@@ -197,6 +212,30 @@ toute facilité d'implémentation.
 9. **Checkpoint.** Rends la main avec le récap (rouge → vert → commit). Sur une
    **ambiguïté technique réelle** (choix structurant non tranché par l'analyse
    technique), pose une question (round-trip) plutôt que de deviner en silence.
+
+## Phase IHM finale
+
+Le front **Blazor n'est pas construit scénario par scénario** : pendant la boucle BDD,
+chaque scénario s'arrête à la frontière de l'Application (use cases + ports doublés).
+Une fois **tous les scénarios `@vert`** (backend complet, suite verte), une **phase
+dédiée** donne l'interface au comportement déjà couvert :
+
+- **Déclencheur** : tous les scénarios du fichier portent `@vert` et la colonne
+  `Statut` du `suivi.md` est `✅ GREEN` partout. Tant qu'un scénario manque, l'IHM est
+  prématurée.
+- **Exécutant** : l'agent `ihm-builder` (cf. `.claude/agents/ihm-builder.md`),
+  dispatché par la command `/3-tdd-implement` après le dernier scénario.
+- **Contenu** : composants Blazor fins qui **appellent les use cases** (aucune règle
+  métier dans l'UI), puis **câblage SignalR réel** — les ports temps réel doublés par
+  un Spy pendant les scénarios (`INotificateurPlanning`) reçoivent leur implémentation
+  hub en Infrastructure/Web. Tests de composant `bUnit` et/ou E2E pour les parcours
+  clés ; on ne double que les ports, jamais le domaine.
+- **Vérification** : `dotnet build` vert + suite complète verte (aucune régression
+  backend) ; validation visuelle via le skill `run`
+  (`pwsh .claude/skills/run/scripts/run.ps1`). Puis commit dédié de l'IHM.
+
+Clean Archi maintenue : l'UI dépend de l'Application, jamais l'inverse ; le domaine
+reste sans framework.
 
 ## États du scénario (cycle de vie du test)
 

@@ -59,6 +59,18 @@ scénario.
 6. **Boucle.** Si l'utilisateur valide, relance `tdd-auto` pour le scénario suivant
    (même `agentId`). Sinon, stoppe.
 
+7. **Phase IHM finale (agent `ihm-builder`).** **Uniquement quand tous les scénarios
+   sont `✅ GREEN`** dans le `suivi.md` (backend complet). Propose la construction de
+   l'IHM via `AskUserQuestion` ; si l'utilisateur valide, dispatche `ihm-builder` avec
+   le chemin du fichier de scénarios + le dossier de suivi.
+   - **Fallback** : type absent → `general-purpose` avec « applique la phase IHM finale
+     du skill `tdd-implement` (cf. agent ihm-builder) » + les chemins. Pas d'inline.
+   - `{ "type": "question", … }` → `AskUserQuestion` (telle quelle) → `SendMessage`
+     (réponse brute). Répète.
+   - `{ "type": "ihm", … }` → l'IHM est construite (vues + SignalR réel, build + suite
+     verts, commit). Présente le récap **verbatim** + la commande de lancement
+     (`pwsh .claude/skills/run/scripts/run.ps1`).
+
 ## Notes
 
 - **Relais pur** : si tu te surprends à analyser, écrire un test, lire le code ou
@@ -72,4 +84,9 @@ scénario.
   Pas d'implémentation en bloc.
 - Le test d'acceptation **doit** échouer d'abord (rouge), sinon il n'observe rien.
 - Relance la suite complète avant chaque commit (non-régression).
+- **Backend d'abord, IHM en fin** : les scénarios s'arrêtent à la frontière de
+  l'Application (use cases + ports doublés) ; l'IHM Blazor + SignalR réel sont une
+  **phase finale** (`ihm-builder`, étape 7) après le dernier scénario vert.
+- **Lanceur** : au scaffolding, `tdd-auto` génère `.claude/skills/run/` (script +
+  skill `/run`) pour lancer l'appli d'une commande.
 - Entrée attendue : un fichier produit par `make-gherkin`.
