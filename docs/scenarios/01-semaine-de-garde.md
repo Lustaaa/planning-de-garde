@@ -38,7 +38,7 @@ Scenario: Slot de durée nulle refusé
   And aucun slot « Léa à l'école le 15/07 » n'apparaît dans le planning partagé
 ```
 
-### Scenario 3 — Slot de nuit franchissant minuit `@limite` `@vert`
+### Scenario 3 — Slot de nuit franchissant minuit `@limite` `@vert` <!-- vert — 14822ad -->
 
 ```gherkin
 Scenario: Slot de nuit franchissant minuit
