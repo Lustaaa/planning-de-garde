@@ -16,4 +16,14 @@ public sealed class FakePeriodeRepository : IPeriodeRepository
     public void Enregistrer(PeriodeDeGarde periode) => _periodes.Add(periode.ToSnapshot());
 
     public IReadOnlyList<PeriodeSnapshot> AllSnapshots() => _periodes.ToList();
+
+    public bool Modifier(PeriodeSnapshot baseObservee, PeriodeSnapshot modification)
+    {
+        var index = _periodes.IndexOf(baseObservee);
+        if (index < 0)
+            return false; // état périmé : la base observée n'est plus l'état courant
+
+        _periodes[index] = modification;
+        return true;
+    }
 }
