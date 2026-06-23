@@ -16,7 +16,7 @@ Feature: Semaine de garde — le foyer partage une source de vérité à deux ax
 **où est l'enfant** (slots de localisation à l'horaire fin). Le planning reflète
 l'état et notifie les autres membres en temps réel.
 
-### Scenario 1 — Un Parent pose un slot de localisation `@nominal` `@vert` <!-- vert — a221501 -->
+### Scenario 1 — Un Parent pose un slot de localisation `@nominal` `@vert` <!-- vert — 1d635ea -->
 
 ```gherkin
 Scenario: Un Parent pose un slot de localisation
