@@ -60,7 +60,7 @@ Scenario: Lieu inexistant
   And aucun slot « Léa le 15/07 » n'apparaît dans le planning partagé
 ```
 
-### Scenario 5 — Chevauchement de localisation pour le même enfant `@limite` `@vert`
+### Scenario 5 — Chevauchement de localisation pour le même enfant `@limite` `@vert` <!-- vert — 4272015 -->
 
 ```gherkin
 Scenario: Chevauchement de localisation — créé mais signalé
