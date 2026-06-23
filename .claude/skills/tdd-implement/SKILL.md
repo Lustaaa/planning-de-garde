@@ -11,6 +11,11 @@ Implémenter un fichier de scénarios `make-gherkin` en **BDD + TDD**, **un scé
 à la fois**. C'est la 3ᵉ pipeline : entrée = `docs/scenarios/<sujet>.md`,
 sortie = du code testé, commité scénario par scénario.
 
+**Backend d'abord, IHM en fin.** Les scénarios couvrent le **backend** (domaine +
+use cases + ports doublés), l'acceptation s'arrêtant à la frontière de l'Application.
+L'**IHM Blazor** (vues + câblage SignalR réel) est construite en **une phase finale**,
+une fois tous les scénarios verts (cf. « Phase IHM finale »).
+
 **Principe central — la double boucle :**
 - **Boucle externe (BDD)** : chaque `Scenario N` Gherkin devient un **test
   d'acceptation exécutable** (Given/When/Then mappés 1:1). Il échoue d'abord, et
@@ -92,9 +97,19 @@ toute facilité d'implémentation.
    encore été scaffoldé → **pose la question de scaffolding** (round-trip) :
    structure des projets (backend, Blazor, tests), avant d'écrire le moindre test.
    Ne scaffolde jamais en silence une arborescence structurante.
+   - **Au scaffolding, génère aussi le lanceur** : le script
+     `.claude/skills/run/scripts/run.ps1` (build + démarrage de l'hôte Blazor) et le
+     skill `.claude/skills/run/SKILL.md` qui l'enrobe, pour lancer l'appli d'une
+     commande (`pwsh .claude/skills/run/scripts/run.ps1`). Cible le projet Web réel
+     créé. (S'ils existent déjà, ne les recrée pas.)
 
 3. **Boucle externe (BDD) — écris le test d'acceptation rouge.** Traduis le
-   scénario cible en un test exécutable :
+   scénario cible en un test exécutable **à la frontière de l'Application**
+   (use case / handler), **pas** au niveau de l'IHM Blazor. Pendant les scénarios on
+   ne construit **que le backend** (domaine + use cases + ports doublés) ; l'**IHM
+   Blazor et le câblage SignalR réel sont repoussés à la phase finale** (cf. « Phase
+   IHM finale »). L'observable d'un `Then` se vérifie donc via le retour du handler,
+   l'état exposé du repository (fake), ou un **Spy** sur le port de notification.
    - `Given` → arrange (Fakes / Givens, état initial) via **builders / `FromSnapshot`**,
      jamais via le mutateur métier testé (cf. *Discipline DDD*).
    - `When` → act (l'action déclenchée).
@@ -117,11 +132,11 @@ toute facilité d'implémentation.
      changer le comportement → tu mockes trop.
    - **Assertion sur le comportement observable**, via la frontière publique (état
      exposé, valeur de retour, événement émis), **jamais** sur un champ privé.
-   - Temps réel `SignalR` → test d'intégration où un **second client** observe
-     l'état (le critère de succès est l'état vu par l'autre client, pas « ça se
-     met à jour »). **Isolation par test** : infra partagée via fixture coûteuse une
-     fois, mais état **remis à zéro à chaque test** (transaction + rollback, ou
-     client/hub neuf) ; jamais de champ `static` partagé entre tests.
+   - Temps réel `SignalR` **pendant les scénarios** → doublé par un **Spy sur le port
+     de notification** (`INotificateurPlanning`) au niveau use case : on vérifie que la
+     notification est **émise** avec le bon contenu, pas le transport. Le **hub SignalR
+     réel** et le test d'intégration « second client » sont construits en **phase IHM
+     finale** (cf. section dédiée).
 
 4. **Confirme le ROUGE.** Lance le test → il **doit** échouer.
    - **EARLY GREEN** : s'il passe d'emblée, le test n'observe rien (ou le
@@ -198,6 +213,30 @@ toute facilité d'implémentation.
    **ambiguïté technique réelle** (choix structurant non tranché par l'analyse
    technique), pose une question (round-trip) plutôt que de deviner en silence.
 
+## Phase IHM finale
+
+Le front **Blazor n'est pas construit scénario par scénario** : pendant la boucle BDD,
+chaque scénario s'arrête à la frontière de l'Application (use cases + ports doublés).
+Une fois **tous les scénarios `@vert`** (backend complet, suite verte), une **phase
+dédiée** donne l'interface au comportement déjà couvert :
+
+- **Déclencheur** : tous les scénarios du fichier portent `@vert` et la colonne
+  `Statut` du `suivi.md` est `✅ GREEN` partout. Tant qu'un scénario manque, l'IHM est
+  prématurée.
+- **Exécutant** : l'agent `ihm-builder` (cf. `.claude/agents/ihm-builder.md`),
+  dispatché par la command `/3-tdd-implement` après le dernier scénario.
+- **Contenu** : composants Blazor fins qui **appellent les use cases** (aucune règle
+  métier dans l'UI), puis **câblage SignalR réel** — les ports temps réel doublés par
+  un Spy pendant les scénarios (`INotificateurPlanning`) reçoivent leur implémentation
+  hub en Infrastructure/Web. Tests de composant `bUnit` et/ou E2E pour les parcours
+  clés ; on ne double que les ports, jamais le domaine.
+- **Vérification** : `dotnet build` vert + suite complète verte (aucune régression
+  backend) ; validation visuelle via le skill `run`
+  (`pwsh .claude/skills/run/scripts/run.ps1`). Puis commit dédié de l'IHM.
+
+Clean Archi maintenue : l'UI dépend de l'Application, jamais l'inverse ; le domaine
+reste sans framework.
+
 ## États du scénario (cycle de vie du test)
 
 Chaque scénario garde son **tag de type** permanent (`@nominal` / `@limite` /
@@ -239,21 +278,43 @@ stateDiagram-v2
 Reprise après interruption : un scénario laissé `@pending` ou `@rouge` est repris
 au prochain run (il n'a pas de `@vert`) ; l'agent repart de l'état observé.
 
-## Rendu de suivi (`docs/scenarios/<sujet>.suivi.md`)
+## Rendu de suivi (`docs/scenarios/<sujet>/`)
 
 Le pipeline se joue à **deux agents** : `tdd-analyse` (analyse seule) produit le
-**markdown de suivi**, `tdd-auto` (exécution autonome) **met à jour ses cellules de
-statut en direct**. C'est le tableau de bord d'avancement — un fichier par sujet,
-nommé d'après le fichier de scénarios source (`NN-<sujet>.md` → `NN-<sujet>.suivi.md`).
+**dossier de suivi**, `tdd-auto` (exécution autonome) **met à jour ses cellules de
+statut en direct**. C'est le tableau de bord d'avancement — **un répertoire par
+sujet**, nommé d'après le fichier de scénarios source sans extension
+(`NN-<sujet>.md` → répertoire `NN-<sujet>/`), contenant :
 
-**Format** (écrit par `tdd-analyse`) :
+- **`suivi.md`** — tableau de bord global : cadrage scaffolding + une ligne par
+  scénario avec le **compte de tests** (`X/N` verts) et le statut agrégé. C'est ce que
+  lit le thread principal pour suivre l'avancement.
+- **`NN-slug.md`** — **un fichier par scénario Gherkin** (numéro + slug kebab-case du
+  titre, ex. `01-poser-slot.md`) : le détail (acceptation BDD, table TPP/FLFI,
+  fichiers à créer, design notes) **et** les statuts par test, tenus par `tdd-auto`.
+
+**Format `suivi.md`** (écrit par `tdd-analyse`) :
 
 ````markdown
 # Suivi TDD — <Sujet>
 
 > Source : `docs/scenarios/NN-<sujet>.md` · produit par tdd-analyse, suivi par tdd-auto.
+> Détail par scénario dans les fichiers `NN-slug.md` de ce répertoire.
 
-## Scénario 1 — <titre> `@nominal`
+> **Cadrage scaffolding** — <solution/projets, convention de refus Result vs exception…>
+
+| # | Scénario | Tag | Acceptation | Tests | Statut |
+|---|---|---|---|---|---|
+| 1 | [<titre>](01-slug.md) | `@nominal` | ⏳ | 0/3 | ⏳ Pending |
+| 2 | [<titre>](02-slug.md) | `@erreur` | ⏳ | 0/2 | ⏳ Pending |
+````
+
+**Format `NN-slug.md`** (un par scénario, écrit par `tdd-analyse`) :
+
+````markdown
+# Scénario N — <titre> `@nominal`
+
+> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/NN-<sujet>.md`
 
 **Acceptation (BDD)** : `Should_<résultat métier final>_When_<conditions>` — ⏳ Pending
 
@@ -264,12 +325,9 @@ nommé d'après le fichier de scénarios source (`NN-<sujet>.md` → `NN-<sujet>
 
 **Fichiers à créer** : <chemins relatifs>
 **Design notes** : <réutilisations, fakes, conventions — 1 puce / insight>
-
-## Scénario 2 — <titre> `@limite`
-…
 ````
 
-**Valeurs de statut** (cellule `Status` + ligne Acceptation) :
+**Valeurs de statut** (cellule `Status` + ligne Acceptation + colonne `Statut` du suivi) :
 
 | Statut | Sens |
 |---|---|
@@ -278,13 +336,19 @@ nommé d'après le fichier de scénarios source (`NN-<sujet>.md` → `NN-<sujet>
 | `✅ GREEN` | test passé après un vrai cycle RED → GREEN |
 | `⚠️ EARLY GREEN` | passé au 1er lancement sans code neuf (comportement déjà couvert / doublon) |
 
+La colonne `Statut` du `suivi.md` est **agrégée** : `⏳ Pending` tant qu'aucun test
+n'est vert, `🔴 RED` dès qu'un cycle est en cours, `✅ GREEN` quand tous les tests
+**et** l'acceptation du scénario sont verts.
+
 **Discipline de mise à jour (obligatoire pour `tdd-auto`)** : avant tout rapport ou
-passage au test suivant, **Edit le fichier de suivi sur disque** — `⏳ → 🔴` dès le
-rouge atteint, `🔴 → ✅` (ou `⚠️ EARLY GREEN`) dès le vert. Sauter cet Edit, ou
-marquer `✅` un early-green, est une violation : le tableau de bord doit refléter
-l'état réel à tout instant. Cette mise à jour est **distincte** du tag de cycle
-`@rouge`/`@vert` dans le fichier de scénarios source (cf. cycle de vie ci-dessus) ;
-les deux sont tenus en parallèle.
+passage au test suivant, **Edit sur disque** — (1) dans le **`NN-slug.md` du scénario
+courant**, la cellule `Status` du test : `⏳ → 🔴` dès le rouge atteint, `🔴 → ✅`
+(ou `⚠️ EARLY GREEN`) dès le vert, et la ligne `Acceptation` ; (2) dans le **`suivi.md`**,
+le compte `X/N` et le statut agrégé du scénario. Sauter un de ces Edits, ou marquer
+`✅` un early-green, est une violation : le tableau de bord doit refléter l'état réel
+à tout instant. Ces mises à jour sont **distinctes** du tag de cycle `@rouge`/`@vert`
+dans le fichier de scénarios source (cf. cycle de vie ci-dessus) ; tous sont tenus en
+parallèle.
 
 ## Mode agent (orchestré)
 

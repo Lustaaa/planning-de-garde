@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/PlanningDeGarde.Application/PlanningDeGarde.Application.csproj" />
+    <Project Path="src/PlanningDeGarde.Domain/PlanningDeGarde.Domain.csproj" />
+    <Project Path="src/PlanningDeGarde.Infrastructure/PlanningDeGarde.Infrastructure.csproj" />
+    <Project Path="src/PlanningDeGarde.Web/PlanningDeGarde.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/PlanningDeGarde.Tests/PlanningDeGarde.Tests.csproj" />
+  </Folder>
+</Solution>
