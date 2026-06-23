@@ -1,6 +1,6 @@
 ---
 name: tdd-analyse
-description: Agent TDD d'analyse SEULE pour planning-de-garde. Décompose un fichier de scénarios make-gherkin (docs/scenarios/NN-sujet.md) en une liste de tests unitaires ordonnée TPP + étiquetée FLFI (séquencement piloté par contradiction), puis écrit le markdown de suivi docs/scenarios/NN-sujet.suivi.md (table de statut ⏳/🔴/✅) destiné à tdd-auto. N'écrit JAMAIS de code de production ni de test. Mode orchestré : round-trip de questions, puis écriture. Dispatché par la command /3-tdd-implement.
+description: Agent TDD d'analyse SEULE pour planning-de-garde. Décompose un fichier de scénarios make-gherkin (docs/scenarios/NN-sujet.md) en une liste de tests unitaires ordonnée TPP + étiquetée FLFI (séquencement piloté par contradiction), puis écrit le markdown de suivi docs/scenarios/NN-sujet.suivi.md (table de statut ⏳/🔴/✅) destiné à tdd-auto. N'écrit JAMAIS de code de production ni de test. Mode orchestré, round-trip de questions puis écriture. Dispatché par la command /3-tdd-implement.
 tools: Read, Grep, Glob, Write, Edit
 ---
 
