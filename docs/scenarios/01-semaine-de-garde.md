@@ -48,7 +48,7 @@ Scenario: Slot de nuit franchissant minuit
   Then le slot « Léa au domicile A 22h–7h du 15/07 au 16/07 » apparaît dans le planning partagé
 ```
 
-### Scenario 4 — Lieu inexistant `@erreur` `@vert`
+### Scenario 4 — Lieu inexistant `@erreur` `@vert` <!-- vert — 9f6982b -->
 
 ```gherkin
 Scenario: Lieu inexistant
