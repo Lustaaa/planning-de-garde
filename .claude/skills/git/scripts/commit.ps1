@@ -24,6 +24,9 @@ if ($branch -in @('main', 'master')) {
     exit 1
 }
 
+# Via `pwsh -File`, un [string[]] arrive comme chaîne unique : redécoupe sur virgules.
+$Files = $Files | ForEach-Object { $_ -split ',' } | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+
 if (-not $Files -or $Files.Count -eq 0) {
     Write-Error "Aucun fichier fourni. Staging sélectif obligatoire (pas de git add -A)."
     exit 1

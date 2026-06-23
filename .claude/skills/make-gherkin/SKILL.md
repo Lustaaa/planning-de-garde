@@ -8,7 +8,7 @@ description: À utiliser pour transformer une spec fonctionnelle (docs/01-specif
 ## Vue d'ensemble
 
 Une passe de **testabilité + amorce d'implémentation**. Tu pars d'une spec
-fonctionnelle déjà challengée (sortie de `/spec`) et tu produis **un seul fichier**
+fonctionnelle déjà challengée (sortie de `/1-spec`) et tu produis **un seul fichier**
 qui mêle : une **analyse technique légère** (orientée implémentation) et des
 **scénarios Gherkin numérotés** (nominal / limite / erreur).
 
@@ -28,7 +28,7 @@ technique reste **légère** : juste de quoi amorcer `tdd-implement`.
 
 ## Quand l'utiliser
 
-- Après `/spec`, pour préparer l'implémentation BDD+TDD.
+- Après `/1-spec`, pour préparer l'implémentation BDD+TDD.
 - Quand une règle de gestion est trop vague pour être testée telle quelle.
 
 ## Processus

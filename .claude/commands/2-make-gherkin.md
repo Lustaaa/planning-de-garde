@@ -3,7 +3,7 @@ description: Transforme la spec fonctionnelle (docs/) en un fichier d'analyse te
 argument-hint: "[sujet ou feature à scénariser] (optionnel)"
 ---
 
-# /make-gherkin — Analyse & scénarios Gherkin
+# /2-make-gherkin — Analyse & scénarios Gherkin
 
 **Tout le travail vit dans le subagent `make-gherkin`.** Toi (thread principal) tu
 es un **relais pur** : tu ne lis pas la spec, tu ne nommes pas les tensions, tu ne
@@ -65,5 +65,5 @@ Sujet (optionnel) : $ARGUMENTS
   ` ```gherkin `**. Numérotation continue ; chaque scénario autonome (pas de
   `Background:`).
 - L'analyse technique du fichier reste **légère** (amorce d'implémentation).
-- Entrée attendue : une spec déjà produite par `/spec`.
+- Entrée attendue : une spec déjà produite par `/1-spec`.
 - Ce fichier sera l'entrée de la future pipeline `tdd-implement`.

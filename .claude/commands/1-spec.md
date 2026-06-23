@@ -3,7 +3,7 @@ description: Cadre un produit ou une feature de bout en bout — challenge le PO
 argument-hint: "[sujet ou feature à cadrer] (optionnel)"
 ---
 
-# /spec — Cadrage produit orchestré
+# /1-spec — Cadrage produit orchestré
 
 **Tout le travail vit dans les agents** (`brainstorm`, `redaction-spec`). Toi
 (thread principal) tu es un **relais pur** : tu ne challenges pas, tu ne rédiges
