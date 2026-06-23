@@ -27,7 +27,7 @@ Scenario: Un Parent pose un slot de localisation
   And l'Invité reçoit une notification de mise à jour du planning
 ```
 
-### Scenario 2 — Slot de durée nulle refusé `@erreur` `@vert` <!-- vert — e790a0a -->
+### Scenario 2 — Slot de durée nulle refusé `@erreur` `@vert` <!-- vert — 398fd73 -->
 
 ```gherkin
 Scenario: Slot de durée nulle refusé
