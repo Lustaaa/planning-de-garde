@@ -1,6 +1,6 @@
 ---
 name: make-gherkin
-description: À utiliser pour transformer une spec fonctionnelle (docs/init/01-specification.md) en un fichier d'analyse technique légère + scénarios Gherkin numérotés, prêt à amorcer une implémentation BDD+TDD — fait émerger cas nominaux/limites/erreur avec résultat observable, puis écrit le fichier de sortie.
+description: À utiliser pour transformer une spec fonctionnelle (docs/01-specification.md) en un fichier d'analyse technique légère + scénarios Gherkin numérotés, prêt à amorcer une implémentation BDD+TDD — fait émerger cas nominaux/limites/erreur avec résultat observable, puis écrit le fichier de sortie.
 ---
 
 # Make Gherkin
@@ -33,7 +33,7 @@ technique reste **légère** : juste de quoi amorcer `tdd-implement`.
 
 ## Processus
 
-1. **Lis la spec d'abord.** Charge `docs/init/01-specification.md` (ou le chemin
+1. **Lis la spec d'abord.** Charge `docs/01-specification.md` (ou le chemin
    fourni). Ne génère jamais de scénarios depuis une page blanche.
 
 2. **Nomme les tensions de testabilité — avant de poser quoi que ce soit.** Sonde :
@@ -70,9 +70,12 @@ technique reste **légère** : juste de quoi amorcer `tdd-implement`.
 
 ## Format du fichier de sortie
 
-`docs/init/scenarios/<sujet>.md`, un fichier par sujet :
+`docs/scenarios/NN-<sujet>.md`, un fichier par sujet. **`NN` = préfixe
+numéroté sur 2 chiffres**, séquentiel = `(plus grand NN existant dans le dossier)
++ 1`, à défaut `01`. Le numéro reflète l'ordre de production (souvent l'ordre des
+phases de la spec). Ex : `01-semaine-de-garde.md`, `02-rappels-de-transfert.md`.
 
-```markdown
+````markdown
 # <Sujet> — Analyse & scénarios
 
 ## Analyse technique
@@ -94,27 +97,40 @@ technique reste **légère** : juste de quoi amorcer `tdd-implement`.
 
 ## Scénarios
 
-Feature: <titre>
-  <courte description de la valeur métier>
+Feature: <titre> — <courte description de la valeur métier, 1-3 lignes en
+paragraphe markdown, **hors** bloc de code>
 
-@nominal
-Scenario 1: <titre>
+### Scenario 1 — <titre court> `@nominal`
+
+```gherkin
+Scenario: <titre>
   Given <état initial>
   When <action>
   Then <résultat observable>
-
-@limite
-Scenario 2: <titre>
-  ...
 ```
 
-Règles de forme :
-- **Numérotation continue** : `Scenario 1`, `Scenario 2`… sans recommencer.
-- Tag de type au-dessus de chaque scénario : `@nominal` / `@limite` / `@erreur`.
-- `Scenario Outline` + `Examples:` quand le scénario varie selon des données.
-- `Background:` quand un même `Given` est partagé par **tous** les scénarios de la
-  feature — factorise-le. S'il ne vaut que pour une partie, garde-le dans chaque
-  scénario concerné (pas de pollution du `Background`).
+### Scenario 2 — <titre court> `@limite`
+
+```gherkin
+Scenario: <titre>
+  ...
+```
+````
+
+Règles de forme (**formatage imposé, ne pas dévier**) :
+- **Un bloc ` ```gherkin ` par scénario.** Chaque scénario est **autonome** :
+  copiable et testable isolément, lisible sans lire les autres.
+- **En-tête markdown par scénario** : `### Scenario N — <titre court> ` suivi du
+  tag de type en code inline `` `@nominal` `` / `` `@limite` `` / `` `@erreur` ``.
+  La **numérotation continue** (1, 2, 3…) vit dans ces en-têtes.
+- **À l'intérieur du bloc**, le mot-clé reste `Scenario:` (sans numéro ni tag —
+  ils sont déjà dans l'en-tête markdown au-dessus).
+- **`Feature:`** est un **paragraphe d'intro hors fence** (pas dans un bloc de
+  code), juste sous `## Scénarios`.
+- **Pas de `Background:`.** L'indépendance prime : chaque scénario porte son
+  **propre `Given` complet**, même au prix d'une répétition.
+- `Scenario Outline` + `Examples:` (dans le même bloc ` ```gherkin `) quand le
+  scénario varie selon des données.
 - **Valeurs concrètes** dans chaque ligne (cf. principe central), jamais de
   variable vague.
 - Le bloc Gherkin reste **fonctionnel/observable** ; la technique vit dans
@@ -165,11 +181,11 @@ Règles : **une question par tour**, 2-4 options, défaut en 1ʳᵉ option suffi
 ```
 
 **Phase écriture** — quand le thread principal renvoie l'ordre d'écrire (avec le
-chemin cible), l'agent écrit `docs/init/scenarios/<sujet>.md` au format ci-dessus
+chemin cible), l'agent écrit `docs/scenarios/<sujet>.md` au format ci-dessus
 et renvoie **uniquement** :
 
 ```json
-{ "path": "docs/init/scenarios/<sujet>.md", "scenarios": <n>, "notes": "<bref>" }
+{ "path": "docs/scenarios/<sujet>.md", "scenarios": <n>, "notes": "<bref>" }
 ```
 
 Aucun texte hors du JSON dans chaque phase.

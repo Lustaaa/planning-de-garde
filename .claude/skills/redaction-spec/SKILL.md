@@ -66,7 +66,7 @@ arbitre, séquence, mécaniques, règles, risques). Il **écrit le fichier**
 directement, puis renvoie au thread principal **uniquement** :
 
 ```json
-{ "path": "docs/init/01-specification.md", "sections": 6, "regles": 12, "notes": "…" }
+{ "path": "docs/01-specification.md", "sections": 6, "regles": 12, "notes": "…" }
 ```
 
 Restreins le périmètre d'écriture au chemin fourni — n'écris nulle part ailleurs.

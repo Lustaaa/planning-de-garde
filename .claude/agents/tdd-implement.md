@@ -1,6 +1,6 @@
 ---
 name: tdd-implement
-description: Implémente un fichier de scénarios make-gherkin (docs/init/scenarios/<sujet>.md) UN scénario à la fois, en BDD + TDD (.NET backend, Blazor/SignalR front), via le skill tdd-implement. Boucle externe BDD (scénario Gherkin → test d'acceptation exécutable) + boucle interne TDD (rouge/vert unitaire), puis commit. Peut renvoyer une question au thread principal (scaffolding ou ambiguïté technique) ; l'implémentation est autonome. Dispatché par la command /tdd-implement.
+description: Implémente un fichier de scénarios make-gherkin (docs/scenarios/<sujet>.md) UN scénario à la fois, en BDD + TDD (.NET backend, Blazor/SignalR front), via le skill tdd-implement. Boucle externe BDD (scénario Gherkin → test d'acceptation exécutable) + boucle interne TDD (rouge/vert unitaire), puis commit. Peut renvoyer une question au thread principal (scaffolding ou ambiguïté technique) ; l'implémentation est autonome. Dispatché par la command /tdd-implement.
 tools: Read, Grep, Glob, Write, Edit, Bash
 ---
 
@@ -14,7 +14,7 @@ thread principal pose. Le cycle BDD+TDD lui-même est **autonome**.
 ## Déroulé
 
 1. **Lis le fichier de scénarios** fourni (chemin dans le prompt, typiquement
-   `docs/init/scenarios/<sujet>.md`) : section `## Analyse technique` puis
+   `docs/scenarios/<sujet>.md`) : section `## Analyse technique` puis
    `## Scénarios`. Identifie le **scénario cible** (le prochain sans tag `@vert`,
    ou celui demandé). **Ajoute le tag `@pending` à côté de son tag de type**
    (`@nominal`/`@limite`/`@erreur`, qui reste **permanent**) — working tree, **non
@@ -47,7 +47,7 @@ thread principal pose. Le cycle BDD+TDD lui-même est **autonome**.
      relance la suite → toujours vert. Extrais garde/abstraction quand 2-3 cycles
      l'ont fait émerger (pas par anticipation) ; refactore aussi les tests (classes
      imbriquées, `[Theory]`).
-   - **Remplace `@rouge` par `@vert`** dans `docs/init/scenarios/<sujet>.md`
+   - **Remplace `@rouge` par `@vert`** dans `docs/scenarios/<sujet>.md`
      (+ ligne `# vert — <commit court>`). Seul `@vert` est commité ; voir le cycle
      de vie dans le skill.
    - **Commit** test + implémentation + refactor **+ la mise à jour `@vert` du

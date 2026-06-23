@@ -1,6 +1,6 @@
 ---
 name: tdd-implement
-description: À utiliser pour implémenter un fichier de scénarios produit par make-gherkin (docs/init/scenarios/<sujet>.md), UN scénario à la fois, en BDD + TDD (.NET backend, Blazor/SignalR front) — chaque scénario Gherkin devient un test d'acceptation exécutable (boucle externe BDD) piloté par des cycles unitaires rouge/vert (boucle interne TDD), puis commité.
+description: À utiliser pour implémenter un fichier de scénarios produit par make-gherkin (docs/scenarios/<sujet>.md), UN scénario à la fois, en BDD + TDD (.NET backend, Blazor/SignalR front) — chaque scénario Gherkin devient un test d'acceptation exécutable (boucle externe BDD) piloté par des cycles unitaires rouge/vert (boucle interne TDD), puis commité.
 ---
 
 # TDD Implement
@@ -8,7 +8,7 @@ description: À utiliser pour implémenter un fichier de scénarios produit par 
 ## Vue d'ensemble
 
 Implémenter un fichier de scénarios `make-gherkin` en **BDD + TDD**, **un scénario
-à la fois**. C'est la 3ᵉ pipeline : entrée = `docs/init/scenarios/<sujet>.md`,
+à la fois**. C'est la 3ᵉ pipeline : entrée = `docs/scenarios/<sujet>.md`,
 sortie = du code testé, commité scénario par scénario.
 
 **Principe central — la double boucle :**
@@ -74,7 +74,7 @@ toute facilité d'implémentation.
 
 ## Processus
 
-1. **Lis le fichier de scénarios.** Charge `docs/init/scenarios/<sujet>.md` :
+1. **Lis le fichier de scénarios.** Charge `docs/scenarios/<sujet>.md` :
    la section `## Analyse technique` (composants, contrats, points TDD) et la
    section `## Scénarios`. Repère le **prochain scénario non implémenté** =
    **premier scénario sans tag `@vert`** (ordre de numérotation continue), ou le
@@ -184,7 +184,7 @@ toute facilité d'implémentation.
      que le scénario.
 
 7. **Passe le scénario au vert dans le fichier de scénarios.** Édite
-   `docs/init/scenarios/<sujet>.md` : **remplace le tag de cycle `@rouge`** (posé à
+   `docs/scenarios/<sujet>.md` : **remplace le tag de cycle `@rouge`** (posé à
    l'étape 4) par `@vert` (le tag de type reste) et ajoute une ligne
    `# vert — <commit court>` (le **hash** du commit, pas une description).
    (Détection du « prochain » à l'étape 1 = 1er sans `@vert`.) Voir le cycle de vie
@@ -276,7 +276,7 @@ Chaque invocation renvoie **uniquement** un objet JSON.
   "impl_files": ["src/.../ReservationService.cs"],
   "red": "dotnet test --filter … → 1 failed (attendu)",
   "green": "dotnet test → N passed, 0 failed",
-  "scenarios_file": "docs/init/scenarios/<sujet>.md (scénario 3 taggé @vert)",
+  "scenarios_file": "docs/scenarios/<sujet>.md (scénario 3 taggé @vert)",
   "commit": "<hash court> feat: scénario 3 — …",
   "next_scenario": 4,
   "notes": "<bref>"
