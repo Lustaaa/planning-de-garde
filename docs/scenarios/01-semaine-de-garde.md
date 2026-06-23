@@ -103,7 +103,7 @@ Scenario: Période sans responsable refusée
   And aucune période « du 14/07 au 21/07 » n'apparaît dans le planning partagé
 ```
 
-### Scenario 9 — Bornes de période paramétrables `@limite` `@vert`
+### Scenario 9 — Bornes de période paramétrables `@limite` `@vert` <!-- vert — 5c6c728 -->
 
 ```gherkin
 Scenario: Bornes de période paramétrables
