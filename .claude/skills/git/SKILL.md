@@ -1,0 +1,84 @@
+---
+name: git
+description: À utiliser pour toute action git courante sur le projet planning-de-garde (état, mise à jour, branche, commit, push, PR) — chaque commande est adossée à un script PowerShell qui porte les garde-fous maison (jamais de commit sur main, jamais de `git add -A`, convention de branche ia-{type}/{slug}, trailers Claude). Préférer ces scripts aux commandes git brutes.
+---
+
+# git — Commandes courantes adossées à des scripts
+
+Toutes les opérations git de ce projet passent par les scripts de
+`.claude/skills/git/scripts/` (PowerShell 7). Ils encapsulent les garde-fous :
+pas de commit sur `main`, staging **sélectif** (jamais `git add -A`), branches
+`ia-{type}/{slug}`, trailers `Co-Authored-By` / Claude Code.
+
+> Lance chaque script avec `pwsh .claude/skills/git/scripts/<x>.ps1 …`.
+> Branche par défaut = `main`. Remote = `origin`.
+
+## Quand l'utiliser
+
+Dès qu'une action git est demandée en langage naturel : « où en est git »,
+« commit », « crée une branche », « pousse », « ouvre une PR », « mets à jour ».
+Route vers la commande correspondante ci-dessous au lieu d'exécuter git à la main.
+
+## Commandes
+
+### `status` — état du dépôt
+Branche courante, ahead/behind vs upstream, fichiers modifiés.
+```
+pwsh .claude/skills/git/scripts/status.ps1
+```
+
+### `sync` — mettre à jour main
+Fast-forward de `main` depuis `origin/main` **sans le checkouter** (ou
+`pull --rebase` si tu es déjà dessus). Exige un arbre propre.
+```
+pwsh .claude/skills/git/scripts/sync.ps1
+pwsh .claude/skills/git/scripts/sync.ps1 -RebaseCurrent   # rebase la branche courante sur main
+```
+
+### `branch` — créer une branche de travail
+Crée `ia-{TYPE}/{slug}` depuis `main` à jour. `TYPE ∈ {fix, feat, refactor, test,
+chore}`. Le slug est normalisé en kebab-case.
+```
+pwsh .claude/skills/git/scripts/branch.ps1 -Type refactor -Slug "git skill scripts"
+# -> ia-refactor/git-skill-scripts
+```
+
+### `commit` — committer (staging sélectif)
+**Refuse `main`/`master`.** Stage uniquement les fichiers passés (`-Files`),
+ajoute le trailer `Co-Authored-By` s'il manque.
+```
+pwsh .claude/skills/git/scripts/commit.ps1 -Message "refactor: extrait le skill git" -Files .claude/skills/git
+```
+- `-Message` : sujet (+ corps) du commit.
+- `-Files` : liste de chemins à stager — **obligatoire**, pas de `git add -A`.
+
+### `push` — pousser la branche
+**Refuse `main`/`master`.** `-u origin` au premier push, sinon push simple.
+```
+pwsh .claude/skills/git/scripts/push.ps1
+pwsh .claude/skills/git/scripts/push.ps1 -ReturnToMain   # revient sur main après
+```
+
+### `pr` — ouvrir une pull request
+Via `gh`, base `main`. Pousse d'abord si l'upstream manque. Ajoute le trailer
+« Generated with Claude Code » au corps.
+```
+pwsh .claude/skills/git/scripts/pr.ps1 -Title "Skill git" -Body "Ajoute le skill git." [-Draft]
+```
+
+## Enchaînement type
+
+```
+status  →  branch -Type … -Slug …  →  (édition)  →  commit -Message … -Files …  →  push  →  pr
+```
+
+## Garde-fous (portés par les scripts)
+
+- **Jamais de commit/push direct sur `main`/`master`** — cohérent avec le hook
+  `pre-bash-block-commit-on-master`.
+- **Staging sélectif** — `commit` exige `-Files`, jamais `git add -A`.
+- **Branche** — toujours `ia-{type}/{slug}`, créée depuis `main` à jour.
+- **Arbre propre exigé** par `sync` et `branch` (commit/stash avant).
+- **Trailers** — `Co-Authored-By` (commit) et Claude Code (PR) ajoutés si absents.
+- **Validation utilisateur** — proposer commit/push/PR à l'utilisateur avant de
+  lancer le script ; ne jamais committer/pousser de façon non sollicitée.

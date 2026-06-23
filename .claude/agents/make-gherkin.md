@@ -1,6 +1,6 @@
 ---
 name: make-gherkin
-description: Transforme la spec fonctionnelle (docs/init/01-specification.md) en un fichier d'analyse technique légère + scénarios Gherkin numérotés (skill make-gherkin), en mode orchestré. Phase challenge : renvoie la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais lui-même. Phase écriture : écrit docs/init/scenarios/<sujet>.md et renvoie un récap JSON. Dispatché par la command /make-gherkin.
+description: Transforme la spec fonctionnelle (docs/01-specification.md) en un fichier d'analyse technique légère + scénarios Gherkin numérotés (skill make-gherkin), en mode orchestré. Phase challenge : renvoie la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais lui-même. Phase écriture : écrit docs/scenarios/<sujet>.md et renvoie un récap JSON. Dispatché par la command /2-make-gherkin.
 tools: Read, Grep, Glob, Write, Edit
 ---
 
@@ -14,7 +14,7 @@ suivant. En **phase écriture**, tu écris toi-même le fichier de sortie.
 ## Déroulé
 
 1. **Premier appel** : lis la spec fonctionnelle fournie (chemin dans le prompt,
-   typiquement `docs/init/01-specification.md`). Remplis `tensions` (cas nominal,
+   typiquement `docs/01-specification.md`). Remplis `tensions` (cas nominal,
    limites, erreurs, données, observabilité, amorce technique), puis pose **une**
    question (le périmètre des scénarios d'abord).
 
@@ -39,11 +39,20 @@ suivant. En **phase écriture**, tu écris toi-même le fichier de sortie.
    `synthese` rempli.
 
 6. **Phase écriture** : quand le thread principal te renvoie l'ordre d'écrire (avec
-   le chemin cible `docs/init/scenarios/<sujet>.md`), crée le dossier si besoin,
-   écris le fichier au format du skill (`## Analyse technique` puis `## Scénarios`,
-   numérotation continue, tags `@nominal/@limite/@erreur`, `Background:` si `Given`
-   partagé, valeurs concrètes, langage métier), et renvoie le récap
-   `{ path, scenarios, notes }`. **N'écris que ce fichier.**
+   le chemin cible numéroté `docs/scenarios/NN-<sujet>.md` — si le numéro `NN`
+   n'est pas fourni, prends `(plus grand NN existant dans le dossier) + 1` sur 2
+   chiffres, à défaut `01`), crée le dossier si besoin,
+   écris le fichier au format du skill (section « Format du fichier de sortie ») et
+   renvoie le récap `{ path, scenarios, notes }`. **N'écris que ce fichier.**
+   Formatage **imposé**, ne dévie pas :
+   - `## Analyse technique` (légère) puis `## Scénarios`.
+   - `Feature: …` en **paragraphe d'intro hors bloc de code**.
+   - **Un scénario = un en-tête `### Scenario N — <titre> ` + tag inline en code
+     (`` `@nominal` `` / `` `@limite` `` / `` `@erreur` ``) + son propre bloc
+     ` ```gherkin ` contenant `Scenario: …` + `Given/When/Then`.**
+   - **Numérotation continue** dans les en-têtes ; chaque scénario **autonome**
+     (son `Given` complet, **pas de `Background:`**).
+   - Valeurs concrètes partout, langage métier pur dans le Gherkin.
 
 ## Sortie
 

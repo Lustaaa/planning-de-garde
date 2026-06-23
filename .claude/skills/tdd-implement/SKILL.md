@@ -1,6 +1,6 @@
 ---
 name: tdd-implement
-description: À utiliser pour implémenter un fichier de scénarios produit par make-gherkin (docs/init/scenarios/<sujet>.md), UN scénario à la fois, en BDD + TDD (.NET backend, Blazor/SignalR front) — chaque scénario Gherkin devient un test d'acceptation exécutable (boucle externe BDD) piloté par des cycles unitaires rouge/vert (boucle interne TDD), puis commité.
+description: À utiliser pour implémenter un fichier de scénarios produit par make-gherkin (docs/scenarios/<sujet>.md), UN scénario à la fois, en BDD + TDD (.NET backend, Blazor/SignalR front) — chaque scénario Gherkin devient un test d'acceptation exécutable (boucle externe BDD) piloté par des cycles unitaires rouge/vert (boucle interne TDD), puis commité.
 ---
 
 # TDD Implement
@@ -8,7 +8,7 @@ description: À utiliser pour implémenter un fichier de scénarios produit par 
 ## Vue d'ensemble
 
 Implémenter un fichier de scénarios `make-gherkin` en **BDD + TDD**, **un scénario
-à la fois**. C'est la 3ᵉ pipeline : entrée = `docs/init/scenarios/<sujet>.md`,
+à la fois**. C'est la 3ᵉ pipeline : entrée = `docs/scenarios/<sujet>.md`,
 sortie = du code testé, commité scénario par scénario.
 
 **Principe central — la double boucle :**
@@ -74,7 +74,7 @@ toute facilité d'implémentation.
 
 ## Processus
 
-1. **Lis le fichier de scénarios.** Charge `docs/init/scenarios/<sujet>.md` :
+1. **Lis le fichier de scénarios.** Charge `docs/scenarios/<sujet>.md` :
    la section `## Analyse technique` (composants, contrats, points TDD) et la
    section `## Scénarios`. Repère le **prochain scénario non implémenté** =
    **premier scénario sans tag `@vert`** (ordre de numérotation continue), ou le
@@ -184,7 +184,7 @@ toute facilité d'implémentation.
      que le scénario.
 
 7. **Passe le scénario au vert dans le fichier de scénarios.** Édite
-   `docs/init/scenarios/<sujet>.md` : **remplace le tag de cycle `@rouge`** (posé à
+   `docs/scenarios/<sujet>.md` : **remplace le tag de cycle `@rouge`** (posé à
    l'étape 4) par `@vert` (le tag de type reste) et ajoute une ligne
    `# vert — <commit court>` (le **hash** du commit, pas une description).
    (Détection du « prochain » à l'étape 1 = 1er sans `@vert`.) Voir le cycle de vie
@@ -239,6 +239,53 @@ stateDiagram-v2
 Reprise après interruption : un scénario laissé `@pending` ou `@rouge` est repris
 au prochain run (il n'a pas de `@vert`) ; l'agent repart de l'état observé.
 
+## Rendu de suivi (`docs/scenarios/<sujet>.suivi.md`)
+
+Le pipeline se joue à **deux agents** : `tdd-analyse` (analyse seule) produit le
+**markdown de suivi**, `tdd-auto` (exécution autonome) **met à jour ses cellules de
+statut en direct**. C'est le tableau de bord d'avancement — un fichier par sujet,
+nommé d'après le fichier de scénarios source (`NN-<sujet>.md` → `NN-<sujet>.suivi.md`).
+
+**Format** (écrit par `tdd-analyse`) :
+
+````markdown
+# Suivi TDD — <Sujet>
+
+> Source : `docs/scenarios/NN-<sujet>.md` · produit par tdd-analyse, suivi par tdd-auto.
+
+## Scénario 1 — <titre> `@nominal`
+
+**Acceptation (BDD)** : `Should_<résultat métier final>_When_<conditions>` — ⏳ Pending
+
+| # | Test unitaire (FLFI) | TPP | Contradiction | Status |
+|---|---|---|---|---|
+| 1 | Should_<résultat>_When_<conditions> | nil → constant (2) | Baseline — <ce qu'il pose> | ⏳ Pending |
+| 2 | Should_<résultat>_When_<conditions> | unconditional → conditional (4) | <ce que ça contredit> | ⏳ Pending |
+
+**Fichiers à créer** : <chemins relatifs>
+**Design notes** : <réutilisations, fakes, conventions — 1 puce / insight>
+
+## Scénario 2 — <titre> `@limite`
+…
+````
+
+**Valeurs de statut** (cellule `Status` + ligne Acceptation) :
+
+| Statut | Sens |
+|---|---|
+| `⏳ Pending` | test pas encore écrit |
+| `🔴 RED` | test écrit, échoue (échec comportemental atteint) |
+| `✅ GREEN` | test passé après un vrai cycle RED → GREEN |
+| `⚠️ EARLY GREEN` | passé au 1er lancement sans code neuf (comportement déjà couvert / doublon) |
+
+**Discipline de mise à jour (obligatoire pour `tdd-auto`)** : avant tout rapport ou
+passage au test suivant, **Edit le fichier de suivi sur disque** — `⏳ → 🔴` dès le
+rouge atteint, `🔴 → ✅` (ou `⚠️ EARLY GREEN`) dès le vert. Sauter cet Edit, ou
+marquer `✅` un early-green, est une violation : le tableau de bord doit refléter
+l'état réel à tout instant. Cette mise à jour est **distincte** du tag de cycle
+`@rouge`/`@vert` dans le fichier de scénarios source (cf. cycle de vie ci-dessus) ;
+les deux sont tenus en parallèle.
+
 ## Mode agent (orchestré)
 
 Quand ce skill est exécuté par un **subagent**, il **ne pose pas** les questions —
@@ -276,7 +323,7 @@ Chaque invocation renvoie **uniquement** un objet JSON.
   "impl_files": ["src/.../ReservationService.cs"],
   "red": "dotnet test --filter … → 1 failed (attendu)",
   "green": "dotnet test → N passed, 0 failed",
-  "scenarios_file": "docs/init/scenarios/<sujet>.md (scénario 3 taggé @vert)",
+  "scenarios_file": "docs/scenarios/<sujet>.md (scénario 3 taggé @vert)",
   "commit": "<hash court> feat: scénario 3 — …",
   "next_scenario": 4,
   "notes": "<bref>"

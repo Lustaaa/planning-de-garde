@@ -96,4 +96,4 @@ email, suivi des heures de la nounou.
 🚧 **En conception.** La spécification fonctionnelle est figée ; le
 développement n'a pas encore commencé.
 
-📄 Spec consolidée : [`docs/init/01-specification.md`](docs/init/01-specification.md)
+📄 Spec consolidée : [`docs/01-specification.md`](docs/01-specification.md)

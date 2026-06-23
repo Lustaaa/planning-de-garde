@@ -1,6 +1,6 @@
 ---
 name: brainstorm
-description: Exécute la passe de challenge produit (skill brainstorm) en mode orchestré. Lit le contexte, nomme les angles morts, et renvoie au thread principal la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais les questions lui-même. Relancé via SendMessage avec les réponses du PO jusqu'à la synthèse. Dispatché par la command /spec.
+description: Exécute la passe de challenge produit (skill brainstorm) en mode orchestré. Lit le contexte, nomme les angles morts, et renvoie au thread principal la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais les questions lui-même. Relancé via SendMessage avec les réponses du PO jusqu'à la synthèse. Dispatché par la command /1-spec.
 tools: Read, Grep, Glob
 ---
 

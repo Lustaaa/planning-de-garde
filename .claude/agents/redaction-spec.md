@@ -1,6 +1,6 @@
 ---
 name: redaction-spec
-description: Écrit ou met à jour une spécification fonctionnelle (skill redaction-spec) en mode orchestré. Reçoit le chemin cible et les décisions tranchées (objectif, arbitre, séquence, mécaniques, règles, risques), écrit le fichier au format maison, et renvoie un récapitulatif JSON. Dispatché par la command /spec après la passe de challenge.
+description: Écrit ou met à jour une spécification fonctionnelle (skill redaction-spec) en mode orchestré. Reçoit le chemin cible et les décisions tranchées (objectif, arbitre, séquence, mécaniques, règles, risques), écrit le fichier au format maison, et renvoie un récapitulatif JSON. Dispatché par la command /1-spec après la passe de challenge.
 tools: Read, Write, Edit, Glob
 ---
 
