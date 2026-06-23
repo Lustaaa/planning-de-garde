@@ -15,7 +15,11 @@ public sealed class DefinirTransfertHandler
 
     public Result<TransfertSnapshot> Handle(DefinirTransfertCommand commande)
     {
-        var transfert = Transfert.Definir(commande.DeposeParId, commande.RecupereParId, commande.LieuId, commande.Heure, commande.Date);
+        var definition = Transfert.Definir(commande.DeposeParId, commande.RecupereParId, commande.LieuId, commande.Heure, commande.Date);
+        if (!definition.EstSucces)
+            return Result<TransfertSnapshot>.Echec(definition.Motif!);
+
+        var transfert = definition.Valeur!;
         _transferts.Enregistrer(transfert);
         return Result<TransfertSnapshot>.Succes(transfert.ToSnapshot());
     }

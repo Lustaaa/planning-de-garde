@@ -28,8 +28,18 @@ public sealed class Transfert
         _date = date;
     }
 
-    public static Transfert Definir(string deposeParId, string recupereParId, string lieuId, TimeSpan heure, DateTime date)
-        => new(deposeParId, recupereParId, lieuId, heure, date);
+    public static Result<Transfert> Definir(string deposeParId, string recupereParId, string lieuId, TimeSpan heure, DateTime date)
+    {
+        var complet = !string.IsNullOrWhiteSpace(deposeParId)
+            && !string.IsNullOrWhiteSpace(recupereParId)
+            && !string.IsNullOrWhiteSpace(lieuId)
+            && heure != TimeSpan.Zero;
+        if (!complet)
+            return Result<Transfert>.Echec(
+                "Transfert incomplet : la récupération et l'heure sont requises.");
+
+        return Result<Transfert>.Succes(new Transfert(deposeParId, recupereParId, lieuId, heure, date));
+    }
 
     public TransfertSnapshot ToSnapshot() => new(_deposeParId, _recupereParId, _lieuId, _heure, _date);
 }

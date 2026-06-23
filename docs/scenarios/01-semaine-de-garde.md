@@ -136,7 +136,7 @@ Scenario: Définir le transfert de bascule
   And la responsabilité bascule de « Parent A » à « Parent B » à ce transfert
 ```
 
-### Scenario 12 — Transfert incomplet refusé `@erreur`
+### Scenario 12 — Transfert incomplet refusé `@erreur` `@vert`
 
 ```gherkin
 Scenario: Transfert incomplet refusé
