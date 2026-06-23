@@ -52,6 +52,34 @@ test de succès ultérieur qui la contredit. **Déduplique** contre les tests ex
 (comportement réellement vérifié, pas le seul nom) — un doublon ressortira en
 `⚠️ EARLY GREEN` chez `tdd-auto`.
 
+**Anticipe les early greens (contradiction hypothétique).** Une contradiction n'est
+réelle que si l'**implémentation minimale générale** des tests précédents (de ce
+scénario **et des scénarios déjà verts**) prend effectivement le raccourci naïf que ce
+test casserait. Avant d'inscrire un test, demande-toi : « le geste minimal naturel en
+C# couvre-t-il déjà ce cas ? ». Exemple vécu : la garde `fin > début` se code par une
+comparaison de `DateTime` (instant calendaire complet) ; elle couvre **d'un coup** la
+durée nulle **et** le franchissement de minuit — un test « slot de nuit » distinct
+passe alors d'emblée (early green).
+
+**La réponse est l'anticipation et la priorisation, pas la fusion a posteriori.** Tu
+ne fusionnes pas des cas métier après coup et tu n'inventes pas un faux cycle :
+
+- **Identifie le test *driver*** de chaque invariant — celui dont le rouge force
+  réellement l'implémentation — et **place-le en premier** dans l'ordre TPP.
+- **Repère dès l'analyse** les cas que ce driver couvrira mécaniquement (même
+  invariant, données différentes) : garde-les comme **tests de caractérisation
+  distincts** (ils restent un filet de non-régression et documentent le `@limite`),
+  mais **annonce-les** dans la colonne `Contradiction`, préfixe
+  `⚠️ probablement early green — couvert par #<n> (caractérisation, pas driver)`.
+  `tdd-auto` saura alors que le 1er passage est **attendu** (pas un défaut), et le
+  marquera `✅ GREEN (caractérisation)`.
+- **Priorise** : un scénario où *tous* les tests seraient des caractérisations d'un
+  invariant déjà vert n'apporte aucun rouge — signale-le en `notes` plutôt que de
+  gonfler la liste de tests sans contradiction réelle.
+
+Ne supprime pas un cas métier important ; ne le fusionne pas — déclare-le caractérisation
+explicite et ordonne la liste pour que le vrai driver mène.
+
 ### 5. LABEL (FLFI)
 Étiquette chaque test `Should_<résultat métier final complet>_When_<conditions
 complètes>`, en **langage métier** (jamais `throws`, `null`, `HTTP 200`). L'étiquette

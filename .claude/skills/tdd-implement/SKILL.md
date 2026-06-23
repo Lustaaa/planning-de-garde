@@ -334,7 +334,8 @@ sujet**, nommé d'après le fichier de scénarios source sans extension
 | `⏳ Pending` | test pas encore écrit |
 | `🔴 RED` | test écrit, échoue (échec comportemental atteint) |
 | `✅ GREEN` | test passé après un vrai cycle RED → GREEN |
-| `⚠️ EARLY GREEN` | passé au 1er lancement sans code neuf (comportement déjà couvert / doublon) |
+| `⚠️ EARLY GREEN` | passé au 1er lancement sans code neuf, **non anticipé** (comportement déjà couvert / doublon) → à signaler |
+| `✅ GREEN (caractérisation)` | passé d'emblée mais **anticipé** par `tdd-analyse` (cellule `Contradiction` préfixée `⚠️ probablement early green …`) — early green **attendu**, le test sert de filet de non-régression sur un invariant déjà couvert |
 
 La colonne `Statut` du `suivi.md` est **agrégée** : `⏳ Pending` tant qu'aucun test
 n'est vert, `🔴 RED` dès qu'un cycle est en cours, `✅ GREEN` quand tous les tests

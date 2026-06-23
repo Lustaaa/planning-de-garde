@@ -52,7 +52,10 @@ table, dans l'ordre). Écris le test, atteins l'**échec comportemental** (véri
 **OBLIGATOIRE — avant tout rapport** : `Edit` le `NN-slug.md` du scénario sur disque,
 cellule `Status` du test courant `⏳ Pending → 🔴 RED`. Si le test passe d'emblée →
 **V4 / EARLY GREEN** : ne marque pas `✅`, mets `⚠️ EARLY GREEN`, et signale (doublon
-probable).
+probable). **Exception — early green anticipé** : si la cellule `Contradiction` du test
+est préfixée `⚠️ probablement early green …` (annotation `tdd-analyse`), le 1er passage
+est **attendu** → marque `✅ GREEN (caractérisation)` (filet de non-régression), pas
+`⚠️`, et mentionne-le sobrement (pas une alarme).
 
 ### GREEN_PHASE (par test unitaire)
 Implémente le **minimum** (YAGNI, TPP : constante → conditionnel → général), règle
