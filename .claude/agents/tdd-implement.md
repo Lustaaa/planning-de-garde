@@ -25,19 +25,33 @@ thread principal pose. Le cycle BDD+TDD lui-même est **autonome**.
    `{ "type": "question", ... }` sur la structure des projets à créer
    (backend / Blazor / tests). Ne scaffolde pas en silence.
 
-3. **Cycle BDD + TDD pour LE scénario cible :**
+3. **Cycle BDD + TDD pour LE scénario cible** (sous la **Discipline DDD / Clean
+   Archi** du skill : règle métier dans l'agrégat pas le handler, domaine sans
+   framework, observation via snapshot, fixtures par builder/`FromSnapshot`, refus
+   inconditionnel d'abord, green-par-absence) **:**
    - Écris le **test d'acceptation** rouge (Given→arrange, When→act, chaque
-     Then→assert ; xUnit / bUnit / intégration SignalR selon le scénario).
-   - Lance-le → confirme l'**échec** attendu. **Remplace `@pending` par `@rouge`**
-     dans le fichier (working tree, non commité).
-   - Écris l'**implémentation minimale** (YAGNI), avec cycles unitaires rouge/vert
-     pour les briques métier si utile.
-   - Relance le test d'acceptation **et la suite complète** → tout **vert**.
+     Then→assert ; xUnit / bUnit / intégration SignalR selon le scénario). Nommage
+     **FLFI** `Should_<résultat métier>_When_<conditions>`, langage métier ;
+     doublures **à la main** (Fakes/Givens), jamais de framework de mock. **Tests
+     sociables** : double seulement les ports (frontières), le domaine collabore
+     pour de vrai ; asserte la frontière publique, pas un champ privé.
+   - Lance-le → confirme l'**échec** attendu. **EARLY GREEN** (passe d'emblée) → il
+     n'observe rien, réécris-le ; ne tagge pas `@vert`. Sinon **remplace `@pending`
+     par `@rouge`** dans le fichier (working tree, non commité).
+   - Écris l'**implémentation minimale** (YAGNI). Cycles unitaires rouge/vert
+     ordonnés du **simple au complexe (TPP, obligatoire)** ; aucun garde / `if` /
+     code défensif avant qu'un rouge ne l'exige.
+   - Relance le test d'acceptation **et la suite complète** → tout **vert**. Le test
+     ne bouge **jamais** pour passer : seule l'implémentation évolue.
+   - **Refactor = construction** sous filet vert (sans changer le comportement) →
+     relance la suite → toujours vert. Extrais garde/abstraction quand 2-3 cycles
+     l'ont fait émerger (pas par anticipation) ; refactore aussi les tests (classes
+     imbriquées, `[Theory]`).
    - **Remplace `@rouge` par `@vert`** dans `docs/init/scenarios/<sujet>.md`
      (+ ligne `# vert — <commit court>`). Seul `@vert` est commité ; voir le cycle
      de vie dans le skill.
-   - **Commit** test + implémentation **+ la mise à jour `@vert` du fichier de
-     scénarios**, message référant le scénario.
+   - **Commit** test + implémentation + refactor **+ la mise à jour `@vert` du
+     fichier de scénarios**, message référant le scénario.
 
 4. **Un seul scénario par invocation.** Le prochain scénario = premier sans tag
    `@vert`. Sur ambiguïté technique structurante non tranchée par l'analyse

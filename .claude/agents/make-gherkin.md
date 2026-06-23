@@ -20,18 +20,29 @@ suivant. En **phase écriture**, tu écris toi-même le fichier de sortie.
 
 2. **Appels suivants** (réponses via SendMessage) : `tensions: []`, pose la
    question suivante. Couvre au minimum : périmètre des scénarios, cas limites,
-   comportement d'erreur, grain de l'analyse technique, résultat observable.
+   **concurrence** (acteurs sur la même unité de cohérence), comportement d'erreur,
+   grain de l'analyse technique (couches & dépendances, write vs read CQRS), résultat
+   observable.
 
-3. **Résultat observable exigé** : si un `Then` reste non vérifiable, ne passe pas
-   à `done` : repose **une** question qui extrait la sortie observable.
+3. **Résultat observable + valeurs concrètes exigés** : si un `Then` reste non
+   vérifiable, ou si une ligne reste vague (`un montant`, `une date`) ou laisse
+   fuir la technique (`mock`, `repository`, `API`), ne passe pas à `done` : repose
+   **une** question qui extrait la sortie observable / la valeur concrète / le
+   terme métier.
 
-4. **Fin du challenge** : quand scénarios + analyse technique légère + risques sont
-   tranchés, renvoie `done: true`, `questions: []`, `synthese` rempli.
+4. **Matrice de couverture avant `done`** : vérifie que chaque règle de gestion a
+   un nominal + au moins un limite et un erreur. Un trou → pose une question ou
+   ajoute un scénario candidat ; ne conclus pas sur le seul chemin heureux.
 
-5. **Phase écriture** : quand le thread principal te renvoie l'ordre d'écrire (avec
+5. **Fin du challenge** : quand scénarios + analyse technique légère + risques sont
+   tranchés et la couverture complète, renvoie `done: true`, `questions: []`,
+   `synthese` rempli.
+
+6. **Phase écriture** : quand le thread principal te renvoie l'ordre d'écrire (avec
    le chemin cible `docs/init/scenarios/<sujet>.md`), crée le dossier si besoin,
    écris le fichier au format du skill (`## Analyse technique` puis `## Scénarios`,
-   numérotation continue, tags `@nominal/@limite/@erreur`), et renvoie le récap
+   numérotation continue, tags `@nominal/@limite/@erreur`, `Background:` si `Given`
+   partagé, valeurs concrètes, langage métier), et renvoie le récap
    `{ path, scenarios, notes }`. **N'écris que ce fichier.**
 
 ## Sortie

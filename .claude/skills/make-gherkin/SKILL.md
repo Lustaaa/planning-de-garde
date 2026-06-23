@@ -17,6 +17,15 @@ comportement, extrais le triplet observable *état initial → action → résul
 constatable*. Un `Then` non vérifiable (« ça marche ») est refusé. L'analyse
 technique reste **légère** : juste de quoi amorcer `tdd-implement`.
 
+**Deux exigences non négociables sur chaque ligne Gherkin :**
+- **Valeurs concrètes** — jamais `un montant`, toujours `un montant de 150,37 €` ;
+  jamais `une date`, toujours `le 14/07 à 22 h`. Un scénario sans valeur d'exemple
+  vérifiable n'est pas testable.
+- **Langage métier, zéro fuite technique** — le bloc `Given/When/Then` parle le
+  vocabulaire du domaine (`Given un agent de garde`), jamais l'implémentation
+  (`Given le repository est mocké`, `When l'API est appelée`). La technique vit
+  **uniquement** dans `## Analyse technique`.
+
 ## Quand l'utiliser
 
 - Après `/spec`, pour préparer l'implémentation BDD+TDD.
@@ -32,7 +41,9 @@ technique reste **légère** : juste de quoi amorcer `tdd-implement`.
    | Angle | La question dure |
    |---|---|
    | Cas nominal | Quel est le chemin heureux exact et observable ? |
+   | Invariant | Quelle règle doit rester vraie après **chaque** action ? Sa violation alimente directement les cas limites et erreur. |
    | Cas limite | Bornes : zéro, vide, max, simultané, frontière de durée ? |
+   | Concurrence | Deux acteurs touchent-ils la **même** unité de cohérence au même instant (double-clic, latence) ? Si oui → scénario de conflit : la 2ᵉ écriture périmée est rejetée proprement. |
    | Cas d'erreur | Que se passe-t-il quand l'invariant est violé, et quel comportement est attendu ? |
    | Données d'exemple | Quelles valeurs concrètes rendent le scénario vérifiable ? |
    | Observabilité | Comment sait-on que le `Then` est satisfait ? Quelle sortie observable ? |
@@ -44,7 +55,17 @@ technique reste **légère** : juste de quoi amorcer `tdd-implement`.
 
 4. **Force le résultat observable.** Refuse un `Then` non vérifiable.
 
-5. **Synthétise puis écris.** Une fois tranché, produis le fichier de sortie au
+5. **Matrice de couverture — avant de conclure.** Pour chaque comportement /
+   règle de gestion de la spec, vérifie qu'il existe un scénario **nominal**, au
+   moins un **limite** et un **erreur**. Un trou (ex. règle sans cas d'erreur) →
+   ajoute un scénario candidat ou pose une question. Ne conclus jamais sur le seul
+   chemin heureux.
+
+   | Règle / comportement | @nominal | @limite | @erreur |
+   |---|---|---|---|
+   | RG1 — … | ✅ | ✅ | ❌ → à combler |
+
+6. **Synthétise puis écris.** Une fois tranché, produis le fichier de sortie au
    format ci-dessous.
 
 ## Format du fichier de sortie
@@ -57,8 +78,19 @@ technique reste **légère** : juste de quoi amorcer `tdd-implement`.
 ## Analyse technique
 
 - **Composants impactés** — … (côté .NET / Blazor / SignalR)
+- **Couches & dépendances** — situe chaque composant (Domain / Application /
+  Infrastructure–Blazor/SignalR) ; les dépendances pointent **vers l'intérieur**, le
+  domaine sans `using` de framework. Litmus : testable sans framework ? infra
+  remplaçable sans toucher au domaine ?
 - **Contrats de données** — … (entrées/sorties, entités cœur)
-- **Points d'attention TDD** — … (ordre de test, dépendances, cas délicats)
+- **Write vs read (CQRS)** — un comportement de **modification** passe par un agrégat
+  (invariants protégés) ; un besoin de **lecture/affichage** par une projection
+  dédiée, jamais par un getter de vue sur l'agrégat. Test : « cette donnée sert-elle
+  un invariant ? » Non → modèle de lecture.
+- **Invariants** — … (règles vraies après chaque action ; qui les garde — l'agrégat,
+  pas le use case)
+- **Points d'attention TDD** — … (ordre de test, ce qu'on double — ports
+  seulement —, cas délicats)
 
 ## Scénarios
 
@@ -80,6 +112,11 @@ Règles de forme :
 - **Numérotation continue** : `Scenario 1`, `Scenario 2`… sans recommencer.
 - Tag de type au-dessus de chaque scénario : `@nominal` / `@limite` / `@erreur`.
 - `Scenario Outline` + `Examples:` quand le scénario varie selon des données.
+- `Background:` quand un même `Given` est partagé par **tous** les scénarios de la
+  feature — factorise-le. S'il ne vaut que pour une partie, garde-le dans chaque
+  scénario concerné (pas de pollution du `Background`).
+- **Valeurs concrètes** dans chaque ligne (cf. principe central), jamais de
+  variable vague.
 - Le bloc Gherkin reste **fonctionnel/observable** ; la technique vit dans
   `## Analyse technique`, légère (3 puces max par sous-section).
 
@@ -119,7 +156,7 @@ Règles : **une question par tour**, 2-4 options, défaut en 1ʳᵉ option suffi
 {
   "sujet": "<slug-kebab>",
   "feature": "<titre>",
-  "analyse_technique": { "composants": ["..."], "contrats": ["..."], "points_tdd": ["..."] },
+  "analyse_technique": { "composants": ["..."], "contrats": ["..."], "invariants": ["..."], "points_tdd": ["..."] },
   "scenarios": [
     { "id": 1, "titre": "<court>", "type": "nominal", "given": "<état>", "when": "<action>", "then": "<résultat observable>" }
   ],
@@ -141,6 +178,13 @@ Aucun texte hors du JSON dans chaque phase.
 
 - « Ça marche » / « c'est correct » comme `Then` → pas observable → extrais la sortie.
 - Uniquement le cas nominal → manque limites et erreurs → nomme-les.
+- **Action multi-acteurs sans scénario de concurrence** (lire-décider-écrire sur une
+  donnée partagée) → ajoute un scénario de conflit (rejet observable de la 2ᵉ écriture).
+- **Valeur vague** (`un montant`, `une date`, `un utilisateur`) → exige une valeur
+  d'exemple concrète.
+- **Fuite technique** (`mock`, `repository`, `API`, `base de données` dans un
+  `Given/When/Then`) → reformule en langage métier ; déplace la technique dans
+  `## Analyse technique`.
 - Analyse technique qui déborde en conception complète → garde-la légère (amorce).
 
 ## Erreurs fréquentes
@@ -148,4 +192,7 @@ Aucun texte hors du JSON dans chaque phase.
 - **Poser avant d'avoir nommé les tensions.**
 - **Plusieurs questions d'un coup.**
 - **`Then` non observable accepté.**
+- **Scénario sans valeur d'exemple concrète.**
+- **Vocabulaire d'implémentation dans le Gherkin** au lieu du langage métier.
+- **Conclure sans matrice de couverture** — règle laissée sans cas limite/erreur.
 - **Sur-spécifier l'analyse technique** — c'est une amorce, pas la conception finale.
