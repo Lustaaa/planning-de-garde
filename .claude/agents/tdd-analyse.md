@@ -46,9 +46,17 @@ même comportement = **un seul** test.
 Ordonne les tests de chaque scénario par **complexité croissante** (Transformation
 Priority Premise) : chaque test ne demande qu'**un pas vers le bas** dans la TPP, et
 introduit une **contradiction** que l'implémentation précédente ne peut pas
-satisfaire. **Refus inconditionnel d'abord** : une base de garde/`@erreur` se pose
-*toujours-refuser* (`{} → nil` / `nil → constant`), le conditionnel n'apparaît qu'au
-test de succès ultérieur qui la contredit. **Déduplique** contre les tests existants
+satisfaire. **Refus inconditionnel d'abord — seulement si aucun nominal contredisant
+n'est déjà vert.** Une base de garde/`@erreur` se pose *toujours-refuser*
+(`{} → nil` / `nil → constant`) et le conditionnel n'apparaît qu'au test de succès
+ultérieur qui la contredit — **tant que** la branche succès n'est couverte par aucun
+scénario déjà vert. **Dès qu'un nominal contredisant existe** (ex. le Sc.1 « pose
+réussie » est vert avant le Sc.4 « lieu inexistant »), un refus inconditionnel
+**régresserait** ce nominal : la garde est donc **conditionnelle dès le 1er test
+`@erreur`**, et les tests *succès* / *absence d'effet de bord* du même scénario
+deviennent des **caractérisations anticipées** (`⚠️ probablement early green`), pas des
+drivers. Vérifie l'état des `@vert` antérieurs avant de poser l'ordre. **Déduplique**
+contre les tests existants
 (comportement réellement vérifié, pas le seul nom) — un doublon ressortira en
 `⚠️ EARLY GREEN` chez `tdd-auto`.
 
