@@ -14,7 +14,7 @@
 | 1 | [Un Parent pose un slot de localisation](01-poser-slot-localisation.md) | `@nominal` | ✅ GREEN | 3/3 | ✅ GREEN |
 | 2 | [Slot de durée nulle refusé](02-slot-duree-nulle.md) | `@erreur` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 3 | [Slot de nuit franchissant minuit](03-slot-franchissant-minuit.md) | `@limite` | ✅ GREEN | 1/1 | ✅ GREEN |
-| 4 | [Lieu inexistant](04-lieu-inexistant.md) | `@erreur` | ⏳ Pending | 0/3 | ⏳ Pending |
+| 4 | [Lieu inexistant](04-lieu-inexistant.md) | `@erreur` | ✅ GREEN | 3/3 | ✅ GREEN |
 | 5 | [Chevauchement de localisation](05-chevauchement-localisation.md) | `@limite` | ⏳ Pending | 0/3 | ⏳ Pending |
 | 6 | [Un Invité tente d'éditer un slot](06-invite-edition-refusee.md) | `@erreur` | ⏳ Pending | 0/3 | ⏳ Pending |
 | 7 | [Affecter la responsabilité d'une période](07-affecter-periode.md) | `@nominal` | ⏳ Pending | 0/4 | ⏳ Pending |

@@ -22,6 +22,9 @@ public sealed class PoserSlotHandler
 
     public Result<SlotSnapshot> Handle(PoserSlotCommand commande)
     {
+        if (!_lieux.Existe(commande.LieuId))
+            return Result<SlotSnapshot>.Echec("Le lieu visé n'existe pas dans les lieux du foyer.");
+
         var pose = SlotDeLocalisation.Poser(commande.EnfantId, commande.LieuId, commande.Debut, commande.Fin);
         if (!pose.EstSucces)
             return Result<SlotSnapshot>.Echec(pose.Motif!);
