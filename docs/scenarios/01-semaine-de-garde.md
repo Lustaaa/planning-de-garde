@@ -71,7 +71,7 @@ Scenario: Chevauchement de localisation — créé mais signalé
   And le planning affiche un avertissement de chevauchement entre les slots de Léa le 15/07
 ```
 
-### Scenario 6 — Un Invité tente d'éditer un slot `@erreur` `@vert`
+### Scenario 6 — Un Invité tente d'éditer un slot `@erreur` `@vert` <!-- vert — dec72b8 -->
 
 ```gherkin
 Scenario: Un Invité tente d'éditer un slot
