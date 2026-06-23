@@ -113,7 +113,7 @@ Scenario: Bornes de période paramétrables
   Then le planning partagé indique « Parent B responsable du 16/07 au 23/07 »
 ```
 
-### Scenario 10 — Édition concurrente d'une période `@erreur` `@vert`
+### Scenario 10 — Édition concurrente d'une période `@erreur` `@vert` <!-- vert — 60a88f0 -->
 
 ```gherkin
 Scenario: Édition concurrente — la modification fondée sur un état périmé est rejetée
