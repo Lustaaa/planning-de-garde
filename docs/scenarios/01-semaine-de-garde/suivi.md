@@ -17,7 +17,7 @@
 | 4 | [Lieu inexistant](04-lieu-inexistant.md) | `@erreur` | ✅ GREEN | 3/3 | ✅ GREEN |
 | 5 | [Chevauchement de localisation](05-chevauchement-localisation.md) | `@limite` | ✅ GREEN | 3/3 | ✅ GREEN |
 | 6 | [Un Invité tente d'éditer un slot](06-invite-edition-refusee.md) | `@erreur` | ✅ GREEN | 3/3 | ✅ GREEN |
-| 7 | [Affecter la responsabilité d'une période](07-affecter-periode.md) | `@nominal` | ⏳ Pending | 0/4 | ⏳ Pending |
+| 7 | [Affecter la responsabilité d'une période](07-affecter-periode.md) | `@nominal` | ✅ GREEN | 4/4 | ✅ GREEN |
 | 8 | [Période sans responsable refusée](08-periode-sans-responsable.md) | `@erreur` | ⏳ Pending | 0/2 | ⏳ Pending |
 | 9 | [Bornes de période paramétrables](09-bornes-parametrables.md) | `@limite` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 10 | [Édition concurrente d'une période](10-edition-concurrente.md) | `@erreur` | ⏳ Pending | 0/3 | ⏳ Pending |

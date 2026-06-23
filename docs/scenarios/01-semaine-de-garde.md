@@ -82,7 +82,7 @@ Scenario: Un Invité tente d'éditer un slot
   And le slot reste « Léa à l'école 8h30–16h30 le 15/07 »
 ```
 
-### Scenario 7 — Un Parent affecte la responsabilité d'une période de garde `@nominal`
+### Scenario 7 — Un Parent affecte la responsabilité d'une période de garde `@nominal` `@vert`
 
 ```gherkin
 Scenario: Affecter la responsabilité d'une période de garde
