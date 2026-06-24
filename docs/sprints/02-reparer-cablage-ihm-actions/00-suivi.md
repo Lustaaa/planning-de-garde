@@ -29,7 +29,7 @@
 |---|----------|-----|-------------|-------|--------|
 | 1 | [Poser un slot avec un lieu du foyer](01-poser-slot-lieu-foyer.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 2 | [Affecter une période avec un responsable du foyer](02-affecter-periode-responsable-foyer.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 3 | [Définir un transfert avec récupération et heure](03-definir-transfert-recuperation-heure.md) | `@nominal` | ⏳ Pending | 0/2 | ⏳ Pending |
+| 3 | [Définir un transfert avec récupération et heure](03-definir-transfert-recuperation-heure.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 4 | [Modifier une période depuis le bouton Modifier](04-modifier-periode-bouton.md) | `@nominal` | ⏳ Pending | 0/2 | ⏳ Pending |
 
 ## Doublons / early green anticipés
