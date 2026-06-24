@@ -1,4 +1,5 @@
 using PlanningDeGarde.Infrastructure;
+using PlanningDeGarde.Web;
 using PlanningDeGarde.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,5 +35,9 @@ app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
 app.MapHub<PlanningHub>("/hubs/planning");
+
+// Données de démonstration — l'IHM s'ouvre peuplée plutôt que vide.
+// Persistance en mémoire (aucune base réelle) : amorçage systématique en local.
+app.AmorcerDonneesDemo();
 
 app.Run();
