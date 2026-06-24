@@ -1,6 +1,6 @@
 ---
 name: spec-consolidation
-description: À utiliser pour consolider un backlog de besoins priorisés (99-besoins-fin-itération.md, sortie de /4-retours) avec la spec courante en une nouvelle version versionnée de spec vivante (NN-specification.md) — documentation à jour de la vision et du pourquoi de l'application, source de vérité unique qui réamorce /2-make-gherkin. L'ancienne version reste figée en historique.
+description: À utiliser pour consolider un backlog de besoins priorisés (99-sprint<NN>-besoins-fin-itération.md, sortie de /4-retours) avec la spec courante en une nouvelle version versionnée de spec vivante (NN-specification.md) — documentation à jour de la vision et du pourquoi de l'application, source de vérité unique qui réamorce /2-make-gherkin. L'ancienne version reste figée en historique.
 ---
 
 # Spec-consolidation — Backlog de besoins → spec vivante versionnée
@@ -8,7 +8,8 @@ description: À utiliser pour consolider un backlog de besoins priorisés (99-be
 ## Vue d'ensemble
 
 L'étage qui transforme les **besoins priorisés** d'une itération en la **prochaine
-version de la spec**. Tu pars du backlog `99-besoins-fin-itération.md` (produit par
+version de la spec**. Tu pars du backlog `99-sprint<NN>-besoins-fin-itération.md` (`<NN>` =
+numéro du sprint = préfixe 2 chiffres du dossier, ex. `99-sprint02-besoins-fin-itération.md` ; produit par
 `/4-retours`) et de la **spec courante** (`NN-specification.md` de plus grand préfixe),
 et tu produis `<NN+1>-specification.md` : une **documentation vivante** de l'app — son
 *pourquoi* (vision, objectif, arbitre), son périmètre courant et ses règles de gestion —
@@ -32,14 +33,14 @@ des annexes.
 - **Sortie** = `<NN+1>-specification.md` (`nextSpec`). L'ancienne version **reste
   figée** comme trace historique — ne la modifie pas.
 - La nouvelle spec porte, juste sous le titre, un blockquote de version :
-  `> Version <NN+1> · consolide la v<NN> + le backlog <sprint>/99-besoins-fin-itération.md.`
+  `> Version <NN+1> · consolide la v<NN> + le backlog <sprint>/99-sprint<NN>-besoins-fin-itération.md.`
 
 ## Entrées
 
-- **Backlog** `99-besoins-fin-itération.md` (obligatoire) — besoins classés, arbitre,
+- **Backlog** `99-sprint<NN>-besoins-fin-itération.md` (obligatoire) — besoins classés, arbitre,
   séquence, prochain sujet, risques/questions ouvertes (sortie de `/4-retours`).
 - **Spec courante** `NN-specification.md` — la version à faire évoluer.
-- **Contexte** — le sprint clos (`00-suivi.md`, `*-retours.md`) pour situer ce qui a été
+- **Contexte** — le sprint clos (`00-sprint<NN>-suivi.md`, `*-retours.md`) pour situer ce qui a été
   livré et ce que les retours remettent en cause.
 
 ## Format de sortie
@@ -65,7 +66,7 @@ numérotation des règles reste **continue** dans la version produite.
 
 ## Processus
 
-1. **Explore d'abord.** Lis le backlog `99-besoins-fin-itération.md` en entier, puis la
+1. **Explore d'abord.** Lis le backlog `99-sprint<NN>-besoins-fin-itération.md` en entier, puis la
    spec courante, puis le contexte du sprint clos. Repère : ce qui est **nouveau**, ce
    qui **révise** une règle existante, ce qui **invalide** une règle.
 

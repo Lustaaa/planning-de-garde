@@ -25,8 +25,8 @@ de challenge produit.
 
 **Clôture d'itération :** une fois le backlog écrit, la command `/4-retours` archive les
 fichiers de scénario (`NN-slug.md`) dans `<dossier>/archive/` (script
-`archive-iteration.ps1`), ne laissant à la racine que `00-suivi.md`, le(s) `*-retours.md`
-et `99-besoins-fin-itération.md`.
+`archive-iteration.ps1`), ne laissant à la racine que `00-sprint<NN>-suivi.md`, le(s) `*-retours.md`
+et `99-sprint<NN>-besoins-fin-itération.md` (`<NN>` = numéro du sprint = préfixe 2 chiffres du dossier, ex. `99-sprint02-besoins-fin-itération.md`).
 
 ## Entrées
 
@@ -39,7 +39,7 @@ et `99-besoins-fin-itération.md`.
   **demande à l'utilisateur** (AskUserQuestion) s'il existe des contraintes techniques à
   injecter (ex. issues d'une revue de code GitHub) ou s'il n'y en a pas. Tu reçois le
   résultat de ce bypass dans le contexte — ne l'invente pas.
-- **Contexte** — l'état livré : `00-suivi.md` (scénarios verts), la spec
+- **Contexte** — l'état livré : `00-sprint<NN>-suivi.md` (scénarios verts), la spec
   (`docs/01-specification.md`), le dossier de scénarios. À explorer pour situer chaque
   retour par rapport à l'existant.
 
@@ -61,7 +61,7 @@ ouverte` doit être tranchée par le challenge avant de devenir l'un des trois a
 ## Processus
 
 1. **Explore le contexte d'abord.** Lis le `NN-retours.md` en entier, puis l'état
-   livré (`00-suivi.md`, spec, scénarios concernés). Ne challenge jamais à partir d'une
+   livré (`00-sprint<NN>-suivi.md`, spec, scénarios concernés). Ne challenge jamais à partir d'une
    page blanche : situe chaque retour par rapport au comportement déjà couvert.
 
 2. **Classe et nomme les tensions — avant de poser quoi que ce soit.** Produis la
@@ -94,7 +94,7 @@ ouverte` doit être tranchée par le challenge avant de devenir l'un des trois a
 
 ## Format du fichier de sortie
 
-`<dossier-du-retours>/99-besoins-fin-itération.md` (préfixe `99` = tri en fin de dossier,
+`<dossier-du-retours>/99-sprint<NN>-besoins-fin-itération.md` (`<NN>` = numéro du sprint = préfixe 2 chiffres du dossier, ex. `99-sprint02-besoins-fin-itération.md` ; préfixe `99` = tri en fin de dossier,
 un backlog de fin d'itération ; chemin fourni par `find-retours.ps1`, champ `nextBesoins`).
 
 ````markdown
@@ -183,11 +183,11 @@ tranché : `done: true`, `questions: []`, et `synthese` rempli :
 ```
 
 **Phase écriture** — quand le thread principal renvoie l'ordre d'écrire (avec le chemin
-cible `NN-besoins.md`), l'agent écrit le fichier au format ci-dessus et renvoie
+cible `99-sprint<NN>-besoins-fin-itération.md`), l'agent écrit le fichier au format ci-dessus et renvoie
 **uniquement** :
 
 ```json
-{ "path": "docs/sprints/<dossier>/NN-besoins.md", "besoins": <n>, "prochain_sujet": "<slug>", "notes": "<bref>" }
+{ "path": "docs/sprints/<dossier>/99-sprint<NN>-besoins-fin-itération.md", "besoins": <n>, "prochain_sujet": "<slug>", "notes": "<bref>" }
 ```
 
 Aucun texte hors du JSON dans chaque phase.

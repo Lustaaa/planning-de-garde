@@ -221,7 +221,7 @@ Une fois **tous les scénarios `@vert`** (backend complet, suite verte), une **p
 dédiée** donne l'interface au comportement déjà couvert :
 
 - **Déclencheur** : tous les scénarios du fichier portent `@vert` et la colonne
-  `Statut` du `00-suivi.md` est `✅ GREEN` partout. Tant qu'un scénario manque, l'IHM est
+  `Statut` du `00-sprint<NN>-suivi.md` est `✅ GREEN` partout. Tant qu'un scénario manque, l'IHM est
   prématurée.
 - **Exécutant** : l'agent `ihm-builder` (cf. `.claude/agents/ihm-builder.md`),
   dispatché par la command `/3-tdd-implement` après le dernier scénario.
@@ -305,23 +305,25 @@ statut en direct**. C'est le tableau de bord d'avancement — **un répertoire p
 sujet**, nommé d'après le fichier de scénarios source sans extension
 (`NN-<sujet>.md` → répertoire `NN-<sujet>/`), contenant :
 
-- **`00-suivi.md`** — tableau de bord global : cadrage scaffolding + une ligne par
+- **`00-sprint<NN>-suivi.md`** (`<NN>` = numéro du sprint = préfixe 2 chiffres du
+  dossier, ex. `00-sprint02-suivi.md`) — tableau de bord global : cadrage scaffolding + une ligne par
   scénario avec le **compte de tests** (`X/N` verts) et le statut agrégé. C'est ce que
   lit le thread principal pour suivre l'avancement.
 - **`NN-slug.md`** — **un fichier par scénario Gherkin** (numéro + slug kebab-case du
   titre, ex. `01-poser-slot.md`) : le détail (acceptation BDD, table TPP/FLFI,
   fichiers à créer, design notes) **et** les statuts par test, tenus par `tdd-auto`.
 
-> **Nomenclature du dossier** — le `00-suivi.md` (préfixe `00`) trie en tête ; les
+> **Nomenclature du dossier** — le `00-sprint<NN>-suivi.md` (préfixe `00`) trie en tête ; les
 > `NN-slug.md` suivent l'ordre des scénarios. Deux artefacts **manuels** peuvent
 > cohabiter en fin de dossier et **ne sont jamais écrits ni écrasés par le pipeline
 > TDD** : `NN-retours.md` (retours utilisateur post-IHM, IHM et/ou Tech — saisi à la
-> main) et `99-besoins-fin-itération.md` (backlog priorisé produit par l'étage
+> main) et `99-sprint<NN>-besoins-fin-itération.md` (backlog priorisé produit par l'étage
 > `/4-retours` à partir des retours). Les agents `tdd-analyse`/`tdd-auto`/`ihm-builder`
 > ne touchent **que**
-> `00-suivi.md` + les `NN-slug.md`.
+> `00-sprint<NN>-suivi.md` + les `NN-slug.md`.
 
-**Format `00-suivi.md`** (écrit par `tdd-analyse`) :
+**Format `00-sprint<NN>-suivi.md`** (`<NN>` = numéro du sprint = préfixe 2 chiffres du
+dossier, ex. `00-sprint02-suivi.md` ; écrit par `tdd-analyse`) :
 
 ````markdown
 # Suivi TDD — <Sujet>
@@ -342,7 +344,7 @@ sujet**, nommé d'après le fichier de scénarios source sans extension
 ````markdown
 # Scénario N — <titre> `@nominal`
 
-> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/NN-<sujet>.md`
+> Suivi : [00-sprint<NN>-suivi.md](00-sprint<NN>-suivi.md) · Source : `docs/sprints/NN-<sujet>.md`
 
 **Acceptation (BDD)** : `Should_<résultat métier final>_When_<conditions>` — ⏳ Pending
 
@@ -365,14 +367,14 @@ sujet**, nommé d'après le fichier de scénarios source sans extension
 | `⚠️ EARLY GREEN` | passé au 1er lancement sans code neuf, **non anticipé** (comportement déjà couvert / doublon) → à signaler |
 | `✅ GREEN (caractérisation)` | passé d'emblée mais **anticipé** par `tdd-analyse` (cellule `Contradiction` préfixée `⚠️ probablement early green …`) — early green **attendu**, le test sert de filet de non-régression sur un invariant déjà couvert |
 
-La colonne `Statut` du `00-suivi.md` est **agrégée** : `⏳ Pending` tant qu'aucun test
+La colonne `Statut` du `00-sprint<NN>-suivi.md` est **agrégée** : `⏳ Pending` tant qu'aucun test
 n'est vert, `🔴 RED` dès qu'un cycle est en cours, `✅ GREEN` quand tous les tests
 **et** l'acceptation du scénario sont verts.
 
 **Discipline de mise à jour (obligatoire pour `tdd-auto`)** : avant tout rapport ou
 passage au test suivant, **Edit sur disque** — (1) dans le **`NN-slug.md` du scénario
 courant**, la cellule `Status` du test : `⏳ → 🔴` dès le rouge atteint, `🔴 → ✅`
-(ou `⚠️ EARLY GREEN`) dès le vert, et la ligne `Acceptation` ; (2) dans le **`00-suivi.md`**,
+(ou `⚠️ EARLY GREEN`) dès le vert, et la ligne `Acceptation` ; (2) dans le **`00-sprint<NN>-suivi.md`**,
 le compte `X/N` et le statut agrégé du scénario. Sauter un de ces Edits, ou marquer
 `✅` un early-green, est une violation : le tableau de bord doit refléter l'état réel
 à tout instant. Ces mises à jour sont **distinctes** du tag de cycle `@rouge`/`@vert`

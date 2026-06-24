@@ -43,7 +43,8 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
 4. **Amorce l'itération suivante.** Propose (via `AskUserQuestion`) d'enchaîner
    `/2-make-gherkin` sur la **nouvelle version de spec** (`docs/NN-specification.md`, la
    plus récente) en ciblant le `prochain_sujet` du backlog du sprint clos
-   (`99-besoins-fin-itération.md`). Si le PO valide, invoque `/2-make-gherkin` avec le
+   (`99-sprint<NN>-besoins-fin-itération.md`, `<NN>` = numéro du sprint = préfixe 2 chiffres
+   du dossier, ex. `99-sprint02-besoins-fin-itération.md`). Si le PO valide, invoque `/2-make-gherkin` avec le
    chemin de la spec + le slug du prochain sujet → un nouveau sprint démarre.
 
 ## Notes

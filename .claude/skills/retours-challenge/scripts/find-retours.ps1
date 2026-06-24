@@ -10,8 +10,10 @@
     récemment modifié.
   Détecte les sections via les en-têtes markdown `## ...` : un en-tête contenant « IHM »
   → hasIHM ; contenant « Tech » → hasTech (le bypass AskUser s'appuie sur hasTech=false).
-  Renvoie aussi le chemin du backlog à écrire : `99-besoins-fin-itération.md` (préfixe 99 =
-  tri en fin de dossier, un backlog de fin d'itération), et le prochain préfixe libre pour info.
+  Renvoie aussi le chemin du backlog à écrire : `99-sprint<NN>-besoins-fin-itération.md`
+  (<NN> = numéro du sprint = préfixe 2 chiffres du dossier de sprint, ex. dossier
+  `02-...` -> `99-sprint02-besoins-fin-itération.md` ; préfixe 99 = tri en fin de dossier,
+  un backlog de fin d'itération), et le prochain préfixe libre pour info.
 
 .OUTPUTS
   JSON : { found, retoursPath, dossier, hasIHM, hasTech, sections[], nextPrefix, nextBesoins }
@@ -27,17 +29,29 @@ function Get-Prefix([string]$name) {
   if ($name -match '^(\d{2})-') { return [int]$Matches[1] } else { return -1 }
 }
 
+# Le glob `*-retours.md` ci-dessous cherche le RETOURS PRODUIT du PO (NN-retours.md).
+# Or le dossier de sprint contient aussi un JOURNAL MÉTHODE `99-sprint<NN>-retours.md`
+# (retours sur les agents/skills/commands, consommé par retro-sprint) qui matche le même
+# glob mais n'est PAS un retours produit. On l'exclut explicitement, ainsi que par
+# sécurité tout `99-*-retours.md`, pour ne jamais le prendre pour le retours produit.
+function Test-IsRetoursProduit([string]$name) {
+  if ($name -ilike '99-sprint*-retours.md') { return $false }
+  if ($name -ilike '99-*-retours.md')       { return $false }
+  return $true
+}
+
 # 1. Résoudre le dossier + le fichier de retours
 $retoursFile = $null
 if ($Dossier) {
   if (-not (Test-Path $Dossier)) { throw "Dossier introuvable : $Dossier" }
   $retoursFile = Get-ChildItem -Path $Dossier -Filter '*-retours.md' -File |
+    Where-Object { Test-IsRetoursProduit $_.Name } |
     Sort-Object { Get-Prefix $_.Name } -Descending | Select-Object -First 1
 } else {
   $candidates = Get-ChildItem -Path 'docs/sprints' -Directory -ErrorAction SilentlyContinue |
     ForEach-Object {
       Get-ChildItem -Path $_.FullName -Filter '*-retours.md' -File -ErrorAction SilentlyContinue
-    }
+    } | Where-Object { Test-IsRetoursProduit $_.Name }
   $retoursFile = $candidates | Sort-Object LastWriteTime -Descending | Select-Object -First 1
   if ($retoursFile) { $Dossier = $retoursFile.Directory.FullName }
 }
@@ -59,6 +73,16 @@ $maxPrefix = (Get-ChildItem -Path $Dossier -Filter '*.md' -File |
 if ($null -eq $maxPrefix -or $maxPrefix -lt 0) { $maxPrefix = 0 }
 $nextPrefix = '{0:D2}' -f ([int]$maxPrefix + 1)
 
+# 4. Numéro du sprint = préfixe 2 chiffres du dossier de sprint (ex. `02-...` -> `02`).
+#    Le backlog est nommé `99-sprint<NN>-besoins-fin-itération.md` pour éviter les
+#    collisions d'onglets éditeur entre sprints. Fallback sans préfixe si introuvable.
+$dossierName = Split-Path -Leaf (Resolve-Path $Dossier).Path
+if ($dossierName -match '^(\d{2})-') {
+  $besoinsName = "99-sprint$($Matches[1])-besoins-fin-itération.md"
+} else {
+  $besoinsName = '99-besoins-fin-itération.md'
+}
+
 [pscustomobject]@{
   found       = $true
   retoursPath = (Resolve-Path $retoursFile.FullName).Path
@@ -67,5 +91,5 @@ $nextPrefix = '{0:D2}' -f ([int]$maxPrefix + 1)
   hasTech     = $hasTech
   sections    = @($headers)
   nextPrefix  = $nextPrefix
-  nextBesoins = Join-Path (Resolve-Path $Dossier).Path '99-besoins-fin-itération.md'
+  nextBesoins = Join-Path (Resolve-Path $Dossier).Path $besoinsName
 } | ConvertTo-Json -Compress

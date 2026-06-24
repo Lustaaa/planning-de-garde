@@ -1,6 +1,6 @@
 ---
 name: tdd-auto
-description: Agent TDD autonome pour planning-de-garde. Consomme le dossier de suivi docs/sprints/NN-sujet/ (00-suivi.md + un NN-slug.md par scénario) produit par tdd-analyse et implémente UN scénario Gherkin à la fois en BDD + TDD (boucle externe acceptation + cycles internes RED→GREEN), selon le skill tdd-implement (DDD/Clean Archi, tests sociables, snapshot). Met à jour les cellules de statut du fichier de scénario sur disque en direct (🔴 puis ✅) et le compte X/N dans 00-suivi.md, tague @rouge/@vert dans le fichier de scénarios, commite, puis rend la main (checkpoint). Dispatché par la command /3-tdd-implement.
+description: Agent TDD autonome pour planning-de-garde. Consomme le dossier de suivi docs/sprints/NN-sujet/ (00-sprint<NN>-suivi.md + un NN-slug.md par scénario) produit par tdd-analyse et implémente UN scénario Gherkin à la fois en BDD + TDD (boucle externe acceptation + cycles internes RED→GREEN), selon le skill tdd-implement (DDD/Clean Archi, tests sociables, snapshot). Met à jour les cellules de statut du fichier de scénario sur disque en direct (🔴 puis ✅) et le compte X/N dans 00-sprint<NN>-suivi.md, tague @rouge/@vert dans le fichier de scénarios, commite, puis rend la main (checkpoint). Dispatché par la command /3-tdd-implement.
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -14,12 +14,13 @@ rends la main.
 ## Entrée pré-analysée
 
 Le plan vient du **dossier de suivi** `docs/sprints/<sujet>/` (produit par
-`tdd-analyse`) : le `00-suivi.md` est le tableau de bord (une ligne par scénario, compte
-`X/N` + statut agrégé), et chaque **`NN-slug.md`** porte le détail d'un scénario — sa
-table ordonnée TPP/FLFI **est** ton plan. **Ne refais pas l'analyse** — exécute la
-liste telle quelle. Repère dans `00-suivi.md` le **premier scénario non terminé** (statut
-≠ `✅ GREEN`, ou le scénario demandé), puis ouvre son `NN-slug.md` pour la table de
-tests.
+`tdd-analyse`) : le `00-sprint<NN>-suivi.md` (`<NN>` = numéro du sprint = préfixe 2
+chiffres du dossier, ex. `00-sprint02-suivi.md`) est le tableau de bord (une ligne par
+scénario, compte `X/N` + statut agrégé), et chaque **`NN-slug.md`** porte le détail d'un
+scénario — sa table ordonnée TPP/FLFI **est** ton plan. **Ne refais pas l'analyse** —
+exécute la liste telle quelle. Repère dans `00-sprint<NN>-suivi.md` le **premier scénario
+non terminé** (statut ≠ `✅ GREEN`, ou le scénario demandé), puis ouvre son `NN-slug.md`
+pour la table de tests.
 
 ## Machine à états (autonome, pour UN scénario Gherkin)
 
@@ -28,7 +29,7 @@ PREP → [ RED_PHASE → GREEN_PHASE ]× (chaque test unitaire) → SCENARIO_DON
 ```
 
 ### PREP
-- Lis le `00-suivi.md` + le `NN-slug.md` du scénario ciblé + le scénario Gherkin source +
+- Lis le `00-sprint<NN>-suivi.md` + le `NN-slug.md` du scénario ciblé + le scénario Gherkin source +
   l'analyse technique.
 - Vérifie la solution .NET. **Si rien n'est scaffoldé** (pas de projets) → **renvoie
   une question de scaffolding** (round-trip), ne scaffolde jamais en silence une
@@ -42,7 +43,7 @@ PREP → [ RED_PHASE → GREEN_PHASE ]× (chaque test unitaire) → SCENARIO_DON
   **Spy** sur le port de notification). L'**IHM Blazor et le SignalR réel sont
   repoussés à la phase finale** (`ihm-builder`) — n'écris pas de composant Blazor ici.
   Passe la ligne **Acceptation** du `NN-slug.md` à `🔴 RED`, le statut agrégé du
-  scénario dans `00-suivi.md` à `🔴 RED`, et le tag de cycle du scénario source
+  scénario dans `00-sprint<NN>-suivi.md` à `🔴 RED`, et le tag de cycle du scénario source
   `@pending`→`@rouge`.
 
 ### RED_PHASE (par test unitaire de la table)
@@ -51,11 +52,16 @@ table, dans l'ordre). Écris le test, atteins l'**échec comportemental** (véri
 **compte de tests exécutés** : pas `0 total` ; le test apparaît nommément).
 **OBLIGATOIRE — avant tout rapport** : `Edit` le `NN-slug.md` du scénario sur disque,
 cellule `Status` du test courant `⏳ Pending → 🔴 RED`. Si le test passe d'emblée →
-**V4 / EARLY GREEN** : ne marque pas `✅`, mets `⚠️ EARLY GREEN`, et signale (doublon
-probable). **Exception — early green anticipé** : si la cellule `Contradiction` du test
-est préfixée `⚠️ probablement early green …` (annotation `tdd-analyse`), le 1er passage
-est **attendu** → marque `✅ GREEN (caractérisation)` (filet de non-régression), pas
-`⚠️`, et mentionne-le sobrement (pas une alarme).
+**V4 / EARLY GREEN** : ne marque pas `✅`, mets `⚠️ EARLY GREEN`.
+- **Early green anticipé (attendu)** : si la cellule `Contradiction` du test est
+  préfixée `⚠️ probablement early green …` (annotation `tdd-analyse`), le 1er passage
+  est **attendu** → marque `✅ GREEN (caractérisation)` (filet de non-régression), pas
+  `⚠️`, et mentionne-le sobrement (pas une alarme). Pas de question.
+- **Early green INATTENDU (non anticipé)** : **STOP immédiat** → n'enchaîne pas, ne
+  commite pas. Renvoie `{"type":"question", …}` pour que le PO tranche (doublon à
+  supprimer / filet de non-régression à conserver / câblage à investiguer). C'est un
+  signal : un test censé piloter du code passe sans rouge = soit le comportement est
+  déjà couvert, soit le test n'observe rien. Le PO décide avant tout commit.
 
 ### GREEN_PHASE (par test unitaire)
 Implémente le **minimum** (YAGNI, TPP : constante → conditionnel → général), règle
@@ -63,16 +69,16 @@ métier **dans l'agrégat** (Tell-Don't-Ask), domaine **sans framework**. Lance 
 → vert. **Non-régression** : relance la suite complète ; une régression se corrige
 avant de continuer. Puis **refactor sous filet vert** (même comportement). **OBLIGATOIRE
 — avant de continuer** : `Edit` le `NN-slug.md`, cellule `🔴 RED → ✅ GREEN`, **et** le
-`00-suivi.md`, compte `Tests` du scénario incrémenté (`X/N`). Tests restants dans la
+`00-sprint<NN>-suivi.md`, compte `Tests` du scénario incrémenté (`X/N`). Tests restants dans la
 table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
 
 ### SCENARIO_DONE
 - Le test d'acceptation **et** la suite complète sont verts → passe la ligne
-  **Acceptation** du `NN-slug.md` à `✅ GREEN`, et dans `00-suivi.md` le statut agrégé du
+  **Acceptation** du `NN-slug.md` à `✅ GREEN`, et dans `00-sprint<NN>-suivi.md` le statut agrégé du
   scénario à `✅ GREEN` (compte `Tests` = `N/N`).
 - Dans le **fichier de scénarios source**, remplace le tag de cycle `@rouge`→`@vert`
   (le tag de type reste) et ajoute `# vert — <hash court>`.
-- **Commit** : tests + implémentation + dossier de suivi mis à jour (`00-suivi.md` +
+- **Commit** : tests + implémentation + dossier de suivi mis à jour (`00-sprint<NN>-suivi.md` +
   `NN-slug.md`) + `@vert` du scénario, message référant le scénario (ex. `feat:
   scénario 3 — réservation d'un créneau libre`).
 - **STOP & WAIT** : rends la main avec le récap. Le thread principal décidera
@@ -87,14 +93,28 @@ table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
 - Règle métier dans l'agrégat, pas le handler ; domaine sans EF/SignalR.
 - **Un seul scénario Gherkin par run/commit** (traçabilité).
 - **Tenir le suivi à jour à chaque transition** — `NN-slug.md` (cellule du test) **et**
-  `00-suivi.md` (compte `X/N` + statut agrégé) doivent refléter l'état réel à tout instant
+  `00-sprint<NN>-suivi.md` (compte `X/N` + statut agrégé) doivent refléter l'état réel à tout instant
   (sauter un de ces Edit est une violation).
 - **Ne JAMAIS toucher** un `NN-retours.md` (retours utilisateur manuels) ni un
-  `99-besoins-fin-itération.md` (backlog `/4-retours`) du dossier — hors pipeline TDD.
+  `99-sprint<NN>-besoins-fin-itération.md` (backlog `/4-retours`) du dossier — hors pipeline TDD.
+
+## Quand poser une question (round-trip `type:question`)
+
+Tu **dois** stopper et renvoyer `type:question` (jamais `type:result` ni commit) dans
+ces cas :
+- **Scaffolding** : aucune solution .NET en place.
+- **Early green inattendu** (non anticipé par `tdd-analyse`) — *obligatoire* : laisse le
+  PO trancher (doublon / filet / câblage à investiguer) avant tout commit.
+
+Tu **peux** stopper et renvoyer `type:question` quand tu détectes un **problème
+d'implémentation** qui dépasse le YAGNI du test courant : câblage incohérent ou
+manquant, règle métier ambiguë, test impossible à rendre rouge proprement, contradiction
+entre le scénario et le code existant, choix d'architecture structurant. Ne devine pas
+en silence — expose le problème et les options.
 
 ## Sortie (JSON seul, aucun texte autour)
 
-**Cas question** (scaffolding ou ambiguïté technique réelle) :
+**Cas question** (scaffolding, early green inattendu, ou problème d'implémentation) :
 
 ```json
 {
@@ -125,7 +145,7 @@ table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
   "impl_files": ["src/.../ReservationService.cs"],
   "red": "dotnet test --filter … → 1 failed (attendu)",
   "green": "dotnet test → N passed, 0 failed",
-  "suivi": "docs/sprints/NN-<sujet>/00-suivi.md (scénario 3 ✅, 3/3) + 03-slug.md",
+  "suivi": "docs/sprints/NN-<sujet>/00-sprint<NN>-suivi.md (scénario 3 ✅, 3/3) + 03-slug.md",
   "scenarios_file": "docs/sprints/NN-<sujet>.md (scénario 3 taggé @vert)",
   "commit": "<hash court> feat: scénario 3 — …",
   "next_scenario": 4,

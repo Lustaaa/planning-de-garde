@@ -16,7 +16,8 @@ main pour que l'utilisateur teste visuellement lui-même.
 
 ## Ce que tu fais
 
-1. **PREP — vérifie que le gate est légitime.** Lis le `00-suivi.md` du sprint. **Tous**
+1. **PREP — vérifie que le gate est légitime.** Lis le `00-sprint<NN>-suivi.md` du sprint
+   (`<NN>` = numéro du sprint = préfixe 2 chiffres du dossier, ex. `00-sprint02-suivi.md`). **Tous**
    les scénarios doivent être `✅ GREEN` et l'IHM livrée. Si un scénario n'est pas vert
    → **renvoie une question** (le gate est prématuré), ne prépare rien.
 
@@ -35,7 +36,7 @@ main pour que l'utilisateur teste visuellement lui-même.
      revue de code), que les retours portent sur l'usage de l'IHM,
    - une section `## IHM - général`,
    - **une section `## IHM - <route>` par route/vue livrée** (déduite des vues de
-     `ihm-builder` / du `00-suivi.md`, ex. `/planning`, `/planning/poser-slot`…), chacune
+     `ihm-builder` / du `00-sprint<NN>-suivi.md`, ex. `/planning`, `/planning/poser-slot`…), chacune
      avec une puce vide `- ` prête à remplir,
    - une section `## Tech (optionnel)` avec une puce d'amorce (contraintes techniques si
      l'utilisateur en a ; sinon il la laisse vide → bypass dans `/4-retours`).

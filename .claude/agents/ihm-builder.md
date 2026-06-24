@@ -27,8 +27,9 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
 ```
 
 ### PREP
-- Lis le fichier de scénarios source + le dossier de suivi (`00-suivi.md` + les
-  `NN-slug.md`) + l'analyse technique. **Tous les scénarios doivent être `✅ GREEN`**
+- Lis le fichier de scénarios source + le dossier de suivi (`00-sprint<NN>-suivi.md`,
+  `<NN>` = numéro du sprint = préfixe 2 chiffres du dossier, ex. `00-sprint02-suivi.md`,
+  + les `NN-slug.md`) + l'analyse technique. **Tous les scénarios doivent être `✅ GREEN`**
   côté backend ; si un scénario n'est pas terminé → **renvoie une question** (l'IHM est
   prématurée), ne construis pas sur un socle incomplet.
 - Catalogue les **use cases/handlers** existants (Application) et leurs entrées/sorties

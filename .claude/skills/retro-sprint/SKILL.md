@@ -25,9 +25,18 @@ PR du sprint).
 
 ## Entrées
 
-- **Sprint clos** — le dossier `docs/sprints/<sprint>/` (`00-suivi.md`, `*-retours.md`,
-  `99-besoins-fin-itération.md`, scénarios sous `archive/`) : la trace de ce qui s'est
-  passé.
+- **Journal méthode `99-sprint<NN>-retours.md` (SOURCE PRIMAIRE)** — le journal des
+  retours méthode rempli **pendant le sprint** par le thread principal : chaque ligne
+  `| Date | Cible (agent/skill/command) | Retour | Décision prise |` est un retour à la
+  volée du PO sur un fichier du pipeline. C'est le **canal privilégié** des retours du
+  PO sur la méthode. Lis-le **en premier** : transforme **chaque entrée consignée** en
+  une **proposition d'édition concrète** de l'agent/skill/command ciblé (cible précise +
+  changement en clair + raison reprise du retour). À ne pas confondre avec le backlog
+  produit `99-sprint<NN>-besoins-fin-itération.md` ni avec le retours produit `NN-retours.md`.
+- **Sprint clos** — le dossier `docs/sprints/<sprint>/` (`00-sprint<NN>-suivi.md`,
+  `*-retours.md`, `99-sprint<NN>-besoins-fin-itération.md` — `<NN>` = numéro du sprint =
+  préfixe 2 chiffres du dossier, ex. `00-sprint02-suivi.md` ; scénarios sous `archive/`) :
+  la trace de ce qui s'est passé.
 - **Le pipeline** — les fichiers `.claude/agents/`, `.claude/skills/`, `.claude/commands/`
   effectivement exercés pendant le sprint.
 - **Frictions observées** — transmises par le thread principal (le PO les a vécues : un
@@ -37,8 +46,11 @@ PR du sprint).
 
 ## Processus
 
-1. **Explore d'abord.** Lis les artefacts du sprint clos et les fichiers du pipeline
-   concernés. Croise avec les frictions transmises. Ne pars pas d'une page blanche.
+1. **Explore d'abord — le journal méthode en premier.** Lis le journal
+   `99-sprint<NN>-retours.md` (source primaire) puis les autres artefacts du sprint clos et
+   les fichiers du pipeline concernés. Croise avec les frictions transmises. Ne pars pas
+   d'une page blanche. **Chaque entrée du journal méthode devient au moins une action**
+   (cf. étape 3).
 
 2. **Bilan SCRUM — honnête, sans complaisance.**
    - **Ce qui a bien marché** (à conserver / renforcer) — les mécaniques du pipeline qui
@@ -48,7 +60,9 @@ PR du sprint).
 
 3. **Transforme chaque friction en action concrète.** Une action = `{ cible (fichier
    précis), édition (ce qu'on change, en clair), raison }`. Pas d'action vague (« mieux
-   documenter ») : pointe le fichier et le changement. Si une friction n'a pas de remède
+   documenter ») : pointe le fichier et le changement. **Chaque entrée du journal méthode
+   `99-sprint<NN>-retours.md` donne lieu à une action** ciblant la `Cible` consignée (en
+   tenant compte de la `Décision prise` déjà notée). Si une friction n'a pas de remède
    outillé clair, formule-la en question au PO plutôt qu'en fausse action.
 
 4. **Round-trip de priorisation.** Présente les actions ; le PO valide **lesquelles
@@ -66,7 +80,7 @@ PR du sprint).
 # Rétrospective — <sprint>
 
 > Rétro de la **méthode** (pipeline d'agents/skills/commands) · produite par `/7-retrospective`.
-> Distincte de `99-besoins-fin-itération.md` (rétro produit).
+> Distincte de `99-sprint<NN>-besoins-fin-itération.md` (rétro produit).
 
 ## Ce qui a bien marché
 
