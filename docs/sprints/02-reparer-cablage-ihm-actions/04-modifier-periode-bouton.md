@@ -7,7 +7,7 @@
 > du test existant `Modifier_une_periode_sur_un_etat_a_jour_remplace_le_responsable`
 > (non compté). Compte effectif : 1/1.
 
-[← Retour au suivi](00-suivi.md)
+[← Retour au suivi](00-sprint02-suivi.md)
 
 > **Acceptation (BDD)** —
 > `Should_Afficher_la_periode_Parent_B_responsable_du_14_07_au_21_07_When_un_parent_ouvre_le_formulaire_inline_pre_rempli_choisit_Parent_B_et_enregistre`

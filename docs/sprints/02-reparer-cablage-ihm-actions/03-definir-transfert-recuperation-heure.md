@@ -8,7 +8,7 @@
 > capturé une fois → handlers `onchange` invalidés par le re-render des `InputSelect`),
 > corrigé en re-issuant `FindAll` avant chaque `Change` — pas un défaut de production.
 
-[← Retour au suivi](00-suivi.md)
+[← Retour au suivi](00-sprint02-suivi.md)
 
 > **Acceptation (BDD)** —
 > `Should_Afficher_le_transfert_depose_Parent_A_recupere_Parent_B_ecole_08h_le_21_07_dans_les_transferts_du_planning_When_un_parent_renseigne_recuperation_lieu_et_heure_et_valide`

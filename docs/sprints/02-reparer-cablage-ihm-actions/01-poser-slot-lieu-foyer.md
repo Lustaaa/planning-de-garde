@@ -1,10 +1,10 @@
 # Scénario 1 — Poser un slot avec un lieu du foyer `@nominal`
 
 > **État acceptation : ✅ GREEN** — driver #2 passé sans rouge (⚠️ early green) :
-> la production était déjà câblée (cf. cadrage `00-suivi.md`), le test sert de filet
+> la production était déjà câblée (cf. cadrage `00-sprint02-suivi.md`), le test sert de filet
 > de non-régression sur l'enregistrement effectif des valeurs métier.
 
-[← Retour au suivi](00-suivi.md)
+[← Retour au suivi](00-sprint02-suivi.md)
 
 > **Acceptation (BDD)** —
 > `Should_Afficher_le_slot_de_Lea_a_l_ecole_le_15_07_de_08h30_a_16h30_dans_la_localisation_du_planning_When_un_parent_choisit_un_lieu_du_foyer_et_valide`

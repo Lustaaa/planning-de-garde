@@ -5,7 +5,7 @@
 > était déjà entièrement câblé. Tests conservés comme filet de non-régression sur le
 > peuplement du sélecteur et l'enregistrement effectif des valeurs métier.
 
-[← Retour au suivi](00-suivi.md)
+[← Retour au suivi](00-sprint02-suivi.md)
 
 > **Acceptation (BDD)** —
 > `Should_Afficher_la_periode_Parent_A_responsable_du_14_07_au_21_07_dans_la_responsabilite_du_planning_When_un_parent_choisit_un_responsable_du_foyer_et_valide`
