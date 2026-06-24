@@ -1,6 +1,6 @@
 ---
-description: Ferme la boucle d'itération — challenge un NN-retours.md (retours IHM/Tech) via l'agent retours-challenge, classe et priorise les besoins, écrit le backlog 99-besoins-fin-itération.md, archive les scénarios de l'itération, puis enchaîne /5-consolidation (nouvelle version de spec) en vue de /2-make-gherkin.
-argument-hint: "[dossier de scénarios ou chemin du NN-retours.md] (optionnel)"
+description: Ferme la boucle d'itération — challenge la section `# Retours produit (PO)` du fichier unifié 99-sprint<NN>-retours.md (retours IHM/Tech) via l'agent retours-challenge, classe et priorise les besoins, écrit le backlog 99-sprint<NN>-besoins-fin-itération.md, archive les scénarios de l'itération, puis enchaîne /5-consolidation (nouvelle version de spec) en vue de /2-make-gherkin.
+argument-hint: "[dossier de scénarios ou chemin du 99-sprint<NN>-retours.md] (optionnel)"
 ---
 
 # /4-retours — Retours utilisateur → besoins priorisés
@@ -18,24 +18,27 @@ l'agent.
 > (main → agent) et valeur de retour de l'agent (agent → main).
 
 Cette command **ferme la boucle** : `/3-tdd-implement` (+ IHM) livre un incrément,
-l'utilisateur le teste et dépose ses retours dans `NN-retours.md`, puis `/4-retours`
-les transforme en besoins priorisés qui réamorcent `/2-make-gherkin`.
+l'utilisateur le teste et dépose ses retours dans la section `# Retours produit (PO)` du
+fichier unifié `99-sprint<NN>-retours.md`, puis `/4-retours` les transforme en besoins
+priorisés qui réamorcent `/2-make-gherkin`.
 
-Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `NN-retours.md`.
+Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `99-sprint<NN>-retours.md`.
 
 ## Déroulé
 
 1. **Localise le retours (script).** Exécute
    `pwsh -NoProfile -File .claude/skills/retours-challenge/scripts/find-retours.ps1`
    (avec `-Dossier <chemin>` si `$ARGUMENTS` désigne un dossier ; sinon le script retient
-   le `*-retours.md` le plus récent sous `docs/sprints/*/`). Récupère le JSON :
-   `retoursPath`, `dossier`, `hasIHM`, `hasTech`, `sections`, `nextBesoins`.
-   - Si `found=false` → préviens l'utilisateur qu'aucun `NN-retours.md` n'existe et
-     stoppe. **Ne lis pas** le retours toi-même — l'agent s'en charge.
+   le `99-sprint<NN>-retours.md` le plus récent sous `docs/sprints/*/`). Récupère le JSON :
+   `retoursPath` (= `99-sprint<NN>-retours.md`), `dossier`, `hasIHM`, `hasTech` (détectés
+   dans la section `# Retours produit (PO)`), `sections`, `nextBesoins`.
+   - Si `found=false` → préviens l'utilisateur qu'aucun `99-sprint<NN>-retours.md` n'existe
+     et stoppe. **Ne lis pas** le retours toi-même — l'agent s'en charge.
 
-2. **Bypass Tech (conditionnel).** Si `hasTech=false`, **demande** via `AskUserQuestion` :
-   « Le fichier de retours ne contient pas de section Tech. Y a-t-il des contraintes
-   techniques à injecter (dette, perf, archi, issues d'une revue GitHub) ? » — options :
+2. **Bypass Tech (conditionnel).** Si `hasTech=false` (pas de sous-section `## Tech` dans
+   la section `# Retours produit (PO)`), **demande** via `AskUserQuestion` :
+   « La section Retours produit (PO) ne contient pas de sous-section Tech. Y a-t-il des
+   contraintes techniques à injecter (dette, perf, archi, issues d'une revue GitHub) ? » — options :
    *Aucune (Recommandé)* / *Oui, je les précise* (l'utilisateur saisit le texte) /
    *Les chercher dans une revue de code*. Conserve la réponse **brute** pour la passer à
    l'agent. Si `hasTech=true`, saute cette étape (les retours Tech sont déjà dans le
@@ -43,7 +46,7 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `NN-ret
 
 3. **Dispatch (agent `retours-challenge`).** Lance-le avec : `retoursPath`, le chemin
    cible `nextBesoins`, le résultat du bypass Tech (étape 2), et les chemins de contexte
-   (`<dossier>/00-suivi.md`, `docs/01-specification.md`). Garde son `agentId`.
+   (`<dossier>/00-sprint<NN>-suivi.md`, `docs/01-specification.md`). Garde son `agentId`.
    - **Fallback** : type absent du registre → `general-purpose` avec « applique le skill
      `retours-challenge`, mode agent orchestré » + les mêmes chemins. Ne bascule **pas**
      en inline.
@@ -63,20 +66,21 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `NN-ret
    d'écrire le backlog via `AskUserQuestion`.
 
 6. **Écriture (même agent).** À l'accord, `SendMessage` l'ordre d'écrire avec le chemin
-   `nextBesoins`. L'agent écrit `99-besoins-fin-itération.md` (au format imposé du skill) et renvoie
-   `{ path, besoins, prochain_sujet, notes }`.
+   `nextBesoins`. L'agent écrit `99-sprint<NN>-besoins-fin-itération.md` (`<NN>` = numéro du
+   sprint = préfixe 2 chiffres du dossier, ex. `99-sprint02-besoins-fin-itération.md` ; au
+   format imposé du skill) et renvoie `{ path, besoins, prochain_sujet, notes }`.
 
 7. **Archivage de l'itération (script).** Une fois le backlog écrit, **clôs l'itération** :
    exécute
    `pwsh -NoProfile -File .claude/skills/retours-challenge/scripts/archive-iteration.ps1 -Dossier <dossier>`.
    Le script déplace les fichiers de scénario (`NN-slug.md`) dans `<dossier>/archive/`, ne
-   laissant à la racine que `00-suivi.md`, le(s) `*-retours.md` et
-   `99-besoins-fin-itération.md`, et réécrit les liens de `00-suivi.md` vers `archive/`.
+   laissant à la racine que `00-sprint<NN>-suivi.md`, le fichier unifié `99-sprint<NN>-retours.md`
+   et `99-sprint<NN>-besoins-fin-itération.md`, et réécrit les liens de `00-sprint<NN>-suivi.md` vers `archive/`.
    Présente le récap (champ `archived` / `kept`).
 
 8. **Handoff consolidation.** Présente le `prochain_sujet` et **propose** d'enchaîner
    `/5-consolidation` via `AskUserQuestion` : l'étage de consolidation fusionne ce backlog
-   `99-besoins-fin-itération.md` avec la spec courante pour produire la **nouvelle version
+   `99-sprint<NN>-besoins-fin-itération.md` avec la spec courante pour produire la **nouvelle version
    de spec** (`NN-specification.md`), qui devient ensuite l'entrée de `/2-make-gherkin`.
    Si l'utilisateur valide, invoque `/5-consolidation`. (Ne saute **pas** vers
    `/2-make-gherkin` directement : la consolidation de la spec vivante vient d'abord.)
@@ -95,6 +99,7 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `NN-ret
 - **Un seul prochain sujet** désigné pour `/2-make-gherkin` ; le reste est séquencé dans
   le backlog. Un `bug` (comportement vert cassé) repart par `/3-tdd-implement` ciblé,
   pas par make-gherkin.
-- L'agent ne touche **que** le `99-besoins-fin-itération.md` cible — jamais le `NN-retours.md` ni le
-  `00-suivi.md` / les `NN-slug.md`.
-- Entrée attendue : un `NN-retours.md` saisi par l'utilisateur après test d'un incrément.
+- L'agent ne touche **que** le `99-sprint<NN>-besoins-fin-itération.md` cible — jamais le
+  fichier unifié `99-sprint<NN>-retours.md` ni le `00-sprint<NN>-suivi.md` / les `NN-slug.md`.
+- Entrée attendue : la section `# Retours produit (PO)` de `99-sprint<NN>-retours.md`,
+  remplie par l'utilisateur après test d'un incrément.

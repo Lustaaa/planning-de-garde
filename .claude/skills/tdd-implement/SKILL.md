@@ -11,10 +11,32 @@ Implémenter un fichier de scénarios `make-gherkin` en **BDD + TDD**, **un scé
 à la fois**. C'est la 3ᵉ pipeline : entrée = `docs/sprints/<sujet>.md`,
 sortie = du code testé, commité scénario par scénario.
 
-**Backend d'abord, IHM en fin.** Les scénarios couvrent le **backend** (domaine +
-use cases + ports doublés), l'acceptation s'arrêtant à la frontière de l'Application.
-L'**IHM Blazor** (vues + câblage SignalR réel) est construite en **une phase finale**,
-une fois tous les scénarios verts (cf. « Phase IHM finale »).
+**Backend d'abord, IHM en fin — sauf scénario IHM.** Les scénarios **backend** couvrent
+le domaine + use cases + ports doublés, l'acceptation s'arrêtant à la frontière de
+l'Application. L'**IHM Blazor restante** (écrans sans scénario dédié) est construite en
+**une phase finale**, une fois les scénarios backend verts (cf. « Phase IHM finale »).
+**Un scénario dont le comportement/défaut vit dans le `.razor`** (interactivité,
+`@onclick`, `@bind`, render mode, DI réelle, SignalR) est un **scénario IHM** : il est
+routé vers `ihm-builder` et **piloté par un test d'acceptation de niveau runtime** (cf.
+« Niveau de test = niveau du symptôme »), pas planifié comme un test backend à doublures.
+
+> **Niveau de test = niveau du symptôme (règle cardinale).** Le **niveau du test
+> d'acceptation doit correspondre au niveau du symptôme** :
+> - **domaine pur** → test **unitaire** ;
+> - **orchestration Application** → test **handler / intégration** ;
+> - **comportement IHM / interactivité / runtime** → test **E2E / runtime** sur l'app
+>   réellement câblée (DI réelle ; ex. Playwright ou `WebApplicationFactory` sur l'hôte
+>   réel), **JAMAIS bUnit seul** comme preuve d'acceptation d'un bug runtime.
+>
+> Pour un bug d'**usage/runtime**, un **test bUnit composant avec doublures est
+> INSUFFISANT** : bUnit **rend toujours** le composant interactif et câble des doublures,
+> donc il **ne peut PAS** attraper un **render mode manquant** (ni une DI/SignalR réelle
+> absente) et **« ment au vert »** alors que l'app réelle échoue. Le rouge doit échouer
+> **comme l'utilisateur le voit**.
+>
+> **Garde-fou concret.** Un **render mode Blazor manquant** (`@rendermode
+> InteractiveServer` absent de `App.razor` / des pages) rend l'app **statique** :
+> `@onclick` et `@bind` sont **morts**. **bUnit ne l'attrape jamais.**
 
 **Principe central — la double boucle :**
 - **Boucle externe (BDD)** : chaque `Scenario N` Gherkin devient un **test
@@ -103,12 +125,15 @@ toute facilité d'implémentation.
      commande (`pwsh .claude/skills/run/scripts/run.ps1`). Cible le projet Web réel
      créé. (S'ils existent déjà, ne les recrée pas.)
 
-3. **Boucle externe (BDD) — écris le test d'acceptation rouge.** Traduis le
-   scénario cible en un test exécutable **à la frontière de l'Application**
-   (use case / handler), **pas** au niveau de l'IHM Blazor. Pendant les scénarios on
-   ne construit **que le backend** (domaine + use cases + ports doublés) ; l'**IHM
-   Blazor et le câblage SignalR réel sont repoussés à la phase finale** (cf. « Phase
-   IHM finale »). L'observable d'un `Then` se vérifie donc via le retour du handler,
+3. **Boucle externe (BDD) — écris le test d'acceptation rouge.** *(Pour un **scénario
+   backend**. Un `🖥️ scénario IHM` suit le cycle « Scénario IHM (RED→GREEN runtime) »
+   et est mené par `ihm-builder` — son acceptation est un test runtime, pas le test à la
+   frontière Application décrit ici.)* Traduis le scénario cible en un test exécutable
+   **à la frontière de l'Application** (use case / handler), **pas** au niveau de l'IHM
+   Blazor. Pendant les scénarios backend on ne construit **que le backend** (domaine +
+   use cases + ports doublés) ; l'**IHM Blazor et le câblage SignalR réel sont repoussés
+   à la phase finale** (cf. « Phase IHM finale ») **ou** traités via un scénario IHM
+   dédié. L'observable d'un `Then` se vérifie donc via le retour du handler,
    l'état exposé du repository (fake), ou un **Spy** sur le port de notification.
    - `Given` → arrange (Fakes / Givens, état initial) via **builders / `FromSnapshot`**,
      jamais via le mutateur métier testé (cf. *Discipline DDD*).
@@ -213,23 +238,45 @@ toute facilité d'implémentation.
    **ambiguïté technique réelle** (choix structurant non tranché par l'analyse
    technique), pose une question (round-trip) plutôt que de deviner en silence.
 
+## Scénario IHM (RED→GREEN piloté par un test runtime)
+
+Quand un scénario porte sur l'**IHM** (comportement/défaut dans le `.razor` :
+interactivité, `@onclick`, `@bind`, render mode, rendu, navigation, DI réelle, SignalR),
+il **n'est pas** planifié comme un test backend à doublures et **n'attend pas** la phase
+finale. `tdd-analyse` l'**étiquette `🖥️ scénario IHM`** et le route vers `ihm-builder`,
+qui le mène en **vrai cycle RED→GREEN** :
+
+1. **Rouge runtime** — un test d'acceptation de **niveau runtime** sur l'**app réellement
+   câblée** (DI réelle ; Playwright ou `WebApplicationFactory` sur l'hôte réel) qui
+   **reproduit le symptôme PO** et **échoue** comme l'utilisateur le voit. **Pas bUnit**
+   comme preuve (il passerait à vide).
+2. **Fix `.razor` / câblage / render mode** — minimum nécessaire (ajout du `@rendermode
+   InteractiveServer`, `@onclick`/`@bind`, DI, hub SignalR). Aucune règle métier dans l'UI.
+3. **Vert** — le test runtime passe, suite complète verte.
+
+`tdd-auto` reste **backend/Application uniquement** : s'il reçoit un scénario IHM, il le
+**refuse** (round-trip) au lieu de produire un test bUnit composant qui passe à vide.
+
 ## Phase IHM finale
 
-Le front **Blazor n'est pas construit scénario par scénario** : pendant la boucle BDD,
-chaque scénario s'arrête à la frontière de l'Application (use cases + ports doublés).
-Une fois **tous les scénarios `@vert`** (backend complet, suite verte), une **phase
-dédiée** donne l'interface au comportement déjà couvert :
+Le front **Blazor restant** (écrans sans scénario IHM dédié) n'est pas construit scénario
+par scénario : pendant la boucle BDD, chaque scénario **backend** s'arrête à la frontière
+de l'Application (use cases + ports doublés). Une fois **tous les scénarios `@vert`**
+(backend **et** scénarios IHM, suite verte), une **phase dédiée** donne l'interface au
+comportement déjà couvert :
 
 - **Déclencheur** : tous les scénarios du fichier portent `@vert` et la colonne
-  `Statut` du `00-suivi.md` est `✅ GREEN` partout. Tant qu'un scénario manque, l'IHM est
+  `Statut` du `00-sprint<NN>-suivi.md` est `✅ GREEN` partout. Tant qu'un scénario manque, l'IHM est
   prématurée.
 - **Exécutant** : l'agent `ihm-builder` (cf. `.claude/agents/ihm-builder.md`),
-  dispatché par la command `/3-tdd-implement` après le dernier scénario.
+  **unique agent autorisé à écrire l'IHM**, dispatché par la command `/3-tdd-implement`
+  après le dernier scénario.
 - **Contenu** : composants Blazor fins qui **appellent les use cases** (aucune règle
   métier dans l'UI), puis **câblage SignalR réel** — les ports temps réel doublés par
   un Spy pendant les scénarios (`INotificateurPlanning`) reçoivent leur implémentation
   hub en Infrastructure/Web. Tests de composant `bUnit` et/ou E2E pour les parcours
-  clés ; on ne double que les ports, jamais le domaine.
+  clés ; on ne double que les ports, jamais le domaine. **bUnit ne sert jamais de preuve
+  d'acceptation d'un bug runtime** (cf. « niveau de test = niveau du symptôme »).
 - **Vérification** : `dotnet build` vert + suite complète verte (aucune régression
   backend) ; validation visuelle via le skill `run`
   (`pwsh .claude/skills/run/scripts/run.ps1`). Puis commit dédié de l'IHM.
@@ -245,15 +292,19 @@ pas après chaque scénario. MVP volontairement simple : il **ne guide pas** et 
 pas l'écran. Il fait la part vérifiable et mécanique, puis rend la main :
 
 - **Vérifie** que back + IHM sont up : `dotnet build` vert + suite complète verte.
-- **Prépare** le squelette du fichier de retours du sprint (`NN-retours.md`, une section
-  `## IHM - <route>` par vue livrée + `## IHM - général` + `## Tech (optionnel)`), sans
-  jamais écraser un retours existant.
+- **Vérifie/complète** la section `# Retours produit (PO)` du **fichier unifié**
+  `99-sprint<NN>-retours.md` (déjà scaffoldé par `tdd-analyse`) : une sous-section
+  `## IHM - <route>` par vue livrée + `## IHM - général` + `## Tech (optionnel)`, sans
+  jamais écraser une sous-section déjà remplie, et **sans toucher** les sections
+  `# Méthode (agents)` / `## IA` / `## Notes de contexte`. Il ne crée **plus** de fichier
+  produit séparé `NN-retours.md`.
 - **Notifie** l'utilisateur : l'app est lancée (le thread principal exécute `run`), les
-  routes à tester, et le chemin du retours préparé.
+  routes à tester, et le chemin du fichier de retours unifié préparé (section produit).
 
 Le sprint ne se conclut pas sans cette notification. L'utilisateur teste **visuellement**
-lui-même, remplit le `NN-retours.md`, puis enchaîne `/4-retours` (besoins + archivage du
-sprint) → `/5-consolidation` (nouvelle version de spec vivante) → `/2-make-gherkin`.
+lui-même, remplit la section `# Retours produit (PO)` de `99-sprint<NN>-retours.md`, puis
+enchaîne `/4-retours` (besoins + archivage du sprint) → `/5-consolidation` (nouvelle
+version de spec vivante) → `/2-make-gherkin`.
 Davantage d'intelligence (parcours guidé, E2E, captures) viendra plus tard.
 
 ## États du scénario (cycle de vie du test)
@@ -305,23 +356,25 @@ statut en direct**. C'est le tableau de bord d'avancement — **un répertoire p
 sujet**, nommé d'après le fichier de scénarios source sans extension
 (`NN-<sujet>.md` → répertoire `NN-<sujet>/`), contenant :
 
-- **`00-suivi.md`** — tableau de bord global : cadrage scaffolding + une ligne par
+- **`00-sprint<NN>-suivi.md`** (`<NN>` = numéro du sprint = préfixe 2 chiffres du
+  dossier, ex. `00-sprint02-suivi.md`) — tableau de bord global : cadrage scaffolding + une ligne par
   scénario avec le **compte de tests** (`X/N` verts) et le statut agrégé. C'est ce que
   lit le thread principal pour suivre l'avancement.
 - **`NN-slug.md`** — **un fichier par scénario Gherkin** (numéro + slug kebab-case du
   titre, ex. `01-poser-slot.md`) : le détail (acceptation BDD, table TPP/FLFI,
   fichiers à créer, design notes) **et** les statuts par test, tenus par `tdd-auto`.
 
-> **Nomenclature du dossier** — le `00-suivi.md` (préfixe `00`) trie en tête ; les
-> `NN-slug.md` suivent l'ordre des scénarios. Deux artefacts **manuels** peuvent
-> cohabiter en fin de dossier et **ne sont jamais écrits ni écrasés par le pipeline
-> TDD** : `NN-retours.md` (retours utilisateur post-IHM, IHM et/ou Tech — saisi à la
-> main) et `99-besoins-fin-itération.md` (backlog priorisé produit par l'étage
-> `/4-retours` à partir des retours). Les agents `tdd-analyse`/`tdd-auto`/`ihm-builder`
-> ne touchent **que**
-> `00-suivi.md` + les `NN-slug.md`.
+> **Nomenclature du dossier** — le `00-sprint<NN>-suivi.md` (préfixe `00`) trie en tête ; les
+> `NN-slug.md` suivent l'ordre des scénarios. Deux artefacts de fin d'itération cohabitent
+> en fin de dossier : le **fichier unifié** `99-sprint<NN>-retours.md` (section
+> `# Retours produit (PO)` saisie par l'utilisateur post-IHM + sections `# Méthode (agents)`
+> / `## IA` appendées par le thread principal) et `99-sprint<NN>-besoins-fin-itération.md`
+> (backlog priorisé produit par l'étage `/4-retours`). `tdd-analyse` les **scaffolde vides**
+> à l'analyse ; `tdd-auto`/`ihm-builder` ne touchent **que** `00-sprint<NN>-suivi.md` + les
+> `NN-slug.md` et **jamais** ces deux fichiers.
 
-**Format `00-suivi.md`** (écrit par `tdd-analyse`) :
+**Format `00-sprint<NN>-suivi.md`** (`<NN>` = numéro du sprint = préfixe 2 chiffres du
+dossier, ex. `00-sprint02-suivi.md` ; écrit par `tdd-analyse`) :
 
 ````markdown
 # Suivi TDD — <Sujet>
@@ -342,7 +395,7 @@ sujet**, nommé d'après le fichier de scénarios source sans extension
 ````markdown
 # Scénario N — <titre> `@nominal`
 
-> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/NN-<sujet>.md`
+> Suivi : [00-sprint<NN>-suivi.md](00-sprint<NN>-suivi.md) · Source : `docs/sprints/NN-<sujet>.md`
 
 **Acceptation (BDD)** : `Should_<résultat métier final>_When_<conditions>` — ⏳ Pending
 
@@ -365,14 +418,14 @@ sujet**, nommé d'après le fichier de scénarios source sans extension
 | `⚠️ EARLY GREEN` | passé au 1er lancement sans code neuf, **non anticipé** (comportement déjà couvert / doublon) → à signaler |
 | `✅ GREEN (caractérisation)` | passé d'emblée mais **anticipé** par `tdd-analyse` (cellule `Contradiction` préfixée `⚠️ probablement early green …`) — early green **attendu**, le test sert de filet de non-régression sur un invariant déjà couvert |
 
-La colonne `Statut` du `00-suivi.md` est **agrégée** : `⏳ Pending` tant qu'aucun test
+La colonne `Statut` du `00-sprint<NN>-suivi.md` est **agrégée** : `⏳ Pending` tant qu'aucun test
 n'est vert, `🔴 RED` dès qu'un cycle est en cours, `✅ GREEN` quand tous les tests
 **et** l'acceptation du scénario sont verts.
 
 **Discipline de mise à jour (obligatoire pour `tdd-auto`)** : avant tout rapport ou
 passage au test suivant, **Edit sur disque** — (1) dans le **`NN-slug.md` du scénario
 courant**, la cellule `Status` du test : `⏳ → 🔴` dès le rouge atteint, `🔴 → ✅`
-(ou `⚠️ EARLY GREEN`) dès le vert, et la ligne `Acceptation` ; (2) dans le **`00-suivi.md`**,
+(ou `⚠️ EARLY GREEN`) dès le vert, et la ligne `Acceptation` ; (2) dans le **`00-sprint<NN>-suivi.md`**,
 le compte `X/N` et le statut agrégé du scénario. Sauter un de ces Edits, ou marquer
 `✅` un early-green, est une violation : le tableau de bord doit refléter l'état réel
 à tout instant. Ces mises à jour sont **distinctes** du tag de cycle `@rouge`/`@vert`
@@ -440,6 +493,7 @@ JSON.
 | événement de domaine | assert via l'outbox/dispatcher drainé, **pas** sur le fake repo |
 | scénario via endpoint API | test E2E boîte noire (`HttpClient` / `WebApplicationFactory`), assert HTTP + JSON, **aucun** `using` du domaine |
 | temps réel `SignalR` | test d'intégration, second client observe l'état final ; état remis à zéro par test |
+| **`🖥️ scénario IHM`** (interactivité, render mode, `@onclick`/`@bind`, DI réelle) | test **E2E / runtime** sur l'app réellement câblée (Playwright / `WebApplicationFactory` hôte réel) reproduisant le symptôme PO ; **JAMAIS bUnit seul** (il rend toujours interactif → ne voit pas un render mode manquant) |
 
 ## Signaux d'alarme — STOP
 
@@ -469,6 +523,13 @@ JSON.
   intercale plus simple.
 - **Sauter l'étape refactor** → le vert n'est pas la fin ; nettoie sous filet.
 - **Then non observable dans le scénario** → reviens à `make-gherkin`, ne devine pas.
+- **bUnit comme preuve d'un bug runtime** → bUnit rend toujours le composant interactif
+  et câble des doublures : il **ne voit pas** un render mode manquant / une DI / un
+  SignalR réels → faux vert. Preuve d'un scénario IHM = test **E2E/runtime** sur l'app
+  réellement câblée.
+- **Scénario IHM traité comme un test backend à doublures** → le défaut vit dans le
+  `.razor` ; route-le vers `ihm-builder` (RED→GREEN runtime), ne le force pas dans
+  `tdd-auto`.
 - **Implémentation au-delà du scénario courant** → YAGNI, coupe ; chaque scénario
   n'ajoute que ce qu'il exige.
 - **Plusieurs scénarios dans un seul run/commit** → casse le « scénario par

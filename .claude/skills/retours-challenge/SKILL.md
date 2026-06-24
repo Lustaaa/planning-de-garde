@@ -1,6 +1,6 @@
 ---
 name: retours-challenge
-description: À utiliser pour transformer des retours utilisateur sur un incrément livré (fichier NN-retours.md — retours IHM et/ou Tech) en un backlog priorisé de besoins (NN-besoins.md) qui réamorce le pipeline — challenge les retours sous pression, classe chaque item (bug / évolution / nouveau besoin), force la priorisation, et désigne le prochain sujet à passer à make-gherkin.
+description: À utiliser pour transformer des retours utilisateur sur un incrément livré (section `# Retours produit (PO)` du fichier unifié 99-sprint<NN>-retours.md — retours IHM et/ou Tech) en un backlog priorisé de besoins (99-sprint<NN>-besoins-fin-itération.md) qui réamorce le pipeline — challenge les retours sous pression, classe chaque item (bug / évolution / nouveau besoin), force la priorisation, et désigne le prochain sujet à passer à make-gherkin.
 ---
 
 # Retours-challenge — Boucler retours → besoins
@@ -8,10 +8,12 @@ description: À utiliser pour transformer des retours utilisateur sur un incrém
 ## Vue d'ensemble
 
 Une passe critique qui **ferme la boucle** d'itération : après un incrément livré et
-testé (IHM puis revue), l'utilisateur dépose ses retours dans un `NN-retours.md`. Ce
-skill les **challenge** (comme `brainstorm`, mais en partant de retours concrets, pas
-d'une idée), les **classe**, force une **priorisation** réelle, et produit un backlog
-`NN-besoins.md` dont le **sujet prioritaire** réamorce `/2-make-gherkin`.
+testé (IHM puis revue), l'utilisateur dépose ses retours dans la section
+**`# Retours produit (PO)`** du fichier unifié `99-sprint<NN>-retours.md`. Ce skill les
+**challenge** (comme `brainstorm`, mais en partant de retours concrets, pas d'une idée),
+les **classe**, force une **priorisation** réelle, et produit un backlog
+`99-sprint<NN>-besoins-fin-itération.md` dont le **sujet prioritaire** réamorce
+`/2-make-gherkin`.
 
 **Principe central :** un retour n'est pas un besoin. « J'aime pas le thème » est une
 gêne, pas une spec. Ton rôle est d'extraire, de chaque retour, le **besoin sous-jacent
@@ -25,21 +27,25 @@ de challenge produit.
 
 **Clôture d'itération :** une fois le backlog écrit, la command `/4-retours` archive les
 fichiers de scénario (`NN-slug.md`) dans `<dossier>/archive/` (script
-`archive-iteration.ps1`), ne laissant à la racine que `00-suivi.md`, le(s) `*-retours.md`
-et `99-besoins-fin-itération.md`.
+`archive-iteration.ps1`), ne laissant à la racine que `00-sprint<NN>-suivi.md`, le fichier
+unifié `99-sprint<NN>-retours.md` et `99-sprint<NN>-besoins-fin-itération.md` (`<NN>` =
+numéro du sprint = préfixe 2 chiffres du dossier, ex. `99-sprint02-besoins-fin-itération.md`).
 
 ## Entrées
 
-- **`NN-retours.md`** (obligatoire) — retours manuels de l'utilisateur, organisés en
-  sections `## IHM - <zone>` et/ou `## Tech`. Les retours IHM portent sur l'ergonomie,
-  les écrans, les parcours, les bugs constatés à l'usage ; les retours Tech sur la
-  dette, la perf, l'archi, les dépendances.
-- **Retours Tech — bypass** : si le `NN-retours.md` **ne contient pas** de section Tech
-  (détecté par le script `find-retours.ps1`, `hasTech=false`), le thread principal
+- **`99-sprint<NN>-retours.md` → section `# Retours produit (PO)`** (obligatoire) — retours
+  manuels de l'utilisateur, organisés en sous-sections `## IHM - <zone>` et/ou `## Tech`.
+  Les retours IHM portent sur l'ergonomie, les écrans, les parcours, les bugs constatés à
+  l'usage ; les retours Tech sur la dette, la perf, l'archi, les dépendances. **Le reste du
+  fichier** (`# Méthode (agents)`, `## IA`, `## Notes de contexte`) est **hors scope** ici —
+  il est consommé par `retro-sprint`, pas par ce skill.
+- **Retours Tech — bypass** : si la section produit **ne contient pas** de sous-section Tech
+  (détecté par le script `find-retours.ps1`, `hasTech=false`, scoping restreint à
+  `# Retours produit (PO)`), le thread principal
   **demande à l'utilisateur** (AskUserQuestion) s'il existe des contraintes techniques à
   injecter (ex. issues d'une revue de code GitHub) ou s'il n'y en a pas. Tu reçois le
   résultat de ce bypass dans le contexte — ne l'invente pas.
-- **Contexte** — l'état livré : `00-suivi.md` (scénarios verts), la spec
+- **Contexte** — l'état livré : `00-sprint<NN>-suivi.md` (scénarios verts), la spec
   (`docs/01-specification.md`), le dossier de scénarios. À explorer pour situer chaque
   retour par rapport à l'existant.
 
@@ -58,11 +64,36 @@ Un `bug` répare un scénario existant (re-fait `/3` ciblé) ; une `évolution` 
 `nouveau besoin` alimente un **nouveau** passage `/2-make-gherkin`. Une `question
 ouverte` doit être tranchée par le challenge avant de devenir l'un des trois autres.
 
+### Symptôme observé ≠ défaut confirmé — confronter au code courant (HEAD)
+
+Un retour décrit un **symptôme observé** par le PO ; ce n'est pas encore un **défaut
+confirmé dans le code**. **Avant** de classer un item en `bug`, confronte-le au **code
+courant (HEAD)**, jamais au seul souvenir de l'incrément :
+
+- `Grep` le **message d'erreur exact** (ou le libellé du symptôme) dans `src/` ;
+- ouvre le **composant / handler / `.razor`** concerné et vérifie que le défaut y est
+  **réellement présent** aujourd'hui.
+
+| Issue de la confrontation | Classement |
+|---|---|
+| **Défaut localisé** dans HEAD | `bug` — **cite-le** (`fichier:lignes`). Sans citation, pas de `bug`. |
+| Symptôme **plus reproductible** dans le code actuel (corrigé depuis, ou retours sur build antérieur) | **déjà corrigé / retours périmé** — à écarter, ne pas ordonner de réparation |
+| Symptôme **réel à l'usage** mais **invisible en lecture statique** (render mode, DI, SignalR, interactivité) | **bug runtime à requalifier** — exige une **repro au niveau runtime** (cf. routage IHM de `/3`), pas une simple lecture |
+
+Le piège classique : un retour testé sur du **code périmé** classé « bug à réparer »
+sans confrontation → on ordonne la réparation de ce qui est **déjà livré** (sprint à
+vide). La citation du défaut dans HEAD est la **preuve** qui sépare un vrai `bug` d'un
+symptôme fantôme.
+
 ## Processus
 
-1. **Explore le contexte d'abord.** Lis le `NN-retours.md` en entier, puis l'état
-   livré (`00-suivi.md`, spec, scénarios concernés). Ne challenge jamais à partir d'une
-   page blanche : situe chaque retour par rapport au comportement déjà couvert.
+1. **Explore le contexte d'abord.** Lis la section `# Retours produit (PO)` du fichier
+   unifié `99-sprint<NN>-retours.md` en entier (ignore `# Méthode (agents)`, `## IA`,
+   `## Notes de contexte`), puis l'état livré (`00-sprint<NN>-suivi.md`, spec, scénarios
+   concernés). Ne challenge jamais à partir d'une page blanche : situe chaque retour par
+   rapport au comportement déjà couvert. **Pour tout item qui ressemble à un `bug`,
+   confronte-le au code courant (HEAD)** (cf. « Symptôme observé ≠ défaut confirmé »)
+   avant de figer le type.
 
 2. **Classe et nomme les tensions — avant de poser quoi que ce soit.** Produis la
    table de classification (chaque retour → type → besoin sous-jacent), puis énonce
@@ -90,17 +121,17 @@ ouverte` doit être tranchée par le challenge avant de devenir l'un des trois a
 5. **Désigne le prochain sujet.** La sortie pointe **un** sujet prioritaire, prêt à
    être passé à `/2-make-gherkin` (slug + intitulé), le reste séquencé derrière.
 
-6. **Synthétise puis écris.** Une fois tranché, produis le `NN-besoins.md`.
+6. **Synthétise puis écris.** Une fois tranché, produis le `99-sprint<NN>-besoins-fin-itération.md`.
 
 ## Format du fichier de sortie
 
-`<dossier-du-retours>/99-besoins-fin-itération.md` (préfixe `99` = tri en fin de dossier,
+`<dossier-du-retours>/99-sprint<NN>-besoins-fin-itération.md` (`<NN>` = numéro du sprint = préfixe 2 chiffres du dossier, ex. `99-sprint02-besoins-fin-itération.md` ; préfixe `99` = tri en fin de dossier,
 un backlog de fin d'itération ; chemin fourni par `find-retours.ps1`, champ `nextBesoins`).
 
 ````markdown
 # Besoins priorisés — <sujet de l'incrément>
 
-> Source : `NN-retours.md` · produit par `/4-retours` (retours-challenge).
+> Source : `99-sprint<NN>-retours.md` (section `# Retours produit (PO)`) · produit par `/4-retours` (retours-challenge).
 > Réamorce `/2-make-gherkin` sur le **sujet prioritaire** ci-dessous.
 
 ## Classification des retours
@@ -144,7 +175,7 @@ les questions au thread principal (round-trip), puis, une fois le cadrage tranch
 ```json
 {
   "classification": [
-    { "retour": "<résumé>", "type": "bug|évolution|nouveau besoin|question ouverte", "besoin": "<besoin observable>", "zone": "<section du retours>" }
+    { "retour": "<résumé>", "type": "bug|évolution|nouveau besoin|question ouverte", "besoin": "<besoin observable>", "zone": "<section du retours>", "symptome": "<ce que le PO observe>", "defaut_confirme": "<fichier:lignes dans HEAD si type=bug, sinon null>", "confrontation_head": "<localisé | non reproductible (déjà corrigé/périmé) | bug runtime à requalifier>" }
   ],
   "tensions": ["angle mort nommé", "..."],
   "questions": [
@@ -183,11 +214,11 @@ tranché : `done: true`, `questions: []`, et `synthese` rempli :
 ```
 
 **Phase écriture** — quand le thread principal renvoie l'ordre d'écrire (avec le chemin
-cible `NN-besoins.md`), l'agent écrit le fichier au format ci-dessus et renvoie
+cible `99-sprint<NN>-besoins-fin-itération.md`), l'agent écrit le fichier au format ci-dessus et renvoie
 **uniquement** :
 
 ```json
-{ "path": "docs/sprints/<dossier>/NN-besoins.md", "besoins": <n>, "prochain_sujet": "<slug>", "notes": "<bref>" }
+{ "path": "docs/sprints/<dossier>/99-sprint<NN>-besoins-fin-itération.md", "besoins": <n>, "prochain_sujet": "<slug>", "notes": "<bref>" }
 ```
 
 Aucun texte hors du JSON dans chaque phase.
@@ -198,12 +229,19 @@ Aucun texte hors du JSON dans chaque phase.
   derrière la gêne.
 - **Bug confondu avec évolution** → un comportement censé marcher (scénario vert) qui
   casse est un `bug`, pas une nouvelle feature ; il se répare via `/3` ciblé.
+- **`bug` classé sans confrontation au code HEAD** → un retour sur du code périmé pris
+  pour un défaut courant → on ordonne la réparation de ce qui est déjà livré (sprint à
+  vide). Exige la citation du défaut localisé (`fichier:lignes`) ou reclasse.
+- **Symptôme runtime traité en lecture statique** → un défaut d'usage (render mode, DI,
+  SignalR, @onclick mort) invisible dans le code statique requalifié en `bug runtime` à
+  reproduire au niveau runtime, pas en grep seul.
 - **« Tout est prioritaire »** → égalité plate, pas d'arbitre → extrais la règle de
   départage (combinaison priorisée OK, égalité plate refusée).
 - **Ampleur sous-estimée** — un retour anodin (« config des parents ») qui implique un
   modèle d'acteurs entier → nomme la dépendance, ne le glisse pas en v1.
-- **Tech ignoré faute de section** — si `hasTech=false`, le bypass AskUser **doit** avoir
-  eu lieu ; ne conclus pas sans avoir su s'il y a des contraintes techniques.
+- **Tech ignoré faute de section** — si `hasTech=false` (pas de sous-section `## Tech`
+  **dans** `# Retours produit (PO)`), le bypass AskUser **doit** avoir eu lieu ; ne conclus
+  pas sans avoir su s'il y a des contraintes techniques.
 
 ## Erreurs fréquentes
 
