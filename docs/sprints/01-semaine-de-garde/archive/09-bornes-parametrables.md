@@ -1,6 +1,6 @@
 # Scénario 9 — Bornes de période paramétrables `@limite`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_indiquer_la_periode_aux_bornes_demandees_dans_le_planning_partage_When_un_Parent_affecte_un_responsable_sur_un_intervalle_decale` — ✅ GREEN
 

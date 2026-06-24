@@ -1,6 +1,6 @@
 # Scénario 10 — Édition concurrente d'une période `@erreur`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_rejeter_la_modification_fondee_sur_un_etat_perime_et_inviter_a_recharger_la_periode_When_un_Parent_enregistre_depuis_un_affichage_devance_par_une_modification_anterieure` — ✅ GREEN
 

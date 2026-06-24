@@ -1,6 +1,6 @@
 ---
 name: tdd-implement
-description: À utiliser pour implémenter un fichier de scénarios produit par make-gherkin (docs/scenarios/<sujet>.md), UN scénario à la fois, en BDD + TDD (.NET backend, Blazor/SignalR front) — chaque scénario Gherkin devient un test d'acceptation exécutable (boucle externe BDD) piloté par des cycles unitaires rouge/vert (boucle interne TDD), puis commité.
+description: À utiliser pour implémenter un fichier de scénarios produit par make-gherkin (docs/sprints/<sujet>.md), UN scénario à la fois, en BDD + TDD (.NET backend, Blazor/SignalR front) — chaque scénario Gherkin devient un test d'acceptation exécutable (boucle externe BDD) piloté par des cycles unitaires rouge/vert (boucle interne TDD), puis commité.
 ---
 
 # TDD Implement
@@ -8,7 +8,7 @@ description: À utiliser pour implémenter un fichier de scénarios produit par 
 ## Vue d'ensemble
 
 Implémenter un fichier de scénarios `make-gherkin` en **BDD + TDD**, **un scénario
-à la fois**. C'est la 3ᵉ pipeline : entrée = `docs/scenarios/<sujet>.md`,
+à la fois**. C'est la 3ᵉ pipeline : entrée = `docs/sprints/<sujet>.md`,
 sortie = du code testé, commité scénario par scénario.
 
 **Backend d'abord, IHM en fin.** Les scénarios couvrent le **backend** (domaine +
@@ -79,7 +79,7 @@ toute facilité d'implémentation.
 
 ## Processus
 
-1. **Lis le fichier de scénarios.** Charge `docs/scenarios/<sujet>.md` :
+1. **Lis le fichier de scénarios.** Charge `docs/sprints/<sujet>.md` :
    la section `## Analyse technique` (composants, contrats, points TDD) et la
    section `## Scénarios`. Repère le **prochain scénario non implémenté** =
    **premier scénario sans tag `@vert`** (ordre de numérotation continue), ou le
@@ -199,7 +199,7 @@ toute facilité d'implémentation.
      que le scénario.
 
 7. **Passe le scénario au vert dans le fichier de scénarios.** Édite
-   `docs/scenarios/<sujet>.md` : **remplace le tag de cycle `@rouge`** (posé à
+   `docs/sprints/<sujet>.md` : **remplace le tag de cycle `@rouge`** (posé à
    l'étape 4) par `@vert` (le tag de type reste) et ajoute une ligne
    `# vert — <commit court>` (le **hash** du commit, pas une description).
    (Détection du « prochain » à l'étape 1 = 1er sans `@vert`.) Voir le cycle de vie
@@ -221,7 +221,7 @@ Une fois **tous les scénarios `@vert`** (backend complet, suite verte), une **p
 dédiée** donne l'interface au comportement déjà couvert :
 
 - **Déclencheur** : tous les scénarios du fichier portent `@vert` et la colonne
-  `Statut` du `suivi.md` est `✅ GREEN` partout. Tant qu'un scénario manque, l'IHM est
+  `Statut` du `00-suivi.md` est `✅ GREEN` partout. Tant qu'un scénario manque, l'IHM est
   prématurée.
 - **Exécutant** : l'agent `ihm-builder` (cf. `.claude/agents/ihm-builder.md`),
   dispatché par la command `/3-tdd-implement` après le dernier scénario.
@@ -236,6 +236,25 @@ dédiée** donne l'interface au comportement déjà couvert :
 
 Clean Archi maintenue : l'UI dépend de l'Application, jamais l'inverse ; le domaine
 reste sans framework.
+
+## Gate de validation visuelle (clôture de sprint)
+
+Après la phase IHM, le sprint se clôt par un **gate impératif** (agent
+`validation-visuelle`, dispatché par `/3-tdd-implement`, étape 8) — **une seule fois**,
+pas après chaque scénario. MVP volontairement simple : il **ne guide pas** et n'inspecte
+pas l'écran. Il fait la part vérifiable et mécanique, puis rend la main :
+
+- **Vérifie** que back + IHM sont up : `dotnet build` vert + suite complète verte.
+- **Prépare** le squelette du fichier de retours du sprint (`NN-retours.md`, une section
+  `## IHM - <route>` par vue livrée + `## IHM - général` + `## Tech (optionnel)`), sans
+  jamais écraser un retours existant.
+- **Notifie** l'utilisateur : l'app est lancée (le thread principal exécute `run`), les
+  routes à tester, et le chemin du retours préparé.
+
+Le sprint ne se conclut pas sans cette notification. L'utilisateur teste **visuellement**
+lui-même, remplit le `NN-retours.md`, puis enchaîne `/4-retours` (besoins + archivage du
+sprint) → `/5-consolidation` (nouvelle version de spec vivante) → `/2-make-gherkin`.
+Davantage d'intelligence (parcours guidé, E2E, captures) viendra plus tard.
 
 ## États du scénario (cycle de vie du test)
 
@@ -278,7 +297,7 @@ stateDiagram-v2
 Reprise après interruption : un scénario laissé `@pending` ou `@rouge` est repris
 au prochain run (il n'a pas de `@vert`) ; l'agent repart de l'état observé.
 
-## Rendu de suivi (`docs/scenarios/<sujet>/`)
+## Rendu de suivi (`docs/sprints/<sujet>/`)
 
 Le pipeline se joue à **deux agents** : `tdd-analyse` (analyse seule) produit le
 **dossier de suivi**, `tdd-auto` (exécution autonome) **met à jour ses cellules de
@@ -286,19 +305,28 @@ statut en direct**. C'est le tableau de bord d'avancement — **un répertoire p
 sujet**, nommé d'après le fichier de scénarios source sans extension
 (`NN-<sujet>.md` → répertoire `NN-<sujet>/`), contenant :
 
-- **`suivi.md`** — tableau de bord global : cadrage scaffolding + une ligne par
+- **`00-suivi.md`** — tableau de bord global : cadrage scaffolding + une ligne par
   scénario avec le **compte de tests** (`X/N` verts) et le statut agrégé. C'est ce que
   lit le thread principal pour suivre l'avancement.
 - **`NN-slug.md`** — **un fichier par scénario Gherkin** (numéro + slug kebab-case du
   titre, ex. `01-poser-slot.md`) : le détail (acceptation BDD, table TPP/FLFI,
   fichiers à créer, design notes) **et** les statuts par test, tenus par `tdd-auto`.
 
-**Format `suivi.md`** (écrit par `tdd-analyse`) :
+> **Nomenclature du dossier** — le `00-suivi.md` (préfixe `00`) trie en tête ; les
+> `NN-slug.md` suivent l'ordre des scénarios. Deux artefacts **manuels** peuvent
+> cohabiter en fin de dossier et **ne sont jamais écrits ni écrasés par le pipeline
+> TDD** : `NN-retours.md` (retours utilisateur post-IHM, IHM et/ou Tech — saisi à la
+> main) et `99-besoins-fin-itération.md` (backlog priorisé produit par l'étage
+> `/4-retours` à partir des retours). Les agents `tdd-analyse`/`tdd-auto`/`ihm-builder`
+> ne touchent **que**
+> `00-suivi.md` + les `NN-slug.md`.
+
+**Format `00-suivi.md`** (écrit par `tdd-analyse`) :
 
 ````markdown
 # Suivi TDD — <Sujet>
 
-> Source : `docs/scenarios/NN-<sujet>.md` · produit par tdd-analyse, suivi par tdd-auto.
+> Source : `docs/sprints/NN-<sujet>.md` · produit par tdd-analyse, suivi par tdd-auto.
 > Détail par scénario dans les fichiers `NN-slug.md` de ce répertoire.
 
 > **Cadrage scaffolding** — <solution/projets, convention de refus Result vs exception…>
@@ -314,7 +342,7 @@ sujet**, nommé d'après le fichier de scénarios source sans extension
 ````markdown
 # Scénario N — <titre> `@nominal`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/NN-<sujet>.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/NN-<sujet>.md`
 
 **Acceptation (BDD)** : `Should_<résultat métier final>_When_<conditions>` — ⏳ Pending
 
@@ -337,14 +365,14 @@ sujet**, nommé d'après le fichier de scénarios source sans extension
 | `⚠️ EARLY GREEN` | passé au 1er lancement sans code neuf, **non anticipé** (comportement déjà couvert / doublon) → à signaler |
 | `✅ GREEN (caractérisation)` | passé d'emblée mais **anticipé** par `tdd-analyse` (cellule `Contradiction` préfixée `⚠️ probablement early green …`) — early green **attendu**, le test sert de filet de non-régression sur un invariant déjà couvert |
 
-La colonne `Statut` du `suivi.md` est **agrégée** : `⏳ Pending` tant qu'aucun test
+La colonne `Statut` du `00-suivi.md` est **agrégée** : `⏳ Pending` tant qu'aucun test
 n'est vert, `🔴 RED` dès qu'un cycle est en cours, `✅ GREEN` quand tous les tests
 **et** l'acceptation du scénario sont verts.
 
 **Discipline de mise à jour (obligatoire pour `tdd-auto`)** : avant tout rapport ou
 passage au test suivant, **Edit sur disque** — (1) dans le **`NN-slug.md` du scénario
 courant**, la cellule `Status` du test : `⏳ → 🔴` dès le rouge atteint, `🔴 → ✅`
-(ou `⚠️ EARLY GREEN`) dès le vert, et la ligne `Acceptation` ; (2) dans le **`suivi.md`**,
+(ou `⚠️ EARLY GREEN`) dès le vert, et la ligne `Acceptation` ; (2) dans le **`00-suivi.md`**,
 le compte `X/N` et le statut agrégé du scénario. Sauter un de ces Edits, ou marquer
 `✅` un early-green, est une violation : le tableau de bord doit refléter l'état réel
 à tout instant. Ces mises à jour sont **distinctes** du tag de cycle `@rouge`/`@vert`
@@ -388,7 +416,7 @@ Chaque invocation renvoie **uniquement** un objet JSON.
   "impl_files": ["src/.../ReservationService.cs"],
   "red": "dotnet test --filter … → 1 failed (attendu)",
   "green": "dotnet test → N passed, 0 failed",
-  "scenarios_file": "docs/scenarios/<sujet>.md (scénario 3 taggé @vert)",
+  "scenarios_file": "docs/sprints/<sujet>.md (scénario 3 taggé @vert)",
   "commit": "<hash court> feat: scénario 3 — …",
   "next_scenario": 4,
   "notes": "<bref>"

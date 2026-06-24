@@ -1,6 +1,6 @@
 # Scénario 5 — Chevauchement de localisation pour le même enfant `@limite`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_creer_le_second_slot_et_signaler_un_chevauchement_entre_les_slots_de_l_enfant_le_meme_jour_When_un_Parent_pose_un_slot_qui_recouvre_un_slot_existant_du_meme_enfant` — ✅ GREEN
 

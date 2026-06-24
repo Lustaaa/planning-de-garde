@@ -1,5 +1,5 @@
 ---
-description: Implémente un fichier de scénarios make-gherkin (docs/scenarios/<sujet>.md) en BDD + TDD, via deux agents — tdd-analyse (produit le dossier de suivi docs/scenarios/<sujet>/ : suivi.md + un fichier par scénario) puis tdd-auto (implémente UN scénario à la fois, met à jour le suivi en direct, checkpoint).
+description: Implémente un fichier de scénarios make-gherkin (docs/sprints/<sujet>.md) en BDD + TDD, via plusieurs agents — tdd-analyse (produit le dossier de suivi docs/sprints/<sujet>/ : 00-suivi.md + un fichier par scénario), tdd-auto (implémente UN scénario à la fois, checkpoint), ihm-builder (phase IHM finale), puis validation-visuelle (gate de livraison impératif de fin de sprint : back+IHM up, retours préparé).
 argument-hint: "[sujet] [#scénario] (optionnels)"
 ---
 
@@ -10,7 +10,7 @@ argument-hint: "[sujet] [#scénario] (optionnels)"
 ni implémentation. Tu dispatches les agents, relaies leurs questions via
 `AskUserQuestion`, et présentes les checkpoints. Objectif : **garder le contexte du
 main propre** — tout le raisonnement reste dans les agents ; **toi tu suis
-l'avancement dans le tableau de bord** `docs/scenarios/<sujet>/suivi.md`.
+l'avancement dans le tableau de bord** `docs/sprints/<sujet>/00-suivi.md`.
 
 > ⚠️ Seul le thread principal peut appeler `AskUserQuestion` ; un subagent ne le
 > peut pas. C'est la **seule** raison du round-trip. Communication = `SendMessage`
@@ -22,7 +22,7 @@ scénario.
 ## Déroulé
 
 1. **Contexte.** Repère le **chemin** du fichier de scénarios
-   `docs/scenarios/NN-<sujet>.md`. **Ne le lis pas toi-même** — les agents s'en
+   `docs/sprints/NN-<sujet>.md`. **Ne le lis pas toi-même** — les agents s'en
    chargent.
 
 2. **Analyse (agent `tdd-analyse`).** Dispatche-le avec le chemin du fichier. Garde
@@ -34,7 +34,7 @@ scénario.
      la `question` **telle quelle** via `AskUserQuestion`, relaie la réponse **brute**
      via `SendMessage`. Répète.
    - Sinon `{ "type": "analyse", "suivi": …, "scenarios": n, "tests": … }` : le
-     **dossier de suivi est écrit** (`docs/scenarios/<sujet>/` : `suivi.md` + un
+     **dossier de suivi est écrit** (`docs/sprints/<sujet>/` : `00-suivi.md` + un
      fichier par scénario).
 
 3. **Validation du plan.** Présente brièvement le suivi (nb de scénarios, total de
@@ -42,7 +42,7 @@ scénario.
    `AskUserQuestion`. C'est le tableau de bord que l'utilisateur suivra.
 
 4. **Implémentation (agent `tdd-auto`), boucle par scénario.** Dispatche-le avec le
-   chemin du dossier de suivi (`docs/scenarios/<sujet>/`) + le scénario cible (celui
+   chemin du dossier de suivi (`docs/sprints/<sujet>/`) + le scénario cible (celui
    demandé, sinon le 1er non terminé). Garde son `agentId`.
    - **Fallback** : type absent → `general-purpose` avec « applique le skill
      `tdd-implement` en agent autonome (cf. agent tdd-auto) » + le chemin du dossier de
@@ -60,7 +60,7 @@ scénario.
    (même `agentId`). Sinon, stoppe.
 
 7. **Phase IHM finale (agent `ihm-builder`).** **Uniquement quand tous les scénarios
-   sont `✅ GREEN`** dans le `suivi.md` (backend complet). Propose la construction de
+   sont `✅ GREEN`** dans le `00-suivi.md` (backend complet). Propose la construction de
    l'IHM via `AskUserQuestion` ; si l'utilisateur valide, dispatche `ihm-builder` avec
    le chemin du fichier de scénarios + le dossier de suivi.
    - **Fallback** : type absent → `general-purpose` avec « applique la phase IHM finale
@@ -71,13 +71,28 @@ scénario.
      verts, commit). Présente le récap **verbatim** + la commande de lancement
      (`pwsh .claude/skills/run/scripts/run.ps1`).
 
+8. **Validation visuelle finale (agent `validation-visuelle`) — IMPÉRATIVE.** **Une
+   seule fois**, juste après la phase IHM du sprint. Dispatche `validation-visuelle` avec
+   le chemin du dossier de sprint (`docs/sprints/<sujet>/`). Garde son `agentId`.
+   - **Fallback** : type absent → `general-purpose` avec « applique le rôle de l'agent
+     `validation-visuelle` (gate de livraison de fin de sprint) » + le chemin. Pas d'inline.
+   - `{ "type": "question", … }` (gate prématuré) → `AskUserQuestion` → `SendMessage`.
+   - `{ "type": "probleme", … }` (build/suite rouge) → présente le constat ; la livraison
+     est cassée, à réparer par un `/3-tdd-implement` ciblé avant de conclure le sprint.
+   - `{ "type": "validation", … }` → **lance l'app** toi-même (thread durable) en tâche de
+     fond via `pwsh .claude/skills/run/scripts/run.ps1`, puis **relaie le `message`
+     verbatim** : back + IHM up, routes à tester, et le **fichier de retours préparé**
+     (`retours_path`). C'est un **gate** : le sprint ne se conclut pas sans cette
+     notification. L'utilisateur teste visuellement, remplit le retours, puis lance
+     `/4-retours`.
+
 ## Notes
 
 - **Relais pur** : si tu te surprends à analyser, écrire un test, lire le code ou
   rédiger le suivi toi-même, tu as quitté ton rôle — redélègue à l'agent.
 - `AskUserQuestion` est appelé **par toi** (thread principal), jamais par les agents.
-- **Deux artefacts de suivi en parallèle** : le dossier `docs/scenarios/<sujet>/`
-  (`suivi.md` tableau de bord avec compte `X/N` + un `NN-slug.md` par scénario, mis à
+- **Deux artefacts de suivi en parallèle** : le dossier `docs/sprints/<sujet>/`
+  (`00-suivi.md` tableau de bord avec compte `X/N` + un `NN-slug.md` par scénario, mis à
   jour en direct par `tdd-auto`) et les tags de cycle `@rouge`/`@vert` dans le fichier
   de scénarios source (état du test d'acceptation).
 - **Un scénario Gherkin par run de `tdd-auto`** — red-green-commit, puis checkpoint.
@@ -90,3 +105,7 @@ scénario.
 - **Lanceur** : au scaffolding, `tdd-auto` génère `.claude/skills/run/` (script +
   skill `/run`) pour lancer l'appli d'une commande.
 - Entrée attendue : un fichier produit par `make-gherkin`.
+- **Clôture de sprint = gate visuel impératif** (étape 8, `validation-visuelle`) : le
+  sprint ne se conclut qu'après la notification « back + IHM up + retours préparé ».
+  L'utilisateur teste l'IHM, remplit le `NN-retours.md`, puis enchaîne `/4-retours`
+  (besoins + archivage) → `/5-consolidation` (nouvelle spec) → `/2-make-gherkin`.

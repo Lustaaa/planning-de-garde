@@ -1,6 +1,6 @@
 # Scénario 7 — Un Parent affecte la responsabilité d'une période de garde `@nominal`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_indiquer_le_responsable_de_la_periode_dans_le_planning_partage_independamment_du_lieu_de_l_enfant_When_un_Parent_affecte_un_responsable_sur_un_intervalle` — ✅ GREEN
 

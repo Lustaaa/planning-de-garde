@@ -45,7 +45,7 @@ Sujet (optionnel) : $ARGUMENTS
    sans la retravailler) et demande l'accord d'écrire via `AskUserQuestion`.
 
 4. **Écriture (même agent).** À l'accord, calcule le chemin cible numéroté :
-   `docs/scenarios/NN-<sujet-kebab>.md` où `NN` = `(plus grand préfixe NN
+   `docs/sprints/NN-<sujet-kebab>.md` où `NN` = `(plus grand préfixe NN
    existant dans le dossier) + 1` sur 2 chiffres (à défaut `01`) — un simple `Glob`
    du dossier suffit. `SendMessage` l'ordre d'écrire avec ce chemin. L'agent écrit le
    fichier (au format imposé du skill) et renvoie `{ path, scenarios, notes }`.

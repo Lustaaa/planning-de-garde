@@ -1,6 +1,6 @@
 # Scénario 6 — Un Invité tente d'éditer un slot `@erreur`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_refuser_le_deplacement_du_slot_car_l_Invite_est_en_consultation_seule_et_laisser_le_slot_inchange_When_un_Invite_tente_de_deplacer_un_slot_existant` — ✅ GREEN
 

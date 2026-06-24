@@ -1,6 +1,6 @@
 # Scénario 4 — Lieu inexistant `@erreur`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_refuser_la_pose_car_le_lieu_n_existe_pas_et_n_inscrire_aucun_slot_When_un_Parent_place_un_enfant_dans_un_lieu_absent_des_lieux_du_foyer` — ✅ GREEN
 

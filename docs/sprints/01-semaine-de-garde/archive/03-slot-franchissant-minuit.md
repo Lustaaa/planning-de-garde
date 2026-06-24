@@ -1,6 +1,6 @@
 # Scénario 3 — Slot de nuit franchissant minuit `@limite`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_faire_apparaitre_le_slot_de_nuit_dans_le_planning_partage_When_un_Parent_place_un_enfant_de_22h_un_jour_a_7h_le_lendemain` — ✅ GREEN
 

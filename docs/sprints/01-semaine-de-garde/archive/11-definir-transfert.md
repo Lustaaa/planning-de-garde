@@ -1,6 +1,6 @@
 # Scénario 11 — Définir le transfert de bascule entre deux parents `@nominal`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_afficher_le_transfert_dans_le_planning_partage_et_faire_basculer_la_responsabilite_au_point_de_transfert_When_un_Parent_definit_un_transfert_complet_entre_deux_periodes_contigues` — ✅ GREEN
 

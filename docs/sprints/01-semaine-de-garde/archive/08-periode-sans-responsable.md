@@ -1,6 +1,6 @@
 # Scénario 8 — Période sans responsable refusée `@erreur`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_refuser_la_creation_car_un_responsable_est_requis_et_n_inscrire_aucune_periode_When_un_Parent_cree_une_periode_sans_designer_de_responsable` — ✅ GREEN
 

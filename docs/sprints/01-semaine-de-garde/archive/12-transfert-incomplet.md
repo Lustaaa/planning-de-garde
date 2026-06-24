@@ -1,6 +1,6 @@
 # Scénario 12 — Transfert incomplet refusé `@erreur`
 
-> Suivi : [suivi.md](suivi.md) · Source : `docs/scenarios/01-semaine-de-garde.md`
+> Suivi : [00-suivi.md](00-suivi.md) · Source : `docs/sprints/01-semaine-de-garde.md`
 
 **Acceptation (BDD)** : `Should_refuser_la_definition_car_la_recuperation_et_l_heure_sont_requises_et_n_inscrire_aucun_transfert_When_un_Parent_definit_un_transfert_sans_recuperant_ni_heure` — ✅ GREEN
 
