@@ -26,8 +26,13 @@ public sealed class SlotDeLocalisation
         _fin = fin;
     }
 
-    public static SlotDeLocalisation Poser(string enfantId, string lieuId, DateTime debut, DateTime fin)
-        => new(enfantId, lieuId, debut, fin);
+    public static Result<SlotDeLocalisation> Poser(string enfantId, string lieuId, DateTime debut, DateTime fin)
+    {
+        if (fin <= debut)
+            return Result<SlotDeLocalisation>.Echec("La durée du slot doit être strictement positive.");
+
+        return Result<SlotDeLocalisation>.Succes(new SlotDeLocalisation(enfantId, lieuId, debut, fin));
+    }
 
     public SlotSnapshot ToSnapshot() => new(_enfantId, _lieuId, _debut, _fin);
 }

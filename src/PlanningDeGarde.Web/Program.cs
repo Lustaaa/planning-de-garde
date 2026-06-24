@@ -1,3 +1,5 @@
+using PlanningDeGarde.Infrastructure;
+using PlanningDeGarde.Web;
 using PlanningDeGarde.Web.Components;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -5,6 +7,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+builder.Services.AddSignalR();
+
+// Application + Infrastructure (persistance en mémoire, SignalR réel, use cases).
+builder.Services.AjouterPlanningDeGarde();
+
+// État de session de consultation (rôle, enfant affiché) — par circuit Blazor.
+builder.Services.AddScoped<PlanningDeGarde.Web.State.SessionPlanning>();
 
 var app = builder.Build();
 
@@ -23,5 +33,11 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
+
+app.MapHub<PlanningHub>("/hubs/planning");
+
+// Données de démonstration — l'IHM s'ouvre peuplée plutôt que vide.
+// Persistance en mémoire (aucune base réelle) : amorçage systématique en local.
+app.AmorcerDonneesDemo();
 
 app.Run();

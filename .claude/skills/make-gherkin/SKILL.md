@@ -70,7 +70,7 @@ technique reste **légère** : juste de quoi amorcer `tdd-implement`.
 
 ## Format du fichier de sortie
 
-`docs/scenarios/NN-<sujet>.md`, un fichier par sujet. **`NN` = préfixe
+`docs/sprints/NN-<sujet>.md`, un fichier par sujet. **`NN` = préfixe
 numéroté sur 2 chiffres**, séquentiel = `(plus grand NN existant dans le dossier)
 + 1`, à défaut `01`. Le numéro reflète l'ordre de production (souvent l'ordre des
 phases de la spec). Ex : `01-semaine-de-garde.md`, `02-rappels-de-transfert.md`.
@@ -181,11 +181,11 @@ Règles : **une question par tour**, 2-4 options, défaut en 1ʳᵉ option suffi
 ```
 
 **Phase écriture** — quand le thread principal renvoie l'ordre d'écrire (avec le
-chemin cible), l'agent écrit `docs/scenarios/<sujet>.md` au format ci-dessus
+chemin cible), l'agent écrit `docs/sprints/<sujet>.md` au format ci-dessus
 et renvoie **uniquement** :
 
 ```json
-{ "path": "docs/scenarios/<sujet>.md", "scenarios": <n>, "notes": "<bref>" }
+{ "path": "docs/sprints/<sujet>.md", "scenarios": <n>, "notes": "<bref>" }
 ```
 
 Aucun texte hors du JSON dans chaque phase.

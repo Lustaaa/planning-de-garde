@@ -1,4 +1,0 @@
-<Solution>
-  <Project Path="RdvMedicaux.Domain/RdvMedicaux.Domain.csproj" />
-  <Project Path="RdvMedicaux.Tests/RdvMedicaux.Tests.csproj" />
-</Solution>

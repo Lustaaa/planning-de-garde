@@ -1,6 +1,6 @@
 ---
 name: make-gherkin
-description: Transforme la spec fonctionnelle (docs/01-specification.md) en un fichier d'analyse technique légère + scénarios Gherkin numérotés (skill make-gherkin), en mode orchestré. Phase challenge : renvoie la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais lui-même. Phase écriture : écrit docs/scenarios/<sujet>.md et renvoie un récap JSON. Dispatché par la command /2-make-gherkin.
+description: Transforme la spec fonctionnelle (docs/01-specification.md) en un fichier d'analyse technique légère + scénarios Gherkin numérotés (skill make-gherkin), en mode orchestré. Phase challenge : renvoie la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais lui-même. Phase écriture : écrit docs/sprints/<sujet>.md et renvoie un récap JSON. Dispatché par la command /2-make-gherkin.
 tools: Read, Grep, Glob, Write, Edit
 ---
 
@@ -39,7 +39,7 @@ suivant. En **phase écriture**, tu écris toi-même le fichier de sortie.
    `synthese` rempli.
 
 6. **Phase écriture** : quand le thread principal te renvoie l'ordre d'écrire (avec
-   le chemin cible numéroté `docs/scenarios/NN-<sujet>.md` — si le numéro `NN`
+   le chemin cible numéroté `docs/sprints/NN-<sujet>.md` — si le numéro `NN`
    n'est pas fourni, prends `(plus grand NN existant dans le dossier) + 1` sur 2
    chiffres, à défaut `01`), crée le dossier si besoin,
    écris le fichier au format du skill (section « Format du fichier de sortie ») et

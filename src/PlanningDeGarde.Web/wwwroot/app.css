@@ -1,15 +1,99 @@
+:root {
+    --pdg-accent: #4f46e5;
+    --pdg-accent-dark: #4338ca;
+    --pdg-bg: #f4f5fb;
+    --pdg-card: #ffffff;
+    --pdg-border: #e6e8f0;
+    --pdg-ink: #1f2333;
+    --pdg-muted: #6b7280;
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    background-color: var(--pdg-bg);
+    color: var(--pdg-ink);
 }
 
 a, .btn-link {
-    color: #006bb7;
+    color: var(--pdg-accent);
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: var(--pdg-accent);
+    border-color: var(--pdg-accent);
+}
+
+.btn-primary:hover, .btn-primary:focus {
+    background-color: var(--pdg-accent-dark);
+    border-color: var(--pdg-accent-dark);
+}
+
+/* Titre de page */
+.content h1 {
+    font-weight: 700;
+    letter-spacing: -0.02em;
+}
+
+/* Chaque section devient une carte */
+.content section {
+    background: var(--pdg-card);
+    border: 1px solid var(--pdg-border);
+    border-radius: 14px;
+    padding: 1.1rem 1.25rem;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.06);
+}
+
+.content section h2 {
+    font-weight: 600;
+    color: var(--pdg-ink);
+    padding-bottom: 0.5rem;
+    margin-bottom: 0.9rem;
+    border-bottom: 1px solid var(--pdg-border);
+}
+
+/* Tables */
+.content .table thead th {
+    text-transform: uppercase;
+    font-size: 0.72rem;
+    letter-spacing: 0.04em;
+    color: var(--pdg-muted);
+    border-bottom: 2px solid var(--pdg-border);
+}
+
+.content .table tbody tr:hover {
+    background-color: #fafaff;
+}
+
+/* Listes (périodes, transferts) */
+.content .list-group-item {
+    border-color: var(--pdg-border);
+    padding: 0.7rem 0.95rem;
+}
+
+.content .list-group-item:first-child { border-top-left-radius: 10px; border-top-right-radius: 10px; }
+.content .list-group-item:last-child  { border-bottom-left-radius: 10px; border-bottom-right-radius: 10px; }
+
+/* Responsable « maintenant » mis en valeur */
+[data-testid="responsable-actuel"] strong {
+    display: inline-block;
+    background: #eef2ff;
+    color: var(--pdg-accent-dark);
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+/* Alertes plus douces */
+.content .alert {
+    border-radius: 10px;
+    border: 1px solid transparent;
+}
+
+/* Boutons d'action arrondis */
+.content .btn {
+    border-radius: 9px;
+    font-weight: 500;
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {

@@ -1,0 +1,73 @@
+@page "/planning/poser-slot"
+@inject PoserSlotHandler Handler
+@inject SessionPlanning Session
+@inject NavigationManager Nav
+
+<PageTitle>Poser un slot</PageTitle>
+
+<h1 class="h3 mb-3">Poser un slot de localisation</h1>
+
+@if (!Session.EstParent)
+{
+    <div class="alert alert-warning">Action réservée aux Parents. Vous êtes en consultation seule.</div>
+}
+else
+{
+    <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="poser-slot">
+        <div class="mb-3">
+            <label class="form-label">Enfant</label>
+            <input class="form-control" value="@Session.EnfantId" disabled />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Lieu</label>
+            <InputSelect class="form-select" @bind-Value="_form.LieuId">
+                <option value="">— choisir —</option>
+                @foreach (var lieu in Foyer.Lieux)
+                {
+                    <option value="@lieu">@lieu</option>
+                }
+            </InputSelect>
+        </div>
+        <div class="row">
+            <div class="col mb-3">
+                <label class="form-label">Début</label>
+                <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="_form.Debut" />
+            </div>
+            <div class="col mb-3">
+                <label class="form-label">Fin</label>
+                <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="_form.Fin" />
+            </div>
+        </div>
+        <button type="submit" class="btn btn-primary">Poser le slot</button>
+        <a href="planning" class="btn btn-link">Retour au planning</a>
+    </EditForm>
+}
+
+@if (_motifEchec is not null)
+{
+    <div class="alert alert-danger mt-3" data-testid="motif-echec">@_motifEchec</div>
+}
+
+@code {
+    private sealed class Formulaire
+    {
+        public string LieuId { get; set; } = "";
+        public DateTime Debut { get; set; } = new(2025, 7, 15, 8, 30, 0);
+        public DateTime Fin { get; set; } = new(2025, 7, 15, 16, 30, 0);
+    }
+
+    private readonly Formulaire _form = new();
+    private string? _motifEchec;
+
+    private void Soumettre()
+    {
+        _motifEchec = null;
+        var resultat = Handler.Handle(
+            new PoserSlotCommand(Session.EnfantId, _form.LieuId, _form.Debut, _form.Fin));
+
+        if (resultat.EstSucces)
+            Nav.NavigateTo("planning");
+        else
+            _motifEchec = resultat.Motif;
+    }
+}
