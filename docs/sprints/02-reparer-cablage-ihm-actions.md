@@ -87,7 +87,7 @@ Scenario: Affecter une période depuis l'IHM avec un responsable du foyer
   And aucun message d'échec n'est affiché
 ```
 
-### Scenario 3 — Définir un transfert avec récupération et heure transmises `@nominal` `@vert`
+### Scenario 3 — Définir un transfert avec récupération et heure transmises `@nominal` `@vert` <!-- vert — ee0d0f2 -->
 
 ```gherkin
 Scenario: Définir un transfert depuis l'IHM avec récupération et heure transmises
