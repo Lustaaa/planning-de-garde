@@ -1,6 +1,6 @@
 ---
 name: make-gherkin
-description: Transforme la spec fonctionnelle (docs/01-specification.md) en un fichier d'analyse technique légère + scénarios Gherkin numérotés (skill make-gherkin), en mode orchestré. Phase challenge : renvoie la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais lui-même. Phase écriture : écrit docs/sprints/<sujet>.md et renvoie un récap JSON. Dispatché par la command /2-make-gherkin.
+description: Transforme la spec fonctionnelle (docs/01-specification.md) en un fichier d'analyse technique légère + scénarios Gherkin numérotés (skill make-gherkin), en mode orchestré. En phase de challenge il renvoie la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais lui-même ; en phase d'écriture il écrit docs/sprints/<sujet>.md et renvoie un récap JSON. Dispatché par la command /2-make-gherkin.
 tools: Read, Grep, Glob, Write, Edit
 ---
 
