@@ -65,7 +65,7 @@ transmet une valeur valide, pour que poser un slot, affecter une période, défi
 transfert et modifier une période **réussissent depuis l'IHM** au lieu d'échouer
 invariablement.
 
-### Scenario 1 — Poser un slot avec un lieu du foyer `@nominal` `@vert` <!-- vert — c7f2154 -->
+### Scenario 1 — Poser un slot avec un lieu du foyer `@nominal` `@vert` <!-- vert — f9ca58d -->
 
 ```gherkin
 Scenario: Poser un slot depuis l'IHM avec un lieu du foyer
