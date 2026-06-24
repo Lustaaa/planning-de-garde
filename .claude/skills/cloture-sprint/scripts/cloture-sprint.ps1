@@ -31,7 +31,7 @@ if ($branch -eq $Base) { throw "Déjà sur '$Base' — la clôture part d'une br
 $originUrl = (git remote get-url origin).Trim()
 $slug = $null
 if ($originUrl -match 'github\.com[:/](.+?)(?:\.git)?$') { $slug = $Matches[1] }
-$compareUrl = if ($slug) { "https://github.com/$slug/compare/$Base...$branch?expand=1" } else { $null }
+$compareUrl = if ($slug) { 'https://github.com/' + $slug + '/compare/' + $Base + '...' + $branch + '?expand=1' } else { $null }
 
 # Commits en avance sur la base
 $ahead = @(git log --oneline "$Base..HEAD" 2>$null)
