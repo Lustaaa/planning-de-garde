@@ -76,7 +76,7 @@ Scenario: Poser un slot depuis l'IHM avec un lieu du foyer
   And aucun message d'échec n'est affiché
 ```
 
-### Scenario 2 — Affecter une période avec un responsable du foyer `@nominal` `@vert`
+### Scenario 2 — Affecter une période avec un responsable du foyer `@nominal` `@vert` <!-- vert — fdb3686 -->
 
 ```gherkin
 Scenario: Affecter une période depuis l'IHM avec un responsable du foyer
