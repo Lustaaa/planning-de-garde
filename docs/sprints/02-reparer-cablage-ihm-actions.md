@@ -98,7 +98,7 @@ Scenario: Définir un transfert depuis l'IHM avec récupération et heure transm
   And aucun message d'échec n'est affiché
 ```
 
-### Scenario 4 — Modifier une période depuis le bouton Modifier `@nominal`
+### Scenario 4 — Modifier une période depuis le bouton Modifier `@nominal` `@vert`
 
 ```gherkin
 Scenario: Modifier une période depuis le bouton Modifier du planning

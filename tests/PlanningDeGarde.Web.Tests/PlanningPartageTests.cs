@@ -34,6 +34,25 @@ public sealed class PlanningPartageTests : TestContext
         return periodes;
     }
 
+    // Driver (Sc.4 #1) : cliquer « Modifier » ouvre le formulaire inline pré-rempli avec le
+    // responsable et les bornes actuels (base observée = jeton optimiste).
+    [Fact]
+    public void Should_Pre_remplir_le_formulaire_inline_avec_le_responsable_et_les_bornes_actuels_When_un_parent_clique_Modifier_sur_une_periode()
+    {
+        var periode = new PeriodeSnapshot("Parent A", new DateTime(2025, 7, 14), new DateTime(2025, 7, 21));
+        CablerAvecPeriode(periode);
+
+        var page = RenderComponent<PlanningPartage>();
+        page.Find("button.btn-outline-primary").Click(); // « Modifier »
+
+        var selectResponsable = page.Find("li .col-auto select.form-select");
+        Assert.Equal("Parent A", selectResponsable.GetAttribute("value"));
+
+        var inputsDate = page.FindAll("li .col-auto input[type=date]");
+        Assert.Equal("2025-07-14", inputsDate[0].GetAttribute("value"));
+        Assert.Equal("2025-07-21", inputsDate[1].GetAttribute("value"));
+    }
+
     [Fact]
     public void Modifier_une_periode_sur_un_etat_a_jour_remplace_le_responsable()
     {
