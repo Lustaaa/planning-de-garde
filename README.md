@@ -37,18 +37,18 @@ le monde s'y retrouve sans avoir à demander.
 | | Fonctionnalité |
 |---|---|
 | 👨‍👩‍👧‍👦 | **Plusieurs enfants** — pensé dès le départ pour les familles recomposées (chaque enfant a sa propre organisation) |
-| 👤 | **2 rôles simples** — *Parent* (gère tout) et *Invité* (consultation seule) |
-| 🧩 | **Créneaux de garde** — responsable, lieu, activité, et transferts (dépose / récupère) |
+| 🏠 | **Le foyer, configuré** — un écran déclare les acteurs : toujours 2 parents (l'un peut saisir l'autre) et N intervenants « autres » |
+| 👤 | **3 types d'acteurs** — *Admin* (configure le foyer), *Parent* (gère le planning) et *Autre* (nounou, grands-parents… accès limité à ses infos) |
+| 🧩 | **Créneaux de garde** — responsable unique, lieu, activité ; saisis en contexte depuis le calendrier |
+| 🔄 | **Transferts automatiques** — qui dépose / récupère est *déduit du planning*, modifiable et complétable à l'exception (urgence, imprévu) |
 | 🔁 | **Récurrence** — cycle multi-semaines (semaine paire / impaire) qui se répète tout seul |
 | ⚡ | **Exceptions ponctuelles** — surcharger un jour (vacances, imprévu) sans casser le cycle |
 | ✏️ | **Modification directe** — un parent change le planning, les autres sont notifiés |
-| 🔔 | **Notifications in-app** — changements récents et rappels de transfert |
+| 🔔 | **Notifications & événements à venir** — changements récents et transferts à venir, dans un panneau accessible via une cloche |
 
-### Les 3 vues
+### Le hub : un calendrier partagé
 
-- **📅 Semaine** *(principale)* — tous les créneaux, responsables, lieux et transferts de la semaine.
-- **📍 Aujourd'hui** — où est chaque enfant à l'instant, et les prochains transferts.
-- **📥 À traiter** — changements récents à voir.
+Une vue **calendrier navigable** (semaine en cours + 4 semaines suivantes, façon agenda) est le cœur de l'app : la responsabilité de chaque garde s'y lit **par un code couleur**, les actions (poser un créneau, ajuster un transfert) se font **en contexte** depuis le calendrier, et les transferts à venir apparaissent dans un panneau d'événements.
 
 ---
 
@@ -83,8 +83,10 @@ pas le quotidien, c'est coupé.
 
 1. 🧱 **Mémoire partagée fiable** — une seule source de vérité commune, à la place des SMS éparpillés *(socle)*
 2. ⏰ **Immédiat & rappels** — « qui récupère ce soir », où est l'enfant maintenant, rappels de transfert
-3. 🔁 **Anticipation & cycle** — cycle multi-semaines récurrent et projection sur les semaines à venir
-4. 🤝 **Imprévu & échange** — gérer malade / retard / échange de dernière minute, avec accord entre parents
+3. 👪 **Modèle d'acteurs & foyer** — déclarer les vraies personnes du foyer (Admin, Parents, Autres), prérequis de l'ouverture de l'accès
+4. 🔁 **Anticipation & cycle** — cycle multi-semaines récurrent, projeté sur un calendrier navigable
+5. 🤝 **Imprévu & échange** — gérer malade / retard / échange de dernière minute, avec accord entre parents
+6. 🔐 **Ouverture de l'accès** — landing page et connexion des acteurs réels (email via Gmail / Apple / Microsoft)
 
 Plus tard, si le besoin se confirme : permissions fines, notifications push &
 email, suivi des heures de la nounou.
@@ -93,7 +95,10 @@ email, suivi des heures de la nounou.
 
 ## 📌 Statut
 
-🚧 **En conception.** La spécification fonctionnelle est figée ; le
-développement n'a pas encore commencé.
+🚧 **En développement itératif.** Le 1ᵉʳ sprint (semaine de garde : créneaux,
+périodes, transferts) est livré côté back + IHM ; les retours d'usage nourrissent
+le sprint suivant. La spec est une **documentation vivante**, reversionnée à chaque
+itération à partir des retours.
 
-📄 Spec consolidée : [`docs/01-specification.md`](docs/01-specification.md)
+📄 Spec courante : [`docs/02-specification.md`](docs/02-specification.md)
+*(les versions précédentes, ex. [`docs/01-specification.md`](docs/01-specification.md), restent figées en historique)*
