@@ -39,6 +39,46 @@ public sealed class PoserSlotTests : TestContext
         Assert.Equal(1, notif.Notifications);
     }
 
+    // Caractérisation (early green anticipé) du câblage déjà présent : poser un slot sur un lieu
+    // du foyer n'affiche aucun motif d'échec et notifie le planning une fois. Filet de non-régression.
+    [Fact]
+    public void Should_Ne_pas_afficher_de_message_d_echec_et_notifier_le_planning_When_un_parent_pose_un_slot_a_un_lieu_du_foyer()
+    {
+        var notif = Cabler();
+        var page = RenderComponent<PoserSlot>();
+
+        page.Find("select.form-select").Change("école");
+        page.Find("form").Submit();
+
+        Assert.Empty(page.FindAll("[data-testid='motif-echec']"));
+        Assert.Equal(1, notif.Notifications);
+    }
+
+    // Driver d'acceptation : choisir « école » dans le sélecteur peuplé depuis le foyer puis valider
+    // enregistre dans le dépôt partagé le slot de Léa avec les valeurs métier concrètes (lieu + bornes).
+    [Fact]
+    public void Should_Enregistrer_le_slot_de_Lea_a_l_ecole_le_15_07_de_08h30_a_16h30_When_un_parent_choisit_le_lieu_ecole_du_sapeur_de_lieux_et_valide()
+    {
+        var slots = new InMemorySlotRepository();
+        var notif = new FakeNotificateurPlanning();
+        var lieux = new FoyerLieuRepository();
+        Services.AddSingleton<ISlotRepository>(slots);
+        Services.AddSingleton<ILieuRepository>(lieux);
+        Services.AddSingleton<INotificateurPlanning>(notif);
+        Services.AddSingleton(new PoserSlotHandler(slots, lieux, notif));
+        Services.AddSingleton(new SessionPlanning());
+
+        var page = RenderComponent<PoserSlot>();
+        page.Find("select.form-select").Change("école");
+        page.Find("form").Submit();
+
+        var slot = Assert.Single(slots.AllSnapshots());
+        Assert.Equal("Léa", slot.EnfantId);
+        Assert.Equal("école", slot.LieuId);
+        Assert.Equal(new System.DateTime(2025, 7, 15, 8, 30, 0), slot.Debut);
+        Assert.Equal(new System.DateTime(2025, 7, 15, 16, 30, 0), slot.Fin);
+    }
+
     [Fact]
     public void Un_lieu_inexistant_affiche_le_motif_du_result_sans_logique_dupliquee()
     {
