@@ -28,6 +28,15 @@ nouvelle spec.
    **collision** avec une règle structurante ou une **question ouverte** héritée du
    backlog d'abord.
 
+   > **Contrôle « besoin vs couverture existante ».** Avant qu'un besoin ne devienne une
+   > section de spec ou un sujet de sprint, vérifie qu'il n'est pas **déjà couvert** par
+   > le **code / les commits existants** (`Grep` le comportement dans `src/`, regarde les
+   > règles déjà présentes dans la spec courante et les scénarios `@vert` du sprint clos).
+   > N'ordonne pas la réparation/spécification de ce qui est **déjà livré** : un besoin
+   > déjà couvert se signale (`couverture: "déjà livré — <fichier/commit>"`) et n'engendre
+   > ni nouvelle règle ni sujet make-gherkin. Cela évite de relancer un sprint à vide sur
+   > du déjà-fait.
+
 2. **Appels suivants** (réponses via SendMessage) : `plan_consolidation: []`, pose la
    question suivante. Tranche toutes les collisions et questions ouvertes avant de conclure.
 
@@ -55,6 +64,9 @@ nouvelle spec.
   explicites »).
 - **Ne PAS** de fuite technique dans les règles ; numérotation **continue** à travers
   les catégories.
+- **Ne PAS** transformer en règle/sujet de sprint un besoin **déjà couvert** par le code
+  ou les commits existants — fais le contrôle « besoin vs couverture existante » et
+  signale-le (`couverture`) plutôt que d'ordonner la réparation de ce qui est livré.
 
 ## Sortie
 

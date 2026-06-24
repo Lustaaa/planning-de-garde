@@ -1,19 +1,28 @@
 #requires -Version 7
 <#
 .SYNOPSIS
-  Localise le fichier de retours (NN-retours.md) d'un dossier de scénarios et détecte
-  la présence des sections IHM / Tech. Sortie JSON consommée par la command /4-retours.
+  Localise le fichier de retours produit (PO) d'un dossier de scénarios et détecte la
+  présence des sections IHM / Tech. Sortie JSON consommée par la command /4-retours.
 
 .DESCRIPTION
-  - Si -Dossier est fourni : cherche le *-retours.md de plus grand préfixe NN dans ce dossier.
-  - Sinon : balaie docs/sprints/*/ et retient le dossier dont le *-retours.md est le plus
-    récemment modifié.
-  Détecte les sections via les en-têtes markdown `## ...` : un en-tête contenant « IHM »
-  → hasIHM ; contenant « Tech » → hasTech (le bypass AskUser s'appuie sur hasTech=false).
-  Renvoie aussi le chemin du backlog à écrire : `99-sprint<NN>-besoins-fin-itération.md`
-  (<NN> = numéro du sprint = préfixe 2 chiffres du dossier de sprint, ex. dossier
-  `02-...` -> `99-sprint02-besoins-fin-itération.md` ; préfixe 99 = tri en fin de dossier,
-  un backlog de fin d'itération), et le prochain préfixe libre pour info.
+  Le retours produit du PO vit désormais dans le fichier UNIFIÉ `99-sprint<NN>-retours.md`
+  (<NN> = préfixe 2 chiffres du dossier de sprint). Ce fichier porte à la fois le retours
+  produit (section `# Retours produit (PO)`, lue par /4-retours) ET la partie méthode +
+  `## IA` (lue par retro-sprint). Ce script CIBLE ce fichier (il ne l'exclut plus).
+
+  - Si -Dossier est fourni : construit/trouve `99-sprint<NN>-retours.md` dans ce dossier
+    (NN = préfixe 2 chiffres du dossier). Si absent, fallback legacy : plus grand préfixe
+    `NN-retours.md` (anciens sprints).
+  - Sinon : balaie docs/sprints/*/ et retient le dossier dont le fichier de retours est le
+    plus récemment modifié (en privilégiant `99-sprint<NN>-retours.md`).
+
+  Détection des sections (bypass Tech) : restreinte à la section `# Retours produit (PO)`
+  du fichier unifié — un en-tête `## ...` contenant « IHM » → hasIHM ; « Tech » → hasTech.
+  Les sections `# Méthode (agents)`, `## IA`, `## Notes de contexte` sont IGNORÉES (elles
+  relèvent de retro-sprint, pas du retours produit). Pour un legacy `NN-retours.md` sans
+  section `# Retours produit (PO)`, on retombe sur tout le fichier.
+
+  Renvoie aussi le chemin du backlog à écrire : `99-sprint<NN>-besoins-fin-itération.md`.
 
 .OUTPUTS
   JSON : { found, retoursPath, dossier, hasIHM, hasTech, sections[], nextPrefix, nextBesoins }
@@ -29,29 +38,33 @@ function Get-Prefix([string]$name) {
   if ($name -match '^(\d{2})-') { return [int]$Matches[1] } else { return -1 }
 }
 
-# Le glob `*-retours.md` ci-dessous cherche le RETOURS PRODUIT du PO (NN-retours.md).
-# Or le dossier de sprint contient aussi un JOURNAL MÉTHODE `99-sprint<NN>-retours.md`
-# (retours sur les agents/skills/commands, consommé par retro-sprint) qui matche le même
-# glob mais n'est PAS un retours produit. On l'exclut explicitement, ainsi que par
-# sécurité tout `99-*-retours.md`, pour ne jamais le prendre pour le retours produit.
-function Test-IsRetoursProduit([string]$name) {
-  if ($name -ilike '99-sprint*-retours.md') { return $false }
-  if ($name -ilike '99-*-retours.md')       { return $false }
-  return $true
+# Cible primaire : le fichier unifié `99-sprint<NN>-retours.md` (NN = préfixe du dossier).
+# Fallback legacy : un ancien `NN-retours.md` produit (hors `99-sprint*`) encore présent.
+function Resolve-RetoursFile([string]$dir) {
+  $dirName = Split-Path -Leaf (Resolve-Path $dir).Path
+  if ($dirName -match '^(\d{2})-') {
+    $unified = Join-Path $dir "99-sprint$($Matches[1])-retours.md"
+    if (Test-Path $unified) { return (Get-Item $unified) }
+  }
+  # Fallback : tout `99-sprint*-retours.md` présent (autre numérotation), puis legacy.
+  $unifiedAny = Get-ChildItem -Path $dir -Filter '99-sprint*-retours.md' -File -ErrorAction SilentlyContinue |
+    Sort-Object { Get-Prefix $_.Name } -Descending | Select-Object -First 1
+  if ($unifiedAny) { return $unifiedAny }
+  # Legacy : ancien retours produit `NN-retours.md` (préfixe à 2 chiffres, hors 99-sprint).
+  return Get-ChildItem -Path $dir -Filter '*-retours.md' -File -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -notlike '99-sprint*-retours.md' } |
+    Sort-Object { Get-Prefix $_.Name } -Descending | Select-Object -First 1
 }
 
 # 1. Résoudre le dossier + le fichier de retours
 $retoursFile = $null
 if ($Dossier) {
   if (-not (Test-Path $Dossier)) { throw "Dossier introuvable : $Dossier" }
-  $retoursFile = Get-ChildItem -Path $Dossier -Filter '*-retours.md' -File |
-    Where-Object { Test-IsRetoursProduit $_.Name } |
-    Sort-Object { Get-Prefix $_.Name } -Descending | Select-Object -First 1
+  $retoursFile = Resolve-RetoursFile $Dossier
 } else {
   $candidates = Get-ChildItem -Path 'docs/sprints' -Directory -ErrorAction SilentlyContinue |
-    ForEach-Object {
-      Get-ChildItem -Path $_.FullName -Filter '*-retours.md' -File -ErrorAction SilentlyContinue
-    } | Where-Object { Test-IsRetoursProduit $_.Name }
+    ForEach-Object { Resolve-RetoursFile $_.FullName } |
+    Where-Object { $_ }
   $retoursFile = $candidates | Sort-Object LastWriteTime -Descending | Select-Object -First 1
   if ($retoursFile) { $Dossier = $retoursFile.Directory.FullName }
 }
@@ -61,13 +74,24 @@ if (-not $retoursFile) {
   return
 }
 
-# 2. Détecter les sections IHM / Tech via les en-têtes markdown
+# 2. Détecter les sections IHM / Tech via les en-têtes `## ...`, RESTREINT à la section
+#    produit `# Retours produit (PO)` du fichier unifié. On découpe le contenu : depuis le
+#    H1 `# Retours produit (PO)` jusqu'au prochain H1 (`# Méthode ...`). Pour un legacy sans
+#    cette section, on retombe sur tout le fichier.
 $content  = Get-Content -Path $retoursFile.FullName -Raw
-$headers  = [regex]::Matches($content, '(?m)^##\s+(.+?)\s*$') | ForEach-Object { $_.Groups[1].Value.Trim() }
+$produit  = $content
+$startM   = [regex]::Match($content, '(?m)^#\s+Retours produit \(PO\)\s*$')
+if ($startM.Success) {
+  $rest   = $content.Substring($startM.Index + $startM.Length)
+  $nextH1 = [regex]::Match($rest, '(?m)^#\s+(?!#)')   # prochain H1 (pas H2/H3)
+  $produit = if ($nextH1.Success) { $rest.Substring(0, $nextH1.Index) } else { $rest }
+}
+
+$headers  = [regex]::Matches($produit, '(?m)^##\s+(.+?)\s*$') | ForEach-Object { $_.Groups[1].Value.Trim() }
 $hasIHM   = [bool]($headers | Where-Object { $_ -match '(?i)IHM' })
 $hasTech  = [bool]($headers | Where-Object { $_ -match '(?i)tech' })
 
-# 3. Prochain préfixe libre du dossier (pour NN-besoins.md)
+# 3. Prochain préfixe libre du dossier (pour info)
 $maxPrefix = (Get-ChildItem -Path $Dossier -Filter '*.md' -File |
   ForEach-Object { Get-Prefix $_.Name } | Measure-Object -Maximum).Maximum
 if ($null -eq $maxPrefix -or $maxPrefix -lt 0) { $maxPrefix = 0 }

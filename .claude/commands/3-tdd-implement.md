@@ -38,23 +38,46 @@ scénario.
      **dossier de suivi est écrit** (`docs/sprints/<sujet>/` : `00-sprint<NN>-suivi.md` + un
      fichier par scénario). `tdd-analyse` scaffolde aussi, dans le même dossier, deux
      templates vides : `99-sprint<NN>-besoins-fin-itération.md` (backlog produit, rempli
-     plus tard par `/4-retours`) et `99-sprint<NN>-retours.md` (journal méthode, appendé
-     par le thread principal pendant le sprint — voir Notes).
+     plus tard par `/4-retours`) et le **fichier unifié** `99-sprint<NN>-retours.md` —
+     section `# Retours produit (PO)` (remplie par le PO après le gate) PLUS sections
+     `# Méthode (agents)` + `## IA` (appendées par le thread principal pendant le sprint —
+     voir Notes).
 
 3. **Validation du plan.** Présente brièvement le suivi (nb de scénarios, total de
-   tests, scaffolding/doublons signalés) et demande l'accord d'implémenter via
-   `AskUserQuestion`. C'est le tableau de bord que l'utilisateur suivra.
+   tests, scaffolding/doublons signalés, **et le routage backend vs IHM** : quels
+   scénarios sont étiquetés `🖥️ scénario IHM` → `ihm-builder`, lesquels sont backend →
+   `tdd-auto`) et demande l'accord d'implémenter via `AskUserQuestion`. C'est le tableau
+   de bord que l'utilisateur suivra.
 
-4. **Implémentation (agent `tdd-auto`), boucle par scénario.** Dispatche-le avec le
-   chemin du dossier de suivi (`docs/sprints/<sujet>/`) + le scénario cible (celui
-   demandé, sinon le 1er non terminé). Garde son `agentId`.
+   > **Routage des scénarios (Cause B/C).** `tdd-analyse` étiquette chaque scénario sur
+   > l'axe **backend vs IHM**. Le **niveau du test d'acceptation suit le niveau du
+   > symptôme** : scénario **backend** (domaine/Application) → `tdd-auto` (test
+   > handler/intégration à la frontière Application) ; scénario **IHM**
+   > (interactivité, render mode, `@onclick`/`@bind`, DI réelle, SignalR) → `ihm-builder`
+   > **piloté par un test rouge de niveau RUNTIME** (E2E / hôte réel), **pas** un test
+   > bUnit composant (qui « ment au vert » faute d'attraper un render mode manquant).
+   > `ihm-builder` n'est donc **plus seulement** la phase finale de construction : il mène
+   > aussi des cycles **RED→GREEN** sur les scénarios IHM.
+
+4. **Implémentation, boucle par scénario — routée backend vs IHM.** Pour le scénario
+   cible (celui demandé, sinon le 1er non terminé), regarde son étiquette dans
+   `00-sprint<NN>-suivi.md` :
+   - **Scénario backend** → dispatche **`tdd-auto`** avec le chemin du dossier de suivi
+     (`docs/sprints/<sujet>/`) + le scénario cible. Garde son `agentId`.
+   - **Scénario IHM** (`🖥️ scénario IHM`) → dispatche **`ihm-builder`** (cycle
+     **RED→GREEN runtime**, pas la phase finale) avec le dossier de suivi + le scénario
+     cible.
    - **Fallback** : type absent → `general-purpose` avec « applique le skill
-     `tdd-implement` en agent autonome (cf. agent tdd-auto) » + le chemin du dossier de
-     suivi et le scénario cible. Ne bascule **pas** en inline.
+     `tdd-implement` en agent autonome (cf. agent tdd-auto pour un scénario backend, ou
+     agent ihm-builder pour un scénario IHM mené RED→GREEN runtime) » + le chemin du
+     dossier de suivi et le scénario cible. Ne bascule **pas** en inline.
    - `{ "type": "question", … }` → `AskUserQuestion` (telle quelle) → `SendMessage`
-     (réponse brute). Répète.
-   - `{ "type": "result", … }` → l'agent a livré **un** scénario (RED → GREEN →
-     commit, suivi mis à jour).
+     (réponse brute). Répète. **Si `tdd-auto` refuse un scénario comme IHM** (il renvoie
+     une question de routage), **re-dispatche le scénario vers `ihm-builder`** au lieu de
+     forcer un test bUnit.
+   - `{ "type": "result", … }` (tdd-auto) ou `{ "type": "ihm-scenario", … }`
+     (ihm-builder) → l'agent a livré **un** scénario (RED → GREEN → commit, suivi mis à
+     jour).
 
 5. **Récap (sans blocage).** Présente le récap **verbatim** depuis l'agent (cycle,
    fichiers, état de la suite, scénario `@vert` + cellules du suivi). **N'appelle pas
@@ -62,19 +85,23 @@ scénario.
    automatiquement le scénario suivant. (L'utilisateur garde la main : il peut
    interrompre à tout moment.)
 
-6. **Boucle automatique.** Relance `tdd-auto` pour le scénario suivant (même
-   `agentId`, `next_scenario`), sans demander confirmation, jusqu'à ce que **tous les
-   scénarios soient `✅ GREEN`** dans `00-sprint<NN>-suivi.md`. **La boucle se suspend dès qu'un
-   agent renvoie `{ "type": "question", … }`** — rends-la **telle quelle** via
-   `AskUserQuestion`, relaie la réponse brute via `SendMessage`, puis reprends la boucle.
-   `tdd-auto` pose notamment une question sur **early green inattendu** (obligatoire) et
-   **peut** en poser sur un **problème d'implémentation** détecté. La boucle stoppe aussi
-   si l'utilisateur interrompt.
+6. **Boucle automatique.** Relance l'agent **routé** (backend → `tdd-auto` ; IHM →
+   `ihm-builder`) pour le scénario suivant (`next_scenario`), sans demander confirmation,
+   jusqu'à ce que **tous les scénarios soient `✅ GREEN`** dans `00-sprint<NN>-suivi.md`.
+   **La boucle se suspend dès qu'un agent renvoie `{ "type": "question", … }`** —
+   rends-la **telle quelle** via `AskUserQuestion`, relaie la réponse brute via
+   `SendMessage`, puis reprends la boucle. `tdd-auto` pose notamment une question sur
+   **early green inattendu** (obligatoire), une question de **routage IHM** (il refuse un
+   scénario IHM → re-dispatch vers `ihm-builder`), et **peut** en poser sur un **problème
+   d'implémentation** détecté. La boucle stoppe aussi si l'utilisateur interrompt.
 
 7. **Phase IHM finale (agent `ihm-builder`).** **Uniquement quand tous les scénarios
-   sont `✅ GREEN`** dans le `00-sprint<NN>-suivi.md` (backend complet). Propose la construction de
-   l'IHM via `AskUserQuestion` ; si l'utilisateur valide, dispatche `ihm-builder` avec
-   le chemin du fichier de scénarios + le dossier de suivi.
+   sont `✅ GREEN`** dans le `00-sprint<NN>-suivi.md` (backend **et** scénarios IHM
+   complets). Propose la construction de l'IHM restante (vues/écrans non encore couverts
+   par un scénario IHM) via `AskUserQuestion` ; si l'utilisateur valide, dispatche
+   `ihm-builder` en **mode construction** avec le chemin du fichier de scénarios + le
+   dossier de suivi. (Les scénarios IHM déjà menés RED→GREEN à l'étape 4/6 ne sont pas
+   refaits ici.)
    - **Fallback** : type absent → `general-purpose` avec « applique la phase IHM finale
      du skill `tdd-implement` (cf. agent ihm-builder) » + les chemins. Pas d'inline.
    - `{ "type": "question", … }` → `AskUserQuestion` (telle quelle) → `SendMessage`
@@ -93,10 +120,10 @@ scénario.
      est cassée, à réparer par un `/3-tdd-implement` ciblé avant de conclure le sprint.
    - `{ "type": "validation", … }` → **lance l'app** toi-même (thread durable) en tâche de
      fond via `pwsh .claude/skills/run/scripts/run.ps1`, puis **relaie le `message`
-     verbatim** : back + IHM up, routes à tester, et le **fichier de retours préparé**
-     (`retours_path`). C'est un **gate** : le sprint ne se conclut pas sans cette
-     notification. L'utilisateur teste visuellement, remplit le retours, puis lance
-     `/4-retours`.
+     verbatim** : back + IHM up, routes à tester, et le **fichier de retours unifié préparé**
+     (`retours_path` = `99-sprint<NN>-retours.md`, section `# Retours produit (PO)`). C'est
+     un **gate** : le sprint ne se conclut pas sans cette notification. L'utilisateur teste
+     visuellement, remplit la section produit, puis lance `/4-retours`.
 
 ## Notes
 
@@ -112,18 +139,29 @@ scénario.
   pas de blocage `AskUserQuestion` entre scénarios : le sprint est mené intégralement.
 - Le test d'acceptation **doit** échouer d'abord (rouge), sinon il n'observe rien.
 - Relance la suite complète avant chaque commit (non-régression).
-- **Backend d'abord, IHM en fin** : les scénarios s'arrêtent à la frontière de
-  l'Application (use cases + ports doublés) ; l'IHM Blazor + SignalR réel sont une
-  **phase finale** (`ihm-builder`, étape 7) après le dernier scénario vert.
+- **Routage par niveau de symptôme** : un scénario **backend** s'arrête à la frontière
+  de l'Application (use cases + ports doublés) et va à `tdd-auto` ; un scénario **IHM**
+  (interactivité, render mode, `@onclick`/`@bind`, DI réelle, SignalR) va à
+  `ihm-builder`, **piloté par un test rouge de niveau runtime** (E2E / hôte réel) — pas
+  un test bUnit composant qui « ment au vert ». L'IHM **restante** (écrans sans scénario
+  IHM dédié) est construite en **phase finale** (`ihm-builder`, étape 7) après le dernier
+  scénario vert.
+- **bUnit ≠ preuve d'acceptation runtime** : un bug d'usage (ex. `@rendermode
+  InteractiveServer` manquant → `@onclick`/`@bind` morts) n'est **jamais** attrapé par
+  bUnit (il force l'interactivité). La preuve d'un scénario IHM est un test E2E/runtime
+  sur l'app réellement câblée.
 - **Lanceur** : au scaffolding, `tdd-auto` génère `.claude/skills/run/` (script +
   skill `/run`) pour lancer l'appli d'une commande.
 - Entrée attendue : un fichier produit par `make-gherkin`.
-- **Journal méthode** : pendant le sprint, le thread principal consigne dans
-  `docs/sprints/<sujet>/99-sprint<NN>-retours.md` chaque retour à la volée du PO sur un
-  agent/skill/command (cible + retour + décision), pour traitement par `retro-sprint` en
-  fin de sprint. À ne pas confondre avec le backlog produit
-  `99-sprint<NN>-besoins-fin-itération.md` ni le retours produit `NN-retours.md`.
+- **Journal méthode** : pendant le sprint, le thread principal consigne dans la section
+  `# Méthode (agents)` du **fichier unifié** `docs/sprints/<sujet>/99-sprint<NN>-retours.md`
+  chaque retour à la volée du PO sur un agent/skill/command (cible + retour + décision), et
+  ses propres observations dans la section `## IA` — pour traitement par `retro-sprint` en
+  fin de sprint. Le même fichier porte la section `# Retours produit (PO)` (remplie par le
+  PO après le gate, lue par `/4-retours`). À ne pas confondre avec le backlog produit
+  `99-sprint<NN>-besoins-fin-itération.md`.
 - **Clôture de sprint = gate visuel impératif** (étape 8, `validation-visuelle`) : le
   sprint ne se conclut qu'après la notification « back + IHM up + retours préparé ».
-  L'utilisateur teste l'IHM, remplit le `NN-retours.md`, puis enchaîne `/4-retours`
-  (besoins + archivage) → `/5-consolidation` (nouvelle spec) → `/2-make-gherkin`.
+  L'utilisateur teste l'IHM, remplit la section `# Retours produit (PO)` de
+  `99-sprint<NN>-retours.md`, puis enchaîne `/4-retours` (besoins + archivage) →
+  `/5-consolidation` (nouvelle spec) → `/2-make-gherkin`.

@@ -3,10 +3,11 @@
 .SYNOPSIS
   Clôt une itération : déplace les fichiers de scénario (NN-slug.md) d'un dossier de
   suivi dans un sous-dossier `archive/`, ne laissant à la racine que les artefacts de
-  pilotage : `00-sprint<NN>-suivi.md`, le(s) `*-retours.md` (retours produit du PO ET le
-  journal méthode `99-sprint<NN>-retours.md`), et `99-sprint<NN>-besoins-fin-itération.md`
+  pilotage : `00-sprint<NN>-suivi.md`, le fichier UNIFIÉ `99-sprint<NN>-retours.md` (retours
+  produit du PO + partie méthode + `## IA`), et `99-sprint<NN>-besoins-fin-itération.md`
   (<NN> = numéro du sprint = préfixe 2 chiffres du dossier de sprint). Les anciens noms
-  `00-suivi.md` / `99-besoins-fin-itération.md` restent reconnus pour compatibilité.
+  `00-suivi.md` / `99-besoins-fin-itération.md` et les legacy `NN-retours.md` restent
+  reconnus pour compatibilité.
 
 .DESCRIPTION
   Appelé en fin de /4-retours, une fois le backlog écrit. Met aussi à jour les liens
@@ -30,10 +31,11 @@ $Dossier = (Resolve-Path $Dossier).Path
 # Le suivi et le backlog portent désormais le numéro de sprint dans leur nom
 # (`00-sprint<NN>-suivi.md`, `99-sprint<NN>-besoins-fin-itération.md`) ; les anciens
 # noms sans sprint restent reconnus pour compatibilité.
-# Le `*-retours.md` couvre à la fois le retours produit du PO (`NN-retours.md`) ET le
-# journal méthode `99-sprint<NN>-retours.md` (retours sur les agents/skills/commands, lu
-# par retro-sprint) — tous deux doivent rester à la racine. La règle explicite
-# `99-sprint<NN>-retours.md` est ajoutée pour la lisibilité et la robustesse.
+# Le fichier UNIFIÉ `99-sprint<NN>-retours.md` porte à la fois le retours produit du PO
+# (section `# Retours produit (PO)`, lue par /4-retours) ET la partie méthode + `## IA`
+# (lue par retro-sprint) — il doit rester à la racine. Le glob `*-retours.md` couvre
+# aussi les legacy `NN-retours.md` d'anciens sprints ; la règle explicite
+# `99-sprint<NN>-retours.md` est conservée pour la lisibilité et la robustesse.
 function Test-Kept([string]$name) {
   return ($name -ieq '00-suivi.md') -or
          ($name -imatch '^00-sprint\d{2}-suivi\.md$') -or

@@ -75,6 +75,14 @@ numérotation des règles reste **continue** dans la version produite.
    Signale les **collisions** (un besoin qui contredit une règle en vigueur — ex. un
    transfert dérivé automatiquement vs la règle « transferts explicites »).
 
+   **Contrôle « besoin vs couverture existante » (avant de créer une règle/un sujet).**
+   Pour chaque besoin, vérifie qu'il n'est pas **déjà couvert** par le code/les commits
+   existants : `Grep` le comportement dans `src/`, relis les règles déjà présentes dans
+   la spec courante et les scénarios `@vert` du sprint clos. Un besoin **déjà livré** ne
+   devient ni une nouvelle règle ni un sujet make-gherkin — signale-le
+   (`couverture: "déjà livré — <fichier/commit>"`) au lieu d'ordonner la réparation de ce
+   qui existe. C'est le garde-fou contre le sprint à vide (réparer du déjà-fait).
+
 3. **Pose une question à la fois** pour chaque collision ou question ouverte non tranchée
    (round-trip). Reprends en priorité les **questions ouvertes** héritées du backlog.
    Choix multiple, hypothèse par défaut en 1ʳᵉ option. Ne devine pas une réécriture de
@@ -97,7 +105,7 @@ une fois tranché, **écrit** la nouvelle spec.
 ```json
 {
   "plan_consolidation": [
-    { "besoin": "<résumé>", "section_cible": "Règles de gestion / …", "action": "nouvelle règle|règle révisée|règle supprimée|nouvelle mécanique|phase de séquence", "collision": "<règle en vigueur contredite, ou null>" }
+    { "besoin": "<résumé>", "section_cible": "Règles de gestion / …", "action": "nouvelle règle|règle révisée|règle supprimée|nouvelle mécanique|phase de séquence|déjà couvert (aucune)", "collision": "<règle en vigueur contredite, ou null>", "couverture": "<\"déjà livré — fichier/commit\" si le besoin est déjà couvert par le code existant, sinon null>" }
   ],
   "questions": [
     {
@@ -154,6 +162,9 @@ Aucun texte hors du JSON dans chaque phase.
   décrit l'**état**, pas l'historique (qui vit dans les versions figées).
 - **Fuite technique** — une règle qui parle d'implémentation → coupe (cf. `redaction-spec`).
 - **Numérotation cassée** — règles renumérotées par catégorie → garde-la continue.
+- **Besoin déjà livré ordonné à nouveau** — un besoin couvert par le code/les commits
+  existants transformé en règle/sujet de sprint → contrôle « besoin vs couverture
+  existante » sauté → sprint à vide sur du déjà-fait. Signale `couverture`, ne réordonne pas.
 
 ## Erreurs fréquentes
 

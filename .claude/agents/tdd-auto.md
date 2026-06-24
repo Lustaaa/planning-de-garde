@@ -31,6 +31,15 @@ PREP → [ RED_PHASE → GREEN_PHASE ]× (chaque test unitaire) → SCENARIO_DON
 ### PREP
 - Lis le `00-sprint<NN>-suivi.md` + le `NN-slug.md` du scénario ciblé + le scénario Gherkin source +
   l'analyse technique.
+- **Refus d'un scénario IHM.** Si le scénario ciblé est étiqueté `🖥️ scénario IHM`
+  (colonne `Tag` du suivi / `NN-slug.md`) ou décrit un comportement qui **vit dans le
+  `.razor`** (interactivité, `@onclick`, `@bind`, render mode, rendu, navigation, DI
+  réelle, SignalR côté client) → **tu n'es pas le bon agent**. **N'écris JAMAIS un test
+  bUnit composant** pour le « couvrir » : bUnit rend toujours le composant interactif et
+  câble des doublures, il passerait **à vide** sans rien prouver (render mode/DI/SignalR
+  réels non testés). **STOP** et renvoie `{"type":"question", …}` pour que le thread
+  principal **route le scénario vers `ihm-builder`** (acceptation E2E/runtime). Tu restes
+  **backend / Application uniquement**.
 - Vérifie la solution .NET. **Si rien n'est scaffoldé** (pas de projets) → **renvoie
   une question de scaffolding** (round-trip), ne scaffolde jamais en silence une
   arborescence structurante. **Au scaffolding, génère aussi le lanceur** :
@@ -95,14 +104,19 @@ table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
 - **Tenir le suivi à jour à chaque transition** — `NN-slug.md` (cellule du test) **et**
   `00-sprint<NN>-suivi.md` (compte `X/N` + statut agrégé) doivent refléter l'état réel à tout instant
   (sauter un de ces Edit est une violation).
-- **Ne JAMAIS toucher** un `NN-retours.md` (retours utilisateur manuels) ni un
-  `99-sprint<NN>-besoins-fin-itération.md` (backlog `/4-retours`) du dossier — hors pipeline TDD.
+- **Ne JAMAIS toucher** le fichier unifié `99-sprint<NN>-retours.md` (retours produit du PO
+  + journal méthode/IA) ni le `99-sprint<NN>-besoins-fin-itération.md` (backlog `/4-retours`)
+  du dossier — hors pipeline TDD.
 
 ## Quand poser une question (round-trip `type:question`)
 
 Tu **dois** stopper et renvoyer `type:question` (jamais `type:result` ni commit) dans
 ces cas :
 - **Scaffolding** : aucune solution .NET en place.
+- **Scénario IHM reçu** (étiqueté `🖥️ scénario IHM`, ou comportement vivant dans le
+  `.razor` : interactivité, render mode, DI réelle, SignalR) — *obligatoire* : tu refuses
+  et demandes le **routage vers `ihm-builder`** ; tu ne produis **pas** de test bUnit
+  composant qui passerait à vide.
 - **Early green inattendu** (non anticipé par `tdd-analyse`) — *obligatoire* : laisse le
   PO trancher (doublon / filet / câblage à investiguer) avant tout commit.
 
