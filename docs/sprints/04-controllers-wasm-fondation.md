@@ -68,7 +68,7 @@ Scenario: Affecter une période via le canal colore les cases-jour couvertes à 
 
 ### Scenario 4 — Affecter une période sans responsable est refusée et laisse les cases en couleur neutre
 
-`@erreur`
+`@erreur` `@vert`
 
 ```gherkin
 Scenario: Affecter une période sans responsable est refusée et laisse les cases en couleur neutre
