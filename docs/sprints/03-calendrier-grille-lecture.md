@@ -117,7 +117,7 @@ Scenario: Plusieurs slots d'un même jour sont empilés dans l'ordre horaire
   Then La case du vendredi 26/06/2026 liste les trois slots dans l'ordre 'domicile A 07h00–08h30' puis 'école 08h30–16h30' puis 'nounou 16h30–18h30'
 ```
 
-### Scenario 6 — Une période à cheval sur la borne de fin n'est colorée que sur ses jours internes `@limite`
+### Scenario 6 — Une période à cheval sur la borne de fin n'est colorée que sur ses jours internes `@limite` `@couvert-ailleurs` <!-- couvert par Sc.1 (fenêtre/borne) + Sc.3 (mapping responsable par-jour) — early-green confirmé, scénario retiré (décision PO) -->
 
 ```gherkin
 Scenario: Une période à cheval sur la borne de fin n'est colorée que sur ses jours internes
@@ -125,6 +125,12 @@ Scenario: Une période à cheval sur la borne de fin n'est colorée que sur ses 
   When Un Parent ouvre le hub /planning
   Then La case du lundi 20/07 et celle du dimanche 26/07/2026 portent la couleur de Parent B (orange), la case du lundi 22/06/2026 porte la couleur de Parent A (bleu), et la dernière case de la grille reste le dimanche 26/07/2026 (aucune case au-delà)
 ```
+
+> **⏭️ Comportement couvert par Sc.1 + Sc.3 (pas de pilotage propre).** La fenêtre de
+> 35 jours bornée (Sc.1) clampe déjà toute période débordante à ses jours internes, et
+> le mapping responsable **par jour** (Sc.3) gère la coexistence de plusieurs périodes.
+> Les tests écrits passaient tous sans rouge (early-green) : invariant garanti par
+> construction, non par un driver. Test retiré, aucun `@vert` de pilotage.
 
 ### Scenario 7 — Un slot hors fenêtre est exclu tandis qu'un slot interne du même jour-semaine est rendu `@erreur`
 
