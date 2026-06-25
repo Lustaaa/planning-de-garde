@@ -40,7 +40,7 @@ Scenario: Poser un slot via le canal d'écriture le rend visible dans sa case jo
 
 ### Scenario 2 — Poser un slot sur un lieu absent du foyer est refusé et ne touche pas la grille
 
-`@erreur`
+`@erreur` `@vert`
 
 ```gherkin
 Scenario: Poser un slot sur un lieu absent du foyer est refusé et ne touche pas la grille

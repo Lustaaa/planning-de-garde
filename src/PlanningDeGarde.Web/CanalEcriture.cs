@@ -21,6 +21,7 @@ public static class CanalEcriture
             var resultat = handler.Handle(new PoserSlotCommand(
                 requete.EnfantId, requete.LieuId, requete.Debut, requete.Fin));
 
+            // Le canal propage l'issue du handler : succès acquitté, refus métier renvoyé avec son motif.
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);
