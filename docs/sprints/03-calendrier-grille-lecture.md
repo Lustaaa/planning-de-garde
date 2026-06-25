@@ -90,7 +90,7 @@ Scenario: Un slot enregistré apparaît dans la case de son jour avec son horair
   Then La case du mardi 23/06/2026 contient le slot libellé 'école 08h00–17h00', et aucune autre case de la grille ne le contient
 ```
 
-### Scenario 3 — La case-jour prend la couleur du parent responsable de la période `@nominal`
+### Scenario 3 — La case-jour prend la couleur du parent responsable de la période `@nominal` `@vert` <!-- vert — 14bd0b1 -->
 
 ```gherkin
 Scenario: La case-jour prend la couleur du parent responsable de la période

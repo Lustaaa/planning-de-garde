@@ -15,11 +15,13 @@ public sealed class GrilleAgendaQuery
 {
     private readonly ISlotRepository _slots;
     private readonly IPeriodeRepository _periodes;
+    private readonly IPaletteCouleurs _palette;
 
-    public GrilleAgendaQuery(ISlotRepository slots, IPeriodeRepository periodes)
+    public GrilleAgendaQuery(ISlotRepository slots, IPeriodeRepository periodes, IPaletteCouleurs palette)
     {
         _slots = slots;
         _periodes = periodes;
+        _palette = palette;
     }
 
     /// <summary>
@@ -33,9 +35,11 @@ public sealed class GrilleAgendaQuery
         var slotsParJour = _slots.AllSnapshots()
             .ToLookup(snapshot => DateOnly.FromDateTime(snapshot.Debut));
 
+        var periodes = _periodes.AllSnapshots();
+
         var jours = Enumerable.Range(0, 35)
             .Select(offset => lundiDeLaSemaine.AddDays(offset))
-            .Select(date => new JourCase(date, SlotsCasePour(slotsParJour[date])))
+            .Select(date => new JourCase(date, CouleurResponsableAu(date, periodes), SlotsCasePour(slotsParJour[date])))
             .ToList();
 
         var semaines = jours
@@ -45,6 +49,15 @@ public sealed class GrilleAgendaQuery
 
         return new GrilleAgenda(jours, semaines);
     }
+
+    private string CouleurResponsableAu(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes)
+    {
+        var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
+        return periode is null ? _palette.CouleurNeutre : _palette.CouleurDe(periode.ResponsableId);
+    }
+
+    private static bool CouvreLeJour(PeriodeSnapshot periode, DateOnly date)
+        => date >= DateOnly.FromDateTime(periode.Debut) && date <= DateOnly.FromDateTime(periode.Fin);
 
     private static IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots)
         => snapshots

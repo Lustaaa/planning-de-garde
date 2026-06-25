@@ -12,14 +12,21 @@
 > une période confie Léa à Parent A du 22/06 au 28/06/2026 ; date de référence
 > 24/06/2026 → chaque `JourCase` du 22/06 au 28/06 porte la couleur de Parent A
 > (bleu), **distincte** de la couleur de Parent B (orange).
+>
+> **Statut : ✅ GREEN** — acceptation + 2 tests unitaires verts.
 
 ## Tests unitaires (ordonnés TPP)
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Attribuer_la_couleur_du_parent_responsable_aux_cases_couvertes_par_sa_periode_When_une_periode_confie_Lea_a_Parent_A_sur_un_intervalle_interne` | constante neutre → valeur dérivée (mapping responsable→couleur sur les jours couverts) | Driver : les cases du Sc.1/Sc.2 portent une couleur neutre (aucune lecture des périodes) ; ce test force la lecture de `IPeriodeRepository`, le calcul des jours couverts par la période et l'attribution de la couleur du responsable. | ⏳ Pending |
-| 2 | `Should_Donner_a_Parent_A_une_couleur_distincte_de_celle_de_Parent_B_When_le_set_de_couleurs_par_defaut_associe_chaque_parent_a_une_couleur` | distinction par personne (injectivité du set sur les 2 parents) | Driver : une couleur constante / partagée entre responsables (early-green naïf « tous bleus ») satisfait #1 mais contredit la distinction Parent A ≠ Parent B ; force le set acteur→couleur déterministe. | ⏳ Pending |
-| 3 | `Should_Conserver_la_couleur_neutre_sur_les_cases_hors_periode_When_aucune_periode_ne_couvre_ces_jours` | présence + absence couplées (jours sans période restent neutres) | Driver : une implémentation qui colorerait toute la grille de la couleur du responsable (au lieu des seuls jours couverts) échoue ; couple coloration des jours internes (#1) et neutralité ailleurs dans la même grille. Prépare le Sc.6 (intersection partielle). | ⏳ Pending |
+| 1 | `Should_Attribuer_la_couleur_du_parent_responsable_aux_cases_couvertes_par_sa_periode_When_une_periode_confie_Lea_a_Parent_A_sur_un_intervalle_interne` | constante neutre → valeur dérivée (mapping responsable→couleur sur les jours couverts) | Driver : les cases du Sc.1/Sc.2 portent une couleur neutre (aucune lecture des périodes) ; ce test force la lecture de `IPeriodeRepository`, le calcul des jours couverts par la période et l'attribution de la couleur du responsable. | ✅ GREEN |
+| 2 | `Should_Conserver_la_couleur_neutre_sur_les_cases_hors_periode_When_aucune_periode_ne_couvre_ces_jours` | présence + absence couplées (jours sans période restent neutres) | Driver : une implémentation qui colorerait toute la grille de la couleur du responsable (au lieu des seuls jours couverts) échoue ; couple coloration des jours internes (#1) et neutralité ailleurs dans la même grille. Prépare le Sc.6 (intersection partielle). | ✅ GREEN |
+
+> **Note (PO) — ancien test #2 supprimé.** Le test « distinction Parent A ≠ Parent B »
+> (`Should_Donner_a_Parent_A_une_couleur_distincte_…`) a été retiré comme doublon : la
+> distinction bleu/orange est déjà assertée par le **test d'acceptation** et le **test #1**
+> (mapping `_palette.CouleurDe(ResponsableId)`). L'ancien #3 (neutralité hors période)
+> devient le #2. Scénario à **2 tests unitaires**.
 
 ## Fichiers à créer / modifier
 

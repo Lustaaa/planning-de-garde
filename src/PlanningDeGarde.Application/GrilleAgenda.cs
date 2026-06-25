@@ -12,10 +12,11 @@ public sealed record GrilleAgenda(
     IReadOnlyList<SemaineLigne> Semaines);
 
 /// <summary>
-/// Une case-jour de la grille (axe vertical : une ligne par semaine), portant les slots
-/// rattachés à sa date.
+/// Une case-jour de la grille (axe vertical : une ligne par semaine), portant la couleur
+/// du parent responsable de la période qui couvre ce jour (ou la couleur neutre si aucune
+/// période ne le couvre) et les slots rattachés à sa date.
 /// </summary>
-public sealed record JourCase(DateOnly Date, IReadOnlyList<SlotCase> Slots);
+public sealed record JourCase(DateOnly Date, string CouleurResponsable, IReadOnlyList<SlotCase> Slots);
 
 /// <summary>
 /// Un slot positionné dans sa case-jour : libellé (lieu) et bornes horaires de la journée.

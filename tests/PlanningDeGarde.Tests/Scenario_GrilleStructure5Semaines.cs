@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Tests.Fakes;
@@ -22,7 +23,8 @@ public class Scenario_GrilleStructure5Semaines
     private static readonly DateOnly Dimanche_26_07_2026 = new(2026, 7, 26);
 
     private static GrilleAgendaQuery QueryVide()
-        => new(new FakeSlotRepository(), new FakePeriodeRepository());
+        => new(new FakeSlotRepository(), new FakePeriodeRepository(),
+            new FakePaletteCouleurs(new Dictionary<string, string>()));
 
     // ---------- Test d'acceptation (boucle externe, BDD) ----------
 

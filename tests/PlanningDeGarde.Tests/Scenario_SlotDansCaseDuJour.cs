@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
@@ -39,7 +40,10 @@ public class Scenario_SlotDansCaseDuJour
     public void Should_Placer_le_slot_ecole_08h00_17h00_de_Lea_dans_la_seule_case_du_mardi_23_06_2026_When_un_Parent_consulte_la_grille_le_24_06_2026()
     {
         // Given — un slot 'école' de Léa enregistré le mardi 23/06/2026 08h00→17h00
-        var query = new GrilleAgendaQuery(SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(), new FakePeriodeRepository());
+        var query = new GrilleAgendaQuery(
+            SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(),
+            new FakePeriodeRepository(),
+            new FakePaletteCouleurs(new Dictionary<string, string>()));
 
         // When — un Parent consulte la grille le 24/06/2026
         var grille = query.Projeter(Date_24_06_2026);
@@ -64,7 +68,10 @@ public class Scenario_SlotDansCaseDuJour
     [Fact]
     public void Should_Faire_apparaitre_le_slot_de_Lea_dans_la_case_du_mardi_23_06_2026_When_ce_slot_est_enregistre_dans_la_fenetre()
     {
-        var query = new GrilleAgendaQuery(SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(), new FakePeriodeRepository());
+        var query = new GrilleAgendaQuery(
+            SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(),
+            new FakePeriodeRepository(),
+            new FakePaletteCouleurs(new Dictionary<string, string>()));
 
         var grille = query.Projeter(Date_24_06_2026);
 
@@ -78,7 +85,10 @@ public class Scenario_SlotDansCaseDuJour
     [Fact]
     public void Should_Exposer_le_libelle_ecole_et_l_horaire_08h00_a_17h00_du_slot_When_le_slot_est_place_dans_sa_case()
     {
-        var query = new GrilleAgendaQuery(SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(), new FakePeriodeRepository());
+        var query = new GrilleAgendaQuery(
+            SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(),
+            new FakePeriodeRepository(),
+            new FakePaletteCouleurs(new Dictionary<string, string>()));
 
         var grille = query.Projeter(Date_24_06_2026);
 
@@ -94,7 +104,10 @@ public class Scenario_SlotDansCaseDuJour
     [Fact]
     public void Should_Ne_rattacher_le_slot_a_aucune_autre_case_que_celle_de_son_jour_When_la_grille_est_projetee()
     {
-        var query = new GrilleAgendaQuery(SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(), new FakePeriodeRepository());
+        var query = new GrilleAgendaQuery(
+            SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(),
+            new FakePeriodeRepository(),
+            new FakePaletteCouleurs(new Dictionary<string, string>()));
 
         var grille = query.Projeter(Date_24_06_2026);
 
