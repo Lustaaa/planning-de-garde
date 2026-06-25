@@ -61,6 +61,7 @@ public sealed class GrilleAgendaQuery
 
     private IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots)
         => snapshots
+            .OrderBy(s => s.Debut.TimeOfDay)
             .Select(s => new SlotCase(
                 s.LieuId,
                 TimeOnly.FromDateTime(s.Debut),

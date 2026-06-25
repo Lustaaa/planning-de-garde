@@ -108,7 +108,7 @@ Scenario: Le slot d'un acteur non-responsable porte sa propre couleur sur son cr
   Then La case du jeudi 25/06/2026 porte la couleur de Parent A (bleu) au niveau de la journée, et le créneau 'nounou 17h00–19h00' à l'intérieur de la case porte la couleur de Nounou (vert)
 ```
 
-### Scenario 5 — Plusieurs slots d'un même jour sont empilés dans l'ordre horaire `@limite`
+### Scenario 5 — Plusieurs slots d'un même jour sont empilés dans l'ordre horaire `@limite` `@vert` <!-- vert — 3d194d9 -->
 
 ```gherkin
 Scenario: Plusieurs slots d'un même jour sont empilés dans l'ordre horaire

@@ -58,7 +58,7 @@
 | 2 | [Un slot enregistré apparaît dans la case de son jour avec son horaire](02-slot-dans-case-du-jour.md) | `@nominal` | ✅ GREEN | 3/3 | ✅ GREEN |
 | 3 | [La case-jour prend la couleur du parent responsable de la période](03-couleur-responsable-case-jour.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 4 | [Le slot d'un acteur non-responsable porte sa propre couleur](04-couleur-acteur-sur-creneau.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 5 | [Plusieurs slots d'un même jour sont empilés dans l'ordre horaire](05-slots-empiles-ordre-horaire.md) | `@limite` | ⏳ Pending | 0/2 | ⏳ Pending |
+| 5 | [Plusieurs slots d'un même jour sont empilés dans l'ordre horaire](05-slots-empiles-ordre-horaire.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 6 | [Une période à cheval sur la borne de fin n'est colorée que sur ses jours internes](06-periode-a-cheval-borne.md) | `@limite` | ⏳ Pending | 0/2 | ⏳ Pending |
 | 7 | [Un slot hors fenêtre est exclu tandis qu'un slot interne est rendu](07-slot-hors-fenetre-exclu.md) | `@erreur` | ⏳ Pending | 0/2 | ⏳ Pending |
 | 8 | [Un acteur absent du set reçoit le repli gris](08-repli-gris-acteur-hors-set.md) | `@erreur` | ⏳ Pending | 0/2 | ⏳ Pending |
