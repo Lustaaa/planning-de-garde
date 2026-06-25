@@ -19,10 +19,11 @@ public sealed record GrilleAgenda(
 public sealed record JourCase(DateOnly Date, string CouleurResponsable, IReadOnlyList<SlotCase> Slots);
 
 /// <summary>
-/// Un slot positionné dans sa case-jour : libellé (lieu) et bornes horaires de la journée.
-/// (La couleur acteur arrive au scénario 4 — non portée ici.)
+/// Un slot positionné dans sa case-jour : libellé (lieu/acteur), bornes horaires de la journée
+/// et couleur propre de son acteur (deuxième niveau de couleur, distinct de la couleur de la
+/// case-jour : la case porte la responsabilité, le créneau porte l'acteur).
 /// </summary>
-public sealed record SlotCase(string Libelle, TimeOnly Debut, TimeOnly Fin);
+public sealed record SlotCase(string Libelle, TimeOnly Debut, TimeOnly Fin, string CouleurActeur);
 
 /// <summary>Une ligne-semaine : 7 cases-jour consécutives, du lundi au dimanche.</summary>
 public sealed record SemaineLigne(IReadOnlyList<JourCase> Jours);

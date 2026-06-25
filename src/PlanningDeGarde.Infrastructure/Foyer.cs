@@ -28,6 +28,7 @@ public static class Foyer
         {
             ["parent-a"] = "bleu",
             ["parent-b"] = "orange",
+            ["nounou"] = "vert",
         };
 
     /// <summary>Couleur neutre (repli déterministe) pour tout acteur absent du set.</summary>

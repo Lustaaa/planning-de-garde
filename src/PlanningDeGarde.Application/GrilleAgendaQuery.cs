@@ -59,9 +59,13 @@ public sealed class GrilleAgendaQuery
     private static bool CouvreLeJour(PeriodeSnapshot periode, DateOnly date)
         => date >= DateOnly.FromDateTime(periode.Debut) && date <= DateOnly.FromDateTime(periode.Fin);
 
-    private static IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots)
+    private IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots)
         => snapshots
-            .Select(s => new SlotCase(s.LieuId, TimeOnly.FromDateTime(s.Debut), TimeOnly.FromDateTime(s.Fin)))
+            .Select(s => new SlotCase(
+                s.LieuId,
+                TimeOnly.FromDateTime(s.Debut),
+                TimeOnly.FromDateTime(s.Fin),
+                _palette.CouleurDe(s.LieuId)))
             .ToList();
 
     private static DateOnly LundiDeLaSemaineDe(DateOnly date)

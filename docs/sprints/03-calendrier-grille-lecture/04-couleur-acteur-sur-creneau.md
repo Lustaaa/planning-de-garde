@@ -12,13 +12,15 @@
 > 24/06/2026 → la `JourCase` du jeudi 25/06 porte `CouleurResponsable` = bleu (Parent A)
 > **et** son `SlotCase` « nounou » porte `CouleurActeur` = vert (Nounou). Deux niveaux
 > de couleur **coexistants et distincts** dans la même case.
+>
+> **Statut : ✅ GREEN** — acceptation + 2 tests unitaires verts.
 
 ## Tests unitaires (ordonnés TPP)
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Attribuer_au_creneau_nounou_la_couleur_propre_de_Nounou_When_un_slot_nounou_est_place_dans_la_case` | constante → valeur dérivée (mapping acteur du slot → couleur) | Driver : le `SlotCase` du Sc.2 n'a **pas** de couleur (ou hérite de la case-jour) ; ce test force le mapping de l'**acteur du slot** vers sa propre couleur via le set, indépendamment du responsable de la journée. | ⏳ Pending |
-| 2 | `Should_Faire_coexister_la_couleur_de_journee_de_Parent_A_et_la_couleur_de_creneau_de_Nounou_dans_la_meme_case_When_une_periode_de_Parent_A_couvre_le_jour_du_slot_nounou` | coexistence de deux niveaux distincts | Driver : une implémentation qui ferait porter au slot la couleur de la case-jour (un seul niveau) satisfait Sc.3 mais échoue ici (le créneau doit être vert, la journée bleue) ; force la **séparation** des deux niveaux de couleur. | ⏳ Pending |
+| 1 | `Should_Attribuer_au_creneau_nounou_la_couleur_propre_de_Nounou_When_un_slot_nounou_est_place_dans_la_case` | constante → valeur dérivée (mapping acteur du slot → couleur) | Driver : le `SlotCase` du Sc.2 n'a **pas** de couleur (ou hérite de la case-jour) ; ce test force le mapping de l'**acteur du slot** vers sa propre couleur via le set, indépendamment du responsable de la journée. | ✅ GREEN |
+| 2 | `Should_Faire_coexister_la_couleur_de_journee_de_Parent_A_et_la_couleur_de_creneau_de_Nounou_dans_la_meme_case_When_une_periode_de_Parent_A_couvre_le_jour_du_slot_nounou` | coexistence de deux niveaux distincts | Driver : une implémentation qui ferait porter au slot la couleur de la case-jour (un seul niveau) satisfait Sc.3 mais échoue ici (le créneau doit être vert, la journée bleue) ; force la **séparation** des deux niveaux de couleur. | ✅ GREEN |
 
 ## Fichiers à créer / modifier
 

@@ -99,7 +99,7 @@ Scenario: La case-jour prend la couleur du parent responsable de la période
   Then Les cases du lundi 22/06 au dimanche 28/06/2026 portent la couleur de Parent A (bleu), distincte de la couleur de Parent B (orange)
 ```
 
-### Scenario 4 — Le slot d'un acteur non-responsable porte sa propre couleur sur son créneau `@nominal`
+### Scenario 4 — Le slot d'un acteur non-responsable porte sa propre couleur sur son créneau `@nominal` `@vert` <!-- vert — 294c3c5 -->
 
 ```gherkin
 Scenario: Le slot d'un acteur non-responsable porte sa propre couleur sur son créneau
