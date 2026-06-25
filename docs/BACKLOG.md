@@ -26,6 +26,16 @@
 |-------:|-------|-------------------|:------:|
 | 04 | `controllers-wasm-fondation` — adaptateur de gauche (écriture via canal requête/réponse) + migration front côté client (WASM), SignalR conservé en diffusion lecture seule | 1 — Fondations | 🟡 en cours |
 
+## Prochains sprints envisagés
+
+> Les 2 sujets en tête de file, issus du séquencement `/4-retours` du sprint 04 (arbitre :
+> l'usage réel tranche). Indicatif — confirmé/affiné à chaque `/2-make-gherkin`.
+
+| Rang | Sujet envisagé | Épics | Pourquoi maintenant |
+|-----:|----------------|-------|---------------------|
+| +1 | **Host API séparable** — démarrer le back seul (API d'écriture détachée du front) + UI d'exploration interactive des API | É3 | Referme le palier 1 (exception bornée de fondation) avant de rendre la main à l'usage |
+| +2 | **Une saisie réapparaît à la bonne date ET en couleur du parent** — dates par défaut = aujourd'hui + correction du gris des affectations (identité acteur ↔ palette) | É5, É6, É7, É12 | Premier sujet d'usage : éteint le faux bug « saisies invisibles » et le seul vrai défaut confirmé |
+
 ---
 
 ## Épics (par fonctionnalité)

@@ -100,5 +100,5 @@ périodes, transferts) est livré côté back + IHM ; les retours d'usage nourri
 le sprint suivant. La spec est une **documentation vivante**, reversionnée à chaque
 itération à partir des retours.
 
-📄 Spec courante : [`docs/04-specification.md`](docs/04-specification.md)
-*(les versions précédentes, ex. [`docs/03-specification.md`](docs/03-specification.md), restent figées en historique)*
+📄 Spec courante : [`docs/05-specification.md`](docs/05-specification.md)
+*(les versions précédentes, ex. [`docs/04-specification.md`](docs/04-specification.md), restent figées en historique)*
