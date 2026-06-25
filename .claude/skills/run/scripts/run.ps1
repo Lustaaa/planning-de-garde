@@ -32,7 +32,10 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-Set-Location (git rev-parse --show-toplevel)
+# Racine du dépôt dérivée du chemin du script (4 niveaux au-dessus de
+# .claude/skills/run/scripts/) plutôt que de `git rev-parse`, dont la sortie UTF-8
+# est mal décodée par PowerShell quand le chemin contient un accent (ex. « privée »).
+Set-Location -LiteralPath (Resolve-Path -LiteralPath "$PSScriptRoot/../../../..")
 
 $web = 'src/PlanningDeGarde.Web/PlanningDeGarde.Web.csproj'
 if (-not (Test-Path $web)) {

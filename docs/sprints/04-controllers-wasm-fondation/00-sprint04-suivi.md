@@ -30,10 +30,10 @@
 
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
-| 1 | [Poser un slot via le canal le rend visible dans sa case](01-poser-slot-canal-visible.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 2 | [Poser un slot sur un lieu absent est refusé sans toucher la grille](02-poser-slot-lieu-absent-refuse.md) | `@erreur` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 3 | [Affecter une période colore les cases-jour couvertes](03-affecter-periode-couleur-cases.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 4 | [Affecter une période sans responsable est refusée](04-affecter-periode-sans-responsable-refusee.md) | `@erreur` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 1 | [Poser un slot via le canal le rend visible dans sa case](archive/01-poser-slot-canal-visible.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 2 | [Poser un slot sur un lieu absent est refusé sans toucher la grille](archive/02-poser-slot-lieu-absent-refuse.md) | `@erreur` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 3 | [Affecter une période colore les cases-jour couvertes](archive/03-affecter-periode-couleur-cases.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 4 | [Affecter une période sans responsable est refusée](archive/04-affecter-periode-sans-responsable-refusee.md) | `@erreur` | ✅ GREEN | 2/2 | ✅ GREEN |
 
 **Total** : 4 scénarios backend (acceptation **intégration** `WebApplicationFactory`) · 8 tests d'intégration.
 
