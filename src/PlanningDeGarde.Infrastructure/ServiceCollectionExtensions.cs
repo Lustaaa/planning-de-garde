@@ -30,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DefinirTransfertHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
+        services.AddScoped<GrilleAgendaQuery>();
 
         return services;
     }

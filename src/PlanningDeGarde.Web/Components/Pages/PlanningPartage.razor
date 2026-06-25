@@ -1,12 +1,6 @@
 @page "/planning"
 @implements IAsyncDisposable
-@inject ISlotRepository Slots
-@inject IPeriodeRepository Periodes
-@inject ITransfertRepository Transferts
-@inject JourneeEnfantQuery JourneeEnfant
-@inject ResponsabiliteQuery Responsabilite
-@inject DeplacerSlotHandler DeplacerSlot
-@inject ModifierPeriodeHandler ModifierPeriode
+@inject GrilleAgendaQuery Grille
 @inject SessionPlanning Session
 @inject NavigationManager Nav
 
@@ -34,151 +28,46 @@
     <a class="btn btn-primary @Desactive" href="planning/definir-transfert">Définir un transfert</a>
 </div>
 
-@if (_messageAction is not null)
-{
-    <div class="alert @(_actionReussie ? "alert-success" : "alert-danger") py-2">@_messageAction</div>
-}
+<section class="grille-agenda" data-testid="grille-agenda">
+    <div class="grille-entete">
+        @foreach (var jour in JoursDeLaSemaine)
+        {
+            <div class="grille-entete-jour">@jour</div>
+        }
+    </div>
 
-<section class="mb-4">
-    <h2 class="h5">Localisation — slots de @Session.EnfantId</h2>
-    @if (_slots.Count == 0)
+    @foreach (var semaine in _grille.Semaines)
     {
-        <p class="text-muted">Aucun slot.</p>
-    }
-    else
-    {
-        <table class="table table-sm align-middle">
-            <thead>
-                <tr><th>Enfant</th><th>Lieu</th><th>Début</th><th>Fin</th><th></th></tr>
-            </thead>
-            <tbody>
-                @foreach (var slot in _slots)
-                {
-                    <tr>
-                        <td>@slot.EnfantId</td>
-                        <td>@slot.LieuId</td>
-                        <td>@slot.Debut.ToString("dd/MM HH:mm")</td>
-                        <td>@slot.Fin.ToString("dd/MM HH:mm")</td>
-                        <td>
-                            @if (Session.EstParent)
-                            {
-                                <div class="d-flex gap-1">
-                                    <select class="form-select form-select-sm w-auto"
-                                            @onchange="e => DeplacerVers(slot, e.Value?.ToString())">
-                                        <option value="">Déplacer vers…</option>
-                                        @foreach (var lieu in Foyer.Lieux)
-                                        {
-                                            <option value="@lieu">@lieu</option>
-                                        }
-                                    </select>
-                                </div>
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
-
-    @foreach (var jour in _joursAvecChevauchement)
-    {
-        <div class="alert alert-warning py-2" role="alert" data-testid="avertissement-chevauchement">
-            Avertissement : chevauchement entre les slots de @Session.EnfantId le @jour.ToString("dd/MM").
+        <div class="grille-semaine">
+            @foreach (var jourCase in semaine.Jours)
+            {
+                <div class="grille-jour" data-testid="jour-case"
+                     style="background-color:@Teinte(jourCase.CouleurResponsable);">
+                    <div class="grille-jour-date">@jourCase.Date.ToString("dd/MM")</div>
+                    <div class="grille-jour-slots">
+                        @foreach (var slot in jourCase.Slots)
+                        {
+                            <div class="grille-slot" data-testid="slot-case"
+                                 style="background-color:@Couleur(slot.CouleurActeur);">
+                                <span class="grille-slot-libelle">@slot.Libelle</span>
+                                <span class="grille-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
     }
 </section>
 
-<section class="mb-4">
-    <h2 class="h5">Responsabilité — périodes de garde</h2>
-
-    <p class="mb-2" data-testid="responsable-actuel">
-        Responsable maintenant :
-        <strong>@(_responsableActuel ?? "— aucun")</strong>
-    </p>
-
-    @if (_motifEditionPeriode is not null)
-    {
-        <div class="alert alert-danger py-2" data-testid="motif-edition-periode">
-            @_motifEditionPeriode
-            <button type="button" class="btn btn-sm btn-outline-light ms-2" @onclick="RechargerPeriodes">
-                Recharger l'état à jour
-            </button>
-        </div>
-    }
-
-    @if (_periodes.Count == 0)
-    {
-        <p class="text-muted">Aucune période.</p>
-    }
-    else
-    {
-        <ul class="list-group">
-            @foreach (var p in _periodes)
-            {
-                <li class="list-group-item">
-                    @if (_periodeEnEdition is not null && _periodeEnEdition.Equals(p))
-                    {
-                        <div class="row g-2 align-items-end">
-                            <div class="col-auto">
-                                <label class="form-label small mb-0">Responsable</label>
-                                <select class="form-select form-select-sm" @bind="_editResponsableId">
-                                    @foreach (var r in Foyer.Responsables)
-                                    {
-                                        <option value="@r">@r</option>
-                                    }
-                                </select>
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-label small mb-0">Début</label>
-                                <input type="date" class="form-control form-control-sm"
-                                       @bind="_editDebut" @bind:format="yyyy-MM-dd" />
-                            </div>
-                            <div class="col-auto">
-                                <label class="form-label small mb-0">Fin</label>
-                                <input type="date" class="form-control form-control-sm"
-                                       @bind="_editFin" @bind:format="yyyy-MM-dd" />
-                            </div>
-                            <div class="col-auto">
-                                <button type="button" class="btn btn-sm btn-success"
-                                        @onclick="EnregistrerEditionPeriode">Enregistrer</button>
-                                <button type="button" class="btn btn-sm btn-secondary"
-                                        @onclick="AnnulerEditionPeriode">Annuler</button>
-                            </div>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="d-flex justify-content-between align-items-center">
-                            <span>@p.ResponsableId responsable du @p.Debut.ToString("dd/MM") au @p.Fin.ToString("dd/MM")</span>
-                            @if (Session.EstParent)
-                            {
-                                <button type="button" class="btn btn-sm btn-outline-primary"
-                                        @onclick="() => OuvrirEditionPeriode(p)">Modifier</button>
-                            }
-                        </div>
-                    }
-                </li>
-            }
-        </ul>
-    }
-</section>
-
-<section class="mb-4">
-    <h2 class="h5">Transferts de bascule</h2>
-    @if (_transferts.Count == 0)
-    {
-        <p class="text-muted">Aucun transfert.</p>
-    }
-    else
-    {
-        <ul class="list-group">
-            @foreach (var t in _transferts)
-            {
-                <li class="list-group-item">
-                    dépose @t.DeposeParId → récupère @t.RecupereParId, @t.LieuId,
-                    @t.Heure.ToString(@"hh\h") le @t.Date.ToString("dd/MM")
-                </li>
-            }
-        </ul>
-    }
-</section>
+<style>
+    .grille-agenda { display: flex; flex-direction: column; gap: 4px; }
+    .grille-entete, .grille-semaine { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+    .grille-entete-jour { font-weight: 600; text-align: center; color: #555; padding: 2px 0; }
+    .grille-jour { min-height: 90px; border: 1px solid #dee2e6; border-radius: 4px; padding: 4px; display: flex; flex-direction: column; gap: 4px; }
+    .grille-jour-date { font-size: .8rem; font-weight: 600; color: #333; }
+    .grille-jour-slots { display: flex; flex-direction: column; gap: 3px; }
+    .grille-slot { border-radius: 3px; padding: 2px 4px; font-size: .72rem; color: #fff; display: flex; flex-direction: column; line-height: 1.1; }
+    .grille-slot-libelle { font-weight: 600; }
+    .grille-slot-horaire { opacity: .9; }
+</style>
