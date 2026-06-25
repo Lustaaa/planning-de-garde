@@ -26,7 +26,7 @@
 
 ### Scenario 1 — Poser un slot via le canal d'écriture le rend visible dans sa case jour/horaire
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: Poser un slot via le canal d'écriture le rend visible dans sa case jour/horaire

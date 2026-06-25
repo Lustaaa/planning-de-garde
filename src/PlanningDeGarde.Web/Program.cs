@@ -36,8 +36,17 @@ app.MapRazorComponents<App>()
 
 app.MapHub<PlanningHub>("/hubs/planning");
 
+// Canal d'écriture requête/réponse (adaptateur de gauche) — commandes d'écriture en HTTP.
+app.MapperCanalEcriture();
+
 // Données de démonstration — l'IHM s'ouvre peuplée plutôt que vide.
 // Persistance en mémoire (aucune base réelle) : amorçage systématique en local.
 app.AmorcerDonneesDemo();
 
 app.Run();
+
+/// <summary>
+/// Point d'entrée rendu accessible (partial public) pour que les tests d'intégration
+/// (<c>WebApplicationFactory&lt;Program&gt;</c>) puissent démarrer l'hôte Web réel.
+/// </summary>
+public partial class Program { }
