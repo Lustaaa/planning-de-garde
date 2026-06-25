@@ -72,7 +72,7 @@ Feature: Grille agenda du hub `/planning` en lecture seule — semaine en cours
 de garde lue d'un coup d'œil par un code couleur propre à chaque personne. La
 grille consomme les slots et périodes déjà enregistrés sans jamais écrire.
 
-### Scenario 1 — La grille structure 5 semaines à partir de la semaine en cours `@nominal`
+### Scenario 1 — La grille structure 5 semaines à partir de la semaine en cours `@nominal` `@vert` <!-- vert — 21369c2 -->
 
 ```gherkin
 Scenario: La grille structure 5 semaines à partir de la semaine en cours

@@ -14,14 +14,16 @@
 > expose exactement 35 `JourCase`, la première datée du **lundi 22/06/2026**, la
 > dernière du **dimanche 26/07/2026**, ordonnées et regroupables en 5 semaines de 7
 > jours. (Driver de la structure de fenêtre réutilisée par tous les autres scénarios.)
+>
+> **Statut acceptation : ✅ GREEN**
 
 ## Tests unitaires (ordonnés TPP)
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Produire_exactement_35_cases_jour_When_un_Parent_consulte_la_grille_un_jour_donne_sans_donnee` | nil → tableau constant (cardinalité) | Driver : une projection qui renvoie une grille vide / une longueur quelconque échoue ; force la génération des 35 jours de la fenêtre. | ⏳ Pending |
-| 2 | `Should_Demarrer_au_lundi_22_06_2026_et_finir_au_dimanche_26_07_2026_When_la_date_de_reference_est_le_mercredi_24_06_2026` | constant → calcul (ancrage au lundi de la semaine + fenêtre datée) | Driver : un démarrage à la date de référence (24/06) au lieu du lundi de sa semaine (22/06), ou une fin qui n'est pas 35 jours datés plus tard, contredit le test #1 (qui n'impose pas les dates). Force le calcul « lundi de la semaine en cours » + énumération datée jour à jour. | ⏳ Pending |
-| 3 | `Should_Regrouper_les_35_cases_en_5_semaines_de_7_jours_consecutifs_When_la_grille_est_structuree` | calcul → partition (5×7) | Driver : une liste plate de 35 jours sans structure de semaine (ou des semaines non consécutives lundi→dimanche) ne satisfait pas le regroupement 5×7 ; force l'exposition de la grille par lignes-semaines (ou une projection vérifiable « jour N appartient à la semaine N/7 »). | ⏳ Pending |
+| 1 | `Should_Produire_exactement_35_cases_jour_When_un_Parent_consulte_la_grille_un_jour_donne_sans_donnee` | nil → tableau constant (cardinalité) | Driver : une projection qui renvoie une grille vide / une longueur quelconque échoue ; force la génération des 35 jours de la fenêtre. | ✅ GREEN |
+| 2 | `Should_Demarrer_au_lundi_22_06_2026_et_finir_au_dimanche_26_07_2026_When_la_date_de_reference_est_le_mercredi_24_06_2026` | constant → calcul (ancrage au lundi de la semaine + fenêtre datée) | Driver : un démarrage à la date de référence (24/06) au lieu du lundi de sa semaine (22/06), ou une fin qui n'est pas 35 jours datés plus tard, contredit le test #1 (qui n'impose pas les dates). Force le calcul « lundi de la semaine en cours » + énumération datée jour à jour. | ✅ GREEN |
+| 3 | `Should_Regrouper_les_35_cases_en_5_semaines_de_7_jours_consecutifs_When_la_grille_est_structuree` | calcul → partition (5×7) | Driver : une liste plate de 35 jours sans structure de semaine (ou des semaines non consécutives lundi→dimanche) ne satisfait pas le regroupement 5×7 ; force l'exposition de la grille par lignes-semaines (ou une projection vérifiable « jour N appartient à la semaine N/7 »). | ✅ GREEN |
 
 ## Fichiers à créer / modifier
 
