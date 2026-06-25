@@ -132,7 +132,7 @@ Scenario: Une période à cheval sur la borne de fin n'est colorée que sur ses 
 > Les tests écrits passaient tous sans rouge (early-green) : invariant garanti par
 > construction, non par un driver. Test retiré, aucun `@vert` de pilotage.
 
-### Scenario 7 — Un slot hors fenêtre est exclu tandis qu'un slot interne du même jour-semaine est rendu `@erreur` `@vert` <!-- vert — 335e9e9 -->
+### Scenario 7 — Un slot hors fenêtre est exclu tandis qu'un slot interne du même jour-semaine est rendu `@erreur` `@vert` <!-- vert — 3418393 -->
 
 ```gherkin
 Scenario: Un slot hors fenêtre est exclu tandis qu'un slot interne du même jour-semaine est rendu
