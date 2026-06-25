@@ -55,7 +55,7 @@
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
 | 1 | [La grille structure 5 semaines à partir de la semaine en cours](01-grille-structure-5-semaines.md) | `@nominal` | ✅ GREEN | 3/3 | ✅ GREEN |
-| 2 | [Un slot enregistré apparaît dans la case de son jour avec son horaire](02-slot-dans-case-du-jour.md) | `@nominal` | ⏳ Pending | 0/3 | ⏳ Pending |
+| 2 | [Un slot enregistré apparaît dans la case de son jour avec son horaire](02-slot-dans-case-du-jour.md) | `@nominal` | ✅ GREEN | 3/3 | ✅ GREEN |
 | 3 | [La case-jour prend la couleur du parent responsable de la période](03-couleur-responsable-case-jour.md) | `@nominal` | ⏳ Pending | 0/3 | ⏳ Pending |
 | 4 | [Le slot d'un acteur non-responsable porte sa propre couleur](04-couleur-acteur-sur-creneau.md) | `@nominal` | ⏳ Pending | 0/2 | ⏳ Pending |
 | 5 | [Plusieurs slots d'un même jour sont empilés dans l'ordre horaire](05-slots-empiles-ordre-horaire.md) | `@limite` | ⏳ Pending | 0/2 | ⏳ Pending |

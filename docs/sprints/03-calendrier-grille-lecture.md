@@ -81,7 +81,7 @@ Scenario: La grille structure 5 semaines à partir de la semaine en cours
   Then La grille agenda affiche exactement 35 cases-jour, la première datée du lundi 22/06/2026 et la dernière du dimanche 26/07/2026, organisées en 5 lignes-semaines de 7 jours
 ```
 
-### Scenario 2 — Un slot enregistré apparaît dans la case de son jour avec son horaire `@nominal`
+### Scenario 2 — Un slot enregistré apparaît dans la case de son jour avec son horaire `@nominal` `@vert` <!-- vert — a6e00bf -->
 
 ```gherkin
 Scenario: Un slot enregistré apparaît dans la case de son jour avec son horaire

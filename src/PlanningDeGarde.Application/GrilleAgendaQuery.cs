@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application;
 
@@ -29,8 +30,12 @@ public sealed class GrilleAgendaQuery
     {
         var lundiDeLaSemaine = LundiDeLaSemaineDe(dateReference);
 
+        var slotsParJour = _slots.AllSnapshots()
+            .ToLookup(snapshot => DateOnly.FromDateTime(snapshot.Debut));
+
         var jours = Enumerable.Range(0, 35)
-            .Select(offset => new JourCase(lundiDeLaSemaine.AddDays(offset)))
+            .Select(offset => lundiDeLaSemaine.AddDays(offset))
+            .Select(date => new JourCase(date, SlotsCasePour(slotsParJour[date])))
             .ToList();
 
         var semaines = jours
@@ -40,6 +45,11 @@ public sealed class GrilleAgendaQuery
 
         return new GrilleAgenda(jours, semaines);
     }
+
+    private static IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots)
+        => snapshots
+            .Select(s => new SlotCase(s.LieuId, TimeOnly.FromDateTime(s.Debut), TimeOnly.FromDateTime(s.Fin)))
+            .ToList();
 
     private static DateOnly LundiDeLaSemaineDe(DateOnly date)
     {

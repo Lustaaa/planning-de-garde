@@ -12,14 +12,16 @@
 > du **mardi 23/06/2026** contient un `SlotCase` libellé « école » 08h00–17h00, et
 > **aucune autre** des 35 cases ne le contient. (Couplage présence + unicité : une
 > projection qui ignore le slot, ou le duplique sur plusieurs jours, échoue.)
+>
+> **Statut : ✅ GREEN** — acceptation + 3 tests unitaires verts.
 
 ## Tests unitaires (ordonnés TPP)
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Faire_apparaitre_le_slot_de_Lea_dans_la_case_du_mardi_23_06_2026_When_ce_slot_est_enregistre_dans_la_fenetre` | tableau vide → tableau peuplé (présence d'un slot) | Driver : la grille du Sc.1 ne lit **pas** les slots (toutes cases sans slot) ; ce test force la lecture de `ISlotRepository` et le rattachement du slot à la case de sa date. | ⏳ Pending |
-| 2 | `Should_Exposer_le_libelle_ecole_et_l_horaire_08h00_a_17h00_du_slot_When_le_slot_est_place_dans_sa_case` | présence → valeurs (libellé acteur/lieu + bornes horaires) | Driver : un slot rattaché mais sans libellé/horaire (ou bornes erronées) contredit l'assertion sur « école 08h00–17h00 » ; force le mapping `SlotCase { Libelle, Debut, Fin }` depuis le snapshot. | ⏳ Pending |
-| 3 | `Should_Ne_rattacher_le_slot_a_aucune_autre_case_que_celle_de_son_jour_When_la_grille_est_projetee` | unicité (anti-duplication) | Driver : une implémentation naïve qui placerait tout slot dans toutes les cases (ou dans la mauvaise) échoue ; force le rattachement **exact** à `JourCase.Date == slot.Debut.Date`. Couplé au #1 (présence) pour qu'une grille vide ne passe pas. | ⏳ Pending |
+| 1 | `Should_Faire_apparaitre_le_slot_de_Lea_dans_la_case_du_mardi_23_06_2026_When_ce_slot_est_enregistre_dans_la_fenetre` | tableau vide → tableau peuplé (présence d'un slot) | Driver : la grille du Sc.1 ne lit **pas** les slots (toutes cases sans slot) ; ce test force la lecture de `ISlotRepository` et le rattachement du slot à la case de sa date. | ✅ GREEN |
+| 2 | `Should_Exposer_le_libelle_ecole_et_l_horaire_08h00_a_17h00_du_slot_When_le_slot_est_place_dans_sa_case` | présence → valeurs (libellé acteur/lieu + bornes horaires) | Driver : un slot rattaché mais sans libellé/horaire (ou bornes erronées) contredit l'assertion sur « école 08h00–17h00 » ; force le mapping `SlotCase { Libelle, Debut, Fin }` depuis le snapshot. | ✅ GREEN |
+| 3 | `Should_Ne_rattacher_le_slot_a_aucune_autre_case_que_celle_de_son_jour_When_la_grille_est_projetee` | unicité (anti-duplication) | Driver : une implémentation naïve qui placerait tout slot dans toutes les cases (ou dans la mauvaise) échoue ; force le rattachement **exact** à `JourCase.Date == slot.Debut.Date`. Couplé au #1 (présence) pour qu'une grille vide ne passe pas. | ✅ GREEN |
 
 ## Fichiers à créer / modifier
 
