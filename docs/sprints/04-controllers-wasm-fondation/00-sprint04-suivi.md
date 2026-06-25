@@ -32,7 +32,7 @@
 |---|----------|-----|-------------|-------|--------|
 | 1 | [Poser un slot via le canal le rend visible dans sa case](01-poser-slot-canal-visible.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 2 | [Poser un slot sur un lieu absent est refusé sans toucher la grille](02-poser-slot-lieu-absent-refuse.md) | `@erreur` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 3 | [Affecter une période colore les cases-jour couvertes](03-affecter-periode-couleur-cases.md) | `@nominal` | ⏳ Pending | 0/2 | ⏳ Pending |
+| 3 | [Affecter une période colore les cases-jour couvertes](03-affecter-periode-couleur-cases.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 4 | [Affecter une période sans responsable est refusée](04-affecter-periode-sans-responsable-refusee.md) | `@erreur` | ⏳ Pending | 0/2 | ⏳ Pending |
 
 **Total** : 4 scénarios backend (acceptation **intégration** `WebApplicationFactory`) · 8 tests d'intégration.

@@ -14,6 +14,9 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de pose de slot émise via le canal requête/réponse.</summary>
     public sealed record PoserSlotRequete(string EnfantId, string LieuId, DateTime Debut, DateTime Fin);
 
+    /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
+    public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler) =>
@@ -22,6 +25,17 @@ public static class CanalEcriture
                 requete.EnfantId, requete.LieuId, requete.Debut, requete.Fin));
 
             // Le canal propage l'issue du handler : succès acquitté, refus métier renvoyé avec son motif.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/affecter-periode", (AffecterPeriodeRequete requete, AffecterPeriodeHandler handler) =>
+        {
+            var resultat = handler.Handle(new AffecterPeriodeCommand(
+                requete.ResponsableId, requete.Debut, requete.Fin));
+
+            // Même convention que la pose : succès acquitté, refus métier renvoyé avec son motif.
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);

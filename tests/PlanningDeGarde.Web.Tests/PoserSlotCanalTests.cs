@@ -27,7 +27,7 @@ public sealed class PoserSlotCanalTests
     [Fact]
     public async Task Should_Confirmer_la_pose_par_une_reponse_de_succes_When_la_commande_de_pose_d_un_slot_valide_est_emise_via_le_canal_requete_reponse()
     {
-        using var hote = new WebApplicationFactory<Program>();
+        using var hote = new CanalEcritureFactory();
         var client = hote.CreateClient();
 
         var reponse = await client.PostAsJsonAsync("/api/canal/poser-slot", CommandePoseLea);
@@ -38,7 +38,7 @@ public sealed class PoserSlotCanalTests
     [Fact]
     public async Task Should_Faire_apparaitre_le_slot_ecole_08h30_16h30_dans_la_case_du_mercredi_24_06_2026_de_la_projection_reelle_When_la_pose_de_Lea_a_abouti_via_le_canal()
     {
-        using var hote = new WebApplicationFactory<Program>();
+        using var hote = new CanalEcritureFactory();
         var client = hote.CreateClient();
 
         var reponse = await client.PostAsJsonAsync("/api/canal/poser-slot", CommandePoseLea);
@@ -69,7 +69,7 @@ public sealed class PoserSlotCanalTests
     [Fact]
     public async Task Should_Renvoyer_une_reponse_d_echec_au_motif_que_le_lieu_vise_n_existe_pas_When_la_commande_de_pose_au_lieu_piscine_absent_du_foyer_est_emise_via_le_canal()
     {
-        using var hote = new WebApplicationFactory<Program>();
+        using var hote = new CanalEcritureFactory();
         var client = hote.CreateClient();
 
         var reponse = await client.PostAsJsonAsync("/api/canal/poser-slot", CommandePoseLieuAbsent);
@@ -83,7 +83,7 @@ public sealed class PoserSlotCanalTests
     [Fact]
     public async Task Should_Laisser_la_case_du_mercredi_24_06_2026_sans_aucun_slot_piscine_dans_la_projection_reelle_When_la_pose_au_lieu_absent_a_ete_refusee_via_le_canal()
     {
-        using var hote = new WebApplicationFactory<Program>();
+        using var hote = new CanalEcritureFactory();
         var client = hote.CreateClient();
 
         var reponse = await client.PostAsJsonAsync("/api/canal/poser-slot", CommandePoseLieuAbsent);

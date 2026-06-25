@@ -41,7 +41,10 @@ app.MapperCanalEcriture();
 
 // Données de démonstration — l'IHM s'ouvre peuplée plutôt que vide.
 // Persistance en mémoire (aucune base réelle) : amorçage systématique en local.
-app.AmorcerDonneesDemo();
+// Désactivé sous l'environnement « Testing » : les tests d'intégration du canal observent
+// un store vierge (sinon les périodes/slots de démo polluent la projection réelle observée).
+if (!app.Environment.IsEnvironment("Testing"))
+    app.AmorcerDonneesDemo();
 
 app.Run();
 

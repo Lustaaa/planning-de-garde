@@ -54,7 +54,7 @@ Scenario: Poser un slot sur un lieu absent du foyer est refusé et ne touche pas
 
 ### Scenario 3 — Affecter une période via le canal colore les cases-jour couvertes à la couleur du responsable
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: Affecter une période via le canal colore les cases-jour couvertes à la couleur du responsable
