@@ -141,7 +141,7 @@ Scenario: Un slot hors fenêtre est exclu tandis qu'un slot interne du même jou
   Then Le slot 'école 08h00–17h00' apparaît dans la case du mardi 23/06/2026, aucune case n'est rendue pour le 03/08/2026, et le slot du 03/08 n'apparaît dans aucune case de la grille
 ```
 
-### Scenario 8 — Un acteur absent du set reçoit le repli gris quand un acteur du set garde sa couleur `@erreur`
+### Scenario 8 — Un acteur absent du set reçoit le repli gris quand un acteur du set garde sa couleur `@erreur` `@couvert-ailleurs` <!-- couvert par le contrat du port IPaletteCouleurs (repli neutre déterministe si acteur absent) — early-green inattendu, décision PO : doublon, pas de tag @vert de pilotage -->
 
 ```gherkin
 Scenario: Un acteur absent du set reçoit le repli gris quand un acteur du set garde sa couleur

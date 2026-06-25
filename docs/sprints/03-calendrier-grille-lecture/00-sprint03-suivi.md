@@ -61,7 +61,7 @@
 | 5 | [Plusieurs slots d'un même jour sont empilés dans l'ordre horaire](05-slots-empiles-ordre-horaire.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 6 | [Une période à cheval sur la borne de fin n'est colorée que sur ses jours internes](06-periode-a-cheval-borne.md) | `@limite` | ⏭️ Couvert ailleurs | — | ⏭️ Couvert ailleurs (Sc.1 + Sc.3) |
 | 7 | [Un slot hors fenêtre est exclu tandis qu'un slot interne est rendu](07-slot-hors-fenetre-exclu.md) | `@erreur` | ✅ GREEN | 2/2 | ✅ GREEN (caractérisation) |
-| 8 | [Un acteur absent du set reçoit le repli gris](08-repli-gris-acteur-hors-set.md) | `@erreur` | ⏳ Pending | 0/2 | ⏳ Pending |
+| 8 | [Un acteur absent du set reçoit le repli gris](08-repli-gris-acteur-hors-set.md) | `@erreur` | ⏭️ Couvert ailleurs | — | ⏭️ Couvert ailleurs (port `IPaletteCouleurs`) |
 
 > **Sc.6 retiré (décision PO, early-green confirmé)** — Les 3 tests écrits
 > (acceptation + intersection partielle + coexistence de deux périodes) passaient
@@ -72,6 +72,20 @@
 > PO a tranché « doublon » : le scénario est **couvert ailleurs (Sc.1 + Sc.3)**, le
 > fichier de test `Scenario_PeriodeACheval.cs` a été supprimé, le scénario n'est **pas
 > compté** comme scénario codant (pas de `X/N`). Scénarios codants restants : 7 et 8.
+
+> **Sc.8 retiré (décision PO, early-green inattendu confirmé)** — Les 3 tests écrits
+> (acceptation + branche de repli + couplage couvert/non-couvert) passaient **tous en
+> vert sans aucune phase rouge** : le **contrat du port `IPaletteCouleurs.CouleurDe`**
+> garantit déjà le repli neutre déterministe (gris) pour tout acteur absent du set —
+> réalisé identiquement par `FoyerPaletteCouleurs` **et** par la doublure
+> `FakePaletteCouleurs` (`TryGetValue ? couleur : Neutre`) ; la projection appelle déjà
+> `_palette.CouleurDe(s.LieuId)`, aucun code à piloter. `tdd-analyse` ne l'avait **pas**
+> anticipé (la cellule `Contradiction` du test #1 prédisait à tort « couleur
+> nulle/vide/exception »). Le PO a tranché « doublon » : le scénario est **couvert
+> ailleurs (contrat du port `IPaletteCouleurs`)**, le fichier de test
+> `Scenario_RepliGrisActeurHorsSet.cs` a été supprimé, le scénario n'est **pas compté**
+> comme scénario codant (pas de `X/N`). **Tous les scénarios codants (1-5, 7) sont ✅
+> GREEN ; 6 et 8 retirés (couverts ailleurs) → backend du sprint complet.**
 
 ## Doublons / early green anticipés
 

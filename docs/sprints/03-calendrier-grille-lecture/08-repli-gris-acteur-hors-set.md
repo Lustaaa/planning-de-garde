@@ -1,6 +1,17 @@
-# Scénario 8 — Un acteur absent du set reçoit le repli gris quand un acteur du set garde sa couleur `@erreur`
+# Scénario 8 — Un acteur absent du set reçoit le repli gris quand un acteur du set garde sa couleur `@erreur` ⏭️ Couvert ailleurs
 
 [← Retour au suivi](00-sprint03-suivi.md)
+
+> **⏭️ Couvert ailleurs (contrat du port `IPaletteCouleurs`) — décision PO, early-green
+> inattendu confirmé.** Les 3 tests écrits (acceptation + tests #1 et #2 ci-dessous)
+> passaient **tous en vert sans aucune phase rouge** : le contrat de
+> `IPaletteCouleurs.CouleurDe` garantit déjà le repli neutre déterministe (gris) pour
+> tout acteur absent du set, réalisé identiquement par `FoyerPaletteCouleurs` **et** par
+> la doublure `FakePaletteCouleurs` (`TryGetValue ? couleur : Neutre`) ; la projection
+> appelle déjà `_palette.CouleurDe(s.LieuId)`. Aucun code de production à piloter. La
+> cellule `Contradiction` du test #1 (« couleur nulle/vide/exception ») reposait sur une
+> hypothèse erronée. Le fichier `Scenario_RepliGrisActeurHorsSet.cs` a été **supprimé** ;
+> le scénario n'est **pas compté** comme scénario codant (pas de `X/N`).
 
 > **Routage : backend → `tdd-auto`.** Couleur de repli neutre (gris) déterministe pour
 > un acteur absent du set, par `GrilleAgendaQuery`, couplée à la couleur d'un acteur
@@ -18,8 +29,8 @@
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Attribuer_la_couleur_de_repli_gris_au_creneau_Grand_mere_When_l_acteur_Grand_mere_est_absent_du_set_de_couleurs` | valeur du set → repli (branche par défaut du mapping) | Driver : le mapping acteur→couleur du Sc.4 n'a **pas** de cas par défaut ; un acteur absent du set produirait une couleur nulle/vide/exception. Ce test force la **branche de repli déterministe** (gris) quand l'acteur n'est pas dans le set. | ⏳ Pending |
-| 2 | `Should_Conserver_le_vert_de_Nounou_distinct_du_gris_de_repli_dans_la_meme_case_When_un_acteur_couvert_et_un_acteur_non_couvert_partagent_le_jour` | présence + distinction couplées (couvert vs repli) | Driver : couple l'acteur **couvert** (Nounou → vert, déjà piloté Sc.4) à l'acteur **non couvert** (Grand-mère → gris) dans la même case ; une implémentation qui mettrait **tout** en gris (ou tout en vert) échoue. L'assertion vert ≠ gris empêche un repli qui écraserait les couleurs valides. | ⏳ Pending |
+| 1 | `Should_Attribuer_la_couleur_de_repli_gris_au_creneau_Grand_mere_When_l_acteur_Grand_mere_est_absent_du_set_de_couleurs` | valeur du set → repli (branche par défaut du mapping) | ~~Driver : le mapping acteur→couleur du Sc.4 n'a **pas** de cas par défaut ; un acteur absent du set produirait une couleur nulle/vide/exception.~~ **Hypothèse erronée** : le contrat du port garantit déjà le repli (`TryGetValue ? couleur : Neutre`). Early-green inattendu. | ⏭️ Couvert ailleurs |
+| 2 | `Should_Conserver_le_vert_de_Nounou_distinct_du_gris_de_repli_dans_la_meme_case_When_un_acteur_couvert_et_un_acteur_non_couvert_partagent_le_jour` | présence + distinction couplées (couvert vs repli) | Couplage anti early-green bien présent (Nounou vert ≠ Grand-mère gris dans la même case) mais ne pilote aucun code neuf : le mapping + le repli sont déjà garantis par le port et la projection. Early-green inattendu. | ⏭️ Couvert ailleurs |
 
 ## Fichiers à créer / modifier
 
