@@ -1,5 +1,5 @@
 @page "/planning/affecter-periode"
-@inject AffecterPeriodeHandler Handler
+@inject HttpClient Canal
 @inject SessionPlanning Session
 @inject NavigationManager Nav
 
@@ -42,28 +42,4 @@ else
 @if (_motifEchec is not null)
 {
     <div class="alert alert-danger mt-3" data-testid="motif-echec">@_motifEchec</div>
-}
-
-@code {
-    private sealed class Formulaire
-    {
-        public string ResponsableId { get; set; } = "";
-        public DateTime Debut { get; set; } = new(2025, 7, 14);
-        public DateTime Fin { get; set; } = new(2025, 7, 21);
-    }
-
-    private readonly Formulaire _form = new();
-    private string? _motifEchec;
-
-    private void Soumettre()
-    {
-        _motifEchec = null;
-        var resultat = Handler.Handle(
-            new AffecterPeriodeCommand(_form.ResponsableId, _form.Debut, _form.Fin));
-
-        if (resultat.EstSucces)
-            Nav.NavigateTo("planning");
-        else
-            _motifEchec = resultat.Motif;
-    }
 }

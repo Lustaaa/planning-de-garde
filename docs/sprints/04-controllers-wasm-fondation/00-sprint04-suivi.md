@@ -37,6 +37,34 @@
 
 **Total** : 4 scénarios backend (acceptation **intégration** `WebApplicationFactory`) · 8 tests d'intégration.
 
+## Phase IHM finale (ihm-builder)
+
+Tous les scénarios `@vert` → phase IHM. Le front existant a été **câblé au canal d'écriture HTTP** :
+
+- **Vues d'écriture migrées au canal** : `PoserSlot` et `AffecterPeriode` n'appellent plus les
+  handlers en DI direct ; elles **POSTent leurs commandes via `/api/canal/poser-slot` et
+  `/api/canal/affecter-periode`** (adaptateur de gauche), reçoivent l'accusé succès/échec et
+  affichent le motif métier propagé. `HttpClient` (BaseAddress = hôte) enregistré dans `Program.cs`.
+- **Convention code-behind** (invariant) appliquée : `@code` inline retiré, logique déplacée dans
+  `PoserSlot.razor.cs` / `AffecterPeriode.razor.cs`.
+- **API explorable** (invariant) : `AddOpenApi()` + `MapOpenApi()` → document OpenAPI en dev
+  (`/openapi/v1.json`), listant les deux endpoints du canal.
+- **SignalR conservé en lecture seule** (invariant) : `PlanningHub` n'expose aucune méthode
+  d'écriture ; `/planning` (`PlanningPartage`) ne fait qu'écouter `MiseAJour` et recharger la
+  projection. Jamais d'écriture par la diffusion ; la grille se rafraîchit après une écriture
+  HTTP aboutie (notification via `INotificateurPlanning`).
+- **Migration WASM** : traitée en **invariant non-codant** (cf. cadrage suivi). Le front reste
+  rendu côté serveur ; seul le **canal d'écriture est découplé** (HTTP requête/réponse). Le même
+  `HttpClient` ciblera l'hôte distant après bascule WASM, sans toucher les vues.
+- **Tests de composant** réécrits (bUnit) : la vue est vérifiée comme **émettrice via le canal HTTP**
+  (stub `FakeCanalHttpHandler`), le bout en bout du canal restant couvert par les tests d'intégration.
+
+> **Note infra** : `nuget.config` local ajouté (sources scopées nuget.org + offline) — le feed privé
+> CNDO (Azure DevOps) hérité faisait échouer la restauration (401) hors réseau d'entreprise.
+
+**Vérification** : `dotnet build` vert + suite complète **82 verts** (63 + 19). Runtime validé :
+canal valide → 200, refus → 400 + motif, `/openapi/v1.json` → 200, `/planning` → 200.
+
 > **Scaffolding requis (à créer par `tdd-auto`, hors périmètre de l'analyse)** :
 > - endpoints HTTP du canal d'écriture sur l'hôte Web (`pose de slot`, `affectation de
 >   période` ; `définir-transfert` exposé mais non scénarisé) ;

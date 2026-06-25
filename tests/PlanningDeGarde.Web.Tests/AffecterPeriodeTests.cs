@@ -1,28 +1,30 @@
+using System.Net;
+using System.Net.Http;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
-using PlanningDeGarde.Application;
-using PlanningDeGarde.Infrastructure;
 using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 
 namespace PlanningDeGarde.Web.Tests;
 
 /// <summary>
-/// Tests de composant (bUnit) du parcours « affecter une période ». L'UI peuple son sélecteur
-/// de responsable depuis le foyer, appelle le use case et rend son Result ; on ne double que
-/// les ports (persistance Infra). Pas de port notificateur sur ce use case.
+/// Tests de composant (bUnit) du parcours « affecter une période » après câblage au canal
+/// d'écriture. La vue peuple son sélecteur de responsable depuis le foyer puis <b>émet sa
+/// commande via le canal HTTP</b> <c>/api/canal/affecter-periode</c> (PAS un handler en DI direct).
+/// On stub le transport (<see cref="FakeCanalHttpHandler"/>) ; le bout en bout du canal est couvert
+/// par <see cref="AffecterPeriodeCanalTests"/>.
 /// </summary>
 public sealed class AffecterPeriodeTests : TestContext
 {
-    private InMemoryPeriodeRepository Cabler(SessionPlanning? session = null)
+    private FakeCanalHttpHandler Cabler(
+        HttpStatusCode statut = HttpStatusCode.OK,
+        string corpsReponse = "",
+        SessionPlanning? session = null)
     {
-        var periodes = new InMemoryPeriodeRepository();
-        var responsables = new FoyerResponsableRepository();
-        Services.AddSingleton<IPeriodeRepository>(periodes);
-        Services.AddSingleton<IResponsableRepository>(responsables);
-        Services.AddSingleton(new AffecterPeriodeHandler(periodes, responsables));
+        var canal = new FakeCanalHttpHandler(statut, corpsReponse);
+        Services.AddSingleton(new HttpClient(canal) { BaseAddress = new System.Uri("http://localhost/") });
         Services.AddSingleton(session ?? new SessionPlanning());
-        return periodes;
+        return canal;
     }
 
     // Driver (peuplement) : le sélecteur de responsable propose bien les responsables du foyer.
@@ -39,21 +41,37 @@ public sealed class AffecterPeriodeTests : TestContext
         Assert.Contains("Parent B", valeurs);
     }
 
-    // Driver / acceptation : choisir « Parent A » et valider du 14-07 au 21-07 enregistre la période
-    // dans le dépôt partagé avec les valeurs métier concrètes, sans message d'échec.
+    // La vue émet la commande d'affectation via le canal HTTP avec les valeurs métier saisies.
     [Fact]
-    public void Should_Enregistrer_la_periode_Parent_A_responsable_du_14_07_au_21_07_When_un_parent_choisit_Parent_A_et_valide_du_14_07_au_21_07()
+    public void Should_Emettre_via_le_canal_l_affectation_Parent_A_du_14_07_au_21_07_When_un_parent_choisit_Parent_A_et_valide()
     {
-        var periodes = Cabler();
+        var canal = Cabler();
         var page = RenderComponent<AffecterPeriode>();
 
         page.Find("select.form-select").Change("Parent A");
         page.Find("form").Submit();
 
+        var requete = Assert.Single(canal.RequetesRecues);
+        Assert.Equal(HttpMethod.Post, requete.Method);
+        Assert.Equal("/api/canal/affecter-periode", requete.RequestUri!.AbsolutePath);
+
+        var corps = Assert.Single(canal.CorpsRecus);
+        Assert.Contains("Parent A", corps);
+        Assert.Contains("2025-07-14", corps);
+        Assert.Contains("2025-07-21", corps);
         Assert.Empty(page.FindAll("[data-testid='motif-echec']"));
-        var periode = Assert.Single(periodes.AllSnapshots());
-        Assert.Equal("Parent A", periode.ResponsableId);
-        Assert.Equal(new System.DateTime(2025, 7, 14), periode.Debut);
-        Assert.Equal(new System.DateTime(2025, 7, 21), periode.Fin);
+    }
+
+    // Le canal refuse (responsable manquant) -> la vue affiche le motif renvoyé par le canal.
+    [Fact]
+    public void Should_Afficher_le_motif_renvoye_par_le_canal_When_le_canal_refuse_l_affectation()
+    {
+        Cabler(HttpStatusCode.BadRequest, "un responsable est requis pour affecter une période");
+        var page = RenderComponent<AffecterPeriode>();
+
+        page.Find("form").Submit();
+
+        var motif = page.Find("[data-testid='motif-echec']");
+        Assert.Contains("responsable", motif.TextContent, System.StringComparison.OrdinalIgnoreCase);
     }
 }
