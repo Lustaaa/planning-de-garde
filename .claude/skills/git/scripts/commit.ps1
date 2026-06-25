@@ -6,8 +6,12 @@
   Message de commit (sujet + corps). Le trailer est ajouté s'il manque.
 .PARAMETER Files
   Fichiers/chemins à stager. OBLIGATOIRE — jamais de `git add -A`.
+  ⚠️ Se passe **séparés par VIRGULES, sans espace** : `-Files a.cs,b.cs,c.cs`.
+  La forme séparée par espaces (`-Files a.cs b.cs`) ÉCHOUE (« A positional parameter
+  cannot be found ») car PowerShell traite les tokens suivants comme des arguments
+  positionnels — c'est la friction du sprint 03, désormais documentée.
 .EXAMPLE
-  pwsh .claude/skills/git/scripts/commit.ps1 -Message "fix: corrige X" -Files a.cs,b.cs
+  pwsh .claude/skills/git/scripts/commit.ps1 -Message "fix: corrige X" -Files a.cs,b.cs,c.cs
 #>
 [CmdletBinding()]
 param(

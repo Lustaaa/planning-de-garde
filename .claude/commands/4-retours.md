@@ -85,6 +85,15 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `99-spr
    Si l'utilisateur valide, invoque `/5-consolidation`. (Ne saute **pas** vers
    `/2-make-gherkin` directement : la consolidation de la spec vivante vient d'abord.)
 
+   > **Gate anti-bypass de la rétro (amélioration continue).** Écrire le backlog
+   > `99-sprint<NN>-besoins-fin-itération.md` **clôt l'itération** : à partir d'ici, le sprint
+   > est « clos non-rétrospecté » tant que `retro-sprint` n'a pas tourné. La
+   > **rétrospective de la méthode est impérative avant tout nouveau cycle**
+   > `/2-make-gherkin` — elle est l'étape 1 de `/6-cloture-sprint`, et `/2` refuse de
+   > démarrer si elle manque (gate `find-retro.ps1`). Ne présente jamais l'enchaînement
+   > comme s'il pouvait sauter la rétro. Le chemin canonique reste
+   > `/4-retours → /5-consolidation → /6-cloture-sprint (retro-sprint + push/PR) → /2-make-gherkin`.
+
 9. **Commit.** Propose un commit du backlog + de l'archivage (sans pousser sauf demande
    explicite).
 

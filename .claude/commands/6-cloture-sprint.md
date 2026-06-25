@@ -22,13 +22,32 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
 
 ## Déroulé
 
-1. **Prépare la PR (script).** Exécute
+1. **Rétrospective de la méthode (agent `retro-sprint`) — IMPÉRATIVE, AVANT le push.**
+   La **sprint retrospective** (sur la méthode, pas le produit) est le dernier maillon de
+   la boucle : ses améliorations partent **dans la PR du sprint**, donc elle tourne
+   **avant** d'empaqueter la PR. Vérifie d'abord l'état du gate :
+   `pwsh -NoProfile -File .claude/skills/retro-sprint/scripts/find-retro.ps1`.
+   - Si `gateOpen=false` (le sprint clos n'a **pas** de `98-retrospective.md`) →
+     **dispatche l'agent `retro-sprint`** avec le dossier du sprint (`docs/sprints/<sujet>/`)
+     et les frictions vécues. Round-trip : l'agent renvoie `{ bilan, actions, questions, … }` ;
+     rends **chaque** `question` via `AskUserQuestion` (la priorisation est **multiSelect** :
+     le PO coche les actions à appliquer), relaie la réponse **brute** via `SendMessage`.
+     Quand le PO a tranché, ordonne à l'agent d'**appliquer** les actions validées et
+     d'écrire `98-retrospective.md`.
+     - **Fallback** : type `retro-sprint` absent du registre → `general-purpose` avec
+       « applique le skill `retro-sprint`, section *Mode agent (orchestré)* » + le dossier
+       du sprint + les frictions. Pas d'inline.
+   - Si `gateOpen=true` (rétro déjà faite) → passe directement à l'étape 2.
+   - **Ce gate est dur** : ne prépare **pas** la PR tant que `98-retrospective.md` n'existe
+     pas pour le sprint clos. C'est l'amélioration continue rendue **non contournable**.
+
+2. **Prépare la PR (script).** Exécute
    `pwsh -NoProfile -File .claude/skills/cloture-sprint/scripts/cloture-sprint.ps1`
    (passe `-Sprint $ARGUMENTS` si fourni). Le script **pousse** la branche et renvoie :
    `branch`, `base`, `compareUrl`, `ghPresent`, `bodyPath`, `title`, `commits`.
    - **Confirme le push** au préalable si le PO n'a pas déjà tranché (action sortante).
 
-2. **Crée la PR (selon `ghPresent`).**
+3. **Crée la PR (selon `ghPresent`).**
    - **`ghPresent = true`** : propose (via `AskUserQuestion`) de créer la PR :
      `gh pr create --base <base> --head <branch> --title "<title>" --body-file <bodyPath>`.
      Après création, propose le merge `gh pr merge --merge` (ou `--squash` selon préférence
@@ -37,15 +56,20 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
      et l'**`compareUrl`**. Demande-lui de créer **et merger** la PR via l'UI GitHub. Puis
      **attends** qu'il confirme le merge (gate manuel) avant l'étape 3.
 
-3. **Retour sur main.** Une fois la PR **mergée** (confirmée), `git checkout <base>` puis
-   `git pull`. Confirme que `main` contient bien le merge.
+4. **Retour sur main + product backlog.** Une fois la PR **mergée** (confirmée),
+   `git checkout <base>` puis `git pull`. Confirme que `main` contient bien le merge. Puis
+   **mets à jour le product backlog** `docs/BACKLOG.md` : passe à **✅ fait** les besoins du
+   sprint clos qui ont été livrés (gate visuel passé), en renseignant leur sprint de
+   rattachement. (Le backlog est alimenté en ajout par `/4-retours` et en passage à « fait »
+   ici, à la clôture.)
 
-4. **Amorce l'itération suivante.** Propose (via `AskUserQuestion`) d'enchaîner
+5. **Amorce l'itération suivante.** Propose (via `AskUserQuestion`) d'enchaîner
    `/2-make-gherkin` sur la **nouvelle version de spec** (`docs/NN-specification.md`, la
    plus récente) en ciblant le `prochain_sujet` du backlog du sprint clos
    (`99-sprint<NN>-besoins-fin-itération.md`, `<NN>` = numéro du sprint = préfixe 2 chiffres
    du dossier, ex. `99-sprint02-besoins-fin-itération.md`). Si le PO valide, invoque `/2-make-gherkin` avec le
-   chemin de la spec + le slug du prochain sujet → un nouveau sprint démarre.
+   chemin de la spec + le slug du prochain sujet → un nouveau sprint démarre. (Le gate
+   d'entrée de `/2` revérifie que la rétro du dernier sprint clos a bien tourné.)
 
 ## Notes
 
@@ -54,7 +78,11 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
 - Le script **ne merge jamais** lui-même ; il prépare le matériel de PR. Le merge est
   fait par `gh` (sur validation) ou par le PO via l'UI.
 - Pas depuis `main` ni avec un working tree sale (le script refuse le 1er cas).
-- **Boucle complète** : `/1 → /2 → /3 (+gate visuel) → /4-retours → /5-consolidation →
-  /6-cloture-sprint → /2 …` (nouveau sprint).
+- **Sprint retrospective d'abord (étape 1)** : la rétro de la méthode (`retro-sprint`)
+  est **non contournable** — `find-retro.ps1` bloque la clôture tant que le sprint clos
+  n'a pas son `98-retrospective.md`. Distincte de `/4-retours` (retours produit).
+- **Boucle complète** : `/1 → /2 → /3 (+gate visuel = sprint review + DoD) → /4-retours →
+  /5-consolidation → /6-cloture-sprint (retro-sprint puis push/PR/merge) → /2 …`
+  (nouveau sprint). La **sprint retrospective** est le maillon de clôture.
 - Enrichissement futur possible : un corps de PR rédigé par un petit agent (résumé
   narratif du sprint) plutôt que templaté — MVP templaté pour l'instant.

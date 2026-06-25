@@ -17,6 +17,17 @@ l'avancement dans le tableau de bord** `docs/sprints/<sujet>/00-sprint<NN>-suivi
 > peut pas. C'est la **seule** raison du round-trip. Communication = `SendMessage`
 > (main → agent) et valeur de retour de l'agent (agent → main).
 
+> **Agents requis dans le registre.** Cette command dispatche `tdd-analyse`, `tdd-auto`,
+> `ihm-builder` et `validation-visuelle`. Les fichiers `.claude/agents/ihm-builder.md` et
+> `.claude/agents/validation-visuelle.md` existent, mais s'ils ne sont **pas chargés dans
+> le registre de la session**, le dispatch tombe en **fallback `general-purpose`** à chaque
+> fois (observé au sprint 03). Vérifie/charge ces types au démarrage ; le fallback reste un
+> filet de sécurité, pas le régime nominal. (La table des agents du `README-claude.md` les
+> liste tous, `retro-sprint` inclus.)
+
+> **`/clear` après le plan.** Si un `/clear` est fait, c'est **après** l'écriture du plan
+> Gherkin de `/2` (`docs/sprints/NN-<sujet>.md`), jamais avant — retour PO adopté au sprint 03.
+
 Arguments (optionnels) : $ARGUMENTS — sujet (fichier de scénarios) et/ou numéro de
 scénario.
 

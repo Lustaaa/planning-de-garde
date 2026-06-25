@@ -15,7 +15,48 @@ raisonnement vit dans les agents — le contexte du main reste propre.
 - **Un sujet par sprint** ; suivi dans `docs/sprints/<sujet>/00-sprint<NN>-suivi.md`
   (`<NN>` = numéro du sprint = préfixe 2 chiffres du dossier, ex. `00-sprint02-suivi.md`).
 
-## Le pipeline en 6 étages
+## Le cycle de sprint — en clair
+
+Une **boucle de sprint** (méthode SCRUM). Chaque tour part d'une idée et finit par un
+incrément testé à l'écran, dont les retours relancent le tour suivant.
+
+```text
+   ┌──────────────────────────────────────────────────────────────────┐
+   │                                                                    │
+   ▼                                                                    │
+ IDÉE ─▶ ① Cadrer le besoin ─▶ ② Écrire les exemples concrets          │
+          (le « pourquoi »)       (scénarios)                           │
+                                       │                                │
+                                       ▼                                │
+                          ③ Construire + VÉRIFIER À L'ÉCRAN ─▶ ④ Recueillir
+                             (revue de sprint)                  les retours d'usage
+                                                                       │
+                                       ┌───────────────────────────────┘
+                                       ▼
+                     ⑤ Mettre à jour la vision ─▶ ⑥ Clôturer le sprint :
+                        (nouvelle version)           RÉTROSPECTIVE de la méthode,
+                                                     puis livraison ─────────────────┘
+                                                     ↺ on reboucle au ② (sujet suivant)
+```
+
+> La **rétrospective** (⑥) est **obligatoire** : on ne démarre jamais le tour suivant
+> sans avoir d'abord amélioré la méthode du tour écoulé.
+
+### Vocabulaire SCRUM ↔ pipeline
+
+| Concept SCRUM | Dans le pipeline |
+|---|---|
+| Product backlog | [`docs/BACKLOG.md`](../docs/BACKLOG.md) (fait / à faire) + raffinement par `/1-spec` & `/5-consolidation` |
+| Sprint goal | le **sujet** du sprint (un seul incrément ciblé) |
+| Sprint (planning + dev) | `/2-make-gherkin` (exemples) + `/3-tdd-implement` (construction) |
+| Increment | l'app livrée derrière le gate visuel |
+| Sprint review + Definition of Done | le **gate visuel** de `/3` (back + IHM up, testé par le PO) |
+| Retours produit | `/4-retours` (≠ rétrospective) |
+| Sprint retrospective | `retro-sprint` (sur la **méthode**), étape 1 de `/6-cloture-sprint` |
+
+## Détail technique (annexe)
+
+> Schéma détaillé (agents, fichiers) — pour qui contribue au pipeline lui-même.
 
 ```mermaid
 flowchart TD
@@ -59,17 +100,19 @@ flowchart TD
         conso[/"agent spec-consolidation<br/>→ nouvelle NN-specification.md"/]
     end
 
-    conso --> cloture
+    conso --> retro
 
-    subgraph S6["/6-cloture-sprint — Push / PR / merge"]
+    subgraph S6["/6-cloture-sprint — Rétro + Push / PR / merge"]
+        retro[/"agent retro-sprint<br/>(rétrospective MÉTHODE)<br/>IMPÉRATIVE avant push"/]
         cloture["rituel git<br/>(pas de subagent)<br/>push → PR → merge main"]
+        retro --> cloture
     end
 
     cloture -->|"retour sur main<br/>itération suivante"| gherkin
 
     classDef agent fill:#e8f0fe,stroke:#4285f4,color:#000;
     classDef gateStyle fill:#fce8e6,stroke:#ea4335,color:#000;
-    class spec,bs,gherkin,analyse,auto,ihm,retours,conso agent;
+    class spec,bs,gherkin,analyse,auto,ihm,retours,conso,retro agent;
     class gate gateStyle;
 ```
 
@@ -82,7 +125,7 @@ flowchart TD
 | `/3-tdd-implement` | Implémentation BDD+TDD, IHM, gate visuel | `tdd-analyse`, `tdd-auto`, `ihm-builder`, `validation-visuelle` | code + tests + dossier `00-sprint<NN>-suivi.md` |
 | `/4-retours` | Retours IHM/Tech → besoins priorisés + archivage | `retours-challenge` | `99-sprint<NN>-besoins-fin-itération.md` |
 | `/5-consolidation` | Backlog besoins + spec courante → nouvelle spec vivante | `spec-consolidation` | nouvelle `docs/NN-specification.md` |
-| `/6-cloture-sprint` | Push, PR vers `main`, merge, retour itération | *(aucun — rituel git)* | branche mergée, retour sur `main` |
+| `/6-cloture-sprint` | **Rétrospective méthode (impérative)** puis push, PR vers `main`, merge, retour itération | `retro-sprint` | `98-retrospective.md`, pipeline amélioré, branche mergée, retour sur `main` |
 
 ## Conventions
 

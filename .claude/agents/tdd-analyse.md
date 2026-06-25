@@ -104,9 +104,23 @@ ne fusionnes pas des cas métier après coup et tu n'inventes pas un faux cycle 
 - **Priorise** : un scénario où *tous* les tests seraient des caractérisations d'un
   invariant déjà vert n'apporte aucun rouge — signale-le en `notes` plutôt que de
   gonfler la liste de tests sans contradiction réelle.
+- **Vérifie le CONTRAT des ports déjà introduits avant de prédire une contradiction.**
+  Un comportement déjà **garanti par un port existant** (interface Application + sa/ses
+  réalisation(s)) n'est **pas** un driver : c'est de la caractérisation. *Exemple vécu
+  sprint 03* — Sc.8 « repli gris » prédit en contradiction (« couleur nulle/exception »)
+  alors que `IPaletteCouleurs.CouleurDe` renvoyait **déjà** Neutre sur clé absente (même
+  contrat dans l'impl réelle et la doublure) → tout vert sans rouge.
+- **Repère les invariants déjà acquis par PLUSIEURS scénarios verts combinés.** Un
+  observable qui découle mécaniquement de la composition d'invariants déjà introduits est
+  une caractérisation, pas un driver. *Exemple vécu sprint 03* — Sc.6 « période à cheval »
+  prédit driver, mais l'intersection partielle était déjà acquise par Sc.1 (fenêtre bornée)
+  **+** Sc.3 (mapping responsable par-jour). Annonce-le `⚠️ probablement early green` et,
+  si **tous** ses tests sont ainsi couverts, ne le compte pas comme scénario codant.
 
 Ne supprime pas un cas métier important ; ne le fusionne pas — déclare-le caractérisation
-explicite et ordonne la liste pour que le vrai driver mène.
+explicite et ordonne la liste pour que le vrai driver mène. **Au sprint 03, 2 scénarios sur
+8 (Sc.6, Sc.8) ont été retirés faute d'avoir anticipé ces deux cas — l'objectif est de les
+voir dès l'analyse, pas après suspension de `tdd-auto`.**
 
 ### 4bis. NIVEAU DE TEST (le niveau d'acceptation = le niveau du symptôme)
 **Règle cardinale : le niveau du test d'acceptation doit correspondre au niveau du
