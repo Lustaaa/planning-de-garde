@@ -121,7 +121,7 @@ Scenario: Un slot au dernier jour de la fenêtre de 35 jours reste affiché
 
 ### Scenario 5 — Date figée hors fenêtre fait disparaître la saisie
 
-`@erreur`
+`@erreur` `@vert`
 
 ```gherkin
 Scenario: Une date par défaut figée en 2025 fait tomber la saisie hors de la fenêtre
