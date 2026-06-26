@@ -81,6 +81,12 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
 
 ## Notes
 
+- **Chef de projet (CP) — hors champ ici.** `/6` n'a pas de boucle de questions d'agent dev à
+  router vers le CP. Ses validations restent **PO par conception** : le **push/PR/merge** sont des
+  **actions sortantes** (gates légitimes, non délégables au CP), et la **priorisation des actions
+  de rétro** (`retro-sprint`, étape 1) est un moment PO. L'**amorce du sprint suivant** (étape 5)
+  est le moment **G2** : le cap revient au PO (le CP peut proposer 2 goals candidats ~2h IA tirés
+  du backlog, le PO tranche, 3ᵉ injectable).
 - **Jamais de merge ni de push sans validation explicite** — ce sont des actions
   sortantes et (pour `main`) difficilement réversibles.
 - Le script **ne merge jamais** lui-même ; il prépare le matériel de PR. Le merge est

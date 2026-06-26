@@ -258,6 +258,16 @@ fichier prêt. Ne les écrase **jamais** s'ils existent déjà.
   ## Notes de contexte (décisions produit, hors méthode)
 
   -
+
+  # Décisions autonomes (chef de projet)
+
+  > Journal des décisions tranchées **seul** par le `chef-de-projet` pendant le sprint (sans
+  > déranger le PO). **Le PO le relit en rétro** pour piloter a posteriori et, le cas échéant,
+  > faire monter le palier d'autonomie du CP. Appendé par l'agent `chef-de-projet` ; lu par
+  > `retro-sprint`. Ne pas confondre avec `# Méthode (agents)` (retours méthode du PO).
+
+  | Date | Question (agent dev) | Décision du CP | Fondement (spec/convention/principe) |
+  |------|----------------------|----------------|--------------------------------------|
   ````
 
 ## Anti-règles

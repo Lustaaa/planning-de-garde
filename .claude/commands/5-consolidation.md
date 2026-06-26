@@ -6,15 +6,29 @@ argument-hint: "[chemin du backlog 99-sprint<NN>-besoins-fin-itération.md ou do
 # /5-consolidation — Besoins priorisés → spec vivante versionnée
 
 **Tout le travail vit dans le subagent `spec-consolidation`.** Toi (thread principal) tu
-es un **relais pur** : tu ne lis ni le backlog ni la spec, tu ne nommes pas les points de
+es un **orchestrateur** : tu ne lis ni le backlog ni la spec, tu ne nommes pas les points de
 consolidation, tu ne tranches pas les collisions. Tu te bornes à : localiser la spec
-courante (script), dispatcher l'agent, rendre ses questions via `AskUserQuestion`, lui
-renvoyer les réponses brutes via `SendMessage`, puis lui ordonner d'écrire. Objectif :
-**garder le contexte du main propre** — tout le raisonnement reste chez l'agent.
+courante (script), dispatcher l'agent, **router ses questions vers le chef de projet**
+(escalade PO seulement sur G1), lui renvoyer les réponses brutes via `SendMessage`, puis lui
+ordonner d'écrire. Objectif : **garder le contexte du main propre** — tout le raisonnement
+reste chez l'agent, et **le PO n'est sollicité que sur les portes essentielles**.
 
 > ⚠️ Seul le thread principal peut appeler `AskUserQuestion` ; un subagent ne le peut
 > pas. C'est la **seule** raison du round-trip. Communication = `SendMessage`
 > (main → agent) et valeur de retour de l'agent (agent → main).
+
+> **Protocole d'escalade — chef de projet (CP).** Quand `spec-consolidation` renvoie une
+> `question` (collision de règles, question ouverte), **dispatche d'abord l'agent
+> `chef-de-projet`** avec : la `question`, `currentSpec`, le backlog, le palier d'autonomie
+> (défaut `0 — conservateur`).
+> - `{type:"decision",…}` → **affiche le `resume` du CP en une ligne** (`🧭 CP — <resume>`) pour
+>   le suivi du PO (sans `AskUserQuestion`), puis **relaie la décision** (couvre les collisions à
+>   **résolution déterministe** : une règle structurante existante tranche le conflit).
+> - `{type:"escalate", gate:"G1", …}` → `AskUserQuestion` (payload riche) : seuls les **vrais
+>   conflits de valeur** entre règles (ex. transfert auto vs « transferts explicites ») reviennent
+>   au PO.
+> - **Fallback** : type `chef-de-projet` absent → `general-purpose` + « applique le skill
+>   `chef-de-projet` ».
 
 Cet étage est le **pont** entre `/4-retours` (qui a produit le backlog priorisé) et
 `/2-make-gherkin` : il fait évoluer la **spec vivante** (source de vérité unique,
@@ -46,15 +60,20 @@ ou dossier de sprint le contenant.
    `{ plan_consolidation, questions, synthese, done }`. Tant que `done` est faux :
    - Au **1er tour**, au plus **une ligne** de contexte (nb de besoins, collisions
      repérées) ; sinon n'écris rien.
-   - Rends **chaque** entrée de `questions[]` via `AskUserQuestion` **telle quelle**.
-   - Renvoie les réponses **brutes** via `SendMessage` (même `agentId`).
-   - Répète. **N'analyse pas**, **ne devine pas** la question suivante. Les collisions
-     (ex. transfert auto vs règle « transferts explicites ») sont tranchées par le PO,
-     pas par toi.
+   - Pour **chaque** entrée de `questions[]`, applique le **Protocole d'escalade CP** : dispatch
+     `chef-de-projet` ; n'appelle `AskUserQuestion` que sur une `escalate` G1, en passant alors
+     l'objet `question` du CP **telle quelle**.
+   - Renvoie les réponses **brutes** (décision CP ou réponse PO) via `SendMessage` (même `agentId`).
+   - Répète. **N'analyse pas**, **ne devine pas** la question suivante. Les collisions à
+     résolution déterministe sont tranchées par le **CP** ; seuls les **vrais conflits de
+     valeur** (ex. transfert auto vs règle « transferts explicites ») reviennent au **PO** (G1).
 
-4. **Validation.** Quand `done: true`, présente la `synthese` (**verbatim** : version,
-   ce qu'elle remplace, objectif/arbitre, séquence, règles conservées/révisées/nouvelles,
-   risques) et demande l'accord d'écrire la nouvelle spec via `AskUserQuestion`.
+4. **Validation (CP).** Quand `done: true`, fais valider l'écriture par le **chef de projet**
+   (dispatch `chef-de-projet` avec la `synthese`). `{type:"decision"}` (consolidation cohérente,
+   collisions tranchées) → **ordonne d'écrire la nouvelle spec sans déranger le PO**.
+   `{type:"escalate", gate:"G1"}` (un conflit de valeur subsiste) → `AskUserQuestion`, puis
+   écris. Présente la `synthese` **verbatim** (version, ce qu'elle remplace, objectif/arbitre,
+   séquence, règles conservées/révisées/nouvelles, risques) avec la décision CP ou l'escalade.
 
 5. **Écriture (même agent).** À l'accord, `SendMessage` l'ordre d'écrire avec `nextSpec`.
    L'agent écrit `NN-specification.md` (format maison + blockquote de version) et renvoie

@@ -4,7 +4,7 @@
 > une vue **par épic (fonctionnalité)** pour regrouper ce qui est lié et préparer le
 > découpage des sprints, et une vue **par palier (séquence de livraison)** pour le
 > calendrier d'un coup d'œil. Source de vérité du *quoi/quand* ; le *pourquoi* vit dans
-> la spec vivante [`docs/06-specification.md`](06-specification.md).
+> la spec vivante [`docs/07-specification.md`](07-specification.md).
 >
 > **Tenue à jour par le pipeline** : `/4-retours` y **ajoute** les besoins issus du
 > challenge ; `/6-cloture-sprint` y passe à **✅ fait** ce qui a été livré (gate visuel
@@ -21,23 +21,24 @@
 | 03 | Calendrier — grille de lecture (5 semaines, lecture seule, 2 niveaux de couleur) | ✅ fait | Projection `GrilleAgendaQuery` + grille 5×7 lecture seule |
 | 04 | `controllers-wasm-fondation` — canal d'écriture HTTP (adaptateur de gauche) + recâblage du front via API, SignalR cantonné à la diffusion lecture seule | ✅ fait | Canal HTTP `poser-slot`/`affecter-période` + front câblé + OpenAPI document + code-behind partiel (4 scénarios, 82 verts) |
 | 05 | `host-api-separable` — hôte d'API détaché (back démarrable seul) + front Blazor **WASM réel** consommant l'API distante + CORS + UI d'exploration **Scalar** + échec clair si API injoignable | ✅ fait | Projet `PlanningDeGarde.Api` détaché (test d'archi sur ProjectReference) + front `Sdk.BlazorWebAssembly` + Scalar/OpenAPI + CORS + SignalR distant (6 scénarios, 96 verts) — **palier 1 (fondation) refermé** |
+| 06 | `saisie-visible` — la saisie réapparaît à la bonne **date** (défaut = aujourd'hui via `IDateTimeProvider`) **et** en **couleur du parent** (identifiant stable bindé + seed) | ✅ fait | Port `IDateTimeProvider` injecté sur PoserSlot/AffecterPeriode/DefinirTransfert + sélecteurs bindant l'id stable + seed (8 scénarios, 108 verts) — **palier 2 (saisie visible) refermé** |
 
 ## En cours
 
-| Sprint | Sujet | Palier (spec v06) | Statut |
+| Sprint | Sujet | Palier (spec v07) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : Saisie visible, cf. ci-dessous)* | 2 — Saisie visible | ⬜ |
+| — | *(aucun sprint en cours — prochain : Lisibilité & thème, cf. ci-dessous)* | 3 — Lisibilité & thème | ⬜ |
 
 ## Prochains sprints envisagés
 
 > Les 2 sujets en tête de file, issus du séquencement `/4-retours`/`/5-consolidation` du
-> sprint 05 (arbitre : l'usage réel tranche → la technique séquencée derrière). Indicatif —
+> sprint 06 (arbitre : l'usage réel tranche → la technique séquencée derrière). Indicatif —
 > confirmé/affiné à chaque `/2-make-gherkin`.
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 | **Saisie visible** — date par défaut = aujourd'hui (formulaires encore figés sur 2025) + correction du gris des affectations (identité acteur ↔ palette, défaut mapping libellé→identifiant à localiser) | É5, É6, É7, É12 | Premier sujet d'usage après deux sprints structurels : éteint le faux bug « saisies invisibles » et le seul vrai défaut confirmé |
-| +2 | **Lisibilité périodes/responsable + thème** — nom + légende du responsable dans les cases + thème en accord avec le domaine | É5 | Enchaîne la valeur d'usage visible une fois la saisie réapparue correctement |
+| +1 | **Lisibilité & thème** — nom + légende du responsable dans les cases (la couleur seule ne dit pas qui garde, règle 16) + thème en accord avec le domaine ; pris **en bloc** (choix PO), garde-fou corollaire de découpe si débordement | É5 | Enchaîne la valeur d'usage visible une fois la saisie réapparue correctement (palier 2 ✅) |
+| +2 | **Calendrier navigable & écriture en contexte** — navigation passé/futur, vues prédéfinies, dialogs depuis les cases | É4, É6, É7, É8, É12 | Sujet d'usage suivant une fois la grille lisible |
 
 ---
 
@@ -103,9 +104,9 @@
 
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
-| Libellé + nom du responsable dans les cases (pas que la teinte) | ⬜ | Palier 2 (G1) | retours s03 (#3) · spec règle 14 |
-| Légende des couleurs persistante (mapping acteur → couleur) | ⬜ | Palier 2 (G1) | spec règle 14 · retours s03 (#3) |
-| Thème visuel en accord avec le domaine (garde d'enfants) | ⬜ | Palier 2 (G1, transverse) | retours s01/s02/s03 (« j'aime pas le thème ») |
+| Libellé + nom du responsable dans les cases (pas que la teinte) | ⬜ | Palier 3 (prochain) | retours s03 (#3) · spec règle 16 |
+| Légende des couleurs persistante (mapping acteur → couleur) | ⬜ | Palier 3 (prochain) | spec règle 16 · retours s03 (#3) |
+| Thème visuel en accord avec le domaine (garde d'enfants) | ⬜ | Palier 3 (en bloc) | retours s01/s02/s03 (« j'aime pas le thème ») · spec règle 20 |
 
 ### Épic 6 — Créneaux & slots de localisation
 *Poser et gérer les slots (où est l'enfant) : création, validation, affichage.*
@@ -183,22 +184,22 @@
 |--------|:------:|---------------|---------|
 | Dialogs d'écriture (poser/affecter/supprimer) depuis les cases | ⬜ | Palier 3 item 3 | retours s02 (#7/8/10)/s03 |
 | Recâblage de l'écriture via API HTTP (au lieu du DI direct) | ✅ | s05 (poser/affecter/transfert via API distante WASM) | retours s03 (#5) · spec p1 |
-| Rafraîchissement immédiat : la saisie réapparaît dans la grille | ⬜ | Palier 2 (dép. Palier 1 ✅) | retours s03 (#5, bug runtime) |
+| Rafraîchissement immédiat : la saisie réapparaît dans la grille | ✅ | s06 / Palier 2 | retours s03 (#5, bug runtime) |
 
 ---
 
-## À faire (paliers de la spec vivante v06)
+## À faire (paliers de la spec vivante v07)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
-> Numérotation alignée sur la **séquence de livraison de v06**. Les sujets techniques
+> Numérotation alignée sur la **séquence de livraison de v07**. Les sujets techniques
 > (persistance réelle, PWA) sont séquencés **derrière l'usage** (arbitre : l'usage tranche),
 > Docker en garde-fou d'outillage.
 
 | Palier | Besoin | Épics concernés | Origine | Statut |
 |-------:|--------|-----------------|---------|:------:|
 | 1 | Fermeture de la fondation — **hôte d'API détachable** (back démarrable seul) + **UI d'exploration interactive** (Scalar) + CORS + échec clair si API injoignable | É3 | spec v05 p1 · besoins s04 | ✅ s05 |
-| 2 | **Saisie visible** — la saisie réapparaît à la bonne **date** (défaut = aujourd'hui) **et** en **couleur du parent** (identifiant stable) | É6, É7, É12 | spec v05 p2 · besoins s04 (défaut confirmé) | ⬜ |
-| 3 | Lisibilité des périodes/responsable (nom + légende) **+** thème en accord avec le domaine | É5 | spec v05 p3 · retours s03 (G1) | ⬜ |
+| 2 | **Saisie visible** — la saisie réapparaît à la bonne **date** (défaut = aujourd'hui) **et** en **couleur du parent** (identifiant stable) | É6, É7, É12 | spec v05 p2 · besoins s04 (défaut confirmé) | ✅ s06 |
+| 3 | **Lisibilité & thème** — nom + légende des périodes/responsable **+** thème en accord avec le domaine (pris **en bloc**) | É5 | spec v07 p3 · besoins s06 (G1) | ⬜ (prochain) |
 | 4 | Calendrier navigable (passé/futur, vues prédéfinies) **+** écriture en contexte (dialogs depuis les cases) | É4, É6, É7, É8, É12 | spec v05 p4 · retours s02/s03 | ⬜ |
 | 5 | Alimentation & saisie — persistance config foyer (sortir le dur de `Foyer.cs`) + cycle de fond + lieux/couleurs | É1 | spec v05 p5 · retours s03 (#11, dette) | ⬜ |
 | 6 | Modèle d'acteurs & foyer — Admin/Parent/Autre, écran de config, responsabilité de fond, couleurs par défaut | É1, É2, É7 | spec v05 p6 · retours s01 | ⬜ |
@@ -245,8 +246,8 @@
 
 - Données en dur dans `Foyer.cs` (É1) — persister en base — retours s03 (#11).
 - Aucune édition/suppression de période depuis l'IHM (É7) — « trou fonctionnel assumé » — retours s03.
-- Saisies invisibles à l'écran (É12) — requalifié : **faux bug** (date par défaut absente → saisie hors fenêtre 35j) à éteindre au palier 2 ; à distinguer du **vrai défaut couleur** (mapping libellé→identifiant) à localiser au `/3` — retours s03 (#5) · consolidation s05.
+- ~~Saisies invisibles à l'écran (É12)~~ — **éteint au s06 (palier 2)** : faux bug (date par défaut → `IDateTimeProvider`) ET vrai défaut couleur (mapping libellé→identifiant stable + seed) corrigés, 8/8 vert — retours s03 (#5) · consolidation s05 · livré s06.
 - Risque d'adoption du second parent (É10) — repoussé au palier 9 (auth), « ne pas laisser glisser ».
-- Faux sentiment de progrès — **2 sprints structurels d'affilée (s04, s05) sans besoin produit observable** ; le palier 2 (Saisie visible) rend la main à l'usage et doit l'éteindre.
+- Faux sentiment de progrès — 2 sprints structurels d'affilée (s04, s05) sans besoin produit observable ; **résorbé au s06** : le palier 2 (Saisie visible) a rendu la main à l'usage (8/8 vert). Vigilance maintenue : ne pas remonter les paliers techniques 10/11 devant l'usage.
 - 7 composants encore en `@code` inline (É3) — retours s03 (#7).
 - Cycle multi-semaines non affiché/éditable (É1) — modèle existe, IHM absente.
