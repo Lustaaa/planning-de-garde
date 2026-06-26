@@ -66,10 +66,10 @@
 | 4 | [Saisie à la borne haute de la fenêtre reste visible](04-borne-haute-fenetre-visible.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 5 | [Date figée hors fenêtre fait disparaître la saisie](05-date-figee-hors-fenetre-disparait.md) | `@erreur` | ✅ GREEN | 1/1 | ✅ GREEN |
 | 6 | [Période affectée à un parent se colore à sa couleur](06-periode-parent-coloree.md) | `@nominal 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
-| 7 | [Acteur hors set retombe sur le neutre (gris assumé)](07-acteur-hors-set-gris-neutre.md) | `@limite` | ⏳ Pending | 0/1 | ⏳ Pending |
+| 7 | [Acteur hors set retombe sur le neutre (gris assumé)](07-acteur-hors-set-gris-neutre.md) | `@limite` | ✅ GREEN | 1/1 | ✅ GREEN |
 | 8 | [Libellé fourni à la place de l'identifiant fait retomber sur gris](08-libelle-au-lieu-identifiant-gris.md) | `@erreur 🖥️ IHM` | ⏳ Pending | 0/0 | ⏳ Pending |
 
-**Avancement** : **6/8** scénarios au vert (Sc.1 ✅, Sc.2 ✅, Sc.3 ✅, Sc.4 ✅, Sc.5 ✅, Sc.6 ✅).
+**Avancement** : **7/8** scénarios au vert (Sc.1 ✅, Sc.2 ✅, Sc.3 ✅, Sc.4 ✅, Sc.5 ✅, Sc.6 ✅, Sc.7 ✅).
 
 **Total** : 8 scénarios — **5 IHM/runtime** (`ihm-builder`, acceptation **E2E/runtime** sur
 front WASM réel + API distante : Sc.1, Sc.2, Sc.3, Sc.6, Sc.8) · **3 backend** (`tdd-auto`,

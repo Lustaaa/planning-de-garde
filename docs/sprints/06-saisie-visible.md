@@ -150,7 +150,7 @@ Scenario: Une période affectée au Parent A s'affiche en bleu et au Parent B en
 
 ### Scenario 7 — Acteur hors set retombe sur le neutre (gris assumé)
 
-`@limite`
+`@limite` `@vert`
 
 ```gherkin
 Scenario: Une période affectée à un acteur absent du set s'affiche en gris neutre
