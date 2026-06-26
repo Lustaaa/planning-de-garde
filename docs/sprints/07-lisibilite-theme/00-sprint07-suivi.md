@@ -44,7 +44,7 @@
 
 | # | Scénario | Tag | Acceptation (runtime IHM) | Tests backend | Statut |
 |---|----------|-----|---------------------------|---------------|--------|
-| 1 | [Période affectée : nom + entrée de légende](01-periode-affectee-nom-et-legende.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ⏳ Pending (ihm-builder) | 2/2 ✅ backend | 🔴 RED (accept. IHM) |
+| 1 | [Période affectée : nom + entrée de légende](01-periode-affectee-nom-et-legende.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ Green (runtime) | 2/2 ✅ backend | ✅ GREEN |
 | 2 | [Plusieurs responsables : légende dédoublonnée](02-legende-dedoublonnee.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ⏳ Pending (ihm-builder) | 1/1 ✅ backend (caract. ; driver #1 retiré PO/G4) | 🔴 RED (accept. IHM) |
 | 3 | [Fenêtre sans affectation : légende masquée](03-fenetre-vide-legende-masquee.md) | `@limite` 🖥️ IHM · driver masquage `ihm-builder` (+ caract. `tdd-auto`) | ⏳ Pending (ihm-builder) | 1/1 ✅ backend (caract.) | 🔴 RED (driver masquage IHM) |
 | 4 | [Ajout vivant par diffusion temps réel](04-ajout-vivant-temps-reel.md) | `@limite` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ⏳ Pending | 0/0 | ⏳ Pending |
@@ -53,6 +53,8 @@
 
 **Total** : 6 scénarios · 7 tests unitaires backend (3 drivers réels Sc.1×2 + Sc.2×1 ;
 4 caractérisations early-green Sc.2×1, Sc.3, Sc.5, Sc.6) · 6 acceptations runtime IHM.
+
+**Acceptation runtime IHM** : **1/6 ✅** (Sc.1).
 
 **Statuts** : ⏳ Pending · 🔴 Red · ✅ Green.
 
