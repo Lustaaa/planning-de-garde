@@ -60,14 +60,14 @@
 
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
-| 1 | [Slot posé sans toucher aux dates réapparaît à aujourd'hui](01-slot-pose-reapparait-aujourdhui.md) | `@nominal 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
-| 2 | [Période affectée sans toucher aux dates tombe dans la fenêtre](02-periode-affectee-visible-aujourdhui.md) | `@nominal 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
-| 3 | [Transfert défini sans toucher à la date prend aujourd'hui](03-transfert-defini-date-aujourdhui.md) | `@nominal 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
-| 4 | [Saisie à la borne haute de la fenêtre reste visible](04-borne-haute-fenetre-visible.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 5 | [Date figée hors fenêtre fait disparaître la saisie](05-date-figee-hors-fenetre-disparait.md) | `@erreur` | ✅ GREEN | 1/1 | ✅ GREEN |
-| 6 | [Période affectée à un parent se colore à sa couleur](06-periode-parent-coloree.md) | `@nominal 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
-| 7 | [Acteur hors set retombe sur le neutre (gris assumé)](07-acteur-hors-set-gris-neutre.md) | `@limite` | ✅ GREEN | 1/1 | ✅ GREEN |
-| 8 | [Libellé fourni à la place de l'identifiant fait retomber sur gris](08-libelle-au-lieu-identifiant-gris.md) | `@erreur 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
+| 1 | [Slot posé sans toucher aux dates réapparaît à aujourd'hui](archive/01-slot-pose-reapparait-aujourdhui.md) | `@nominal 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
+| 2 | [Période affectée sans toucher aux dates tombe dans la fenêtre](archive/02-periode-affectee-visible-aujourdhui.md) | `@nominal 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
+| 3 | [Transfert défini sans toucher à la date prend aujourd'hui](archive/03-transfert-defini-date-aujourdhui.md) | `@nominal 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
+| 4 | [Saisie à la borne haute de la fenêtre reste visible](archive/04-borne-haute-fenetre-visible.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 5 | [Date figée hors fenêtre fait disparaître la saisie](archive/05-date-figee-hors-fenetre-disparait.md) | `@erreur` | ✅ GREEN | 1/1 | ✅ GREEN |
+| 6 | [Période affectée à un parent se colore à sa couleur](archive/06-periode-parent-coloree.md) | `@nominal 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
+| 7 | [Acteur hors set retombe sur le neutre (gris assumé)](archive/07-acteur-hors-set-gris-neutre.md) | `@limite` | ✅ GREEN | 1/1 | ✅ GREEN |
+| 8 | [Libellé fourni à la place de l'identifiant fait retomber sur gris](archive/08-libelle-au-lieu-identifiant-gris.md) | `@erreur 🖥️ IHM` | ✅ Passing | 1/1 | ✅ Vert |
 
 **Avancement** : **8/8** scénarios au vert ✅ — sprint 06 complet (Sc.1 ✅, Sc.2 ✅, Sc.3 ✅, Sc.4 ✅, Sc.5 ✅, Sc.6 ✅, Sc.7 ✅, Sc.8 ✅).
 
