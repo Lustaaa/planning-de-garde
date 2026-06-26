@@ -20,7 +20,11 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-Set-Location (git rev-parse --show-toplevel)
+# git émet ses chemins en UTF-8 ; sans cela PowerShell les décode dans la code page
+# console et corrompt les caractères accentués (ex. dépôt « privée »), faisant échouer
+# Set-Location. -LiteralPath fiabilise le cd vers les chemins à caractères spéciaux.
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+Set-Location -LiteralPath (git rev-parse --show-toplevel).Trim()
 
 $branch = (git branch --show-current).Trim()
 if ($branch -in @('main', 'master')) {

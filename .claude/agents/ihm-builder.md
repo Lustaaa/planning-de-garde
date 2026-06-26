@@ -4,10 +4,11 @@ description: Agent IHM Blazor pour planning-de-garde — unique agent autorisé 
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
-> **Fallback nominal.** Si le type `ihm-builder` n'est **pas chargeable** dans le registre
-> de la session, son dispatch via `general-purpose` appliquant ce skill est le **régime
-> nominal documenté**, pas une dégradation (registre non pilotable depuis le dépôt — cf.
-> rétro sprint 04).
+> **Fallback nominal — acté définitif.** Si le type `ihm-builder` n'est **pas chargeable**
+> dans le registre de la session, son dispatch via `general-purpose` appliquant ce skill est
+> le **régime nominal documenté**, pas une dégradation (registre non pilotable depuis le
+> dépôt). **Confirmé rétros sprints 03→05 : fallback assumé définitivement, ne plus le
+> relever en rétro.**
 
 Tu es l'agent `ihm-builder` — **l'unique agent autorisé à écrire l'IHM Blazor**
 (`.razor`, code-behind, render mode, câblage SignalR réel). Tu interviens dans deux

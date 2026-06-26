@@ -74,6 +74,24 @@ pwsh .claude/skills/git/scripts/pr.ps1 -Title "Skill git" -Body "Ajoute le skill
 status  →  branch -Type … -Slug …  →  (édition)  →  commit -Message … -Files …  →  push  →  pr
 ```
 
+## Chemins non-ASCII (dépôt « privée »)
+
+Le dépôt vit sous un chemin accentué (`…/source/privée/…`). `git` émet ses chemins en
+UTF-8 ; sans précaution PowerShell les décode dans la code page console et **corrompt
+les accents**, faisant échouer le `Set-Location (git rev-parse --show-toplevel)` en tête
+de chaque script — tout le skill git devient alors inutilisable (constaté sprint 05). Les
+six scripts forcent donc désormais l'encodage et fiabilisent le repositionnement :
+
+```powershell
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+Set-Location -LiteralPath (git rev-parse --show-toplevel).Trim()
+```
+
+Un **commit manuel** (`git add <chemins> && git commit`) n'est légitime qu'en **dernier
+recours**, si un script reste cassé : il faut alors tenir les garde-fous à la main
+(branche ≠ `main`, staging **sélectif** sans `git add -A`, trailer `Co-Authored-By`).
+Ne jamais laisser un contournement silencieux des garde-fous passer pour normal.
+
 ## Garde-fous (portés par les scripts)
 
 - **Jamais de commit/push direct sur `main`/`master`** — cohérent avec le hook

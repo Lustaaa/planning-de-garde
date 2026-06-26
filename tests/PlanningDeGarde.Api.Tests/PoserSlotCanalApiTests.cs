@@ -1,19 +1,18 @@
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 
-namespace PlanningDeGarde.Web.Tests;
+namespace PlanningDeGarde.Api.Tests;
 
 /// <summary>
-/// Acceptation (intégration de bout en bout) du canal d'écriture « pose de slot » — scénarios
-/// 1 (@nominal, pose visible) et 2 (@erreur, lieu absent refusé sans effet de bord). Hôte Web
-/// réel (<see cref="WebApplicationFactory{T}"/>), store réel singleton, projection réelle
-/// <see cref="GrilleAgendaQuery"/> : aucune doublure sur le chemin observé (anti « vert qui
-/// ment »). Le driver est l'endpoint HTTP du canal requête/réponse, l'observable est la grille
-/// projetée à la semaine de référence. Un hôte neuf par test (store singleton frais) → isolation.
+/// Acceptation (intégration de bout en bout) du canal d'écriture « pose de slot » porté sur
+/// l'hôte d'API détaché (<see cref="ApiHoteFactory"/>) — store réel singleton, projection réelle
+/// <see cref="GrilleAgendaQuery"/>, aucune doublure sur le chemin observé (anti « vert qui ment »).
+/// Le driver est l'endpoint HTTP du canal requête/réponse de l'hôte d'API ; l'observable est la
+/// grille projetée à la semaine de référence. Un hôte neuf par test (store frais) → isolation.
+/// Portage depuis l'ancien hôte Web (devenu front WASM, sans canal) vers l'hôte d'API détaché.
 /// </summary>
-public sealed class PoserSlotCanalTests
+public sealed class PoserSlotCanalApiTests
 {
     // Mercredi 24/06/2026, école, 08:30 → 16:30 (commande de pose de Léa).
     private static readonly object CommandePoseLea = new
@@ -25,9 +24,9 @@ public sealed class PoserSlotCanalTests
     };
 
     [Fact]
-    public async Task Should_Confirmer_la_pose_par_une_reponse_de_succes_When_la_commande_de_pose_d_un_slot_valide_est_emise_via_le_canal_requete_reponse()
+    public async Task Should_Confirmer_la_pose_par_une_reponse_de_succes_When_la_commande_de_pose_d_un_slot_valide_est_emise_via_le_canal_de_l_hote_d_API()
     {
-        using var hote = new CanalEcritureFactory();
+        using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
         var reponse = await client.PostAsJsonAsync("/api/canal/poser-slot", CommandePoseLea);
@@ -36,16 +35,16 @@ public sealed class PoserSlotCanalTests
     }
 
     [Fact]
-    public async Task Should_Faire_apparaitre_le_slot_ecole_08h30_16h30_dans_la_case_du_mercredi_24_06_2026_de_la_projection_reelle_When_la_pose_de_Lea_a_abouti_via_le_canal()
+    public async Task Should_Faire_apparaitre_le_slot_ecole_08h30_16h30_dans_la_case_du_mercredi_24_06_2026_de_la_projection_reelle_When_la_pose_de_Lea_a_abouti_via_le_canal_de_l_hote_d_API()
     {
-        using var hote = new CanalEcritureFactory();
+        using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
         var reponse = await client.PostAsJsonAsync("/api/canal/poser-slot", CommandePoseLea);
         Assert.True(reponse.IsSuccessStatusCode, $"la pose via le canal doit aboutir, statut {(int)reponse.StatusCode}.");
 
         // Observable de bout en bout : la projection réelle lit le store réel singleton de l'hôte
-        // (aucune doublure sur le chemin observé). Date de référence injectée = lundi 22/06/2026.
+        // d'API (aucune doublure). Date de référence injectée = lundi 22/06/2026.
         using var scope = hote.Services.CreateScope();
         var projection = scope.ServiceProvider.GetRequiredService<GrilleAgendaQuery>();
         var grille = projection.Projeter(new DateOnly(2026, 6, 22));
@@ -56,8 +55,7 @@ public sealed class PoserSlotCanalTests
         Assert.Equal(new TimeOnly(16, 30), slot.Fin);
     }
 
-    // Scénario 2 (@erreur) — pose au lieu « piscine » absent du foyer : refus propagé par le
-    // canal + aucun effet de bord observable sur le store réel.
+    // Pose au lieu « piscine » absent du foyer : refus propagé par le canal + aucun effet de bord.
     private static readonly object CommandePoseLieuAbsent = new
     {
         EnfantId = "Léa",
@@ -67,9 +65,9 @@ public sealed class PoserSlotCanalTests
     };
 
     [Fact]
-    public async Task Should_Renvoyer_une_reponse_d_echec_au_motif_que_le_lieu_vise_n_existe_pas_When_la_commande_de_pose_au_lieu_piscine_absent_du_foyer_est_emise_via_le_canal()
+    public async Task Should_Renvoyer_une_reponse_d_echec_au_motif_que_le_lieu_vise_n_existe_pas_When_la_commande_de_pose_au_lieu_piscine_absent_du_foyer_est_emise_via_le_canal_de_l_hote_d_API()
     {
-        using var hote = new CanalEcritureFactory();
+        using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
         var reponse = await client.PostAsJsonAsync("/api/canal/poser-slot", CommandePoseLieuAbsent);
@@ -81,9 +79,9 @@ public sealed class PoserSlotCanalTests
     }
 
     [Fact]
-    public async Task Should_Laisser_la_case_du_mercredi_24_06_2026_sans_aucun_slot_piscine_dans_la_projection_reelle_When_la_pose_au_lieu_absent_a_ete_refusee_via_le_canal()
+    public async Task Should_Laisser_la_case_du_mercredi_24_06_2026_sans_aucun_slot_piscine_dans_la_projection_reelle_When_la_pose_au_lieu_absent_a_ete_refusee_via_le_canal_de_l_hote_d_API()
     {
-        using var hote = new CanalEcritureFactory();
+        using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
         var reponse = await client.PostAsJsonAsync("/api/canal/poser-slot", CommandePoseLieuAbsent);

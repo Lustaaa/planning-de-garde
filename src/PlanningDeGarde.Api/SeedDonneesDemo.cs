@@ -1,11 +1,13 @@
 using PlanningDeGarde.Application;
 
-namespace PlanningDeGarde.Web;
+namespace PlanningDeGarde.Api;
 
 /// <summary>
-/// Amorce un jeu de données de démonstration cohérent (centré sur aujourd'hui) pour que
-/// l'IHM ne s'ouvre pas vide. Passe par les use cases réels — mêmes validations qu'une
-/// saisie utilisateur. Persistance en mémoire : reparti à zéro à chaque redémarrage.
+/// Amorce un jeu de données de démonstration cohérent (centré sur aujourd'hui) pour que la
+/// grille lue par le front WASM ne s'ouvre pas vide. Passe par les use cases réels — mêmes
+/// validations qu'une saisie utilisateur. Persistance en mémoire : reparti à zéro à chaque
+/// redémarrage. Porté sur l'hôte d'API détaché (le front WASM n'amorce plus rien : il consomme
+/// l'API distante, qui détient le store réel).
 /// </summary>
 public static class SeedDonneesDemo
 {

@@ -1,20 +1,20 @@
 using System;
+using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
-using PlanningDeGarde.Infrastructure;
 
 namespace PlanningDeGarde.Web.Components.Pages;
 
 /// <summary>
-/// Vue centrale du planning partagé, rendue en grille agenda 5×7 (5 lignes-semaines de
-/// 7 cases-jour) en LECTURE SEULE. Chaque case-jour porte la couleur du parent responsable
-/// de la période qui la couvre ; chaque slot est empilé dans sa case avec son libellé et son
-/// horaire, son créneau portant la couleur propre de l'acteur. Lit la projection
-/// <see cref="GrilleAgendaQuery"/> (CQRS) ; se rafraîchit en temps réel sur l'évènement SignalR.
-/// Aucune règle métier ici — les écritures restent sur les routes dédiées (/planning/poser-slot…).
+/// Vue centrale du planning partagé (front <b>WASM</b>), rendue en grille agenda 5×7 en LECTURE
+/// SEULE. La grille est lue via le <b>canal de lecture de l'API distante</b> (HTTP
+/// <c>GET /api/grille/…</c>) — le navigateur n'a pas la projection en DI directe. Le rafraîchissement
+/// temps réel passe par le <b>hub SignalR de l'API distante</b>, consommé côté navigateur ; une
+/// écriture aboutie le déclenche, jamais l'inverse. Aucune règle métier ici.
 /// </summary>
 public partial class PlanningPartage
 {
@@ -33,7 +33,7 @@ public partial class PlanningPartage
         set { Session.Role = value; }
     }
 
-    protected override void OnInitialized() => Charger();
+    protected override async Task OnInitializedAsync() => await ChargerAsync();
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -42,14 +42,16 @@ public partial class PlanningPartage
 
         try
         {
+            // Hub SignalR de l'API DISTANTE (même hôte que le canal d'écriture/lecture : Canal.BaseAddress).
+            var urlHub = new Uri(Canal.BaseAddress!, "hubs/planning");
             _hub = new HubConnectionBuilder()
-                .WithUrl(Nav.ToAbsoluteUri("/hubs/planning"))
+                .WithUrl(urlHub)
                 .WithAutomaticReconnect()
                 .Build();
 
-            _hub.On(PlanningHub.EvenementMiseAJour, async () =>
+            _hub.On(PlanningHubEvenement.MiseAJour, async () =>
             {
-                Charger();
+                await ChargerAsync();
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -62,9 +64,23 @@ public partial class PlanningPartage
         }
     }
 
-    // Date de référence = aujourd'hui (la projection prend une DateOnly injectée pour le
-    // déterminisme côté tests ; à l'exécution réelle on lui passe la date courante).
-    private void Charger() => _grille = Grille.Projeter(DateOnly.FromDateTime(DateTime.Now));
+    // Date de référence = aujourd'hui (le canal de lecture distant prend une date en segments pour le
+    // déterminisme ; à l'exécution réelle on lui passe la date courante du navigateur).
+    private async Task ChargerAsync()
+    {
+        var aujourdHui = DateOnly.FromDateTime(DateTime.Now);
+        try
+        {
+            var grille = await Canal.GetFromJsonAsync<GrilleAgenda>(
+                $"api/grille/{aujourdHui.Year}/{aujourdHui.Month}/{aujourdHui.Day}");
+            if (grille is not null)
+                _grille = grille;
+        }
+        catch (HttpRequestException)
+        {
+            // API distante injoignable : la grille reste vide plutôt que de planter la vue.
+        }
+    }
 
     /// <summary>
     /// Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible avec

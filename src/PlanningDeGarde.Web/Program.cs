@@ -1,73 +1,29 @@
-using Microsoft.AspNetCore.Components;
-using PlanningDeGarde.Infrastructure;
+using Microsoft.AspNetCore.Components.Web;
+using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using PlanningDeGarde.Web;
 using PlanningDeGarde.Web.Components;
+using PlanningDeGarde.Web.State;
 
-var builder = WebApplication.CreateBuilder(args);
+// Hôte Blazor WebAssembly RÉEL : l'application s'exécute dans le navigateur. Tout le rendu est
+// interactif côté client (pas de circuit serveur, pas de render mode à câbler — @onclick/@bind
+// sont vivants par construction en WASM standalone).
+var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
-// Add services to the container.
-builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+builder.RootComponents.Add<App>("#app");
+builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddSignalR();
-
-// API explorable/documentée (invariant non-codant) — OpenAPI/Swagger sur le canal d'écriture.
-builder.Services.AddOpenApi();
-
-// Application + Infrastructure (persistance en mémoire, SignalR réel, use cases).
-builder.Services.AjouterPlanningDeGarde();
-
-// Client HTTP du canal d'écriture : les vues d'écriture émettent leurs commandes via les
-// endpoints `/api/canal/*` (adaptateur de gauche), PAS en appelant les handlers en DI direct.
-// BaseAddress = l'hôte lui-même (le front rendu côté serveur appelle son propre canal HTTP) ;
-// après la migration WASM (invariant non-codant), ce même client cible l'hôte distant.
-builder.Services.AddScoped(sp =>
+// Client HTTP du front WASM. Le navigateur émet ses écritures (canal d'écriture) ET lit la grille
+// (canal de lecture) vers l'API DISTANTE dont l'URL est CONFIGURABLE (clé « Api:BaseUrl », chargée
+// depuis wwwroot/appsettings.json), et non plus vers son propre hôte. C'est le câblage runtime que
+// le Sc.2 prouve. À défaut de config, on retombe sur l'hôte qui sert le WASM (HostEnvironment.BaseAddress).
+builder.Services.AddScoped(_ =>
 {
-    var nav = sp.GetRequiredService<NavigationManager>();
-    return new HttpClient { BaseAddress = new Uri(nav.BaseUri) };
+    var urlApi = builder.Configuration[ClientCanalEcriture.CleUrlApi];
+    var baseAddress = string.IsNullOrWhiteSpace(urlApi) ? builder.HostEnvironment.BaseAddress : urlApi;
+    return new HttpClient { BaseAddress = new Uri(baseAddress) };
 });
 
-// État de session de consultation (rôle, enfant affiché) — par circuit Blazor.
-builder.Services.AddScoped<PlanningDeGarde.Web.State.SessionPlanning>();
+// État de session de consultation (rôle, enfant affiché) — par client navigateur.
+builder.Services.AddScoped<SessionPlanning>();
 
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
-}
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseHttpsRedirection();
-
-app.UseAntiforgery();
-
-app.MapStaticAssets();
-app.MapRazorComponents<App>()
-    .AddInteractiveServerRenderMode();
-
-app.MapHub<PlanningHub>("/hubs/planning");
-
-// Canal d'écriture requête/réponse (adaptateur de gauche) — commandes d'écriture en HTTP.
-app.MapperCanalEcriture();
-
-// API explorable (invariant non-codant) — document OpenAPI du canal exposé en développement.
-if (app.Environment.IsDevelopment())
-    app.MapOpenApi();
-
-// Données de démonstration — l'IHM s'ouvre peuplée plutôt que vide.
-// Persistance en mémoire (aucune base réelle) : amorçage systématique en local.
-// Désactivé sous l'environnement « Testing » : les tests d'intégration du canal observent
-// un store vierge (sinon les périodes/slots de démo polluent la projection réelle observée).
-if (!app.Environment.IsEnvironment("Testing"))
-    app.AmorcerDonneesDemo();
-
-app.Run();
-
-/// <summary>
-/// Point d'entrée rendu accessible (partial public) pour que les tests d'intégration
-/// (<c>WebApplicationFactory&lt;Program&gt;</c>) puissent démarrer l'hôte Web réel.
-/// </summary>
-public partial class Program { }
+await builder.Build().RunAsync();
