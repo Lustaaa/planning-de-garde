@@ -4,7 +4,7 @@
 > une vue **par épic (fonctionnalité)** pour regrouper ce qui est lié et préparer le
 > découpage des sprints, et une vue **par palier (séquence de livraison)** pour le
 > calendrier d'un coup d'œil. Source de vérité du *quoi/quand* ; le *pourquoi* vit dans
-> la spec vivante [`docs/04-specification.md`](04-specification.md).
+> la spec vivante [`docs/05-specification.md`](05-specification.md).
 >
 > **Tenue à jour par le pipeline** : `/4-retours` y **ajoute** les besoins issus du
 > challenge ; `/6-cloture-sprint` y passe à **✅ fait** ce qui a été livré (gate visuel
@@ -19,12 +19,13 @@
 | 01 | Semaine de garde (grille agenda, cycle récurrent, slots/périodes/transferts) | ✅ fait | Modèle de garde + 12 scénarios domaine + grille initiale |
 | 02 | Réparer le câblage IHM ↔ actions (render mode interactif) | ✅ fait | Actions d'écriture câblées au front |
 | 03 | Calendrier — grille de lecture (5 semaines, lecture seule, 2 niveaux de couleur) | ✅ fait | Projection `GrilleAgendaQuery` + grille 5×7 lecture seule |
+| 04 | `controllers-wasm-fondation` — canal d'écriture HTTP (adaptateur de gauche) + recâblage du front via API, SignalR cantonné à la diffusion lecture seule | ✅ fait | Canal HTTP `poser-slot`/`affecter-période` + front câblé + OpenAPI document + code-behind partiel (4 scénarios, 82 verts) |
 
 ## En cours
 
-| Sprint | Sujet | Palier (spec v04) | Statut |
+| Sprint | Sujet | Palier (spec v05) | Statut |
 |-------:|-------|-------------------|:------:|
-| 04 | `controllers-wasm-fondation` — adaptateur de gauche (écriture via canal requête/réponse) + migration front côté client (WASM), SignalR conservé en diffusion lecture seule | 1 — Fondations | 🟡 en cours |
+| — | *(aucun sprint en cours — prochain : fermeture de la fondation, cf. ci-dessous)* | 1 — Fondations | ⬜ |
 
 ## Prochains sprints envisagés
 
@@ -74,12 +75,13 @@
 
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
-| Controllers HTTP exposant les commandes d'écriture (adaptateur de gauche) | 🟡 | s04 / Palier 1 | retours s03 (#9) · spec p1 |
-| Migration front Blazor Server → WASM consommant l'API | 🟡 | s04 / Palier 1 | retours s03 (#6) · spec p1 |
-| SignalR cantonné au push lecture seule (jamais d'écriture) | 🟡 | s04 / Palier 1 | retours s03 · spec p1 (séparation canaux) |
-| Convention code-behind systématique (`.razor.cs`, pas de `@code` inline) | ⬜ | Palier 1+ (garde-fou) | retours s03 (#7, dette : 7 composants) |
-| Swagger / OpenAPI sur le backend | ⬜ | Palier 1 (garde-fou) | retours s03 (#8) |
-| Ports & adaptateurs visibles (hexagonal : gauche/droite/domaine) | 🟡 | Palier 1 | retours s03 (#10) |
+| Controllers HTTP exposant les commandes d'écriture (adaptateur de gauche) | ✅ | s04 / Palier 1 | retours s03 (#9) · spec p1 |
+| Hôte d'API détachable (back démarrable seul, front consomme une API distante) | ⬜ | Palier 1 (prochain sujet) | spec v05 p1 · besoins s04 |
+| Migration front Blazor Server → WASM consommant l'API | 🟡 | s04 (invariant non-codant, non livré) | retours s03 (#6) · spec p1 |
+| SignalR cantonné au push lecture seule (jamais d'écriture) | ✅ | s04 | retours s03 · spec p1 (séparation canaux) |
+| Convention code-behind systématique (`.razor.cs`, pas de `@code` inline) | 🟡 | s04 partiel (transfert en retrait) | retours s03 (#7, dette) |
+| API explorable : document OpenAPI **+** UI interactive (Swagger-UI/Scalar) | 🟡 | s04 (document livré, UI à faire) | retours s03 (#8) · spec v05 p1 |
+| Ports & adaptateurs visibles (hexagonal : gauche/droite/domaine) | 🟡 | s04 (gauche matérialisé) | retours s03 (#10) |
 
 ### Épic 4 — Calendrier & grille de lecture
 *Calendrier navigable (semaine + 4 semaines) lisible d'un coup d'œil.*
@@ -177,26 +179,27 @@
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
 | Dialogs d'écriture (poser/affecter/supprimer) depuis les cases | ⬜ | Palier 3 item 3 | retours s02 (#7/8/10)/s03 |
-| Recâblage de l'écriture via API HTTP (au lieu du DI direct) | 🟡 | s04 / Palier 1 | retours s03 (#5) · spec p1 |
+| Recâblage de l'écriture via API HTTP (au lieu du DI direct) | 🟡 | s04 (poser/affecter migrés ; transfert en retrait) | retours s03 (#5) · spec p1 |
 | Rafraîchissement immédiat : la saisie réapparaît dans la grille | ⬜ | Groupe 2 (dép. Palier 1) | retours s03 (#5, bug runtime) |
 
 ---
 
-## À faire (paliers de la spec vivante v04)
+## À faire (paliers de la spec vivante v05)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
+> Numérotation alignée sur la **séquence de livraison de v05** (9 paliers).
 
 | Palier | Besoin | Épics concernés | Origine | Statut |
 |-------:|--------|-----------------|---------|:------:|
-| 2 | Lisibilité des périodes/responsable (libellé/nom + légende) **+** thème en accord avec le domaine | É5 | retours s03 (G1) | ⬜ |
-| 3.2 | Navigation calendrier (semaines précédente/suivante) | É4 | spec p3 · retours s02 | ⬜ |
-| 3.3 | Écriture en contexte — dialogs depuis les cases + saisies réapparaissent dans la grille | É6, É7, É8, É12 | retours s03 (G2) | ⬜ |
-| 4 | Persistance config foyer (sortir le dur de `Foyer.cs`) + cycle de fond + lieux/couleurs | É1 | retours s03 (#11, dette) | ⬜ |
-| 4.6 | Immédiat & événements à venir — panneau cloche (transferts + changements) | É8, É9 | spec règle 20 · retours s02/s03 | ⬜ |
-| 5 | Modèle d'acteurs & foyer — Admin/Parent/Autre, écran de config, responsabilité de fond, couleurs par défaut | É1, É2, É7 | spec (incrément 6) · retours s01 | ⬜ |
-| 6 | Transferts dérivés automatiquement par défaut | É8 | spec règle 17 · retours s02 | ⬜ |
-| 7 | Imprévu & échange | É11 | spec (incrément historique) | ⬜ |
-| 8 | Ouverture de l'accès (auth OAuth, landing, personnalisation des couleurs) | É10, É5 | spec (incrément 7) · retours s01 | ⬜ |
+| 1 | Fermeture de la fondation — **hôte d'API détachable** (back démarrable seul) + **UI d'exploration interactive** des API | É3 | spec v05 p1 · besoins s04 | ⬜ |
+| 2 | **Saisie visible** — la saisie réapparaît à la bonne **date** (défaut = aujourd'hui) **et** en **couleur du parent** (identifiant stable) | É6, É7, É12 | spec v05 p2 · besoins s04 (défaut confirmé) | ⬜ |
+| 3 | Lisibilité des périodes/responsable (nom + légende) **+** thème en accord avec le domaine | É5 | spec v05 p3 · retours s03 (G1) | ⬜ |
+| 4 | Calendrier navigable (passé/futur, vues prédéfinies) **+** écriture en contexte (dialogs depuis les cases) | É4, É6, É7, É8, É12 | spec v05 p4 · retours s02/s03 | ⬜ |
+| 5 | Alimentation & saisie — persistance config foyer (sortir le dur de `Foyer.cs`) + cycle de fond + lieux/couleurs | É1 | spec v05 p5 · retours s03 (#11, dette) | ⬜ |
+| 6 | Modèle d'acteurs & foyer — Admin/Parent/Autre, écran de config, responsabilité de fond, couleurs par défaut | É1, É2, É7 | spec v05 p6 · retours s01 | ⬜ |
+| 7 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
+| 8 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
+| 9 | Ouverture de l'accès (auth OAuth, landing, personnalisation des couleurs) | É10, É5 | spec v05 p9 · retours s01 | ⬜ |
 
 ## Dépendances entre épics (pour la découpe des sprints)
 
