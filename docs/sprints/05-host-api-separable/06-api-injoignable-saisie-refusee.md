@@ -1,6 +1,6 @@
 # Scénario 6 — API distante injoignable : la saisie est refusée et n'est pas appliquée
 
-`@erreur` · 🖥️ **scénario IHM** — **Routé vers `ihm-builder`**
+`@erreur @vert` · 🖥️ **scénario IHM** — **Routé vers `ihm-builder`**
 
 [← Retour au suivi](00-sprint05-suivi.md)
 
@@ -19,7 +19,7 @@
 
 ## Acceptation (BDD)
 
-`Should_Afficher_le_message_de_service_injoignable_et_ne_rien_enregistrer_When_le_front_WASM_tente_une_pose_alors_que_l_API_distante_est_arretee`
+`Should_Afficher_le_message_de_service_injoignable_et_ne_rien_enregistrer_When_le_front_WASM_tente_une_pose_alors_que_l_API_distante_est_arretee` — ✅ GREEN
 
 **Test de NIVEAU RUNTIME** sur l'app réellement câblée, **API distante arrêtée** :
 - **Given** le front s'exécute dans le navigateur (WASM), configuré pour émettre ses écritures vers

@@ -53,7 +53,7 @@
 | 3 | [L'UI d'exploration interactive liste les endpoints du canal d'écriture](03-ui-exploration-liste-endpoints.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 4 | [L'hôte d'API démarre headless et sert description + exploration](04-hote-headless-description-exploration.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 5 | [Le front sur une origine distincte est autorisé par le CORS de l'API](05-cors-origine-front-autorisee.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 6 | [API distante injoignable : la saisie est refusée et n'est pas appliquée](06-api-injoignable-saisie-refusee.md) | `@erreur 🖥️ IHM` | ⏳ Pending | 0/0 | ⏳ Pending |
+| 6 | [API distante injoignable : la saisie est refusée et n'est pas appliquée](06-api-injoignable-saisie-refusee.md) | `@erreur 🖥️ IHM` | ✅ GREEN | 2/2 | ✅ GREEN |
 
 **Total** : 6 scénarios — **4 backend** (`tdd-auto`, acceptation **intégration**
 `WebApplicationFactory<ApiProgram>`) · **2 IHM/runtime** (`ihm-builder`, acceptation

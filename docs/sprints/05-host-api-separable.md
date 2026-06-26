@@ -96,7 +96,8 @@ Scenario: Une écriture cross-origin du front vers l'API distante est autorisée
 
 ### Scenario 6 — API distante injoignable : la saisie est refusée et n'est pas appliquée
 
-`@erreur`
+`@erreur @vert`
+<!-- vert — 3d74dcf -->
 
 ```gherkin
 Scenario: Quand l'API distante est injoignable, l'écriture échoue clairement et rien n'est enregistré

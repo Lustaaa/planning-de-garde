@@ -27,14 +27,34 @@ public partial class PoserSlot
     private readonly Formulaire _form = new();
     private string? _motifEchec;
 
+    /// <summary>
+    /// Message affiché quand l'API distante est <b>injoignable</b> (échec de transport : connexion
+    /// refusée, timeout) — distinct d'un refus métier 4xx (motif propagé par le canal). La saisie
+    /// n'est alors pas appliquée et reste à resoumettre : aucune navigation, aucune mise en file
+    /// (PWA hors périmètre). Cf. Sc.6.
+    /// </summary>
+    internal const string MessageServiceInjoignable =
+        "Enregistrement impossible : le service est injoignable, réessayez.";
+
     private async Task Soumettre()
     {
         _motifEchec = null;
 
-        // Émission de la commande d'écriture via le canal HTTP (adaptateur de gauche).
-        var reponse = await Canal.PostAsJsonAsync(
-            "api/canal/poser-slot",
-            new PoserSlotRequete(Session.EnfantId, _form.LieuId, _form.Debut, _form.Fin));
+        HttpResponseMessage reponse;
+        try
+        {
+            // Émission de la commande d'écriture via le canal HTTP (adaptateur de gauche).
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/poser-slot",
+                new PoserSlotRequete(Session.EnfantId, _form.LieuId, _form.Debut, _form.Fin));
+        }
+        catch (HttpRequestException)
+        {
+            // API distante injoignable (échec de transport, pas un refus métier) : message dédié,
+            // saisie conservée (pas de navigation, pas de reset), aucune écriture ni mise en file.
+            _motifEchec = MessageServiceInjoignable;
+            return;
+        }
 
         if (reponse.IsSuccessStatusCode)
             Nav.NavigateTo("planning");
