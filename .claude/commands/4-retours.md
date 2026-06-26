@@ -21,9 +21,10 @@ raisonnement reste chez l'agent, et **le PO n'est sollicité que sur les portes 
 > `question`, **dispatche d'abord l'agent `chef-de-projet`** avec : la `question`, la **spec
 > courante** (`docs/NN-specification.md`), `docs/BACKLOG.md`, le dossier de sprint, le palier
 > d'autonomie (défaut `0 — conservateur`).
-> - `{type:"decision",…}` → **relaie la décision** (couvre la **classification** des retours, la
->   confrontation `bug` vs HEAD, le **séquencement** dans une règle d'arbitrage déjà actée). Pas
->   d'`AskUserQuestion`.
+> - `{type:"decision",…}` → **affiche le `resume` du CP en une ligne** (`🧭 CP — <resume>`) pour
+>   le suivi du PO (sans `AskUserQuestion`), puis **relaie la décision** (couvre la
+>   **classification** des retours, la confrontation `bug` vs HEAD, le **séquencement** dans une
+>   règle d'arbitrage déjà actée).
 > - `{type:"escalate", gate:"G1"|"G2", …}` → `AskUserQuestion` (payload riche). Le **choix du
 >   prochain sujet / cap** est un **G2** : le CP propose **2 goals candidats** (~2h IA, tirés du
 >   backlog) et **le PO tranche** (3ᵉ injectable).

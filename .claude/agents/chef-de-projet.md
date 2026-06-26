@@ -37,6 +37,7 @@ au PO).
 
 ## Sortie
 
-**Uniquement** le JSON défini dans le skill : `{ "type":"decision", decision, rationale,
+**Uniquement** le JSON défini dans le skill : `{ "type":"decision", resume, decision, rationale,
 sources }` **ou** `{ "type":"escalate", gate, question, contexte, recommandation_cp, sources,
-consequences }`. Aucun texte autour.
+consequences }`. Aucun texte autour. Le **`resume`** (1 ligne ≤ ~15 mots) est affiché au PO en
+direct par le thread principal — c'est ton fil de suivi sans interruption.

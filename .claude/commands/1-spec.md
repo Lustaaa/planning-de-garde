@@ -21,8 +21,9 @@ reste chez les agents, et **le PO n'est sollicité que sur les portes essentiell
 > questions des agents. Quand un agent dev renvoie une `question`, **dispatche d'abord l'agent
 > `chef-de-projet`** avec : la `question`, la **spec courante** (`docs/NN-specification.md`, la
 > plus récente), `docs/BACKLOG.md`, le palier d'autonomie (défaut `0 — conservateur`).
-> - `{type:"decision",…}` → **relaie la décision** à l'agent dev via `SendMessage`. **Pas**
->   d'`AskUserQuestion` : le PO n'est pas dérangé.
+> - `{type:"decision",…}` → **affiche le `resume` du CP en une ligne** (`🧭 CP — <resume>`) pour
+>   le suivi du PO (sans `AskUserQuestion`, sans l'interrompre), puis **relaie la décision** à
+>   l'agent dev via `SendMessage`.
 > - `{type:"escalate", gate:"G1"|"G2", …}` → **seulement là** appelle `AskUserQuestion`, en
 >   affichant le payload riche du CP (`contexte` + `recommandation_cp` + `consequences`)
 >   au-dessus des `options`. Renvoie la réponse brute à l'agent dev.

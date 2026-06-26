@@ -21,8 +21,9 @@ tu suis l'avancement dans le tableau de bord** `docs/sprints/<sujet>/00-sprint<N
 > `{type:"question", …}`, **dispatche d'abord l'agent `chef-de-projet`** avec : la `question`,
 > la **spec courante** (`docs/NN-specification.md`, la plus récente), le dossier de sprint, le
 > palier d'autonomie (défaut `0 — conservateur`).
-> - `{type:"decision",…}` → **relaie la décision** à l'agent dev via `SendMessage`. **Pas**
->   d'`AskUserQuestion`. (Couvre le **scaffolding**, le **routage backend/IHM**, l'**early-green
+> - `{type:"decision",…}` → **affiche le `resume` du CP en une ligne** (`🧭 CP — <resume>`) pour
+>   le suivi du PO (sans `AskUserQuestion`), puis **relaie la décision** à l'agent dev via
+>   `SendMessage`. (Couvre le **scaffolding**, le **routage backend/IHM**, l'**early-green
 >   attendu**, un **problème d'implémentation** tranchable par la spec/convention.)
 > - `{type:"escalate", gate:"G1", …}` → appelle `AskUserQuestion` (payload riche du CP).
 > - **Fallback** : type `chef-de-projet` absent → `general-purpose` + « applique le skill

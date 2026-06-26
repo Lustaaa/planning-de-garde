@@ -21,8 +21,9 @@ reste chez l'agent, et **le PO n'est sollicité que sur les portes essentielles*
 > `question` (collision de règles, question ouverte), **dispatche d'abord l'agent
 > `chef-de-projet`** avec : la `question`, `currentSpec`, le backlog, le palier d'autonomie
 > (défaut `0 — conservateur`).
-> - `{type:"decision",…}` → **relaie la décision** (couvre les collisions à **résolution
->   déterministe** : une règle structurante existante tranche le conflit). Pas d'`AskUserQuestion`.
+> - `{type:"decision",…}` → **affiche le `resume` du CP en une ligne** (`🧭 CP — <resume>`) pour
+>   le suivi du PO (sans `AskUserQuestion`), puis **relaie la décision** (couvre les collisions à
+>   **résolution déterministe** : une règle structurante existante tranche le conflit).
 > - `{type:"escalate", gate:"G1", …}` → `AskUserQuestion` (payload riche) : seuls les **vrais
 >   conflits de valeur** entre règles (ex. transfert auto vs « transferts explicites ») reviennent
 >   au PO.

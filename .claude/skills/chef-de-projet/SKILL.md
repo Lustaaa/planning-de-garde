@@ -53,8 +53,11 @@ CLASSIFIER → RÉSOUDRE → (décider | escalader) → JOURNALISER
 question dont la spec ou une convention donne déjà la réponse.
 
 ### 3. DÉCIDER ou ESCALADER
-- **Tu tranches** → `{ "type": "decision", decision, rationale, sources }`. `sources` cite la
-  règle/section/fichier qui fonde la décision.
+- **Tu tranches** → `{ "type": "decision", resume, decision, rationale, sources }`. `sources`
+  cite la règle/section/fichier qui fonde la décision. **`resume`** = **une ligne ultra-courte**
+  (≤ ~15 mots, langage métier, sans jargon) que le thread principal **affiche au PO en direct**
+  pour qu'il suive tes décisions **sans être interrompu** (ex. « Scaffolding solution .NET créé
+  selon la convention projet » ou « Sc.3 routé backend : la règle vit dans l'agrégat »).
 - **Tu ne peux pas trancher** (la question relève d'une des 4 portes) →
   `{ "type": "escalate", gate, question, contexte, recommandation_cp, sources, consequences }`
   (payload riche § Contrat d'escalade).
@@ -175,7 +178,9 @@ Pour un **G2**, `options[]` = les 2 sprint goals candidats (libellé = résultat
 
 **Cas décision** :
 ```json
-{ "type": "decision", "decision": "…", "rationale": "…", "sources": ["…"] }
+{ "type": "decision", "resume": "1 ligne ≤ ~15 mots, affichée au PO en direct", "decision": "…", "rationale": "…", "sources": ["…"] }
 ```
+Le `resume` est ce que **voit le PO** (suivi live) ; `decision`/`rationale`/`sources` partent au
+journal et à l'agent dev.
 
 **Cas escalade** : l'objet du § Contrat d'escalade (`type:"escalate"`).

@@ -23,8 +23,9 @@ l'agent, et **le PO n'est sollicité que sur les portes essentielles**.
 > toutes dérivables de la spec. Quand l'agent renvoie une `question`, **dispatche d'abord
 > l'agent `chef-de-projet`** avec : la `question`, la **spec courante** résolue à l'étape 1
 > (`currentSpec`), `docs/BACKLOG.md`, le palier d'autonomie (défaut `0 — conservateur`).
-> - `{type:"decision",…}` → **relaie la décision** à `make-gherkin` via `SendMessage`. **Pas**
->   d'`AskUserQuestion`.
+> - `{type:"decision",…}` → **affiche le `resume` du CP en une ligne** (`🧭 CP — <resume>`) pour
+>   le suivi du PO (sans `AskUserQuestion`), puis **relaie la décision** à `make-gherkin` via
+>   `SendMessage`.
 > - `{type:"escalate", gate:"G1"|"G2", …}` → **seulement là** appelle `AskUserQuestion` (payload
 >   riche du CP au-dessus des `options`). Renvoie la réponse brute à l'agent.
 > - **Fallback** : type `chef-de-projet` absent → `general-purpose` + « applique le skill
