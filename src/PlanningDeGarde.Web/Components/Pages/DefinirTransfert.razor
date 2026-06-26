@@ -1,7 +1,8 @@
 @page "/planning/definir-transfert"
-@inject DefinirTransfertHandler Handler
+@inject HttpClient Canal
 @inject SessionPlanning Session
 @inject NavigationManager Nav
+@using static PlanningDeGarde.Web.CanalEcriture
 
 <PageTitle>Définir un transfert</PageTitle>
 
@@ -79,17 +80,29 @@ else
     private TimeOnly? _heure = new(8, 30);
     private string? _motifEchec;
 
-    private void Soumettre()
+    private async Task Soumettre()
     {
         _motifEchec = null;
         var heure = _heure?.ToTimeSpan() ?? TimeSpan.Zero;
 
-        var resultat = Handler.Handle(new DefinirTransfertCommand(
-            _form.DeposeParId, _form.RecupereParId, _form.LieuId, heure, _form.Date));
+        // Émission de la commande d'écriture via le canal HTTP de l'API distante (adaptateur de
+        // gauche), JAMAIS par un handler en DI direct (impossible côté navigateur).
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/definir-transfert",
+                new DefinirTransfertRequete(_form.DeposeParId, _form.RecupereParId, _form.LieuId, heure, _form.Date));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchec = PoserSlot.MessageServiceInjoignable;
+            return;
+        }
 
-        if (resultat.EstSucces)
+        if (reponse.IsSuccessStatusCode)
             Nav.NavigateTo("planning");
         else
-            _motifEchec = resultat.Motif;
+            _motifEchec = await reponse.Content.ReadAsStringAsync();
     }
 }

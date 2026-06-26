@@ -1,23 +1,17 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <base href="/" />
-    <ResourcePreloader />
-    <link rel="stylesheet" href="@Assets["lib/bootstrap/dist/css/bootstrap.min.css"]" />
-    <link rel="stylesheet" href="@Assets["app.css"]" />
-    <link rel="stylesheet" href="@Assets["PlanningDeGarde.Web.styles.css"]" />
-    <ImportMap />
-    <link rel="icon" type="image/png" href="favicon.png" />
-    <HeadOutlet @rendermode="InteractiveServer" />
-</head>
-
-<body>
-    <Routes @rendermode="InteractiveServer" />
-    <ReconnectModal />
-    <script src="@Assets["_framework/blazor.web.js"]"></script>
-</body>
-
-</html>
+@*
+    Composant racine du front WASM standalone (monté sur #app par Program.cs). Tout le rendu est
+    interactif côté navigateur : pas de @rendermode à poser (WASM standalone n'a pas de rendu
+    statique serveur). Le Router résout les pages @page ; les @onclick/@bind y sont vivants.
+*@
+<Router AppAssembly="@typeof(App).Assembly">
+    <Found Context="routeData">
+        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+    <NotFound>
+        <LayoutView Layout="@typeof(Layout.MainLayout)">
+            <h3>Page introuvable</h3>
+            <p>Désolé, le contenu recherché n'existe pas.</p>
+        </LayoutView>
+    </NotFound>
+</Router>

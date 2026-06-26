@@ -35,6 +35,10 @@ app.UseCors();
 // Canal d'écriture requête/réponse (adaptateur de gauche) — commandes d'écriture en HTTP.
 app.MapperCanalEcriture();
 
+// Canal de lecture (adaptateur de droite, CQRS) — la grille agenda projetée, lue à distance par
+// le front WASM (le navigateur n'a pas la projection en DI directe : il lit la grille via HTTP).
+app.MapperCanalLecture();
+
 // Canal de diffusion (lecture seule) — le front WASM s'y abonne dans le navigateur ; déclenché
 // par une écriture aboutie, jamais l'inverse.
 app.MapHub<PlanningHub>("/hubs/planning");
@@ -45,6 +49,13 @@ app.MapHub<PlanningHub>("/hubs/planning");
 // (aucun front déployé ni référencé). Cf. Sc.4 (servabilité headless de la description).
 app.MapOpenApi();
 app.MapScalarApiReference();
+
+// Données de démonstration — la grille lue par le front WASM s'ouvre peuplée plutôt que vide.
+// Persistance en mémoire (aucune base réelle) : amorçage systématique au démarrage de l'hôte d'API.
+// Désactivé sous l'environnement « Testing » : les tests d'intégration observent un store vierge
+// (sinon les périodes/slots de démo polluent la projection réelle observée).
+if (!app.Environment.IsEnvironment("Testing"))
+    app.AmorcerDonneesDemo();
 
 app.Run();
 

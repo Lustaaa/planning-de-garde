@@ -58,4 +58,47 @@ public sealed class AffecterPeriodeCanalApiTests
         Assert.Equal(5, casesCouvertes.Count);
         Assert.All(casesCouvertes, j => Assert.Equal("bleu", j.CouleurResponsable));
     }
+
+    // @erreur — affectation sans responsable (ResponsableId vide) : refus propagé par le canal
+    // (invariant « un responsable requis » de PeriodeDeGarde.Affecter) + aucune période persistée
+    // → cases en couleur neutre. Portage depuis l'ancien hôte Web vers l'hôte d'API détaché.
+    private static readonly object CommandeAffectationSansResponsable = new
+    {
+        ResponsableId = "",
+        Debut = new DateTime(2026, 6, 22),
+        Fin = new DateTime(2026, 6, 26),
+    };
+
+    [Fact]
+    public async Task Should_Renvoyer_une_reponse_d_echec_pour_responsable_manquant_When_la_commande_d_affectation_d_une_periode_sans_responsable_est_emise_via_le_canal_de_l_hote_d_API()
+    {
+        using var hote = new ApiHoteFactory();
+        var client = hote.CreateClient();
+
+        var reponse = await client.PostAsJsonAsync("/api/canal/affecter-periode", CommandeAffectationSansResponsable);
+
+        Assert.False(reponse.IsSuccessStatusCode, $"une affectation sans responsable doit être refusée, statut obtenu {(int)reponse.StatusCode}.");
+        var motif = await reponse.Content.ReadAsStringAsync();
+        Assert.Contains("responsable", motif, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Should_Laisser_les_cases_du_lundi_22_au_vendredi_26_06_2026_en_couleur_neutre_dans_la_projection_reelle_When_l_affectation_sans_responsable_a_ete_refusee_via_le_canal_de_l_hote_d_API()
+    {
+        using var hote = new ApiHoteFactory();
+        var client = hote.CreateClient();
+
+        var reponse = await client.PostAsJsonAsync("/api/canal/affecter-periode", CommandeAffectationSansResponsable);
+        Assert.False(reponse.IsSuccessStatusCode, "l'affectation sans responsable doit être refusée.");
+
+        using var scope = hote.Services.CreateScope();
+        var projection = scope.ServiceProvider.GetRequiredService<GrilleAgendaQuery>();
+        var grille = projection.Projeter(new DateOnly(2026, 6, 22));
+
+        var casesConcernees = grille.Jours
+            .Where(j => j.Date >= new DateOnly(2026, 6, 22) && j.Date <= new DateOnly(2026, 6, 26))
+            .ToList();
+        Assert.Equal(5, casesConcernees.Count);
+        Assert.All(casesConcernees, j => Assert.Equal("gris", j.CouleurResponsable));
+    }
 }

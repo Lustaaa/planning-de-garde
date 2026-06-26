@@ -72,3 +72,43 @@ RED→GREEN des scénarios IHM (`.razor` WASM, config URL d'API, message d'éche
 >   `nav.BaseUri`) ; hub SignalR consommé côté navigateur (point de câblage). Piloté par `ihm-builder`.
 > - Déplacement de `MapperCanalEcriture` (et de l'OpenAPI) de `PlanningDeGarde.Web/Program.cs`
 >   vers l'hôte API ; le canal cesse d'être servi par l'hôte front.
+
+---
+
+## Phase IHM finale (CONSTRUCTION) — conversion Server → WebAssembly RÉEL
+
+> Les 6 scénarios étaient `✅ GREEN` via le **seam configurable** (`Api:BaseUrl`) alors que le
+> front restait techniquement Blazro **Server**. Cette phase matérialise pleinement l'intention
+> « front WASM » du sprint, **sans rouvrir aucune règle de gestion** ni régresser les 6 scénarios.
+
+**Conversion réalisée** (`ihm-builder`, mode construction) :
+
+- **`PlanningDeGarde.Web` : `Sdk.Web` → `Sdk.BlazorWebAssembly`**. Entry-point
+  `WebAssemblyHostBuilder` (`Program.cs`), root component `App` monté sur `#app`
+  (`wwwroot/index.html` + `blazor.webassembly.js`). Plus de render mode à câbler : en WASM
+  standalone tout est interactif côté navigateur (`@onclick`/`@bind` vivants par construction).
+- **Découplage des dépendances** : le front ne référence plus `Infrastructure` (aucun store /
+  hub / handler serveur dans le navigateur), seulement `Application` (read model `GrilleAgenda`,
+  `RoleAuteur`, DTOs de commande). `HttpClient.BaseAddress` = `Api:BaseUrl`
+  (`wwwroot/appsettings.json`), repli sur `HostEnvironment.BaseAddress`.
+- **Lecture de la grille via l'API distante** : nouveau **canal de lecture** sur l'hôte d'API
+  (`GET /api/grille/{aaaa}/{mm}/{jj}`, `CanalLecture.cs`) ; `PlanningPartage` lit la grille en
+  HTTP distant (plus de `GrilleAgendaQuery` en DI directe, impossible en WASM).
+- **SignalR consommé côté navigateur** : `PlanningPartage` ouvre la `HubConnection` vers
+  `Canal.BaseAddress + hubs/planning` (hub de l'API distante), événement `MiseAJour`.
+- **Écritures via l'API distante** : `PoserSlot`, `AffecterPeriode` et `DefinirTransfert`
+  émettent toutes via le canal HTTP (`/api/canal/*`) ; `DefinirTransfert` n'appelle plus le
+  handler en DI directe (nouvel endpoint `/api/canal/definir-transfert`). Le seed de démo migre
+  Web → hôte d'API.
+- **Tests** : les tests d'intégration du canal (ex-`WebApplicationFactory<Program>` du front)
+  sont **portés sur l'hôte d'API** (`PoserSlotCanalApiTests`, `DefinirTransfertCanalApiTests`,
+  `CanalLectureApiTests`, refus AffecterPeriode) — niveau runtime préservé, pas de bUnit qui
+  ment au vert. Les bUnit de composant restent en complément. Acceptation runtime Sc.2/Sc.6
+  **inchangée** (testée sur le front WASM réel + API distante).
+- **Lanceur** : `run.ps1` démarre désormais **l'hôte d'API détaché** (arrière-plan,
+  `http://localhost:5180`) **puis le front WASM** (premier plan, `http://localhost:5292`).
+
+**Vérification** : `dotnet build PlanningDeGarde.slnx` vert · `dotnet test PlanningDeGarde.slnx`
+96 ✅ / 0 ❌ · smoke runtime OK (API sert grille + OpenAPI + Scalar ; front WASM sert
+`index.html` + framework + `appsettings.json` ; CORS preflight `5292 → 5180` autorisé ; pose
+écrite via canal et relue via le canal de lecture).

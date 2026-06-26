@@ -31,10 +31,20 @@ public partial class AffecterPeriode
     {
         _motifEchec = null;
 
-        // Émission de la commande d'écriture via le canal HTTP (adaptateur de gauche).
-        var reponse = await Canal.PostAsJsonAsync(
-            "api/canal/affecter-periode",
-            new AffecterPeriodeRequete(_form.ResponsableId, _form.Debut, _form.Fin));
+        // Émission de la commande d'écriture via le canal HTTP de l'API distante (adaptateur de gauche).
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/affecter-periode",
+                new AffecterPeriodeRequete(_form.ResponsableId, _form.Debut, _form.Fin));
+        }
+        catch (HttpRequestException)
+        {
+            // API distante injoignable (échec de transport) : message dédié, saisie conservée.
+            _motifEchec = PoserSlot.MessageServiceInjoignable;
+            return;
+        }
 
         if (reponse.IsSuccessStatusCode)
             Nav.NavigateTo("planning");
