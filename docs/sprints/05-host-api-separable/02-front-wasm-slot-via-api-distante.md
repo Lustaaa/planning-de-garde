@@ -1,6 +1,6 @@
 # Scénario 2 — Le front WASM consomme l'API distante : un slot posé apparaît dans sa case
 
-`@nominal` · 🖥️ **scénario IHM** — **Routé vers `ihm-builder`**
+`@nominal @vert` · 🖥️ **scénario IHM** — **Routé vers `ihm-builder`**
 
 [← Retour au suivi](00-sprint05-suivi.md)
 
@@ -18,7 +18,13 @@
 
 ## Acceptation (BDD)
 
-`Should_Faire_apparaitre_le_slot_ecole_08h30_16h30_dans_la_case_du_mercredi_24_06_2026_When_le_front_WASM_pose_un_slot_via_l_API_distante`
+`Should_Faire_apparaitre_le_slot_ecole_08h30_16h30_dans_la_case_du_mercredi_24_06_2026_When_le_front_WASM_pose_un_slot_via_l_API_distante` — ✅ GREEN
+
+**Tests runtime (Web.Tests, deux hôtes réels câblés)** :
+- `Should_Faire_apparaitre_le_slot_..._When_le_front_WASM_pose_un_slot_via_l_API_distante` — ✅ GREEN — pose émise par le **client réel du front** vers l'**hôte d'API détaché réel** ; slot observé dans le **store réel distant** via `GrilleAgendaQuery`.
+- `Should_Cibler_l_URL_d_API_distante_configurable_When_le_client_d_ecriture_du_front_WASM_est_construit` — ✅ GREEN — le client du front cible l'URL **configurable** (`Api:BaseUrl`), non plus `nav.BaseUri`.
+
+> Discriminance du rouge : (1) le client ignorait `Api:BaseUrl` (cible `https://localhost/` ≠ URL distante) ; (2) l'hôte d'API détaché ne savait pas résoudre `IHubContext<PlanningHub>` (ni `AddSignalR()` ni `MapHub`) → l'écriture distante échouait à l'activation. Un bUnit à doublures n'aurait vu ni l'un ni l'autre.
 
 **Test de NIVEAU RUNTIME** sur l'app réellement câblée (front exécuté côté navigateur,
 **hôte d'API détaché** démarré à `https://api.planning.local`, front configuré pour émettre ses

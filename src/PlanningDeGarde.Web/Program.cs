@@ -18,11 +18,16 @@ builder.Services.AddOpenApi();
 builder.Services.AjouterPlanningDeGarde();
 
 // Client HTTP du canal d'écriture : les vues d'écriture émettent leurs commandes via les
-// endpoints `/api/canal/*` (adaptateur de gauche), PAS en appelant les handlers en DI direct.
-// BaseAddress = l'hôte lui-même (le front rendu côté serveur appelle son propre canal HTTP) ;
-// après la migration WASM (invariant non-codant), ce même client cible l'hôte distant.
+// endpoints `/api/canal/*` de l'API DISTANTE (adaptateur de gauche), PAS en appelant les handlers
+// en DI direct. BaseAddress = URL d'API CONFIGURABLE (clé « Api:BaseUrl », cf. Sc.2) — le front
+// consomme l'hôte d'API détaché, non plus son propre hôte (nav.BaseUri). À défaut de config, on
+// retombe sur l'hôte courant (parité avec le rendu serveur pendant la transition WASM).
 builder.Services.AddScoped(sp =>
 {
+    var configuration = sp.GetRequiredService<IConfiguration>();
+    if (!string.IsNullOrWhiteSpace(configuration[ClientCanalEcriture.CleUrlApi]))
+        return ClientCanalEcriture.Construire(configuration);
+
     var nav = sp.GetRequiredService<NavigationManager>();
     return new HttpClient { BaseAddress = new Uri(nav.BaseUri) };
 });

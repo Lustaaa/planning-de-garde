@@ -49,7 +49,7 @@
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
 | 1 | [Le back démarre seul : l'API détachée enregistre une affectation sans le front](01-back-demarre-seul-affectation.md) | `@nominal` | ✅ GREEN | 3/3 | ✅ GREEN |
-| 2 | [Le front WASM consomme l'API distante : un slot posé apparaît dans sa case](02-front-wasm-slot-via-api-distante.md) | `@nominal 🖥️ IHM` | ⏳ Pending | 0/0 | ⏳ Pending |
+| 2 | [Le front WASM consomme l'API distante : un slot posé apparaît dans sa case](02-front-wasm-slot-via-api-distante.md) | `@nominal 🖥️ IHM` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 3 | [L'UI d'exploration interactive liste les endpoints du canal d'écriture](03-ui-exploration-liste-endpoints.md) | `@nominal` | ⏳ Pending | 0/2 | ⏳ Pending |
 | 4 | [L'hôte d'API démarre headless et sert description + exploration](04-hote-headless-description-exploration.md) | `@limite` | ⏳ Pending | 0/2 | ⏳ Pending |
 | 5 | [Le front sur une origine distincte est autorisé par le CORS de l'API](05-cors-origine-front-autorisee.md) | `@limite` | ⏳ Pending | 0/2 | ⏳ Pending |

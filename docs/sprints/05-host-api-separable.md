@@ -41,7 +41,7 @@ Scenario: Le back démarre seul et son canal d'écriture enregistre une affectat
 
 ### Scenario 2 — Le front WASM consomme l'API distante : un slot posé apparaît dans sa case
 
-`@nominal`
+`@nominal @rouge`
 
 ```gherkin
 Scenario: Le front côté navigateur pose un slot via l'API distante et le voit dans la grille

@@ -23,6 +23,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\PlanningDeGarde.Web\PlanningDeGarde.Web.csproj" />
     <ProjectReference Include="..\..\src\PlanningDeGarde.Infrastructure\PlanningDeGarde.Infrastructure.csproj" />
+    <!-- L'hôte d'API détaché réel : la cible distante que le front WASM consomme (Sc.2 runtime).
+         Aliasé « api » : son entry-point synthétisé `Program` (top-level statements) ne doit pas
+         entrer en collision avec le `Program` de l'hôte Web (CS0433). On vise `ApiProgram`. -->
+    <ProjectReference Include="..\..\src\PlanningDeGarde.Api\PlanningDeGarde.Api.csproj" Aliases="api" />
   </ItemGroup>
 
 </Project>
