@@ -156,12 +156,24 @@ scénario.
      prématuré est une vérification de précondition : le CP tranche en général) → `SendMessage`.
    - `{ "type": "probleme", … }` (build/suite rouge) → présente le constat ; la livraison
      est cassée, à réparer par un `/3-tdd-implement` ciblé avant de conclure le sprint.
-   - `{ "type": "validation", … }` → **lance l'app** toi-même (thread durable) en tâche de
-     fond via `pwsh .claude/skills/run/scripts/run.ps1`, puis **relaie le `message`
-     verbatim** : back + IHM up, routes à tester, et le **fichier de retours unifié préparé**
-     (`retours_path` = `99-sprint<NN>-retours.md`, section `# Retours produit (PO)`). C'est
-     un **gate** : le sprint ne se conclut pas sans cette notification. L'utilisateur teste
-     visuellement, remplit la section produit, puis lance `/4-retours`.
+   - `{ "type": "validation", … }` → **c'est la REVUE DE SPRINT — la livraison (DoD)** : le
+     point où **le PO valide le travail fait** et où, sur acceptation, **la clôture + le passage
+     au sprint suivant se déclenchent**. Déroulé :
+     1. **Lance l'app** toi-même (thread durable) en tâche de fond via
+        `pwsh .claude/skills/run/scripts/run.ps1`.
+     2. **Relaie le `message` verbatim** : back + IHM up, routes à tester, fichier de retours
+        préparé (`retours_path` = `99-sprint<NN>-retours.md`, section `# Retours produit (PO)`).
+     3. **Interromps et demande l'acceptation** via `AskUserQuestion` — *« Revue de sprint
+        <NN> — la livraison est-elle validée ? »* :
+        - **Validée → clôturer le sprint** : la livraison est acceptée (DoD atteinte). Invite le
+          PO à remplir la section `# Retours produit (PO)` de `99-sprint<NN>-retours.md`, puis
+          **enchaîne `/4-retours`** (qui mène à `/5-consolidation` → `/6-cloture-sprint` →
+          amorce du sprint suivant).
+        - **À retravailler** : la livraison **n'est pas** acceptée (un comportement observé
+          cloche). Recueille ce qui ne va pas et repars en **`/3-tdd-implement` ciblé** ; le gate
+          de revue se **rejoue** ensuite. Le sprint **ne se clôt pas**.
+     C'est l'unique **interruption de livraison** (porte **G3**) : **aucun sprint ne se conclut
+     ni n'enchaîne sur le suivant sans cette validation explicite du PO**.
 
 ## Notes
 
@@ -198,8 +210,11 @@ scénario.
   fin de sprint. Le même fichier porte la section `# Retours produit (PO)` (remplie par le
   PO après le gate, lue par `/4-retours`). À ne pas confondre avec le backlog produit
   `99-sprint<NN>-besoins-fin-itération.md`.
-- **Clôture de sprint = gate visuel impératif** (étape 8, `validation-visuelle`) : le
-  sprint ne se conclut qu'après la notification « back + IHM up + retours préparé ».
-  L'utilisateur teste l'IHM, remplit la section `# Retours produit (PO)` de
-  `99-sprint<NN>-retours.md`, puis enchaîne `/4-retours` (besoins + archivage) →
-  `/5-consolidation` (nouvelle spec) → `/2-make-gherkin`.
+- **Clôture de sprint = REVUE DE SPRINT impérative** (étape 8, `validation-visuelle`, porte
+  **G3**) : le sprint ne se conclut **que** sur **acceptation explicite du PO** via
+  `AskUserQuestion` (*« la livraison est-elle validée ? »*), après lancement de l'app et test
+  visuel. **Validée** → le PO remplit `# Retours produit (PO)` de `99-sprint<NN>-retours.md`,
+  puis la clôture s'enchaîne `/4-retours` (besoins + archivage) → `/5-consolidation` (nouvelle
+  spec) → `/6-cloture-sprint` → amorce du sprint suivant. **À retravailler** → `/3-tdd-implement`
+  ciblé, le gate se rejoue, le sprint ne se clôt pas. **C'est l'unique interruption de
+  livraison** : pas de passage au sprint suivant sans elle.
