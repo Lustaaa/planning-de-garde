@@ -92,7 +92,7 @@ Scenario: Affecter une période sans modifier les dates la rend visible aujourd'
 
 ### Scenario 3 — Transfert défini sans toucher à la date prend aujourd'hui
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: Définir un transfert sans modifier la date l'horodate à aujourd'hui

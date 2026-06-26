@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using PlanningDeGarde.Application;
 using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 
@@ -25,6 +26,9 @@ public sealed class DefinirTransfertTests : TestContext
         var canal = new FakeCanalHttpHandler(statut, corpsReponse);
         Services.AddSingleton(new HttpClient(canal) { BaseAddress = new System.Uri("http://localhost/") });
         Services.AddSingleton(session ?? new SessionPlanning());
+        // La vue (passée en code-behind) pré-remplit sa date depuis le port d'horloge : on le fige
+        // au 26/06/2026 pour le déterminisme.
+        Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(new System.DateTime(2026, 6, 26)));
         return canal;
     }
 
