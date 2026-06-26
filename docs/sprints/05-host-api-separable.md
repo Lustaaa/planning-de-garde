@@ -69,7 +69,7 @@ Scenario: L'UI d'exploration interactive de l'hôte d'API est ouverte et liste l
 
 ### Scenario 4 — L'hôte d'API démarre en mode headless et sert la description et l'exploration
 
-`@limite`
+`@limite @vert`
 
 ```gherkin
 Scenario: L'hôte d'API démarre dans un environnement sans front et sert sa description

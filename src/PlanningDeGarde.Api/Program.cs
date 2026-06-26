@@ -36,7 +36,10 @@ app.MapperCanalEcriture();
 // par une écriture aboutie, jamais l'inverse.
 app.MapHub<PlanningHub>("/hubs/planning");
 
-// API explorable — document OpenAPI + UI Scalar d'exploration interactive du canal.
+// API explorable — document OpenAPI + UI Scalar d'exploration interactive du canal. Servis
+// INCONDITIONNELLEMENT (pas seulement sous IsDevelopment) : l'exploration est l'objet même de
+// cet hôte ouvert, elle doit rester accessible quand l'API démarre en environnement headless
+// (aucun front déployé ni référencé). Cf. Sc.4 (servabilité headless de la description).
 app.MapOpenApi();
 app.MapScalarApiReference();
 
