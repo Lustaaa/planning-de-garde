@@ -2,18 +2,23 @@
    affichée, dérivée du read model GrilleAgenda.Légende (déjà dédoublonné côté projection). Lecture
    seule, aucune règle métier. *@
 
-<section class="legende" data-testid="legende">
-    <h2 class="legende-titre">Légende</h2>
-    <ul class="legende-liste">
-        @foreach (var entree in Entrees)
-        {
-            <li class="legende-entree" data-testid="legende-entree" data-couleur="@entree.Couleur">
-                <span class="legende-pastille" style="background-color:@CouleurPastille(entree.Couleur);"></span>
-                <span class="legende-nom">@entree.Nom</span>
-            </li>
-        }
-    </ul>
-</section>
+@* Masquage (Sc.3) : légende vide ⇒ aucun bloc rendu (absent du DOM, pas un conteneur vide) —
+   une fenêtre sans responsable ne doit pas suggérer une légende. *@
+@if (Entrees is { Count: > 0 })
+{
+    <section class="legende" data-testid="legende">
+        <h2 class="legende-titre">Légende</h2>
+        <ul class="legende-liste">
+            @foreach (var entree in Entrees)
+            {
+                <li class="legende-entree" data-testid="legende-entree" data-couleur="@entree.Couleur">
+                    <span class="legende-pastille" style="background-color:@CouleurPastille(entree.Couleur);"></span>
+                    <span class="legende-nom">@entree.Nom</span>
+                </li>
+            }
+        </ul>
+    </section>
+}
 
 @code {
     /// <summary>Les entrées de légende dérivées de la fenêtre affichée (déjà dédoublonnées).</summary>
