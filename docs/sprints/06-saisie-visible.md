@@ -66,7 +66,7 @@ période.
 
 ### Scenario 1 — Slot posé sans toucher aux dates réapparaît à aujourd'hui
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: Poser un slot sans modifier la date le place au jour d'aujourd'hui

@@ -25,6 +25,9 @@ public sealed class PoserSlotTests : TestContext
         var canal = new FakeCanalHttpHandler(statut, corpsReponse);
         Services.AddSingleton(new HttpClient(canal) { BaseAddress = new System.Uri("http://localhost/") });
         Services.AddSingleton(session ?? new SessionPlanning());
+        // Le formulaire pré-remplit sa date depuis le port d'horloge (jamais une date figée) : on le
+        // fige au 26/06/2026 pour le déterminisme du corps émis.
+        Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(new System.DateTime(2026, 6, 26)));
         return canal;
     }
 
@@ -43,9 +46,10 @@ public sealed class PoserSlotTests : TestContext
         Assert.Equal("/api/canal/poser-slot", requete.RequestUri!.AbsolutePath);
     }
 
-    // La commande émise transporte bien les valeurs métier saisies (enfant, lieu, bornes).
+    // La commande émise transporte bien les valeurs métier saisies (enfant, lieu, bornes). La date
+    // est pré-remplie « aujourd'hui » depuis le port d'horloge figé (26/06/2026), pas une date 2025.
     [Fact]
-    public void Should_Transporter_le_slot_de_Lea_a_l_ecole_le_15_07_de_08h30_a_16h30_When_un_parent_choisit_le_lieu_ecole_et_valide()
+    public void Should_Transporter_le_slot_de_Lea_a_l_ecole_le_26_06_2026_de_08h30_a_16h30_When_un_parent_choisit_le_lieu_ecole_et_valide()
     {
         var canal = Cabler();
         var page = RenderComponent<PoserSlot>();
@@ -58,8 +62,8 @@ public sealed class PoserSlotTests : TestContext
         // les bornes (ASCII) et les champs, l'identité accentuée étant transportée telle quelle.
         Assert.Contains("enfantId", corps);
         Assert.Contains("lieuId", corps);
-        Assert.Contains("2025-07-15T08:30:00", corps);
-        Assert.Contains("2025-07-15T16:30:00", corps);
+        Assert.Contains("2026-06-26T08:30:00", corps);
+        Assert.Contains("2026-06-26T16:30:00", corps);
     }
 
     // Le canal accuse un succès -> la vue n'affiche aucun motif d'échec.

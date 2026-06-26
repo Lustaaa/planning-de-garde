@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+using PlanningDeGarde.Application;
 using PlanningDeGarde.Web;
 using PlanningDeGarde.Web.Components;
 using PlanningDeGarde.Web.State;
@@ -25,5 +26,10 @@ builder.Services.AddScoped(_ =>
 
 // État de session de consultation (rôle, enfant affiché) — par client navigateur.
 builder.Services.AddScoped<SessionPlanning>();
+
+// Horloge « du jour » : les formulaires d'écriture pré-remplissent leur date depuis ce port
+// (jamais une date figée ni DateTime.Today en dur dans la vue). L'implémentation système lit
+// l'horloge réelle du navigateur ; le double de test la fige pour le déterminisme.
+builder.Services.AddSingleton<IDateTimeProvider, HorlogeNavigateur>();
 
 await builder.Build().RunAsync();
