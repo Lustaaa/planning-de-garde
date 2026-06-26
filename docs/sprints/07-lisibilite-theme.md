@@ -100,7 +100,7 @@ Scenario: Une période affectée à Alice affiche son nom et une entrée de lég
 
 ### Scenario 2 — Plusieurs responsables : légende dédoublonnée
 
-`@nominal` `🖥️ IHM` `@rouge`
+`@nominal` `🖥️ IHM` `@vert`
 
 ```gherkin
 Scenario: Deux responsables distincts donnent deux entrées, Alice n'apparaît qu'une fois
