@@ -201,6 +201,25 @@
 | 8 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
 | 9 | Ouverture de l'accès (auth OAuth, landing, personnalisation des couleurs) | É10, É5 | spec v05 p9 · retours s01 | ⬜ |
 
+## Sujets hors séquence v05 (à intégrer au prochain `/5-consolidation`)
+
+> Demandes/pistes actées par le PO mais non encore numérotées dans la séquence v05.
+> Tracées ici pour ne pas les perdre quand le plan de sprint qui les a fait émerger est
+> archivé ; à positionner comme palier au prochain `/5-consolidation`.
+
+| Sujet | Détail | Dépend de | Origine |
+|-------|--------|-----------|---------|
+| **PWA — saisie hors-ligne** | Quand l'API distante est injoignable, l'écriture est mise en cache / file d'attente côté navigateur (service worker, persistance) et **rejouée au retour de connexion**. Voeu PO. Reporté après la migration WASM (prérequis : client navigateur autonome). Le sprint 05 se borne à l'échec clair sans rejeu. | Palier 1 (WASM livré) | besoins s04 · cadrage s05 (PO) |
+
+> **Piste technique (PWA)** — *Event sourcing + outbox pattern* comme socle d'une file
+> d'écritures rejouable : l'**outbox** garantit qu'une commande acceptée hors-ligne sera
+> rejouée puis diffusée **exactement une fois** (couplage écriture→diffusion fiable,
+> cohérent avec « l'écriture aboutie déclenche la diffusion »). L'**event sourcing** aide
+> à reconstruire/rejouer l'état et résoudre les conflits de rejeu, mais c'est un changement
+> de modèle de persistance lourd : à n'adopter que si le besoin offline/rejeu/audit le
+> justifie ; sinon **outbox + file côté client (IndexedDB)** suffit pour l'amorce. À trancher
+> au palier PWA. (Avis agent make-gherkin, cadrage s05.)
+
 ## Dépendances entre épics (pour la découpe des sprints)
 
 - **É3 (Fondations API) → É12 (Écriture en contexte)** : controllers opérationnels avant de recâbler les dialogs.
