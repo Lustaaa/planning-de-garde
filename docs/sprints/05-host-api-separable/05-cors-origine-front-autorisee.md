@@ -15,7 +15,7 @@
 
 ## Acceptation (BDD)
 
-`Should_Accepter_l_ecriture_cross_origin_et_faire_apparaitre_le_slot_ecole_dans_la_case_du_mercredi_24_06_2026_When_le_front_d_une_origine_autorisee_pose_un_slot_vers_l_API_distante`
+`Should_Accepter_l_ecriture_cross_origin_et_faire_apparaitre_le_slot_ecole_dans_la_case_du_mercredi_24_06_2026_When_le_front_d_une_origine_autorisee_pose_un_slot_vers_l_API_distante` — ✅ GREEN
 
 Test d'**intégration** sur l'hôte d'API détaché (`WebApplicationFactory<ApiProgram>`) :
 - **Given** l'hôte d'API démarré seul ; le front depuis l'origine `https://app.planning.local`, **autorisée
@@ -30,8 +30,8 @@ Test d'**intégration** sur l'hôte d'API détaché (`WebApplicationFactory<ApiP
 
 | # | Test (FLFI) | TPP | Contradiction | Status |
 |---|-------------|-----|---------------|--------|
-| 1 | `Should_Autoriser_l_origine_du_front_When_une_requete_cross_origin_du_front_atteint_le_canal_d_ecriture_de_l_API` | nil → en-tête CORS autorisant l'origine | **Driver CORS** : sans politique CORS, une requête portant l'`Origin` du front n'obtient pas l'en-tête d'autorisation cross-origin. Le rouge force l'ajout d'une politique CORS sur `ApiProgram` autorisant l'origine du front (`https://app.planning.local`), vérifiée par l'en-tête `Access-Control-Allow-Origin` de la réponse. | ⏳ Pending |
-| 2 | `Should_Faire_apparaitre_le_slot_ecole_08h30_16h30_dans_la_case_du_mercredi_24_06_2026_dans_la_projection_reelle_When_la_pose_cross_origin_du_front_a_abouti_via_l_API` | origine autorisée → effet observé en bout de chaîne | **Driver de bout en bout (anti early-green)** : une autorisation CORS qui n'aboutirait pas à l'écriture passe #1 mais échoue ici. Confirme que la pose cross-origin **transite réellement** jusqu'au store réel lu par la projection. ⚠️ La pose « slot dans la case du jour » est **déjà verte** (Application + Sc.1 sprint 04 + Sc.2 ce sprint) ; ici c'est sa **première observation sous contrainte cross-origin** — caractérisation du chemin CORS. | ⏳ Pending |
+| 1 | `Should_Autoriser_l_origine_du_front_When_une_requete_cross_origin_du_front_atteint_le_canal_d_ecriture_de_l_API` | nil → en-tête CORS autorisant l'origine | **Driver CORS** : sans politique CORS, une requête portant l'`Origin` du front n'obtient pas l'en-tête d'autorisation cross-origin. Le rouge force l'ajout d'une politique CORS sur `ApiProgram` autorisant l'origine du front (`https://app.planning.local`), vérifiée par l'en-tête `Access-Control-Allow-Origin` de la réponse. | ✅ GREEN |
+| 2 | `Should_Faire_apparaitre_le_slot_ecole_08h30_16h30_dans_la_case_du_mercredi_24_06_2026_dans_la_projection_reelle_When_la_pose_cross_origin_du_front_a_abouti_via_l_API` | origine autorisée → effet observé en bout de chaîne | **Driver de bout en bout (anti early-green)** : une autorisation CORS qui n'aboutirait pas à l'écriture passe #1 mais échoue ici. Confirme que la pose cross-origin **transite réellement** jusqu'au store réel lu par la projection. ⚠️ La pose « slot dans la case du jour » est **déjà verte** (Application + Sc.1 sprint 04 + Sc.2 ce sprint) ; ici c'est sa **première observation sous contrainte cross-origin** — caractérisation du chemin CORS. | ✅ GREEN (caractérisation) |
 
 ## Fichiers à créer / modifier
 

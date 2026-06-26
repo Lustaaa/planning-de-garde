@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Cors.Infrastructure;
+using Microsoft.Extensions.Options;
 using PlanningDeGarde.Api;
 using PlanningDeGarde.Infrastructure;
 using Scalar.AspNetCore;
@@ -14,13 +16,14 @@ builder.Services.AddOpenApi();
 builder.Services.AddSignalR();
 
 // CORS : autorise l'origine du front WASM (distinct de l'hôte API). L'origine est
-// configurable (clé « Front:Origine ») ; à défaut, l'hôte de développement du front.
-var origineFront = builder.Configuration["Front:Origine"] ?? "https://localhost:7100";
-builder.Services.AddCors(options =>
-    options.AddDefaultPolicy(policy => policy
-        .WithOrigins(origineFront)
-        .AllowAnyHeader()
-        .AllowAnyMethod()));
+// configurable (clé « Front:Origine ») ; à défaut, l'hôte de développement du front. La
+// policy par défaut est configurée via les options résolues par DI (et non depuis une
+// valeur capturée à la construction du builder) : le configurateur lit l'IConfiguration
+// au moment où le middleware CORS matérialise ses options, ce qui respecte toute
+// surcharge de configuration (ex. environnement de test), sinon l'origine resterait figée
+// sur la valeur lue trop tôt et le front cross-origin serait refusé.
+builder.Services.AddCors();
+builder.Services.AddSingleton<IConfigureOptions<CorsOptions>, ConfigurationCorsOptions>();
 
 // Application + Infrastructure (persistance en mémoire, SignalR réel, use cases).
 builder.Services.AjouterPlanningDeGarde();
@@ -44,6 +47,24 @@ app.MapOpenApi();
 app.MapScalarApiReference();
 
 app.Run();
+
+/// <summary>
+/// Configure la policy CORS par défaut à partir de l'<see cref="IConfiguration"/> résolue par DI.
+/// Construit de façon différée par le middleware CORS (au premier passage), donc après que toute
+/// surcharge de configuration a été matérialisée : l'origine du front (« Front:Origine ») reflète
+/// la configuration effective de l'hôte plutôt qu'une valeur lue trop tôt à la construction.
+/// </summary>
+internal sealed class ConfigurationCorsOptions(IConfiguration configuration) : IConfigureOptions<CorsOptions>
+{
+    public void Configure(CorsOptions options)
+    {
+        var origineFront = configuration["Front:Origine"] ?? "https://localhost:7100";
+        options.AddDefaultPolicy(policy => policy
+            .WithOrigins(origineFront)
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+    }
+}
 
 /// <summary>
 /// Point d'entrée rendu accessible (partial public) pour que les tests d'intégration

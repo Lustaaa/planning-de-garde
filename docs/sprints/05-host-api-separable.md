@@ -81,7 +81,7 @@ Scenario: L'hôte d'API démarre dans un environnement sans front et sert sa des
 
 ### Scenario 5 — Le front sur une origine distincte est autorisé par le CORS de l'API distante
 
-`@limite`
+`@limite @vert`
 
 ```gherkin
 Scenario: Une écriture cross-origin du front vers l'API distante est autorisée par le CORS
