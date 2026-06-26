@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Net.Http.Json;
+using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -49,27 +50,45 @@ public sealed class FrontWasmGrilleAjoutVivantTempsReelTests : TestContext
         Assert.True(reponse.IsSuccessStatusCode);
 
         // … et la diffusion est émise sur le hub réel par le notificateur réel (comme en production).
+        // La connexion SignalR du front (long polling vers le TestServer) s'établit de façon asynchrone :
+        // on ré-émet la diffusion en boucle de fond (idempotente) — découplée des re-renders — pour
+        // qu'un push tombe forcément APRÈS l'établissement de la connexion, sans dépendre de son timing.
         var notificateur = api.Services.GetRequiredService<INotificateurPlanning>();
-
-        // Then — sans rechargement de page, la case du 02/07 affiche « Bruno » et la légende passe à
-        // deux entrées. La diffusion est ré-émise à chaque itération d'attente (idempotente) pour
-        // absorber le délai d'établissement de la connexion SignalR du front.
-        grille.WaitForAssertion(
-            () =>
+        using var diffusionContinue = new CancellationTokenSource();
+        var pousseurDeDiffusion = Task.Run(async () =>
+        {
+            while (!diffusionContinue.IsCancellationRequested)
             {
                 notificateur.NotifierMiseAJour();
+                try { await Task.Delay(150, diffusionContinue.Token); }
+                catch (TaskCanceledException) { break; }
+            }
+        });
 
-                var caseBruno = GrilleRuntimeHarness.CaseDuJour(grille, "02/07");
-                Assert.Equal("Bruno", caseBruno.QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
-                Assert.Equal("orange", caseBruno.GetAttribute("data-couleur"));
+        try
+        {
+            // Then — sans rechargement de page (même instance rendue, aucun second render), la case du
+            // 02/07 affiche « Bruno » et la légende passe à deux entrées.
+            grille.WaitForAssertion(
+                () =>
+                {
+                    var caseBruno = GrilleRuntimeHarness.CaseDuJour(grille, "02/07");
+                    Assert.Equal("Bruno", caseBruno.QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
+                    Assert.Equal("orange", caseBruno.GetAttribute("data-couleur"));
 
-                var noms = grille.FindAll("[data-testid='legende-entree']")
-                    .Select(e => e.QuerySelector(".legende-nom")!.TextContent.Trim())
-                    .ToList();
-                Assert.Equal(2, noms.Count);
-                Assert.Contains("Alice", noms);
-                Assert.Contains("Bruno", noms);
-            },
-            TimeSpan.FromSeconds(15));
+                    var noms = grille.FindAll("[data-testid='legende-entree']")
+                        .Select(e => e.QuerySelector(".legende-nom")!.TextContent.Trim())
+                        .ToList();
+                    Assert.Equal(2, noms.Count);
+                    Assert.Contains("Alice", noms);
+                    Assert.Contains("Bruno", noms);
+                },
+                TimeSpan.FromSeconds(15));
+        }
+        finally
+        {
+            diffusionContinue.Cancel();
+            await pousseurDeDiffusion;
+        }
     }
 }
