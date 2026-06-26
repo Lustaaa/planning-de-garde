@@ -2,6 +2,7 @@
 @inject HttpClient Canal
 @inject SessionPlanning Session
 @inject NavigationManager Nav
+@inject IDateTimeProvider Horloge
 
 <PageTitle>Affecter une période</PageTitle>
 
@@ -20,7 +21,7 @@ else
                 <option value="">— choisir —</option>
                 @foreach (var r in Foyer.Responsables)
                 {
-                    <option value="@r">@r</option>
+                    <option value="@r.Id">@r.Libelle</option>
                 }
             </InputSelect>
         </div>

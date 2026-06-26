@@ -3,6 +3,7 @@ using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
+using PlanningDeGarde.Application;
 using PlanningDeGarde.Web.State;
 using static PlanningDeGarde.Web.CanalEcriture;
 
@@ -20,12 +21,26 @@ public partial class PoserSlot
     private sealed class Formulaire
     {
         public string LieuId { get; set; } = "";
-        public DateTime Debut { get; set; } = new(2025, 7, 15, 8, 30, 0);
-        public DateTime Fin { get; set; } = new(2025, 7, 15, 16, 30, 0);
+        public DateTime Debut { get; set; }
+        public DateTime Fin { get; set; }
     }
 
     private readonly Formulaire _form = new();
     private string? _motifEchec;
+
+    /// <summary>
+    /// Pré-remplit les bornes du formulaire à la <b>date du jour</b> injectée (port
+    /// <see cref="IDateTimeProvider"/>), aux heures usuelles 08h30 → 16h30 — jamais une date figée
+    /// ni <c>DateTime.Today</c> en dur. Une pose validée « sans toucher aux dates » tombe ainsi dans
+    /// la fenêtre affichée (Sc.1) : seule la date est par défaut « aujourd'hui », l'heure reste celle
+    /// du formulaire si l'utilisateur la modifie.
+    /// </summary>
+    protected override void OnInitialized()
+    {
+        var aujourdhui = Horloge.Aujourdhui;
+        _form.Debut = aujourdhui.ToDateTime(new TimeOnly(8, 30));
+        _form.Fin = aujourdhui.ToDateTime(new TimeOnly(16, 30));
+    }
 
     /// <summary>
     /// Message affiché quand l'API distante est <b>injoignable</b> (échec de transport : connexion

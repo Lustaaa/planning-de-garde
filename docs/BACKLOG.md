@@ -4,7 +4,7 @@
 > une vue **par épic (fonctionnalité)** pour regrouper ce qui est lié et préparer le
 > découpage des sprints, et une vue **par palier (séquence de livraison)** pour le
 > calendrier d'un coup d'œil. Source de vérité du *quoi/quand* ; le *pourquoi* vit dans
-> la spec vivante [`docs/05-specification.md`](05-specification.md).
+> la spec vivante [`docs/06-specification.md`](06-specification.md).
 >
 > **Tenue à jour par le pipeline** : `/4-retours` y **ajoute** les besoins issus du
 > challenge ; `/6-cloture-sprint` y passe à **✅ fait** ce qui a été livré (gate visuel
@@ -20,22 +20,24 @@
 | 02 | Réparer le câblage IHM ↔ actions (render mode interactif) | ✅ fait | Actions d'écriture câblées au front |
 | 03 | Calendrier — grille de lecture (5 semaines, lecture seule, 2 niveaux de couleur) | ✅ fait | Projection `GrilleAgendaQuery` + grille 5×7 lecture seule |
 | 04 | `controllers-wasm-fondation` — canal d'écriture HTTP (adaptateur de gauche) + recâblage du front via API, SignalR cantonné à la diffusion lecture seule | ✅ fait | Canal HTTP `poser-slot`/`affecter-période` + front câblé + OpenAPI document + code-behind partiel (4 scénarios, 82 verts) |
+| 05 | `host-api-separable` — hôte d'API détaché (back démarrable seul) + front Blazor **WASM réel** consommant l'API distante + CORS + UI d'exploration **Scalar** + échec clair si API injoignable | ✅ fait | Projet `PlanningDeGarde.Api` détaché (test d'archi sur ProjectReference) + front `Sdk.BlazorWebAssembly` + Scalar/OpenAPI + CORS + SignalR distant (6 scénarios, 96 verts) — **palier 1 (fondation) refermé** |
 
 ## En cours
 
-| Sprint | Sujet | Palier (spec v05) | Statut |
+| Sprint | Sujet | Palier (spec v06) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : fermeture de la fondation, cf. ci-dessous)* | 1 — Fondations | ⬜ |
+| — | *(aucun sprint en cours — prochain : Saisie visible, cf. ci-dessous)* | 2 — Saisie visible | ⬜ |
 
 ## Prochains sprints envisagés
 
-> Les 2 sujets en tête de file, issus du séquencement `/4-retours` du sprint 04 (arbitre :
-> l'usage réel tranche). Indicatif — confirmé/affiné à chaque `/2-make-gherkin`.
+> Les 2 sujets en tête de file, issus du séquencement `/4-retours`/`/5-consolidation` du
+> sprint 05 (arbitre : l'usage réel tranche → la technique séquencée derrière). Indicatif —
+> confirmé/affiné à chaque `/2-make-gherkin`.
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 | **Host API séparable** — démarrer le back seul (API d'écriture détachée du front) + UI d'exploration interactive des API | É3 | Referme le palier 1 (exception bornée de fondation) avant de rendre la main à l'usage |
-| +2 | **Une saisie réapparaît à la bonne date ET en couleur du parent** — dates par défaut = aujourd'hui + correction du gris des affectations (identité acteur ↔ palette) | É5, É6, É7, É12 | Premier sujet d'usage : éteint le faux bug « saisies invisibles » et le seul vrai défaut confirmé |
+| +1 | **Saisie visible** — date par défaut = aujourd'hui (formulaires encore figés sur 2025) + correction du gris des affectations (identité acteur ↔ palette, défaut mapping libellé→identifiant à localiser) | É5, É6, É7, É12 | Premier sujet d'usage après deux sprints structurels : éteint le faux bug « saisies invisibles » et le seul vrai défaut confirmé |
+| +2 | **Lisibilité périodes/responsable + thème** — nom + légende du responsable dans les cases + thème en accord avec le domaine | É5 | Enchaîne la valeur d'usage visible une fois la saisie réapparue correctement |
 
 ---
 
@@ -76,12 +78,13 @@
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
 | Controllers HTTP exposant les commandes d'écriture (adaptateur de gauche) | ✅ | s04 / Palier 1 | retours s03 (#9) · spec p1 |
-| Hôte d'API détachable (back démarrable seul, front consomme une API distante) | ⬜ | Palier 1 (prochain sujet) | spec v05 p1 · besoins s04 |
-| Migration front Blazor Server → WASM consommant l'API | 🟡 | s04 (invariant non-codant, non livré) | retours s03 (#6) · spec p1 |
-| SignalR cantonné au push lecture seule (jamais d'écriture) | ✅ | s04 | retours s03 · spec p1 (séparation canaux) |
+| Hôte d'API détachable (back démarrable seul, front consomme une API distante) | ✅ | s05 / Palier 1 | spec v05 p1 · besoins s04 |
+| Migration front Blazor Server → WASM consommant l'API | ✅ | s05 (`Sdk.BlazorWebAssembly` réel) | retours s03 (#6) · spec p1 |
+| SignalR cantonné au push lecture seule (jamais d'écriture) | ✅ | s04 + s05 (hub porté par l'hôte API) | retours s03 · spec p1 (séparation canaux) |
 | Convention code-behind systématique (`.razor.cs`, pas de `@code` inline) | 🟡 | s04 partiel (transfert en retrait) | retours s03 (#7, dette) |
-| API explorable : document OpenAPI **+** UI interactive (Swagger-UI/Scalar) | 🟡 | s04 (document livré, UI à faire) | retours s03 (#8) · spec v05 p1 |
-| Ports & adaptateurs visibles (hexagonal : gauche/droite/domaine) | 🟡 | s04 (gauche matérialisé) | retours s03 (#10) |
+| API explorable : document OpenAPI **+** UI interactive (Scalar) | ✅ | s05 (Scalar sur OpenAPI natif .NET) | retours s03 (#8) · spec v05 p1 |
+| CORS : origine du front autorisée à appeler l'API distante | ✅ | s05 | spec v06 règle 25 |
+| Ports & adaptateurs visibles (hexagonal : gauche/droite/domaine) | 🟡 | s04 (gauche matérialisé) · droite encore InMemory | retours s03 (#10) |
 
 ### Épic 4 — Calendrier & grille de lecture
 *Calendrier navigable (semaine + 4 semaines) lisible d'un coup d'œil.*
@@ -179,19 +182,21 @@
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
 | Dialogs d'écriture (poser/affecter/supprimer) depuis les cases | ⬜ | Palier 3 item 3 | retours s02 (#7/8/10)/s03 |
-| Recâblage de l'écriture via API HTTP (au lieu du DI direct) | 🟡 | s04 (poser/affecter migrés ; transfert en retrait) | retours s03 (#5) · spec p1 |
-| Rafraîchissement immédiat : la saisie réapparaît dans la grille | ⬜ | Groupe 2 (dép. Palier 1) | retours s03 (#5, bug runtime) |
+| Recâblage de l'écriture via API HTTP (au lieu du DI direct) | ✅ | s05 (poser/affecter/transfert via API distante WASM) | retours s03 (#5) · spec p1 |
+| Rafraîchissement immédiat : la saisie réapparaît dans la grille | ⬜ | Palier 2 (dép. Palier 1 ✅) | retours s03 (#5, bug runtime) |
 
 ---
 
-## À faire (paliers de la spec vivante v05)
+## À faire (paliers de la spec vivante v06)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
-> Numérotation alignée sur la **séquence de livraison de v05** (9 paliers).
+> Numérotation alignée sur la **séquence de livraison de v06**. Les sujets techniques
+> (persistance réelle, PWA) sont séquencés **derrière l'usage** (arbitre : l'usage tranche),
+> Docker en garde-fou d'outillage.
 
 | Palier | Besoin | Épics concernés | Origine | Statut |
 |-------:|--------|-----------------|---------|:------:|
-| 1 | Fermeture de la fondation — **hôte d'API détachable** (back démarrable seul) + **UI d'exploration interactive** des API | É3 | spec v05 p1 · besoins s04 | ⬜ |
+| 1 | Fermeture de la fondation — **hôte d'API détachable** (back démarrable seul) + **UI d'exploration interactive** (Scalar) + CORS + échec clair si API injoignable | É3 | spec v05 p1 · besoins s04 | ✅ s05 |
 | 2 | **Saisie visible** — la saisie réapparaît à la bonne **date** (défaut = aujourd'hui) **et** en **couleur du parent** (identifiant stable) | É6, É7, É12 | spec v05 p2 · besoins s04 (défaut confirmé) | ⬜ |
 | 3 | Lisibilité des périodes/responsable (nom + légende) **+** thème en accord avec le domaine | É5 | spec v05 p3 · retours s03 (G1) | ⬜ |
 | 4 | Calendrier navigable (passé/futur, vues prédéfinies) **+** écriture en contexte (dialogs depuis les cases) | É4, É6, É7, É8, É12 | spec v05 p4 · retours s02/s03 | ⬜ |
@@ -200,18 +205,13 @@
 | 7 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
 | 8 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
 | 9 | Ouverture de l'accès (auth OAuth, landing, personnalisation des couleurs) | É10, É5 | spec v05 p9 · retours s01 | ⬜ |
+| 10 | **Adaptateurs de droite — persistance réelle** (store durable derrière les ports, remplace `InMemory*Repository` ; recoupe la config foyer du palier 5) | É1, É3 | spec v06 · besoins s05 (séquencé derrière l'usage) | ⬜ |
+| 11 | **PWA — saisie hors-ligne** (cache + file d'écritures rejouée au retour de connexion, au-delà de l'échec clair livré au s05) | É12, É3 | spec v06 · besoins s05 (séquencé derrière l'usage) | ⬜ |
 
-## Sujets hors séquence v05 (à intégrer au prochain `/5-consolidation`)
-
-> Demandes/pistes actées par le PO mais non encore numérotées dans la séquence v05.
-> Tracées ici pour ne pas les perdre quand le plan de sprint qui les a fait émerger est
-> archivé ; à positionner comme palier au prochain `/5-consolidation`.
-
-| Sujet | Détail | Dépend de | Origine |
-|-------|--------|-----------|---------|
-| **PWA — saisie hors-ligne** | Quand l'API distante est injoignable, l'écriture est mise en cache / file d'attente côté navigateur (service worker, persistance) et **rejouée au retour de connexion**. Voeu PO. Reporté après la migration WASM (prérequis : client navigateur autonome). Le sprint 05 se borne à l'échec clair sans rejeu. | Palier 1 (WASM livré) | besoins s04 · cadrage s05 (PO) |
-| **Adaptateurs de droite — persistance réelle** | Remplacer les `InMemory*Repository` (singletons en mémoire) par un **store durable** branché derrière les ports de droite (hexagonal). Base **à trancher** (MongoDB ou autre — non décidé). Couvre tout le domaine (slots, périodes, transferts, config foyer), au-delà de la seule config foyer du palier 5. | É3 · recoupe palier 5 (config foyer) | PO (post-s05) |
-| **Conteneurisation Docker** | Packager l'**hôte d'API détaché** + le **front WASM** (+ la **base**) en conteneurs Docker, montables ensemble (compose). Suppose l'hôte API séparé (palier 1) et un store réel pour avoir quelque chose à conteneuriser de bout en bout. | Palier 1 (hôte API détaché) + persistance réelle | PO (post-s05) |
+> **Séquencement acté (v06, `/5-consolidation` s05) :** les sujets techniques débloqués par
+> la fermeture du palier 1 sont placés **tout derrière la chaîne d'usage** (paliers 10-11),
+> et **Docker** est traité en **garde-fou d'outillage** (cf. section dédiée), non comme un
+> palier à observable métier. Arbitre : l'usage réel tranche.
 
 > **Piste technique (PWA)** — *Event sourcing + outbox pattern* comme socle d'une file
 > d'écritures rejouable : l'**outbox** garantit qu'une commande acceptée hors-ligne sera
@@ -237,15 +237,16 @@
 > Invariants de structure portés au fil de l'eau, sans scénario codant dédié.
 
 - Convention code-behind systématique (`.razor` + `.razor.cs`, pas de `@code` inline) — sprint 04+.
-- API explorable (swagger/OpenAPI) — accompagne les controllers du palier 1.
+- API explorable (Scalar/OpenAPI) — livrée au palier 1 (s05).
 - Séparation des canaux : écriture = requête/réponse ; diffusion temps réel = lecture seule (jamais d'écriture par la diffusion).
+- **Conteneurisation Docker** (hôte API + front WASM + base, montables ensemble via compose) — garde-fou d'outillage hors-incrément, sans observable métier (comme l'API explorable). Débloqué par le palier 1 + la persistance réelle (palier 10). Origine : PO post-s05.
 
 ## Dettes explicitement signalées
 
 - Données en dur dans `Foyer.cs` (É1) — persister en base — retours s03 (#11).
 - Aucune édition/suppression de période depuis l'IHM (É7) — « trou fonctionnel assumé » — retours s03.
-- Saisies invisibles à l'écran (É12) — bug runtime à requalifier après recâblage — retours s03 (#5).
-- Risque d'adoption du second parent (É10) — repoussé au palier 8, « ne pas laisser glisser ».
-- Faux sentiment de progrès — sprints fondation/grille n'avancent aucun besoin produit observable.
+- Saisies invisibles à l'écran (É12) — requalifié : **faux bug** (date par défaut absente → saisie hors fenêtre 35j) à éteindre au palier 2 ; à distinguer du **vrai défaut couleur** (mapping libellé→identifiant) à localiser au `/3` — retours s03 (#5) · consolidation s05.
+- Risque d'adoption du second parent (É10) — repoussé au palier 9 (auth), « ne pas laisser glisser ».
+- Faux sentiment de progrès — **2 sprints structurels d'affilée (s04, s05) sans besoin produit observable** ; le palier 2 (Saisie visible) rend la main à l'usage et doit l'éteindre.
 - 7 composants encore en `@code` inline (É3) — retours s03 (#7).
 - Cycle multi-semaines non affiché/éditable (É1) — modèle existe, IHM absente.

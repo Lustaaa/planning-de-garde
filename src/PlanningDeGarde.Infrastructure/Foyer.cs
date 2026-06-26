@@ -12,9 +12,14 @@ public static class Foyer
         "école", "domicile A", "domicile B", "nounou"
     };
 
+    /// <summary>
+    /// Identifiants stables des responsables du foyer (clés du set <see cref="CouleursParActeur"/>).
+    /// La validation d'existence et le seed s'appuient sur ces identifiants — et non sur les libellés
+    /// d'affichage — pour que le canal reçoive l'id atteignable par le set de couleurs (cadrage (B)).
+    /// </summary>
     public static readonly IReadOnlyList<string> Responsables = new[]
     {
-        "Parent A", "Parent B"
+        "parent-a", "parent-b"
     };
 
     /// <summary>

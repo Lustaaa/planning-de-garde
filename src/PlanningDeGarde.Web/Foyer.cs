@@ -14,8 +14,18 @@ public static class Foyer
         "école", "domicile A", "domicile B", "nounou"
     };
 
-    public static readonly IReadOnlyList<string> Responsables = new[]
+    /// <summary>
+    /// Responsables du foyer comme paires (identifiant stable, libellé). Le sélecteur affiche le
+    /// <see cref="Responsable.Libelle"/> mais bind l'<see cref="Responsable.Id"/> : le canal reçoit
+    /// l'identifiant stable (<c>parent-a</c>/<c>parent-b</c>), clé atteignable du set de couleurs — et
+    /// non le libellé qui retombait sur le gris neutre (cadrage (B), Sc.6).
+    /// </summary>
+    public static readonly IReadOnlyList<Responsable> Responsables = new[]
     {
-        "Parent A", "Parent B"
+        new Responsable("parent-a", "Parent A"),
+        new Responsable("parent-b", "Parent B"),
     };
 }
+
+/// <summary>Un responsable du foyer : identifiant stable (bindé) et libellé (affiché).</summary>
+public sealed record Responsable(string Id, string Libelle);

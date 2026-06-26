@@ -60,6 +60,7 @@ public sealed class FrontWasmApiInjoignableTests : TestContext
         // et le foyer connaît « école ».
         Services.AddSingleton(ClientVersApiArretee());
         Services.AddSingleton(new SessionPlanning());
+        Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(new DateTime(2026, 6, 26)));
 
         var page = RenderComponent<PoserSlot>();
         page.Find("select.form-select").Change("école");
@@ -86,6 +87,7 @@ public sealed class FrontWasmApiInjoignableTests : TestContext
         // Given — la vue réelle câblée à une API réellement arrêtée.
         Services.AddSingleton(ClientVersApiArretee());
         Services.AddSingleton(new SessionPlanning());
+        Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(new DateTime(2026, 6, 26)));
 
         var page = RenderComponent<PoserSlot>();
         page.Find("select.form-select").Change("école");
