@@ -49,7 +49,7 @@
 | 3 | [Fenêtre sans affectation : légende masquée](03-fenetre-vide-legende-masquee.md) | `@limite` 🖥️ IHM · driver masquage `ihm-builder` (+ caract. `tdd-auto`) | ⏳ Pending (ihm-builder) | 1/1 ✅ backend (caract.) | 🔴 RED (driver masquage IHM) |
 | 4 | [Ajout vivant par diffusion temps réel](04-ajout-vivant-temps-reel.md) | `@limite` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ⏳ Pending | 0/0 | ⏳ Pending |
 | 5 | [Acteur hors set : gris assumé, nom conservé](05-acteur-hors-set-gris-assume.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending (ihm-builder) | 1/1 ✅ backend (caract.) | 🔴 RED (accept. IHM) |
-| 6 | [Nom long : lisibilité de la case préservée](06-nom-long-lisible.md) | `@limite` 🖥️ IHM · driver troncature `ihm-builder` (+ caract. `tdd-auto`) | ⏳ Pending | 0/1 | ⏳ Pending |
+| 6 | [Nom long : lisibilité de la case préservée](06-nom-long-lisible.md) | `@limite` 🖥️ IHM · driver troncature `ihm-builder` (+ caract. `tdd-auto`) | ⏳ Pending (ihm-builder) | 1/1 ✅ backend (caract.) | 🔴 RED (driver troncature IHM) |
 
 **Total** : 6 scénarios · 7 tests unitaires backend (3 drivers réels Sc.1×2 + Sc.2×1 ;
 4 caractérisations early-green Sc.2×1, Sc.3, Sc.5, Sc.6) · 6 acceptations runtime IHM.
