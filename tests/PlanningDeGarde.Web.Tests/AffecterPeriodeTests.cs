@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
+using PlanningDeGarde.Application;
 using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 
@@ -24,6 +25,9 @@ public sealed class AffecterPeriodeTests : TestContext
         var canal = new FakeCanalHttpHandler(statut, corpsReponse);
         Services.AddSingleton(new HttpClient(canal) { BaseAddress = new System.Uri("http://localhost/") });
         Services.AddSingleton(session ?? new SessionPlanning());
+        // Le formulaire pré-remplit ses dates depuis le port d'horloge (jamais des dates figées) : on le
+        // fige au 26/06/2026 (semaine du lundi 22/06 → dimanche 28/06) pour le déterminisme du corps émis.
+        Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(new System.DateTime(2026, 6, 26)));
         return canal;
     }
 
@@ -41,9 +45,11 @@ public sealed class AffecterPeriodeTests : TestContext
         Assert.Contains("Parent B", valeurs);
     }
 
-    // La vue émet la commande d'affectation via le canal HTTP avec les valeurs métier saisies.
+    // La vue émet la commande d'affectation via le canal HTTP avec les valeurs métier saisies. Les
+    // dates sont pré-remplies « aujourd'hui » depuis le port d'horloge figé (26/06/2026) : la semaine
+    // en cours (lundi 22/06 → dimanche 28/06), pas un intervalle 2025.
     [Fact]
-    public void Should_Emettre_via_le_canal_l_affectation_Parent_A_du_14_07_au_21_07_When_un_parent_choisit_Parent_A_et_valide()
+    public void Should_Emettre_via_le_canal_l_affectation_Parent_A_du_22_06_au_28_06_2026_When_un_parent_choisit_Parent_A_et_valide()
     {
         var canal = Cabler();
         var page = RenderComponent<AffecterPeriode>();
@@ -57,8 +63,8 @@ public sealed class AffecterPeriodeTests : TestContext
 
         var corps = Assert.Single(canal.CorpsRecus);
         Assert.Contains("Parent A", corps);
-        Assert.Contains("2025-07-14", corps);
-        Assert.Contains("2025-07-21", corps);
+        Assert.Contains("2026-06-22", corps);
+        Assert.Contains("2026-06-28", corps);
         Assert.Empty(page.FindAll("[data-testid='motif-echec']"));
     }
 

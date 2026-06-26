@@ -79,7 +79,7 @@ Scenario: Poser un slot sans modifier la date le place au jour d'aujourd'hui
 
 ### Scenario 2 — Période affectée sans toucher aux dates tombe dans la fenêtre
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: Affecter une période sans modifier les dates la rend visible aujourd'hui
