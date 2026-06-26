@@ -210,6 +210,8 @@
 | Sujet | Détail | Dépend de | Origine |
 |-------|--------|-----------|---------|
 | **PWA — saisie hors-ligne** | Quand l'API distante est injoignable, l'écriture est mise en cache / file d'attente côté navigateur (service worker, persistance) et **rejouée au retour de connexion**. Voeu PO. Reporté après la migration WASM (prérequis : client navigateur autonome). Le sprint 05 se borne à l'échec clair sans rejeu. | Palier 1 (WASM livré) | besoins s04 · cadrage s05 (PO) |
+| **Adaptateurs de droite — persistance réelle** | Remplacer les `InMemory*Repository` (singletons en mémoire) par un **store durable** branché derrière les ports de droite (hexagonal). Base **à trancher** (MongoDB ou autre — non décidé). Couvre tout le domaine (slots, périodes, transferts, config foyer), au-delà de la seule config foyer du palier 5. | É3 · recoupe palier 5 (config foyer) | PO (post-s05) |
+| **Conteneurisation Docker** | Packager l'**hôte d'API détaché** + le **front WASM** (+ la **base**) en conteneurs Docker, montables ensemble (compose). Suppose l'hôte API séparé (palier 1) et un store réel pour avoir quelque chose à conteneuriser de bout en bout. | Palier 1 (hôte API détaché) + persistance réelle | PO (post-s05) |
 
 > **Piste technique (PWA)** — *Event sourcing + outbox pattern* comme socle d'une file
 > d'écritures rejouable : l'**outbox** garantit qu'une commande acceptée hors-ligne sera
