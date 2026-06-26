@@ -17,6 +17,11 @@ l'agent.
 > pas. C'est la **seule** raison du round-trip. Communication = `SendMessage`
 > (main → agent) et valeur de retour de l'agent (agent → main).
 
+> **Cadrage à rappeler au PO si besoin.** `/4-retours` **priorise** le backlog des retours
+> produit (classer, départager, désigner un prochain sujet) — il **ne conçoit pas le
+> sprint**. La conception (scénarios) se fait plus tard en `/2-make-gherkin`, après
+> `/5-consolidation`. (Confusion observée au sprint 04.)
+
 Cette command **ferme la boucle** : `/3-tdd-implement` (+ IHM) livre un incrément,
 l'utilisateur le teste et dépose ses retours dans la section `# Retours produit (PO)` du
 fichier unifié `99-sprint<NN>-retours.md`, puis `/4-retours` les transforme en besoins
@@ -63,7 +68,9 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `99-spr
 
 5. **Validation.** Quand `done: true`, présente la `synthese` de l'agent (**verbatim** :
    classification, arbitre, séquence, prochain sujet, risques) et demande l'accord
-   d'écrire le backlog via `AskUserQuestion`.
+   d'écrire le backlog via `AskUserQuestion`. Si le PO semble attendre un découpage de
+   sprint, **rappelle** qu'on **priorise** ici, on ne **conçoit** pas le sprint (ça, c'est
+   `/2-make-gherkin`).
 
 6. **Écriture (même agent).** À l'accord, `SendMessage` l'ordre d'écrire avec le chemin
    `nextBesoins`. L'agent écrit `99-sprint<NN>-besoins-fin-itération.md` (`<NN>` = numéro du
@@ -84,6 +91,15 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `99-spr
    de spec** (`NN-specification.md`), qui devient ensuite l'entrée de `/2-make-gherkin`.
    Si l'utilisateur valide, invoque `/5-consolidation`. (Ne saute **pas** vers
    `/2-make-gherkin` directement : la consolidation de la spec vivante vient d'abord.)
+
+   > **Gate anti-bypass de la rétro (amélioration continue).** Écrire le backlog
+   > `99-sprint<NN>-besoins-fin-itération.md` **clôt l'itération** : à partir d'ici, le sprint
+   > est « clos non-rétrospecté » tant que `retro-sprint` n'a pas tourné. La
+   > **rétrospective de la méthode est impérative avant tout nouveau cycle**
+   > `/2-make-gherkin` — elle est l'étape 1 de `/6-cloture-sprint`, et `/2` refuse de
+   > démarrer si elle manque (gate `find-retro.ps1`). Ne présente jamais l'enchaînement
+   > comme s'il pouvait sauter la rétro. Le chemin canonique reste
+   > `/4-retours → /5-consolidation → /6-cloture-sprint (retro-sprint + push/PR) → /2-make-gherkin`.
 
 9. **Commit.** Propose un commit du backlog + de l'archivage (sans pousser sauf demande
    explicite).

@@ -93,6 +93,11 @@ question au thread principal (round-trip), puis, une fois le cadrage tranché, t
 - **Ne PAS** désigner zéro ou plusieurs « prochains sujets » — exactement **un**, le
   reste séquencé derrière.
 - **Ne PAS** faire le cheerleader ni accepter une égalité plate.
+- **Ne PAS** renvoyer de **références internes opaques** (`#NN` = numéros de ligne de ta
+  table de classification) dans les questions ou la synthèse présentées au PO : elles ne
+  correspondent à rien dans `docs/BACKLOG.md` et désorientent (friction sprint 04). Cite
+  toujours chaque retour par son **libellé court** ; ta table de classification est un outil
+  de travail, pas un système de refs externes.
 
 ## Sortie
 

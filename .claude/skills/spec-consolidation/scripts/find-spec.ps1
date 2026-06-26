@@ -10,11 +10,17 @@
   La consolidation produit `<NN+1>-specification.md` ; l'ancienne reste figée en historique.
 
 .OUTPUTS
-  JSON : { found, currentSpec, currentVersion, nextSpec, nextVersion }
+  JSON : { found, currentSpec, currentVersion, nextSpec, nextVersion, readmePropagated }
+
+.PARAMETER PropagateReadme
+  Réécrit MÉCANIQUEMENT, dans README.md, le pointeur « Spec courante » vers la version
+  courante (plus grand NN) et la ligne « versions précédentes » vers NN-1. Sert l'étape
+  Propagation de /5-consolidation, pour qu'elle ne soit jamais oubliée (cf. rétro sprint 03).
 #>
 [CmdletBinding()]
 param(
-  [string]$DocsDir = 'docs'
+  [string]$DocsDir = 'docs',
+  [switch]$PropagateReadme
 )
 
 $ErrorActionPreference = 'Stop'
@@ -37,11 +43,32 @@ $current      = $specs[0]
 $currentVer   = Get-Prefix $current.Name
 $nextVer      = $currentVer + 1
 $nextName     = ('{0:D2}-specification.md' -f $nextVer)
+$currentName  = ('{0:D2}-specification.md' -f $currentVer)
+$prevName     = ('{0:D2}-specification.md' -f ($currentVer - 1))
+
+# --- Propagation README (étape mécanique de /5-consolidation) ---
+$readmePropagated = $false
+if ($PropagateReadme) {
+  $readme = 'README.md'
+  if (Test-Path $readme) {
+    $lines = Get-Content $readme
+    $out = foreach ($l in $lines) {
+      if ($l -match '^📄 Spec courante :') {
+        "📄 Spec courante : [``docs/$currentName``](docs/$currentName)"
+      } elseif ($l -match 'restent figées en historique') {
+        "*(les versions précédentes, ex. [``docs/$prevName``](docs/$prevName), restent figées en historique)*"
+      } else { $l }
+    }
+    Set-Content -Path $readme -Value $out -Encoding utf8NoBOM
+    $readmePropagated = $true
+  }
+}
 
 [pscustomobject]@{
-  found          = $true
-  currentSpec    = (Resolve-Path $current.FullName).Path
-  currentVersion = ('{0:D2}' -f $currentVer)
-  nextSpec       = Join-Path (Resolve-Path $DocsDir).Path $nextName
-  nextVersion    = ('{0:D2}' -f $nextVer)
+  found            = $true
+  currentSpec      = (Resolve-Path $current.FullName).Path
+  currentVersion   = ('{0:D2}' -f $currentVer)
+  nextSpec         = Join-Path (Resolve-Path $DocsDir).Path $nextName
+  nextVersion      = ('{0:D2}' -f $nextVer)
+  readmePropagated = $readmePropagated
 } | ConvertTo-Json -Compress

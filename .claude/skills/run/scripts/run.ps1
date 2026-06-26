@@ -13,6 +13,11 @@
   `*.razor.js` et `_framework/blazor.web.js` renvoient alors 500 et l'IHM
   s'affiche sans style ni interactivité. On lance donc directement le projet Web :
   `dotnet run` ne construit que ce qu'il faut et produit un manifest cohérent.
+
+  Avant le run, le script arrête les instances Web résiduelles d'un lancement
+  précédent : un hôte zombie verrouille les DLL de sortie et fait échouer le build
+  (MSB3027 « file is being used by another process »), friction observée au gate
+  visuel du sprint 04.
 .PARAMETER NoBuild
   Lance sans rebuild (`--no-build`) : suppose une sortie déjà compilée.
 .PARAMETER Watch
@@ -32,12 +37,26 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-Set-Location (git rev-parse --show-toplevel)
+# Racine du dépôt dérivée du chemin du script (4 niveaux au-dessus de
+# .claude/skills/run/scripts/) plutôt que de `git rev-parse`, dont la sortie UTF-8
+# est mal décodée par PowerShell quand le chemin contient un accent (ex. « privée »).
+Set-Location -LiteralPath (Resolve-Path -LiteralPath "$PSScriptRoot/../../../..")
 
 $web = 'src/PlanningDeGarde.Web/PlanningDeGarde.Web.csproj'
 if (-not (Test-Path $web)) {
     throw "Projet Web introuvable ($web). La solution n'est peut-être pas encore scaffoldée."
 }
+
+# Arrête les instances Web résiduelles d'un lancement précédent : un hôte zombie
+# verrouille les DLL de sortie et fait échouer le build (MSB3027). On cible les
+# processus dont la ligne de commande pointe le projet/binaire Web, pas tous les dotnet.
+$zombies = Get-CimInstance Win32_Process -Filter "Name = 'PlanningDeGarde.Web.exe' OR Name = 'dotnet.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -match 'PlanningDeGarde\.Web' }
+foreach ($z in $zombies) {
+    Write-Host "Arrêt d'une instance Web résiduelle (PID $($z.ProcessId))…" -ForegroundColor Yellow
+    Stop-Process -Id $z.ProcessId -Force -ErrorAction SilentlyContinue
+}
+if ($zombies) { Start-Sleep -Milliseconds 500 }  # laisse l'OS relâcher les verrous DLL
 
 # Profil de lancement : 'http' ouvre le navigateur (env Development, port 5292) ;
 # en mode -NoBrowser on force Development + port 5000 sans profil.

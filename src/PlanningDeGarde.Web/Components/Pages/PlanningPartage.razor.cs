@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
@@ -11,28 +9,19 @@ using PlanningDeGarde.Infrastructure;
 namespace PlanningDeGarde.Web.Components.Pages;
 
 /// <summary>
-/// Vue centrale du planning partagé. Lit les read models (slots, périodes, transferts,
-/// avertissements de chevauchement) et se rafraîchit en temps réel à la réception de
-/// l'évènement SignalR. Toute écriture passe par un use case ; aucune règle métier ici.
+/// Vue centrale du planning partagé, rendue en grille agenda 5×7 (5 lignes-semaines de
+/// 7 cases-jour) en LECTURE SEULE. Chaque case-jour porte la couleur du parent responsable
+/// de la période qui la couvre ; chaque slot est empilé dans sa case avec son libellé et son
+/// horaire, son créneau portant la couleur propre de l'acteur. Lit la projection
+/// <see cref="GrilleAgendaQuery"/> (CQRS) ; se rafraîchit en temps réel sur l'évènement SignalR.
+/// Aucune règle métier ici — les écritures restent sur les routes dédiées (/planning/poser-slot…).
 /// </summary>
 public partial class PlanningPartage
 {
-    private IReadOnlyList<SlotSnapshot> _slots = Array.Empty<SlotSnapshot>();
-    private IReadOnlyList<PeriodeSnapshot> _periodes = Array.Empty<PeriodeSnapshot>();
-    private IReadOnlyList<TransfertSnapshot> _transferts = Array.Empty<TransfertSnapshot>();
-    private IReadOnlyList<DateTime> _joursAvecChevauchement = Array.Empty<DateTime>();
-    private string? _responsableActuel;
+    private static readonly string[] JoursDeLaSemaine =
+        { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
 
-    private string? _messageAction;
-    private bool _actionReussie;
-
-    // Édition inline d'une période : la base observée sert de jeton optimiste (Sc.10).
-    private PeriodeSnapshot? _periodeEnEdition;
-    private string _editResponsableId = "";
-    private DateTime _editDebut;
-    private DateTime _editFin;
-    private string? _motifEditionPeriode;
-    private bool _editionPeriodeReussie;
+    private GrilleAgenda _grille = new(Array.Empty<JourCase>(), Array.Empty<SemaineLigne>());
 
     private HubConnection? _hub;
 
@@ -69,90 +58,36 @@ public partial class PlanningPartage
         catch
         {
             // Le temps réel est un confort : si le hub est indisponible, la vue reste
-            // fonctionnelle (rechargement à la navigation / aux actions locales).
+            // fonctionnelle (rechargement à la navigation).
         }
     }
 
-    private void Charger()
+    // Date de référence = aujourd'hui (la projection prend une DateOnly injectée pour le
+    // déterminisme côté tests ; à l'exécution réelle on lui passe la date courante).
+    private void Charger() => _grille = Grille.Projeter(DateOnly.FromDateTime(DateTime.Now));
+
+    /// <summary>
+    /// Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible avec
+    /// du texte sombre) ; repli blanc pour la couleur neutre / inconnue.
+    /// </summary>
+    private static string Teinte(string couleur) => couleur switch
     {
-        var enfant = Session.EnfantId;
-        _slots = Slots.AllSnapshots()
-            .Where(s => s.EnfantId == enfant)
-            .OrderBy(s => s.Debut)
-            .ToList();
-        _periodes = Periodes.AllSnapshots().OrderBy(p => p.Debut).ToList();
-        _transferts = Transferts.AllSnapshots().OrderBy(t => t.Date).ToList();
-        _responsableActuel = Responsabilite.ResponsableAu(DateTime.Now);
+        "bleu" => "#dbeafe",
+        "orange" => "#ffedd5",
+        "vert" => "#dcfce7",
+        "gris" => "#f1f3f5",
+        _ => "#ffffff",
+    };
 
-        _joursAvecChevauchement = _slots
-            .Select(s => s.Debut.Date)
-            .Distinct()
-            .Where(jour => JourneeEnfant.Chevauchements(enfant, jour).Count > 0)
-            .OrderBy(j => j)
-            .ToList();
-    }
-
-    private void DeplacerVers(SlotSnapshot slot, string? nouveauLieuId)
+    /// <summary>Couleur pleine du créneau pour la couleur propre de l'acteur du slot.</summary>
+    private static string Couleur(string couleur) => couleur switch
     {
-        if (string.IsNullOrWhiteSpace(nouveauLieuId))
-            return;
-
-        var resultat = DeplacerSlot.Handle(
-            new DeplacerSlotCommand(Session.Role, slot.EnfantId, slot.Debut, nouveauLieuId));
-
-        _actionReussie = resultat.EstSucces;
-        _messageAction = resultat.EstSucces
-            ? $"Slot déplacé vers « {nouveauLieuId} »."
-            : resultat.Motif;
-
-        Charger();
-    }
-
-    private void OuvrirEditionPeriode(PeriodeSnapshot periode)
-    {
-        _periodeEnEdition = periode;          // jeton optimiste = état affiché par l'auteur
-        _editResponsableId = periode.ResponsableId;
-        _editDebut = periode.Debut;
-        _editFin = periode.Fin;
-        _motifEditionPeriode = null;
-    }
-
-    private void AnnulerEditionPeriode()
-    {
-        _periodeEnEdition = null;
-        _motifEditionPeriode = null;
-    }
-
-    private void EnregistrerEditionPeriode()
-    {
-        if (_periodeEnEdition is null)
-            return;
-
-        var modification = new PeriodeSnapshot(_editResponsableId, _editDebut, _editFin);
-        var resultat = ModifierPeriode.Handle(
-            new ModifierPeriodeCommand(_periodeEnEdition, modification));
-
-        _editionPeriodeReussie = resultat.EstSucces;
-        if (resultat.EstSucces)
-        {
-            _motifEditionPeriode = null;
-            _periodeEnEdition = null;
-        }
-        else
-        {
-            // État périmé : le Result invite à recharger ; on garde le formulaire ouvert.
-            _motifEditionPeriode = resultat.Motif;
-        }
-
-        Charger();
-    }
-
-    private void RechargerPeriodes()
-    {
-        _periodeEnEdition = null;
-        _motifEditionPeriode = null;
-        Charger();
-    }
+        "bleu" => "#2563eb",
+        "orange" => "#ea580c",
+        "vert" => "#16a34a",
+        "gris" => "#6b7280",
+        _ => "#6b7280",
+    };
 
     public async ValueTask DisposeAsync()
     {

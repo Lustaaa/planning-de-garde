@@ -1,113 +1,97 @@
+using System.Net;
+using System.Net.Http;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Infrastructure;
 using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 
 namespace PlanningDeGarde.Web.Tests;
 
 /// <summary>
-/// Tests de composant (bUnit) du parcours « poser un slot ». L'UI appelle le use case et
-/// rend son Result ; on ne double que les ports (persistance Infra + notificateur fake).
+/// Tests de composant (bUnit) du parcours « poser un slot » après câblage au canal d'écriture.
+/// La vue n'appelle plus le handler en DI direct : elle <b>émet sa commande via le canal HTTP</b>
+/// <c>/api/canal/poser-slot</c>. On stub le transport (<see cref="FakeCanalHttpHandler"/>) et on
+/// vérifie la requête sortante + la réaction de la vue à l'accusé. Le bout en bout du canal
+/// (handler → store réel → projection) est couvert par <see cref="PoserSlotCanalTests"/>.
 /// </summary>
 public sealed class PoserSlotTests : TestContext
 {
-    private FakeNotificateurPlanning Cabler()
+    private FakeCanalHttpHandler Cabler(
+        HttpStatusCode statut = HttpStatusCode.OK,
+        string corpsReponse = "",
+        SessionPlanning? session = null)
     {
-        var slots = new InMemorySlotRepository();
-        var notif = new FakeNotificateurPlanning();
-        Services.AddSingleton<ISlotRepository>(slots);
-        Services.AddSingleton<ILieuRepository, FoyerLieuRepository>();
-        Services.AddSingleton<INotificateurPlanning>(notif);
-        Services.AddSingleton(new PoserSlotHandler(slots, new FoyerLieuRepository(), notif));
-        Services.AddSingleton(new SessionPlanning());
-        return notif;
+        var canal = new FakeCanalHttpHandler(statut, corpsReponse);
+        Services.AddSingleton(new HttpClient(canal) { BaseAddress = new System.Uri("http://localhost/") });
+        Services.AddSingleton(session ?? new SessionPlanning());
+        return canal;
     }
 
+    // La vue émet sa commande de pose via le canal HTTP (PAS un handler en DI direct).
     [Fact]
-    public void Un_parent_pose_un_slot_valide_le_use_case_est_appele_et_notifie()
+    public void Should_Emettre_une_commande_de_pose_via_l_endpoint_du_canal_When_un_parent_choisit_un_lieu_et_valide()
     {
-        var notif = Cabler();
+        var canal = Cabler();
         var page = RenderComponent<PoserSlot>();
 
         page.Find("select.form-select").Change("école");
         page.Find("form").Submit();
 
-        // Slot valide -> navigation vers le planning (pas de motif d'échec affiché) + notification émise.
+        var requete = Assert.Single(canal.RequetesRecues);
+        Assert.Equal(HttpMethod.Post, requete.Method);
+        Assert.Equal("/api/canal/poser-slot", requete.RequestUri!.AbsolutePath);
+    }
+
+    // La commande émise transporte bien les valeurs métier saisies (enfant, lieu, bornes).
+    [Fact]
+    public void Should_Transporter_le_slot_de_Lea_a_l_ecole_le_15_07_de_08h30_a_16h30_When_un_parent_choisit_le_lieu_ecole_et_valide()
+    {
+        var canal = Cabler();
+        var page = RenderComponent<PoserSlot>();
+
+        page.Find("select.form-select").Change("école");
+        page.Find("form").Submit();
+
+        var corps = Assert.Single(canal.CorpsRecus);
+        // Le corps JSON échappe les accents (Léa -> Léa, école -> école) : on observe
+        // les bornes (ASCII) et les champs, l'identité accentuée étant transportée telle quelle.
+        Assert.Contains("enfantId", corps);
+        Assert.Contains("lieuId", corps);
+        Assert.Contains("2025-07-15T08:30:00", corps);
+        Assert.Contains("2025-07-15T16:30:00", corps);
+    }
+
+    // Le canal accuse un succès -> la vue n'affiche aucun motif d'échec.
+    [Fact]
+    public void Should_Ne_pas_afficher_de_motif_d_echec_When_le_canal_acquitte_la_pose_en_succes()
+    {
+        Cabler(HttpStatusCode.OK);
+        var page = RenderComponent<PoserSlot>();
+
+        page.Find("select.form-select").Change("école");
+        page.Find("form").Submit();
+
         Assert.Empty(page.FindAll("[data-testid='motif-echec']"));
-        Assert.Equal(1, notif.Notifications);
     }
 
-    // Caractérisation (early green anticipé) du câblage déjà présent : poser un slot sur un lieu
-    // du foyer n'affiche aucun motif d'échec et notifie le planning une fois. Filet de non-régression.
+    // Le canal refuse (motif métier propagé) -> la vue affiche le motif renvoyé par le canal.
     [Fact]
-    public void Should_Ne_pas_afficher_de_message_d_echec_et_notifier_le_planning_When_un_parent_pose_un_slot_a_un_lieu_du_foyer()
+    public void Should_Afficher_le_motif_renvoye_par_le_canal_When_le_canal_refuse_la_pose()
     {
-        var notif = Cabler();
+        Cabler(HttpStatusCode.BadRequest, "le lieu visé n'existe pas dans les lieux du foyer");
         var page = RenderComponent<PoserSlot>();
 
-        page.Find("select.form-select").Change("école");
-        page.Find("form").Submit();
-
-        Assert.Empty(page.FindAll("[data-testid='motif-echec']"));
-        Assert.Equal(1, notif.Notifications);
-    }
-
-    // Driver d'acceptation : choisir « école » dans le sélecteur peuplé depuis le foyer puis valider
-    // enregistre dans le dépôt partagé le slot de Léa avec les valeurs métier concrètes (lieu + bornes).
-    [Fact]
-    public void Should_Enregistrer_le_slot_de_Lea_a_l_ecole_le_15_07_de_08h30_a_16h30_When_un_parent_choisit_le_lieu_ecole_du_sapeur_de_lieux_et_valide()
-    {
-        var slots = new InMemorySlotRepository();
-        var notif = new FakeNotificateurPlanning();
-        var lieux = new FoyerLieuRepository();
-        Services.AddSingleton<ISlotRepository>(slots);
-        Services.AddSingleton<ILieuRepository>(lieux);
-        Services.AddSingleton<INotificateurPlanning>(notif);
-        Services.AddSingleton(new PoserSlotHandler(slots, lieux, notif));
-        Services.AddSingleton(new SessionPlanning());
-
-        var page = RenderComponent<PoserSlot>();
-        page.Find("select.form-select").Change("école");
-        page.Find("form").Submit();
-
-        var slot = Assert.Single(slots.AllSnapshots());
-        Assert.Equal("Léa", slot.EnfantId);
-        Assert.Equal("école", slot.LieuId);
-        Assert.Equal(new System.DateTime(2025, 7, 15, 8, 30, 0), slot.Debut);
-        Assert.Equal(new System.DateTime(2025, 7, 15, 16, 30, 0), slot.Fin);
-    }
-
-    [Fact]
-    public void Un_lieu_inexistant_affiche_le_motif_du_result_sans_logique_dupliquee()
-    {
-        var slots = new InMemorySlotRepository();
-        var notif = new FakeNotificateurPlanning();
-        var lieux = new FoyerLieuRepository();
-        Services.AddSingleton<ISlotRepository>(slots);
-        Services.AddSingleton<INotificateurPlanning>(notif);
-        Services.AddSingleton(new PoserSlotHandler(slots, lieux, notif));
-        var session = new SessionPlanning();
-        Services.AddSingleton(session);
-
-        var page = RenderComponent<PoserSlot>();
-        // Aucun lieu choisi -> LieuId vide -> refus par le use case (lieu inexistant).
         page.Find("form").Submit();
 
         var motif = page.Find("[data-testid='motif-echec']");
         Assert.Contains("lieu", motif.TextContent, System.StringComparison.OrdinalIgnoreCase);
-        Assert.Equal(0, notif.Notifications);
     }
 
     [Fact]
     public void Un_invite_ne_voit_pas_le_formulaire_de_pose()
     {
-        var slots = new InMemorySlotRepository();
-        var notif = new FakeNotificateurPlanning();
-        Services.AddSingleton<ISlotRepository>(slots);
-        Services.AddSingleton(new PoserSlotHandler(slots, new FoyerLieuRepository(), notif));
-        Services.AddSingleton(new SessionPlanning { Role = RoleAuteur.Invite });
+        Cabler(session: new SessionPlanning { Role = RoleAuteur.Invite });
 
         var page = RenderComponent<PoserSlot>();
 

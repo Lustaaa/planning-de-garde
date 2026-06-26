@@ -21,10 +21,24 @@ Sujet (optionnel) : $ARGUMENTS
 
 ## Déroulé
 
-1. **Dispatch (une fois).** Lance l'agent `make-gherkin` en lui passant **le chemin**
-   de la spec (`docs/01-specification.md` ou le fichier pertinent sous
-   `docs/`) + le sujet `$ARGUMENTS`. **Ne lis pas la spec toi-même** — l'agent
-   s'en charge. Garde son `agentId` pour tout le round-trip.
+0. **Gate rétro (dur — avant tout).** Exécute
+   `pwsh -NoProfile -File .claude/skills/retro-sprint/scripts/find-retro.ps1`.
+   - Si `gateOpen=false` : le **dernier sprint clos** (`lastClosedSprint`) n'a **pas** de
+     `98-retrospective.md`. **STOP** : ne démarre **pas** ce nouveau cycle. Préviens le PO
+     qu'il faut d'abord lancer la **sprint retrospective** (`retro-sprint`, via
+     `/6-cloture-sprint` étape 1) sur ce sprint. C'est le garde-fou d'amélioration continue :
+     **un nouveau cycle make-gherkin ne démarre jamais tant que la rétro du sprint
+     précédent n'a pas tourné.**
+   - Si `gateOpen=true` : aucun sprint clos en attente de rétro → continue.
+
+1. **Résous la spec courante (script) puis dispatch.** Exécute
+   `pwsh -NoProfile -File .claude/skills/spec-consolidation/scripts/find-spec.ps1` et prends
+   `currentSpec` (le plus grand `NN-specification.md`). **N'utilise jamais** un
+   `01-`/`02-specification.md` en dur : cela provoque une **course** quand
+   `/5-consolidation` écrit la version suivante en tâche de fond (l'agent partirait sur une
+   spec périmée). Lance ensuite l'agent `make-gherkin` en lui passant **le chemin**
+   `currentSpec` + le sujet `$ARGUMENTS`. **Ne lis pas la spec toi-même** — l'agent s'en
+   charge. Garde son `agentId` pour tout le round-trip.
    - **Fallback** : si le type `make-gherkin` n'est pas dans le registre de la
      session (« Agent type not found »), dispatche `general-purpose` avec la consigne
      « applique le skill `make-gherkin`, section *Mode agent (orchestré)* » + le
@@ -51,6 +65,11 @@ Sujet (optionnel) : $ARGUMENTS
    fichier (au format imposé du skill) et renvoie `{ path, scenarios, notes }`.
 
 5. **Commit.** Propose un commit (sans pousser sauf demande explicite).
+
+6. **`/clear` (après le plan).** Le `/clear` de fin de cycle se fait **APRÈS** la
+   rédaction du plan Gherkin — c.-à-d. une fois `docs/sprints/NN-<sujet>.md` écrit (étape 4),
+   jamais avant. Garder le contexte du cadrage disponible jusqu'à l'écriture du plan
+   (retour PO adopté au sprint 03).
 
 ## Notes
 

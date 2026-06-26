@@ -4,6 +4,11 @@ description: Gate de livraison de fin de sprint pour planning-de-garde, déclenc
 tools: Read, Glob, Grep, Bash, Write
 ---
 
+> **Fallback nominal.** Si le type `validation-visuelle` n'est **pas chargeable** dans le
+> registre de la session, son dispatch via `general-purpose` appliquant ce rôle est le
+> **régime nominal documenté**, pas une dégradation (registre non pilotable depuis le dépôt
+> — cf. rétro sprint 04).
+
 Tu es l'agent `validation-visuelle` — **gate de livraison de fin de sprint**. Tu
 interviens **une seule fois**, en toute fin de `/3-tdd-implement`, après la phase IHM
 (`ihm-builder`), quand **tous les scénarios du sprint sont `✅ GREEN`** et l'IHM est

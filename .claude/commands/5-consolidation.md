@@ -60,14 +60,24 @@ ou dossier de sprint le contenant.
    L'agent écrit `NN-specification.md` (format maison + blockquote de version) et renvoie
    `{ path, version, remplace, regles, notes }`.
 
-6. **Propagation.** Mets à jour les docs qui pointent la spec (README, roadmap) vers la
-   **nouvelle version courante** ; garde l'ancienne version figée comme historique (ne la
-   modifie pas) — une seule source de vérité, la dernière.
+6. **Propagation (mécanique).** Exécute
+   `pwsh -NoProfile -File .claude/skills/spec-consolidation/scripts/find-spec.ps1 -PropagateReadme` :
+   le script réécrit **mécaniquement** le pointeur « Spec courante » de `README.md` vers la
+   nouvelle version courante et la ligne « versions précédentes » vers `NN-1` (`readmePropagated:true`).
+   **Ne réécris pas le pointeur à la main** (l'étape manuelle a été sautée au sprint 03,
+   pointeur périmé de 2 versions — cf. rétro). L'ancienne version reste figée en historique.
 
 7. **Handoff make-gherkin.** Présente la nouvelle spec et **propose** d'enchaîner
    `/2-make-gherkin` sur elle (en ciblant le `prochain_sujet` du backlog) via
    `AskUserQuestion`. Si l'utilisateur valide, invoque `/2-make-gherkin` avec le chemin de
    la nouvelle spec + le slug du prochain sujet.
+
+   > **Gate anti-bypass de la rétro.** L'itération précédente est close (backlog `/4`
+   > écrit) : la **rétrospective de la méthode (`retro-sprint`, étape 1 de
+   > `/6-cloture-sprint`) est impérative avant tout nouveau cycle** `/2-make-gherkin`.
+   > `/2` refuse de démarrer si la rétro du dernier sprint clos manque (gate
+   > `find-retro.ps1`). Ne présente pas l'enchaînement comme s'il pouvait sauter la rétro :
+   > le chemin canonique est `/5-consolidation → /6-cloture-sprint (retro-sprint + push/PR) → /2-make-gherkin`.
 
 8. **Commit.** Propose un commit de la nouvelle version de spec (sans pousser sauf demande
    explicite).

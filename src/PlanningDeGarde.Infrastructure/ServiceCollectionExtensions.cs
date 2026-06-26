@@ -17,6 +17,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ITransfertRepository>(sp => sp.GetRequiredService<InMemoryTransfertRepository>());
         services.AddSingleton<ILieuRepository, FoyerLieuRepository>();
         services.AddSingleton<IResponsableRepository, FoyerResponsableRepository>();
+        services.AddSingleton<IPaletteCouleurs, FoyerPaletteCouleurs>();
 
         // Port temps réel réel (SignalR) — remplace le fake des scénarios.
         services.AddSingleton<INotificateurPlanning, SignalRNotificateurPlanning>();
@@ -29,6 +30,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DefinirTransfertHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
+        services.AddScoped<GrilleAgendaQuery>();
 
         return services;
     }

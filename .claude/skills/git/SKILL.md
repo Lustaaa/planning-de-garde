@@ -51,6 +51,8 @@ pwsh .claude/skills/git/scripts/commit.ps1 -Message "refactor: extrait le skill 
 ```
 - `-Message` : sujet (+ corps) du commit.
 - `-Files` : liste de chemins à stager — **obligatoire**, pas de `git add -A`.
+  ⚠️ **Séparés par virgules, sans espace** : `-Files a,b,c`. La forme `-Files a b c`
+  (espaces) **échoue** (« A positional parameter cannot be found »).
 
 ### `push` — pousser la branche
 **Refuse `main`/`master`.** `-u origin` au premier push, sinon push simple.

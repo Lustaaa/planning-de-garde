@@ -86,10 +86,15 @@ table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
   **Acceptation** du `NN-slug.md` à `✅ GREEN`, et dans `00-sprint<NN>-suivi.md` le statut agrégé du
   scénario à `✅ GREEN` (compte `Tests` = `N/N`).
 - Dans le **fichier de scénarios source**, remplace le tag de cycle `@rouge`→`@vert`
-  (le tag de type reste) et ajoute `# vert — <hash court>`.
-- **Commit** : tests + implémentation + dossier de suivi mis à jour (`00-sprint<NN>-suivi.md` +
-  `NN-slug.md`) + `@vert` du scénario, message référant le scénario (ex. `feat:
-  scénario 3 — réservation d'un créneau libre`).
+  (le tag de type reste). **N'ajoute PAS de `# vert — <hash>`** : référencer le commit qui
+  contient le tag est **auto-référentiel** et impose un `--amend` qui décale le hash à
+  chaque scénario (boucle insoluble observée au sprint 03, bruit récurrent). La traçabilité
+  est déjà portée par le **message de commit** (qui référence le scénario). Si un lien
+  scénario→commit est vraiment voulu, fais-le **en 2 temps** (commit, puis `Edit` du tag
+  avec le hash réel et un **second** commit dédié), **jamais** par `--amend` du commit taggé.
+- **Commit (un seul, sans `--amend`)** : tests + implémentation + dossier de suivi mis à
+  jour (`00-sprint<NN>-suivi.md` + `NN-slug.md`) + `@vert` du scénario, message référant le
+  scénario (ex. `feat: scénario 3 — réservation d'un créneau libre`).
 - **STOP & WAIT** : rends la main avec le récap. Le thread principal décidera
   d'enchaîner le scénario suivant.
 
