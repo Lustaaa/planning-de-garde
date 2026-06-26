@@ -115,7 +115,7 @@ Scenario: Deux responsables distincts donnent deux entrées, Alice n'apparaît q
 
 ### Scenario 3 — Fenêtre sans aucune affectation : légende masquée
 
-`@limite` `🖥️ IHM`
+`@limite` `🖥️ IHM` `@rouge`
 
 ```gherkin
 Scenario: Une fenêtre sans aucune période affectée n'affiche aucun nom ni légende

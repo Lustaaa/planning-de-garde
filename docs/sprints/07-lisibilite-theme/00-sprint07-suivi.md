@@ -46,7 +46,7 @@
 |---|----------|-----|---------------------------|---------------|--------|
 | 1 | [Période affectée : nom + entrée de légende](01-periode-affectee-nom-et-legende.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ⏳ Pending (ihm-builder) | 2/2 ✅ backend | 🔴 RED (accept. IHM) |
 | 2 | [Plusieurs responsables : légende dédoublonnée](02-legende-dedoublonnee.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ⏳ Pending (ihm-builder) | 1/1 ✅ backend (caract. ; driver #1 retiré PO/G4) | 🔴 RED (accept. IHM) |
-| 3 | [Fenêtre sans affectation : légende masquée](03-fenetre-vide-legende-masquee.md) | `@limite` 🖥️ IHM · driver masquage `ihm-builder` (+ caract. `tdd-auto`) | ⏳ Pending | 0/1 | ⏳ Pending |
+| 3 | [Fenêtre sans affectation : légende masquée](03-fenetre-vide-legende-masquee.md) | `@limite` 🖥️ IHM · driver masquage `ihm-builder` (+ caract. `tdd-auto`) | ⏳ Pending (ihm-builder) | 1/1 ✅ backend (caract.) | 🔴 RED (driver masquage IHM) |
 | 4 | [Ajout vivant par diffusion temps réel](04-ajout-vivant-temps-reel.md) | `@limite` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ⏳ Pending | 0/0 | ⏳ Pending |
 | 5 | [Acteur hors set : gris assumé, nom conservé](05-acteur-hors-set-gris-assume.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 6 | [Nom long : lisibilité de la case préservée](06-nom-long-lisible.md) | `@limite` 🖥️ IHM · driver troncature `ihm-builder` (+ caract. `tdd-auto`) | ⏳ Pending | 0/1 | ⏳ Pending |
