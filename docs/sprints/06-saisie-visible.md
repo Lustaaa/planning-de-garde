@@ -163,7 +163,7 @@ Scenario: Une période affectée à un acteur absent du set s'affiche en gris ne
 
 ### Scenario 8 — Libellé fourni à la place de l'identifiant fait retomber sur gris
 
-`@erreur`
+`@erreur` `@vert`
 
 ```gherkin
 Scenario: Un libellé d'affichage envoyé comme responsable fait retomber la case sur gris
