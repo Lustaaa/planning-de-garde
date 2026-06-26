@@ -141,7 +141,7 @@ Scenario: Une affectation diffusée par un autre acteur fait apparaître le nom 
 
 ### Scenario 5 — Acteur hors set (gris assumé) : nom conservé, teinte neutre
 
-`@limite` `🖥️ IHM`
+`@limite` `🖥️ IHM` `@rouge`
 
 ```gherkin
 Scenario: Un acteur hors set garde son nom et une entrée de légende malgré la couleur neutre
