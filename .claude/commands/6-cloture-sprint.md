@@ -63,6 +63,14 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
    rattachement. (Le backlog est alimenté en ajout par `/4-retours` et en passage à « fait »
    ici, à la clôture.)
 
+4bis. **Consolidation du product backlog (avant le handoff).** Après le retour sur `main`
+   et le passage à ✅ fait, **relis `docs/BACKLOG.md` de bout en bout** et consolide-le à
+   partir du `99-sprint<NN>-besoins-fin-itération.md` du sprint clos : épics (vue
+   fonctionnelle), paliers (séquence de livraison) et la section **« Prochains sprints
+   envisagés »** (les 2 sujets en tête de file). Objectif : que `/2-make-gherkin` du sprint
+   suivant s'appuie sur un backlog à jour, pas seulement sur des lignes cochées. (Retour PO
+   sprint 04.)
+
 5. **Amorce l'itération suivante.** Propose (via `AskUserQuestion`) d'enchaîner
    `/2-make-gherkin` sur la **nouvelle version de spec** (`docs/NN-specification.md`, la
    plus récente) en ciblant le `prochain_sujet` du backlog du sprint clos
@@ -82,7 +90,7 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
   est **non contournable** — `find-retro.ps1` bloque la clôture tant que le sprint clos
   n'a pas son `98-retrospective.md`. Distincte de `/4-retours` (retours produit).
 - **Boucle complète** : `/1 → /2 → /3 (+gate visuel = sprint review + DoD) → /4-retours →
-  /5-consolidation → /6-cloture-sprint (retro-sprint puis push/PR/merge) → /2 …`
+  /5-consolidation → /6-cloture-sprint (retro-sprint, push/PR/merge, consolidation BACKLOG) → /2 …`
   (nouveau sprint). La **sprint retrospective** est le maillon de clôture.
 - Enrichissement futur possible : un corps de PR rédigé par un petit agent (résumé
   narratif du sprint) plutôt que templaté — MVP templaté pour l'instant.

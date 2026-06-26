@@ -21,9 +21,11 @@ l'avancement dans le tableau de bord** `docs/sprints/<sujet>/00-sprint<NN>-suivi
 > `ihm-builder` et `validation-visuelle`. Les fichiers `.claude/agents/ihm-builder.md` et
 > `.claude/agents/validation-visuelle.md` existent, mais s'ils ne sont **pas chargés dans
 > le registre de la session**, le dispatch tombe en **fallback `general-purpose`** à chaque
-> fois (observé au sprint 03). Vérifie/charge ces types au démarrage ; le fallback reste un
-> filet de sécurité, pas le régime nominal. (La table des agents du `README-claude.md` les
-> liste tous, `retro-sprint` inclus.)
+> fois (observé aux sprints 03 et 04). Le registre n'étant **pas pilotable depuis le dépôt**,
+> ce fallback est le **régime nominal documenté** quand ces types ne sont pas chargeables :
+> dispatcher `general-purpose` avec « applique le skill … (cf. agent ihm-builder /
+> validation-visuelle) » n'est **pas une dégradation à corriger**, c'est le mode attendu.
+> (La table des agents du `README-claude.md` les liste tous, `retro-sprint` inclus.)
 
 > **`/clear` après le plan.** Si un `/clear` est fait, c'est **après** l'écriture du plan
 > Gherkin de `/2` (`docs/sprints/NN-<sujet>.md`), jamais avant — retour PO adopté au sprint 03.
