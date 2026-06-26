@@ -107,7 +107,7 @@ Scenario: Définir un transfert sans modifier la date l'horodate à aujourd'hui
 
 ### Scenario 4 — Saisie à la borne haute de la fenêtre reste visible
 
-`@limite`
+`@limite` `@vert`
 
 ```gherkin
 Scenario: Un slot au dernier jour de la fenêtre de 35 jours reste affiché
