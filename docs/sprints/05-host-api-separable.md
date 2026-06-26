@@ -57,7 +57,7 @@ Scenario: Le front côté navigateur pose un slot via l'API distante et le voit 
 
 ### Scenario 3 — L'UI d'exploration interactive de l'API liste les endpoints du canal d'écriture
 
-`@nominal`
+`@nominal @vert`
 
 ```gherkin
 Scenario: L'UI d'exploration interactive de l'hôte d'API est ouverte et liste le canal d'écriture
