@@ -128,7 +128,7 @@ Scenario: Une fenêtre sans aucune période affectée n'affiche aucun nom ni lé
 
 ### Scenario 4 — Ajout vivant par diffusion temps réel : nom et légende suivent
 
-`@limite` `🖥️ IHM`
+`@limite` `🖥️ IHM` `@vert`
 
 ```gherkin
 Scenario: Une affectation diffusée par un autre acteur fait apparaître le nom et l'entrée de légende sans rechargement
