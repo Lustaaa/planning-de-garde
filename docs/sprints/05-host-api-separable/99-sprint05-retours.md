@@ -45,6 +45,8 @@
 
 | Date | Cible (agent/skill/command) | Observation | Recommandation |
 |------|-----------------------------|-------------|----------------|
+| 2026-06-26 | skill `git` (commit.ps1) | Le script de commit échoue sur le chemin du dépôt accentué « privée » (`git rev-parse` mal décodé) ; phase IHM committée à la main en respectant les garde-fous (branche ≠ main, staging sélectif, trailer). | Durcir `commit.ps1` sur les chemins non-ASCII (encodage UTF-8 de la sortie git / quoting), sinon les garde-fous maison sont contournés à chaque commit. |
+| 2026-06-26 | agent `ihm-builder` / `validation-visuelle` | Types absents du registre de session → fallback `general-purpose` à chaque dispatch IHM (régime nominal documenté, déjà constaté sprints 03/04). | Statu quo accepté ; envisager de documenter la commande de chargement du registre ou d'assumer définitivement le fallback dans le pipeline. |
 
 ## Notes de contexte (décisions produit, hors méthode)
 

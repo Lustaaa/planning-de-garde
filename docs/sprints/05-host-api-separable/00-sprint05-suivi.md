@@ -48,12 +48,12 @@
 
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
-| 1 | [Le back démarre seul : l'API détachée enregistre une affectation sans le front](01-back-demarre-seul-affectation.md) | `@nominal` | ✅ GREEN | 3/3 | ✅ GREEN |
-| 2 | [Le front WASM consomme l'API distante : un slot posé apparaît dans sa case](02-front-wasm-slot-via-api-distante.md) | `@nominal 🖥️ IHM` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 3 | [L'UI d'exploration interactive liste les endpoints du canal d'écriture](03-ui-exploration-liste-endpoints.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 4 | [L'hôte d'API démarre headless et sert description + exploration](04-hote-headless-description-exploration.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 5 | [Le front sur une origine distincte est autorisé par le CORS de l'API](05-cors-origine-front-autorisee.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
-| 6 | [API distante injoignable : la saisie est refusée et n'est pas appliquée](06-api-injoignable-saisie-refusee.md) | `@erreur 🖥️ IHM` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 1 | [Le back démarre seul : l'API détachée enregistre une affectation sans le front](archive/01-back-demarre-seul-affectation.md) | `@nominal` | ✅ GREEN | 3/3 | ✅ GREEN |
+| 2 | [Le front WASM consomme l'API distante : un slot posé apparaît dans sa case](archive/02-front-wasm-slot-via-api-distante.md) | `@nominal 🖥️ IHM` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 3 | [L'UI d'exploration interactive liste les endpoints du canal d'écriture](archive/03-ui-exploration-liste-endpoints.md) | `@nominal` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 4 | [L'hôte d'API démarre headless et sert description + exploration](archive/04-hote-headless-description-exploration.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 5 | [Le front sur une origine distincte est autorisé par le CORS de l'API](archive/05-cors-origine-front-autorisee.md) | `@limite` | ✅ GREEN | 2/2 | ✅ GREEN |
+| 6 | [API distante injoignable : la saisie est refusée et n'est pas appliquée](archive/06-api-injoignable-saisie-refusee.md) | `@erreur 🖥️ IHM` | ✅ GREEN | 2/2 | ✅ GREEN |
 
 **Total** : 6 scénarios — **4 backend** (`tdd-auto`, acceptation **intégration**
 `WebApplicationFactory<ApiProgram>`) · **2 IHM/runtime** (`ihm-builder`, acceptation
