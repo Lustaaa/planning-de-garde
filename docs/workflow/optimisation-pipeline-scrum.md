@@ -291,3 +291,41 @@ d'autonomie. On valide chaque palier en rétro avant le suivant.
 ### Indicateur de succès
 Nombre de `AskUserQuestion` par sprint **avant / après**, ventilé G1/G2/G3/G4 vs autres. Cible :
 **toute sollicitation hors G1-G4 = 0**.
+
+---
+
+## 11. Décisions de mise en œuvre (2026-06-26)
+
+Cadrage tranché par le PO et **livré** dans cette première passe :
+
+- **Périmètre livré = squelette C1 + C2 + C3 + C5.** C4 (Sprint Goal explicite dans
+  brainstorm/spec-consolidation), C6 (CP Technique dédié) et C7 (généralisation auto-écriture)
+  sont **différés** au post-sprint-pilote.
+- **Un seul CP au départ** : le `chef-de-projet` gère aussi les remarques techniques (cadre un
+  sprint technique + journalise). Scission en CP Technique = C6, plus tard.
+- **Cap d'itération = PO via G2.** Le CP ne désigne jamais le prochain sujet seul : il propose
+  2 goals candidats, le PO tranche (3ᵉ injectable, immédiatement adopté).
+- **CP ambitieux — sprints ~2h d'exécution IA.** Chaque sprint goal candidat est une tranche
+  verticale de valeur dimensionnée à ~2h d'exécution IA autonome de bout en bout (analyse → TDD →
+  IHM → gate).
+- **Brainstorm non obligatoire tant que le backlog n'est pas épuisé.** Le CP tire les goals du
+  backlog existant (`docs/BACKLOG.md`) sans re-challenger ; `/1-spec`/brainstorm ne se déclenche
+  qu'au backlog vide ou besoin nouveau hors backlog.
+- **Palier d'autonomie de départ = 0 (conservateur)** : au doute réel non tranchable par la spec,
+  le CP escalade en G1. Montée de palier validée en rétro au vu du journal.
+
+### Fichiers livrés cette passe
+
+| Fichier | Action |
+|---|---|
+| `.claude/skills/chef-de-projet/SKILL.md` | **créé** — doctrine du CP (procédure, 4 portes, cadran, ambition 2h, journal) |
+| `.claude/agents/chef-de-projet.md` | **créé** — wrapper orchestré |
+| `.claude/commands/1-spec.md` … `5-consolidation.md` | **édités** — orchestrateur + Protocole d'escalade CP |
+| `.claude/commands/6-cloture-sprint.md` | **édité** — note de cadrage CP (actions sortantes = PO) |
+| `.claude/agents/tdd-auto.md` | **édité** — early-green inattendu tagué `gate:"G4"` (direct PO) |
+| `.claude/agents/tdd-analyse.md` | **édité** — scaffold de la section journal `# Décisions autonomes (chef de projet)` |
+
+### Reste à faire (différé)
+C4 (Sprint Goal explicite dans les agents) · C6 (CP Technique) · C7 (auto-écriture généralisée) ·
+édition de `retro-sprint` pour consommer le journal de décisions CP · mesure avant/après sur le
+sprint pilote.

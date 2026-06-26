@@ -6,16 +6,29 @@ argument-hint: "[sujet ou feature à scénariser] (optionnel)"
 # /2-make-gherkin — Analyse & scénarios Gherkin
 
 **Tout le travail vit dans le subagent `make-gherkin`.** Toi (thread principal) tu
-es un **relais pur** : tu ne lis pas la spec, tu ne nommes pas les tensions, tu ne
-calcules ni scénarios ni synthèse. Tu te bornes à : dispatcher l'agent, rendre ses
-questions via `AskUserQuestion`, lui renvoyer les réponses brutes via `SendMessage`,
-puis lui ordonner d'écrire. Objectif : **garder le contexte du main propre** — tout
-le raisonnement reste chez l'agent.
+es un **orchestrateur** : tu ne lis pas la spec, tu ne nommes pas les tensions, tu ne
+calcules ni scénarios ni synthèse. Tu te bornes à : dispatcher l'agent, **router ses
+questions vers le chef de projet** (escalade PO via `AskUserQuestion` seulement sur
+G1/G2), lui renvoyer les réponses brutes via `SendMessage`, puis lui ordonner d'écrire.
+Objectif : **garder le contexte du main propre** — tout le raisonnement reste chez
+l'agent, et **le PO n'est sollicité que sur les portes essentielles**.
 
 > ⚠️ Seul le thread principal peut appeler `AskUserQuestion` ; un subagent ne le
 > peut pas. C'est la **seule** raison du round-trip : l'agent renvoie les questions,
 > tu les poses, tu lui rends les réponses. La communication = `SendMessage`
 > (main → agent) et la valeur de retour de l'agent (agent → main).
+
+> **Protocole d'escalade — chef de projet (CP).** Tu ne poses plus directement au PO les
+> questions de `make-gherkin` (périmètre, cas limites, valeurs observables…) — elles sont quasi
+> toutes dérivables de la spec. Quand l'agent renvoie une `question`, **dispatche d'abord
+> l'agent `chef-de-projet`** avec : la `question`, la **spec courante** résolue à l'étape 1
+> (`currentSpec`), `docs/BACKLOG.md`, le palier d'autonomie (défaut `0 — conservateur`).
+> - `{type:"decision",…}` → **relaie la décision** à `make-gherkin` via `SendMessage`. **Pas**
+>   d'`AskUserQuestion`.
+> - `{type:"escalate", gate:"G1"|"G2", …}` → **seulement là** appelle `AskUserQuestion` (payload
+>   riche du CP au-dessus des `options`). Renvoie la réponse brute à l'agent.
+> - **Fallback** : type `chef-de-projet` absent → `general-purpose` + « applique le skill
+>   `chef-de-projet` » + les mêmes entrées.
 
 Sujet (optionnel) : $ARGUMENTS
 
@@ -47,16 +60,21 @@ Sujet (optionnel) : $ARGUMENTS
 
 2. **Boucle de challenge (relais).** À chaque retour, l'agent renvoie un JSON
    `{ tensions, questions, synthese, done }`. Tant que `done` est faux :
-   - Rends **chaque** entrée de `questions[]` via `AskUserQuestion` en passant l'objet
-     **tel quel** (`question`, `header`, `multiSelect`, `options[]`) — ne le reformule
-     pas, ne le ré-enrichis pas.
+   - Pour **chaque** entrée de `questions[]`, applique le **Protocole d'escalade CP** ci-dessus :
+     dispatche d'abord `chef-de-projet` ; n'appelle `AskUserQuestion` que sur une `escalate`
+     (G1/G2), en passant alors l'objet `question` du CP **tel quel** (ne le reformule pas).
    - Au plus **une ligne** de contexte pour le user si l'agent fournit des `tensions`
      (les énumérer en bref) ; sinon, n'écris rien.
-   - Renvoie les réponses **brutes** à l'agent via `SendMessage` (même `agentId`).
+   - Renvoie les réponses **brutes** (décision du CP ou réponse du PO) à l'agent via
+     `SendMessage` (même `agentId`).
    - Recommence. **N'analyse pas** le contenu, **ne devine pas** la question suivante.
 
-3. **Validation.** Quand `done: true`, affiche la `synthese` de l'agent (verbatim,
-   sans la retravailler) et demande l'accord d'écrire via `AskUserQuestion`.
+3. **Validation (CP).** Quand `done: true`, fais valider l'écriture par le **chef de projet** :
+   dispatche `chef-de-projet` avec la `synthese`. S'il renvoie `{type:"decision"}` (rien de
+   bloquant : les scénarios dérivent de la spec actée) → **ordonne d'écrire sans déranger le
+   PO**. S'il renvoie `{type:"escalate", gate:"G1"|"G2"}` (un arbitrage métier ou un cap à
+   fixer subsiste) → appelle `AskUserQuestion` (payload riche), puis écris. Affiche la
+   `synthese` verbatim soit avec la décision du CP, soit avec l'escalade.
 
 4. **Écriture (même agent).** À l'accord, calcule le chemin cible numéroté :
    `docs/sprints/NN-<sujet-kebab>.md` où `NN` = `(plus grand préfixe NN

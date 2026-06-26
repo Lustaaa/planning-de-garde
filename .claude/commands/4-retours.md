@@ -6,16 +6,29 @@ argument-hint: "[dossier de scénarios ou chemin du 99-sprint<NN>-retours.md] (o
 # /4-retours — Retours utilisateur → besoins priorisés
 
 **Tout le travail vit dans le subagent `retours-challenge`.** Toi (thread principal) tu
-es un **relais pur** : tu ne classes pas les retours, tu ne nommes pas les tensions, tu
+es un **orchestrateur** : tu ne classes pas les retours, tu ne nommes pas les tensions, tu
 ne calcules ni priorisation ni synthèse. Tu te bornes à : localiser le retours (script),
-gérer le bypass Tech, dispatcher l'agent, rendre ses questions via `AskUserQuestion`,
-lui renvoyer les réponses brutes via `SendMessage`, puis lui ordonner d'écrire.
-Objectif : **garder le contexte du main propre** — tout le raisonnement reste chez
-l'agent.
+gérer le bypass Tech, dispatcher l'agent, **router ses questions vers le chef de projet**
+(escalade PO seulement sur G1/G2), lui renvoyer les réponses brutes via `SendMessage`, puis
+lui ordonner d'écrire. Objectif : **garder le contexte du main propre** — tout le
+raisonnement reste chez l'agent, et **le PO n'est sollicité que sur les portes essentielles**.
 
 > ⚠️ Seul le thread principal peut appeler `AskUserQuestion` ; un subagent ne le peut
 > pas. C'est la **seule** raison du round-trip. Communication = `SendMessage`
 > (main → agent) et valeur de retour de l'agent (agent → main).
+
+> **Protocole d'escalade — chef de projet (CP).** Quand `retours-challenge` renvoie une
+> `question`, **dispatche d'abord l'agent `chef-de-projet`** avec : la `question`, la **spec
+> courante** (`docs/NN-specification.md`), `docs/BACKLOG.md`, le dossier de sprint, le palier
+> d'autonomie (défaut `0 — conservateur`).
+> - `{type:"decision",…}` → **relaie la décision** (couvre la **classification** des retours, la
+>   confrontation `bug` vs HEAD, le **séquencement** dans une règle d'arbitrage déjà actée). Pas
+>   d'`AskUserQuestion`.
+> - `{type:"escalate", gate:"G1"|"G2", …}` → `AskUserQuestion` (payload riche). Le **choix du
+>   prochain sujet / cap** est un **G2** : le CP propose **2 goals candidats** (~2h IA, tirés du
+>   backlog) et **le PO tranche** (3ᵉ injectable).
+> - **Fallback** : type `chef-de-projet` absent → `general-purpose` + « applique le skill
+>   `chef-de-projet` ».
 
 > **Cadrage à rappeler au PO si besoin.** `/4-retours` **priorise** le backlog des retours
 > produit (classer, départager, désigner un prochain sujet) — il **ne conçoit pas le
@@ -60,17 +73,22 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `99-spr
    `{ classification, tensions, questions, synthese, done }`. Tant que `done` est faux :
    - Au **1er tour**, au plus **une ligne** de contexte pour l'utilisateur (résumé des
      `tensions` ou du nombre de retours classés) ; sinon n'écris rien.
-   - Rends **chaque** entrée de `questions[]` via `AskUserQuestion` en passant l'objet
-     **tel quel** (pas de reformulation, pas de ré-enrichissement).
-   - Renvoie les réponses **brutes** à l'agent via `SendMessage` (même `agentId`).
+   - Pour **chaque** entrée de `questions[]`, applique le **Protocole d'escalade CP** : dispatch
+     `chef-de-projet` ; n'appelle `AskUserQuestion` que sur une `escalate` (G1 arbitrage / G2 cap),
+     en passant alors l'objet `question` du CP **tel quel**.
+   - Renvoie les réponses **brutes** (décision CP ou réponse PO) à l'agent via `SendMessage`
+     (même `agentId`).
    - Répète. **N'analyse pas**, **ne devine pas** la question suivante. Si l'utilisateur
      répond « tout prioritaire », l'agent reposera une question d'arbitrage — c'est voulu.
 
-5. **Validation.** Quand `done: true`, présente la `synthese` de l'agent (**verbatim** :
-   classification, arbitre, séquence, prochain sujet, risques) et demande l'accord
-   d'écrire le backlog via `AskUserQuestion`. Si le PO semble attendre un découpage de
-   sprint, **rappelle** qu'on **priorise** ici, on ne **conçoit** pas le sprint (ça, c'est
-   `/2-make-gherkin`).
+5. **Validation (CP).** Quand `done: true`, fais valider l'écriture par le **chef de projet**
+   (dispatch `chef-de-projet` avec la `synthese`). `{type:"decision"}` (priorisation dérivable
+   de l'arbitrage acté) → **ordonne d'écrire le backlog sans déranger le PO**.
+   `{type:"escalate", gate:"G2"}` (le **prochain sujet / cap** est à fixer) → `AskUserQuestion`
+   (2 goals candidats du CP, 3ᵉ injectable), puis écris. Présente la `synthese` **verbatim**
+   (classification, arbitre, séquence, prochain sujet, risques). Si le PO semble attendre un
+   découpage de sprint, **rappelle** qu'on **priorise** ici, on ne **conçoit** pas le sprint
+   (ça, c'est `/2-make-gherkin`).
 
 6. **Écriture (même agent).** À l'accord, `SendMessage` l'ordre d'écrire avec le chemin
    `nextBesoins`. L'agent écrit `99-sprint<NN>-besoins-fin-itération.md` (`<NN>` = numéro du

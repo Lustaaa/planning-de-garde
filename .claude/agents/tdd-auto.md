@@ -67,9 +67,11 @@ cellule `Status` du test courant `⏳ Pending → 🔴 RED`. Si le test passe d'
   est **attendu** → marque `✅ GREEN (caractérisation)` (filet de non-régression), pas
   `⚠️`, et mentionne-le sobrement (pas une alarme). Pas de question.
 - **Early green INATTENDU (non anticipé)** : **STOP immédiat** → n'enchaîne pas, ne
-  commite pas. Renvoie `{"type":"question", …}` pour que le PO tranche (doublon à
-  supprimer / filet de non-régression à conserver / câblage à investiguer). C'est un
-  signal : un test censé piloter du code passe sans rouge = soit le comportement est
+  commite pas. Renvoie `{"type":"question", "gate":"G4", …}` pour que **le PO** tranche
+  (doublon à supprimer / filet de non-régression à conserver / câblage à investiguer). Le
+  champ **`"gate":"G4"`** est **obligatoire** ici : il signale à l'orchestrateur que cette
+  question va **direct au PO** (porte essentielle), **sans passer par le chef de projet**.
+  C'est un signal : un test censé piloter du code passe sans rouge = soit le comportement est
   déjà couvert, soit le test n'observe rien. Le PO décide avant tout commit.
 
 ### GREEN_PHASE (par test unitaire)
@@ -123,7 +125,8 @@ ces cas :
   et demandes le **routage vers `ihm-builder`** ; tu ne produis **pas** de test bUnit
   composant qui passerait à vide.
 - **Early green inattendu** (non anticipé par `tdd-analyse`) — *obligatoire* : laisse le
-  PO trancher (doublon / filet / câblage à investiguer) avant tout commit.
+  PO trancher (doublon / filet / câblage à investiguer) avant tout commit. **Tague
+  `"gate":"G4"`** — porte essentielle qui va **direct au PO** (jamais par le chef de projet).
 
 Tu **peux** stopper et renvoyer `type:question` quand tu détectes un **problème
 d'implémentation** qui dépasse le YAGNI du test courant : câblage incohérent ou
@@ -135,9 +138,15 @@ en silence — expose le problème et les options.
 
 **Cas question** (scaffolding, early green inattendu, ou problème d'implémentation) :
 
+> **Routage (champ `gate`)** : ajoute `"gate":"G4"` **uniquement** pour un **early green
+> inattendu** (→ va direct au PO). Pour le **scaffolding**, le **routage IHM** et un **problème
+> d'implémentation**, **n'ajoute pas** de `gate` : l'orchestrateur les route vers le **chef de
+> projet**, qui tranche (ou escalade lui-même en G1 si c'est un vrai choix métier).
+
 ```json
 {
   "type": "question",
+  "gate": "G4 (uniquement pour un early green inattendu ; sinon omettre)",
   "question": {
     "question": "Question complète, finissant par ?",
     "header": "≤12 car",

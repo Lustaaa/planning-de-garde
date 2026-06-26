@@ -6,16 +6,35 @@ argument-hint: "[sujet] [#scénario] (optionnels)"
 # /3-tdd-implement — Analyse puis implémentation BDD + TDD (2 agents)
 
 **Tout le travail vit dans deux subagents.** Toi (thread principal) tu es un
-**relais pur** : tu ne lis ni le fichier de scénarios ni le code, tu n'écris ni test
-ni implémentation. Tu dispatches les agents, relaies leurs questions via
-`AskUserQuestion`, et présentes les checkpoints. Objectif : **garder le contexte du
-main propre** — tout le raisonnement reste dans les agents ; **toi tu suis
-l'avancement dans le tableau de bord** `docs/sprints/<sujet>/00-sprint<NN>-suivi.md`
+**orchestrateur** : tu ne lis ni le fichier de scénarios ni le code, tu n'écris ni test
+ni implémentation. Tu dispatches les agents, **routes leurs questions vers le chef de
+projet** (escalade PO seulement sur les portes), et présentes les checkpoints. Objectif :
+**garder le contexte du main propre** — tout le raisonnement reste dans les agents ; **toi
+tu suis l'avancement dans le tableau de bord** `docs/sprints/<sujet>/00-sprint<NN>-suivi.md`
 (`<NN>` = numéro du sprint = préfixe 2 chiffres du dossier, ex. `00-sprint02-suivi.md`).
 
 > ⚠️ Seul le thread principal peut appeler `AskUserQuestion` ; un subagent ne le
 > peut pas. C'est la **seule** raison du round-trip. Communication = `SendMessage`
 > (main → agent) et valeur de retour de l'agent (agent → main).
+
+> **Protocole d'escalade — chef de projet (CP).** Quand `tdd-analyse` ou `tdd-auto` renvoie
+> `{type:"question", …}`, **dispatche d'abord l'agent `chef-de-projet`** avec : la `question`,
+> la **spec courante** (`docs/NN-specification.md`, la plus récente), le dossier de sprint, le
+> palier d'autonomie (défaut `0 — conservateur`).
+> - `{type:"decision",…}` → **relaie la décision** à l'agent dev via `SendMessage`. **Pas**
+>   d'`AskUserQuestion`. (Couvre le **scaffolding**, le **routage backend/IHM**, l'**early-green
+>   attendu**, un **problème d'implémentation** tranchable par la spec/convention.)
+> - `{type:"escalate", gate:"G1", …}` → appelle `AskUserQuestion` (payload riche du CP).
+> - **Fallback** : type `chef-de-projet` absent → `general-purpose` + « applique le skill
+>   `chef-de-projet` ».
+>
+> **⚠️ Deux exceptions câblées DIRECT PO — ne passent JAMAIS par le CP :**
+> 1. **G4 — early-green INATTENDU** (`tdd-auto`, `type:"question"` signalant un early green non
+>    anticipé) → `AskUserQuestion` **directement au PO**. C'est une porte essentielle.
+> 2. **G3 — validation visuelle** (étape 8, `validation-visuelle`) → notification/gate **direct
+>    PO**.
+> Le **routage IHM** (refus d'un scénario IHM par `tdd-auto`) reste mécanique : re-dispatch vers
+> `ihm-builder` (pas besoin du CP ni du PO).
 
 > **Agents requis dans le registre.** Cette command dispatche `tdd-analyse`, `tdd-auto`,
 > `ihm-builder` et `validation-visuelle`. Les fichiers `.claude/agents/ihm-builder.md` et
@@ -44,9 +63,10 @@ scénario.
    - **Fallback** : type absent du registre → `general-purpose` avec « applique le
      skill `tdd-implement` en agent d'analyse seule (cf. agent tdd-analyse) » + le
      chemin. Ne bascule **pas** en inline.
-   - S'il renvoie `{ "type": "question", … }` (ambiguïté métier / scaffolding), rends
-     la `question` **telle quelle** via `AskUserQuestion`, relaie la réponse **brute**
-     via `SendMessage`. Répète.
+   - S'il renvoie `{ "type": "question", … }` (ambiguïté métier / scaffolding / axe
+     backend-IHM), applique le **Protocole d'escalade CP** (dispatch `chef-de-projet` ;
+     relaie sa `decision`, ou `AskUserQuestion` sur une `escalate` G1), relaie la réponse
+     **brute** via `SendMessage`. Répète.
    - Sinon `{ "type": "analyse", "suivi": …, "scenarios": n, "tests": … }` : le
      **dossier de suivi est écrit** (`docs/sprints/<sujet>/` : `00-sprint<NN>-suivi.md` + un
      fichier par scénario). `tdd-analyse` scaffolde aussi, dans le même dossier, deux
@@ -84,10 +104,11 @@ scénario.
      `tdd-implement` en agent autonome (cf. agent tdd-auto pour un scénario backend, ou
      agent ihm-builder pour un scénario IHM mené RED→GREEN runtime) » + le chemin du
      dossier de suivi et le scénario cible. Ne bascule **pas** en inline.
-   - `{ "type": "question", … }` → `AskUserQuestion` (telle quelle) → `SendMessage`
-     (réponse brute). Répète. **Si `tdd-auto` refuse un scénario comme IHM** (il renvoie
-     une question de routage), **re-dispatche le scénario vers `ihm-builder`** au lieu de
-     forcer un test bUnit.
+   - `{ "type": "question", … }` → applique le **Protocole d'escalade CP** (dispatch
+     `chef-de-projet` ; relaie sa `decision`, ou `AskUserQuestion` sur une `escalate` G1).
+     **Exception G4** : un **early-green inattendu** va **direct au PO** (pas par le CP).
+     **Si `tdd-auto` refuse un scénario comme IHM** (question de routage), **re-dispatche le
+     scénario vers `ihm-builder`** (mécanique — ni CP ni PO) au lieu de forcer un test bUnit.
    - `{ "type": "result", … }` (tdd-auto) ou `{ "type": "ihm-scenario", … }`
      (ihm-builder) → l'agent a livré **un** scénario (RED → GREEN → commit, suivi mis à
      jour).
@@ -102,11 +123,13 @@ scénario.
    `ihm-builder`) pour le scénario suivant (`next_scenario`), sans demander confirmation,
    jusqu'à ce que **tous les scénarios soient `✅ GREEN`** dans `00-sprint<NN>-suivi.md`.
    **La boucle se suspend dès qu'un agent renvoie `{ "type": "question", … }`** —
-   rends-la **telle quelle** via `AskUserQuestion`, relaie la réponse brute via
-   `SendMessage`, puis reprends la boucle. `tdd-auto` pose notamment une question sur
-   **early green inattendu** (obligatoire), une question de **routage IHM** (il refuse un
-   scénario IHM → re-dispatch vers `ihm-builder`), et **peut** en poser sur un **problème
-   d'implémentation** détecté. La boucle stoppe aussi si l'utilisateur interrompt.
+   applique le **Protocole d'escalade CP**, relaie la réponse brute (décision CP ou PO) via
+   `SendMessage`, puis reprends la boucle. Routage des questions de `tdd-auto` :
+   - **early-green inattendu** (obligatoire) → **direct PO** (porte G4), **pas** le CP ;
+   - **routage IHM** (refus d'un scénario IHM) → **mécanique**, re-dispatch vers `ihm-builder` ;
+   - **scaffolding** / **problème d'implémentation** détecté → **CP** (qui tranche depuis la
+     spec/convention, ou escalade G1 si c'est un vrai choix métier).
+   La boucle stoppe aussi si l'utilisateur interrompt.
 
 7. **Phase IHM finale (agent `ihm-builder`).** **Uniquement quand tous les scénarios
    sont `✅ GREEN`** dans le `00-sprint<NN>-suivi.md` (backend **et** scénarios IHM
@@ -117,8 +140,9 @@ scénario.
    refaits ici.)
    - **Fallback** : type absent → `general-purpose` avec « applique la phase IHM finale
      du skill `tdd-implement` (cf. agent ihm-builder) » + les chemins. Pas d'inline.
-   - `{ "type": "question", … }` → `AskUserQuestion` (telle quelle) → `SendMessage`
-     (réponse brute). Répète.
+   - `{ "type": "question", … }` → applique le **Protocole d'escalade CP** (dispatch
+     `chef-de-projet` ; relaie sa `decision`, ou `AskUserQuestion` sur une `escalate` G1) →
+     `SendMessage` (réponse brute). Répète.
    - `{ "type": "ihm", … }` → l'IHM est construite (vues + SignalR réel, build + suite
      verts, commit). Présente le récap **verbatim** + la commande de lancement
      (`pwsh .claude/skills/run/scripts/run.ps1`).
@@ -128,7 +152,8 @@ scénario.
    le chemin du dossier de sprint (`docs/sprints/<sujet>/`). Garde son `agentId`.
    - **Fallback** : type absent → `general-purpose` avec « applique le rôle de l'agent
      `validation-visuelle` (gate de livraison de fin de sprint) » + le chemin. Pas d'inline.
-   - `{ "type": "question", … }` (gate prématuré) → `AskUserQuestion` → `SendMessage`.
+   - `{ "type": "question", … }` (gate prématuré) → **Protocole d'escalade CP** (un gate
+     prématuré est une vérification de précondition : le CP tranche en général) → `SendMessage`.
    - `{ "type": "probleme", … }` (build/suite rouge) → présente le constat ; la livraison
      est cassée, à réparer par un `/3-tdd-implement` ciblé avant de conclure le sprint.
    - `{ "type": "validation", … }` → **lance l'app** toi-même (thread durable) en tâche de
