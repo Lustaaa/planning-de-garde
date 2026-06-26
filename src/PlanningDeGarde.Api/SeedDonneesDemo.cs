@@ -21,8 +21,10 @@ public static class SeedDonneesDemo
         var definirTransfert = sp.GetRequiredService<DefinirTransfertHandler>();
 
         const string enfant = "Léa";
-        const string parentA = "Parent A";
-        const string parentB = "Parent B";
+        // Identifiants stables (cadrage (B), Sc.6) : le seed sème l'id atteignable par le set de
+        // couleurs (parent-a→bleu, parent-b→orange), pas le libellé qui retombait sur le gris neutre.
+        const string parentA = "parent-a";
+        const string parentB = "parent-b";
 
         var aujourdHui = DateTime.Today;
         var demain = aujourdHui.AddDays(1);

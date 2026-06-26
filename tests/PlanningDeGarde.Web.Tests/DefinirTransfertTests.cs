@@ -42,14 +42,16 @@ public sealed class DefinirTransfertTests : TestContext
         page.FindAll("select.form-select")[2].Change(lieu);
     }
 
-    // La vue émet la commande de transfert via le canal HTTP avec les valeurs métier saisies.
+    // La vue émet la commande de transfert via le canal HTTP avec les valeurs métier saisies. Les
+    // sélecteurs dépose/récupère bindent l'identifiant STABLE (cadrage (B)) : le corps porte
+    // « parent-a »/« parent-b », pas les libellés.
     [Fact]
-    public void Should_Emettre_via_le_canal_le_transfert_Parent_A_Parent_B_ecole_a_08h30_When_un_parent_renseigne_la_recuperation_le_lieu_et_l_heure_et_valide()
+    public void Should_Emettre_via_le_canal_le_transfert_parent_a_parent_b_ecole_a_08h30_When_un_parent_renseigne_la_recuperation_le_lieu_et_l_heure_et_valide()
     {
         var canal = Cabler();
         var page = RenderComponent<DefinirTransfert>();
 
-        RenseignerSelecteurs(page, "Parent A", "Parent B", "école");
+        RenseignerSelecteurs(page, "parent-a", "parent-b", "école");
         page.Find("input[type=time]").Change("08:30");
         page.Find("form").Submit();
 
@@ -58,8 +60,8 @@ public sealed class DefinirTransfertTests : TestContext
         Assert.Equal("/api/canal/definir-transfert", requete.RequestUri!.AbsolutePath);
 
         var corps = Assert.Single(canal.CorpsRecus);
-        Assert.Contains("Parent A", corps);
-        Assert.Contains("Parent B", corps);
+        Assert.Contains("parent-a", corps);
+        Assert.Contains("parent-b", corps);
         Assert.Contains("08:30:00", corps);
         Assert.Empty(page.FindAll("[data-testid='motif-echec']"));
     }

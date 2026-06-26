@@ -135,7 +135,7 @@ Scenario: Une date par défaut figée en 2025 fait tomber la saisie hors de la f
 
 ### Scenario 6 — Période affectée à un parent se colore à sa couleur
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: Une période affectée au Parent A s'affiche en bleu et au Parent B en orange

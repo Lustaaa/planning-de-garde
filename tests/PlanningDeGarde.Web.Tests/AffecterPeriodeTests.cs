@@ -31,30 +31,37 @@ public sealed class AffecterPeriodeTests : TestContext
         return canal;
     }
 
-    // Driver (peuplement) : le sélecteur de responsable propose bien les responsables du foyer.
+    // Driver (peuplement) : le sélecteur affiche les LIBELLÉS mais bind les IDENTIFIANTS STABLES
+    // (cadrage (B), Sc.6) — l'option « Parent A » a pour value « parent-a », atteignable par la palette.
     [Fact]
-    public void Should_Proposer_les_responsables_du_foyer_Parent_A_et_Parent_B_When_un_parent_ouvre_la_dialog_d_affectation()
+    public void Should_Proposer_les_responsables_du_foyer_affichant_le_libelle_mais_bindant_l_id_stable_When_un_parent_ouvre_la_dialog_d_affectation()
     {
         Cabler();
         var page = RenderComponent<AffecterPeriode>();
 
         var options = page.FindAll("select.form-select option");
         var valeurs = options.Select(o => o.GetAttribute("value")).ToList();
+        var libelles = options.Select(o => o.TextContent.Trim()).ToList();
 
-        Assert.Contains("Parent A", valeurs);
-        Assert.Contains("Parent B", valeurs);
+        // Les value bindées sont les identifiants stables ...
+        Assert.Contains("parent-a", valeurs);
+        Assert.Contains("parent-b", valeurs);
+        // ... et les textes affichés restent les libellés lisibles.
+        Assert.Contains("Parent A", libelles);
+        Assert.Contains("Parent B", libelles);
     }
 
     // La vue émet la commande d'affectation via le canal HTTP avec les valeurs métier saisies. Les
     // dates sont pré-remplies « aujourd'hui » depuis le port d'horloge figé (26/06/2026) : la semaine
     // en cours (lundi 22/06 → dimanche 28/06), pas un intervalle 2025.
     [Fact]
-    public void Should_Emettre_via_le_canal_l_affectation_Parent_A_du_22_06_au_28_06_2026_When_un_parent_choisit_Parent_A_et_valide()
+    public void Should_Emettre_via_le_canal_l_affectation_de_parent_a_du_22_06_au_28_06_2026_When_un_parent_choisit_Parent_A_et_valide()
     {
         var canal = Cabler();
         var page = RenderComponent<AffecterPeriode>();
 
-        page.Find("select.form-select").Change("Parent A");
+        // L'utilisateur choisit « Parent A » : la value bindée est l'id stable « parent-a ».
+        page.Find("select.form-select").Change("parent-a");
         page.Find("form").Submit();
 
         var requete = Assert.Single(canal.RequetesRecues);
@@ -62,7 +69,7 @@ public sealed class AffecterPeriodeTests : TestContext
         Assert.Equal("/api/canal/affecter-periode", requete.RequestUri!.AbsolutePath);
 
         var corps = Assert.Single(canal.CorpsRecus);
-        Assert.Contains("Parent A", corps);
+        Assert.Contains("parent-a", corps);
         Assert.Contains("2026-06-22", corps);
         Assert.Contains("2026-06-28", corps);
         Assert.Empty(page.FindAll("[data-testid='motif-echec']"));

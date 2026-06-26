@@ -21,7 +21,7 @@ else
                 <option value="">— choisir —</option>
                 @foreach (var r in Foyer.Responsables)
                 {
-                    <option value="@r">@r</option>
+                    <option value="@r.Id">@r.Libelle</option>
                 }
             </InputSelect>
         </div>
