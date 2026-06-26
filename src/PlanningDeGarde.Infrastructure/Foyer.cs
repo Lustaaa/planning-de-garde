@@ -38,4 +38,18 @@ public static class Foyer
 
     /// <summary>Couleur neutre (repli déterministe) pour tout acteur absent du set.</summary>
     public const string CouleurNeutre = "gris";
+
+    /// <summary>
+    /// Référentiel des noms d'affichage par identifiant stable (source de vérité du libellé
+    /// humain — résolu en lecture par <see cref="FoyerReferentielResponsables"/>, miroir du set
+    /// de couleurs). Déclare aussi l'acteur hors-set couleur « grand-père » (identifiant stable
+    /// valide, absent de <see cref="CouleursParActeur"/> → couleur neutre, mais nom conservé).
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, string> NomsParResponsable =
+        new Dictionary<string, string>
+        {
+            ["parent-a"] = "Alice",
+            ["parent-b"] = "Bruno",
+            ["grand-pere"] = "grand-père",
+        };
 }

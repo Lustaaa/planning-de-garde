@@ -87,7 +87,7 @@ lecture seule et alimentée en temps réel par le canal de diffusion existant.
 
 ### Scenario 1 — Une période affectée affiche le nom et entre dans la légende
 
-`@nominal` `🖥️ IHM`
+`@nominal` `🖥️ IHM` `@rouge`
 
 ```gherkin
 Scenario: Une période affectée à Alice affiche son nom et une entrée de légende

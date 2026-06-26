@@ -53,7 +53,8 @@ public class Scenario_SlotsEmpilesOrdreHoraire
         => new(
             TroisSlotsDeLeaLe_26_06_DansLeDesordre(),
             new FakePeriodeRepository(),
-            new FakePaletteCouleurs(new Dictionary<string, string>()));
+            new FakePaletteCouleurs(new Dictionary<string, string>()),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
     private static JourCase CaseDuVendredi(GrilleAgenda grille)
         => grille.Jours.Single(j => j.Date == Vendredi_26_06_2026);

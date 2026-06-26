@@ -48,7 +48,8 @@ public class Scenario_CouleurResponsableCaseJour
     }
 
     private static GrilleAgendaQuery Query(FakePeriodeRepository periodes, IPaletteCouleurs palette)
-        => new(new FakeSlotRepository(), periodes, palette);
+        => new(new FakeSlotRepository(), periodes, palette,
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
     // ---------- Test d'acceptation (boucle externe, BDD) ----------
 

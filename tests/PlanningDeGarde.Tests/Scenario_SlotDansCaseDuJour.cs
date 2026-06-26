@@ -43,7 +43,8 @@ public class Scenario_SlotDansCaseDuJour
         var query = new GrilleAgendaQuery(
             SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(),
             new FakePeriodeRepository(),
-            new FakePaletteCouleurs(new Dictionary<string, string>()));
+            new FakePaletteCouleurs(new Dictionary<string, string>()),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
         // When — un Parent consulte la grille le 24/06/2026
         var grille = query.Projeter(Date_24_06_2026);
@@ -71,7 +72,8 @@ public class Scenario_SlotDansCaseDuJour
         var query = new GrilleAgendaQuery(
             SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(),
             new FakePeriodeRepository(),
-            new FakePaletteCouleurs(new Dictionary<string, string>()));
+            new FakePaletteCouleurs(new Dictionary<string, string>()),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
         var grille = query.Projeter(Date_24_06_2026);
 
@@ -88,7 +90,8 @@ public class Scenario_SlotDansCaseDuJour
         var query = new GrilleAgendaQuery(
             SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(),
             new FakePeriodeRepository(),
-            new FakePaletteCouleurs(new Dictionary<string, string>()));
+            new FakePaletteCouleurs(new Dictionary<string, string>()),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
         var grille = query.Projeter(Date_24_06_2026);
 
@@ -107,7 +110,8 @@ public class Scenario_SlotDansCaseDuJour
         var query = new GrilleAgendaQuery(
             SlotsAvecEcoleDeLeaLe_23_06_de_08h_a_17h(),
             new FakePeriodeRepository(),
-            new FakePaletteCouleurs(new Dictionary<string, string>()));
+            new FakePaletteCouleurs(new Dictionary<string, string>()),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
         var grille = query.Projeter(Date_24_06_2026);
 

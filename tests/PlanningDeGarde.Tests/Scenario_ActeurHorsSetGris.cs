@@ -60,7 +60,8 @@ public class Scenario_ActeurHorsSetGris
     }
 
     private static GrilleAgendaQuery Query()
-        => new(new FakeSlotRepository(), PeriodesParentABleuEtGrandPereHorsSet(), PaletteSansGrandPere());
+        => new(new FakeSlotRepository(), PeriodesParentABleuEtGrandPereHorsSet(), PaletteSansGrandPere(),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
     // ---------- Test d'acceptation (boucle externe, BDD) ----------
 

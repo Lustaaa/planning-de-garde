@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ILieuRepository, FoyerLieuRepository>();
         services.AddSingleton<IResponsableRepository, FoyerResponsableRepository>();
         services.AddSingleton<IPaletteCouleurs, FoyerPaletteCouleurs>();
+        services.AddSingleton<IReferentielResponsables, FoyerReferentielResponsables>();
 
         // Port temps réel réel (SignalR) — remplace le fake des scénarios.
         services.AddSingleton<INotificateurPlanning, SignalRNotificateurPlanning>();
