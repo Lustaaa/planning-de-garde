@@ -34,6 +34,9 @@ public static class Foyer
             ["parent-a"] = "bleu",
             ["parent-b"] = "orange",
             ["nounou"] = "vert",
+            // Responsable au nom long (Sc.7 lisibilité) : identifiant stable colorié en bleu — la
+            // longueur du libellé est un enjeu de PRÉSENTATION (troncature + survol), pas de couleur.
+            ["parent-c"] = "bleu",
         };
 
     /// <summary>Couleur neutre (repli déterministe) pour tout acteur absent du set.</summary>
@@ -51,5 +54,8 @@ public static class Foyer
             ["parent-a"] = "Alice",
             ["parent-b"] = "Bruno",
             ["grand-pere"] = "grand-père",
+            // Nom long (Sc.7) : adopte le nom du scénario pour rendre la troncature visible au runtime
+            // sans altérer la donnée (le read model porte toujours le nom complet).
+            ["parent-c"] = "Marie-Hélène Grand-Dubois",
         };
 }

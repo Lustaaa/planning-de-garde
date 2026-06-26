@@ -155,7 +155,7 @@ Scenario: Un acteur hors set garde son nom et une entrée de légende malgré la
 
 ### Scenario 6 — Nom long : lisibilité de la case préservée
 
-`@limite` `🖥️ IHM` `@rouge`
+`@limite` `🖥️ IHM` `@vert`
 
 ```gherkin
 Scenario: Un responsable au nom long reste lisible dans la case et complet dans la légende
