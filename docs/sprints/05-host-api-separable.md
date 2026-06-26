@@ -27,7 +27,7 @@
 
 ### Scenario 1 — Le back démarre seul : l'API détachée enregistre une affectation sans le front
 
-`@nominal`
+`@nominal @vert`
 
 ```gherkin
 Scenario: Le back démarre seul et son canal d'écriture enregistre une affectation

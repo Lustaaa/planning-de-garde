@@ -4,9 +4,11 @@
     <Project Path="src/PlanningDeGarde.Domain/PlanningDeGarde.Domain.csproj" />
     <Project Path="src/PlanningDeGarde.Infrastructure/PlanningDeGarde.Infrastructure.csproj" />
     <Project Path="src/PlanningDeGarde.Web/PlanningDeGarde.Web.csproj" />
+    <Project Path="src/PlanningDeGarde.Api/PlanningDeGarde.Api.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/PlanningDeGarde.Tests/PlanningDeGarde.Tests.csproj" />
     <Project Path="tests/PlanningDeGarde.Web.Tests/PlanningDeGarde.Web.Tests.csproj" />
+    <Project Path="tests/PlanningDeGarde.Api.Tests/PlanningDeGarde.Api.Tests.csproj" />
   </Folder>
 </Solution>
