@@ -43,3 +43,21 @@
     **InMemory** (borne anti-cliquet, règle 30).
 - **Sources** : spec v09 règles 6 + 30 + R1 ; besoins /4-retours s08 (G2 PO, révision d'arbitre
   bornée) ; garde-fou découpe ; acquis s08 (ConfigurationFoyerEnMemoire, EditerActeur, ports).
+
+## 2026-06-27 — Contrainte technique PO : Mongo démarrée via Docker
+
+- **Consigne PO (cadrage technique)** : la base **Mongo doit être démarrée via Docker**
+  (conteneur), **pas** un serveur embedded/in-process ni un Mongo installé en local.
+- **Implications pour `/3` (à cadrer par tdd-analyse/tdd-auto)** :
+  - **Outillage** : ajouter un **`docker-compose`** (service Mongo) ; le skill/`run.ps1` doit
+    **démarrer le conteneur Mongo** avant l'API (ou documenter le prérequis). Garde-fou
+    d'outillage (cf. section BACKLOG « Conteneurisation Docker »), sans observable métier.
+  - **Adaptateur** : l'adaptateur de droite durable se connecte au Mongo du conteneur
+    (chaîne de connexion configurable, ex. `mongodb://localhost:27017`).
+  - **Test d'intégration du pivot (Sc.3)** : exige un **Mongo RÉEL tournant** (conteneur
+    Docker) — l'acceptation « survie au redémarrage » se prouve contre ce store, jamais une
+    doublure (anti vert-qui-ment, R4). Prévoir le **démarrage/teardown** du conteneur autour
+    du test (ou un Mongo de test dédié), et un **skip propre** si Docker indisponible plutôt
+    qu'un faux vert.
+- **Sources** : consigne PO directe (2026-06-27) ; BACKLOG « Conteneurisation Docker » (garde-fou
+  d'outillage) ; spec v09 R4 (acceptation runtime sur store réel).
