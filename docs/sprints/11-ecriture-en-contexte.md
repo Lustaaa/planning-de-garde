@@ -148,7 +148,7 @@ Scenario Outline: Une commande qui n'aboutit pas laisse la dialog ouverte et la 
     | API injoignable  | le lieu "École" de 08:00 à 09:00     | Service indisponible : à resoumettre |
 ```
 
-### Scenario 5 — Annuler la dialog ne modifie pas le planning `@limite`
+### Scenario 5 — Annuler la dialog ne modifie pas le planning `@limite` `@vert`
 
 ```gherkin
 Scenario: Annuler une dialog n'émet aucune écriture et laisse la grille intacte
