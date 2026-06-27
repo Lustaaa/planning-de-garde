@@ -19,11 +19,19 @@
 
 ## IHM - général
 
--
+- Pour la visu du planning chaque utilisateur a sa propre vu.
+  - Il faut changer la dropdown Role pour mettre l'acteur qu'on souhaite impersonnate.
 
 ## IHM - /configuration
 
--
+- la dropdown "Acteur du foyer" n'est pas mise à jour quand je change le nom d'un acteur
+- il manque de quoi choisir le debut du cycle
+- il manque de quoi configurer le cycle. Je veux pouvoir configurer finement les cycles
+  - La mise a jour doit avoir une date de debut et un date de fin de cycle
+  - quelque exemples :
+    - 1 semaine sur 2 du vendredi au vendredi (par exemple)
+    - 1 semaine sur 2 du lundi au lundi et 2 semaines/2 semaine pendant les grandes vacances
+    - 1 WE sur 2 (2 jours toutes les 2 semaines)
 
 ## IHM - /planning
 
@@ -47,7 +55,12 @@
 > de séquencement). Pèsent sur le choix du prochain sujet en `/4-retours` (G2). Laisser vide
 > si aucune.
 
--
+- la configuration du foyer correspond a la configuration pour un utilisateur. 
+  - Il faut un crud complet sur les acteurs (Create - Read - Update - Delete)
+  - Tant que tous les acteur ne sont pas des utilisateurs, l'utilisateur principale peut agire sur les acteurs
+- Supprimer l'ecran Poser un slot => en faire une dialog qui s'ouvre depuis le bouton de l'ecran planning
+- Supprimer l'ecran Affecter une période => en faire une dialog qui s'ouvre depuis le bouton de l'ecran planning
+- Supprimer l'ecran Définir un transfert => en faire une dialog qui s'ouvre depuis le bouton de l'ecran planning
 
 # Méthode (agents) — pour retro-sprint
 
@@ -56,6 +69,7 @@
 
 | Date | Cible (agent/skill/command) | Retour | Décision prise |
 |------|-----------------------------|--------|----------------|
+| 2026-06-27 | Tous les agents (prompts) + `/6-cloture-sprint` | PO : les agents ne doivent **pas** lire les éléments archivés (répertoire `archive/`). En fin de sprint, archiver les autres fichiers du sprint passé et ne conserver hors archive que le **fichier de suivi** (`00-sprint<NN>-suivi.md`), que les agents peuvent lire s'ils le souhaitent. | À traiter par `retro-sprint` : (1) ajouter une consigne « ne pas lire `archive/` » dans les agents qui explorent `docs/sprints/` ; (2) `/6-cloture-sprint` déplace tous les fichiers de sprint sauf le suivi dans `archive/`. |
 
 ## IA
 
@@ -63,6 +77,7 @@
 
 | Date | Cible (agent/skill/command) | Observation | Recommandation |
 |------|-----------------------------|-------------|----------------|
+| 2026-06-27 | Tests runtime SignalR (Web.Tests) | Un test runtime SignalR a échoué 1 fois sur 2 exécutions complètes au gate (flake d'isolation/timing sous charge parallèle) ; vert au re-run et en isolation. | Stabiliser au prochain passage technique (synchronisation déterministe de la pompe de diffusion / attente d'établissement du long polling au lieu d'un timing). Candidat retro-sprint. |
 
 ## Notes de contexte (décisions produit, hors méthode)
 
@@ -252,3 +267,82 @@
   Risques (« coût de saisie du cycle », R4 acceptation runtime) ; **trois décisions CP du
   2026-06-27** ci-dessus (grain / ancrage ISO / concurrence) ; précédents s08 Sc.7 & Sc.9,
   s01 Sc.10, s05 Sc.6 ; BACKLOG palier 6 (É7/É1) ; corollaire de découpe (~2h IA).
+
+## 2026-06-27 — Validation du plan d'implémentation tdd-analyse (palier 6, `/3`)
+
+- **Question (tdd-analyse)** : valider le plan d'implémentation du sprint 10 (8 scénarios,
+  11 tests backend) et trancher la divergence vs analyse `/2` avant d'enchaîner l'implémentation.
+- **Décision (CP, sans escalade)** : **VALIDÉ — feu vert à l'implémentation**. Le plan
+  (Domain parité ISO + invariant N≥1 ; port `IReferentielCycleDeFond` + `DefinirCycleHandler` ;
+  extension `GrilleAgendaQuery` branche `periode is null` ; adaptateur **InMemory singleton, PAS
+  Mongo**) est conforme aux trois décisions CP du grain/ancrage/concurrence et à la borne
+  anti-cliquet (règle 30). Aucune escalade : pas de règle de gestion neuve (règle 11 préexiste)
+  → pas de G1 ; cap palier 6 inchangé → pas de G2.
+- **Divergence Sc.2 driver→caractérisation : TRANCHÉE EN FAVEUR de tdd-analyse.** Inspection de
+  `src/PlanningDeGarde.Application/Classes/GrilleAgendaQuery.cs` (l.63-66) : `CaseJourAu` résout
+  via `periode is null ? neutre : période`. Le fond s'ajoute **dans la branche `periode is null`**
+  → la branche `else période` (surcharge) reste **structurellement intacte**. La priorité
+  surcharge > fond ne requiert **aucun code neuf** : Sc.2 ne peut pas piloter un rouge → c'est
+  une **caractérisation (filet de non-régression des périodes explicites)**, pas un driver.
+  La synthèse `/2` (« Sc.2 driver ») est **corrigée**. Drivers réels = **4** (Sc.1 ×3 + Sc.7 ×1).
+- **Early-greens routés CP (plus de G4) — conservés en filets.** Sc.2, Sc.3, Sc.4, Sc.5, Sc.6,
+  Sc.7 #2 et Sc.1 #4 produiront des verts précoces **attendus** (composent du code déjà vert :
+  priorité structurelle, repli neutre mirroir `CouleurDe`, `mod 1 = 0`, écrasement singleton).
+  **Aucun doublon à supprimer, aucun câblage à investiguer** : ce sont des caractérisations
+  légitimes documentant l'absence de version/rejet. Consigne : **ne pas inventer de faux rouge**.
+  Aucun trou métier derrière → pas de remontée G1.
+- **Bornes rappelées** : cycle de fond **EN MÉMOIRE** (InMemory singleton, durabilité = palier 9) ;
+  référentiel acteurs + ports `IReferentielResponsables`/`IPaletteCouleurs` **inchangés** (résolution
+  nom/couleur sur id stable, règle 19) ; diffusion SignalR **réutilisée** (Spy backend, runtime
+  ihm-builder), jamais reconstruite ; Sc.8 = 0 backend (échec transport runtime, patron s09 Sc.9).
+  Tranche de secours (cycle 1 sem) **seulement** si débordement réel ~2h, pas par précaution.
+- **Sources** : `00-sprint10-suivi.md` (cadrage scaffolding) ; `src/.../GrilleAgendaQuery.cs`
+  l.61-80 (branche `periode is null`, `LegendeDesPresents` agrège les seules périodes) ; trois
+  décisions CP du 2026-06-27 ci-dessus ; spec v10 règles 7, 11, 12, 18, 19, 26, 28, 30 ;
+  précédents s08 Sc.7 & Sc.9, s01 Sc.10, s05 Sc.6 ; corollaire de découpe (~2h IA).
+
+## 2026-06-27 — Validation de l'écriture du backlog de besoins fin d'itération (palier 6, `/4-retours`)
+
+- **Question (`/4-retours`)** : la synthèse de retours-challenge est-elle dérivable des retours
+  PO + backlog, et peut-on autoriser l'écriture de `99-sprint10-besoins-fin-itération.md` ?
+  (Le choix du prochain sujet G2 est **déjà tranché par le PO** : GOAL 1 — dialogs depuis le
+  planning, palier 8. Pas de réouverture G2.)
+- **Décision (CP, sans escalade)** : **VALIDÉ — feu vert à l'écriture du fichier de besoins**.
+  La synthèse est intégralement dérivable des retours produit PO et du BACKLOG ; aucun trou
+  métier ne subsiste. **Pas de G2** (cap déjà acté par le PO) ; **pas de G1** (aucune règle de
+  gestion neuve — les besoins reprennent des épics/règles existantes).
+- **Dérivabilité vérifiée (retour PO → besoin) :**
+  - **R2 bug dropdown « Acteur du foyer » périmée** (retours `## IHM - /configuration`, l.27 :
+    « pas mise à jour quand je change le nom d'un acteur ») → **fix `/3` ciblé léger en tête**,
+    **hors make-gherkin** (régression d'affichage du store `_acteurs`, pas un incrément métier).
+  - **GOAL 1 — dialogs depuis le planning** (Poser slot / Affecter période ; transfert en
+    secours) ⇐ **Consigne pour la suite** PO (l.61-63 : « Supprimer l'écran … ⇒ dialog depuis le
+    bouton planning ») = **BACKLOG palier 8** (É12/É6/É7/É8, « écriture en contexte ») +
+    dette s03 (édition/suppression période depuis IHM). Réutilise commandes/handlers + canal HTTP
+    `poser-slot`/`affecter-période` **déjà livrés** (s04/s05). **Arbitre : l'usage tranche +
+    défaut confirmé prime.**
+  - **(b) CRUD acteurs complet** (Delete manquant + impersonation **bornée convenance admin**,
+    PAS auth) ⇐ Consigne PO (l.58-60 : « CRUD complet … l'utilisateur principal peut agir sur
+    les acteurs tant qu'ils ne sont pas des utilisateurs ») = É2 (« Édition acteurs autres :
+    ajout/édition/**suppression** ») + amorce É10. **Séquencé derrière GOAL 1, NON abandonné.**
+  - **(c) cycle de fond riche** (R3 « choisir le début du cycle » l.28 ; R4 « configurer
+    finement … date début/fin, 1 sem/2, WE/2 » l.29-34) ⇐ É7/É1 + palier 9 (config durable).
+    **Séquencé derrière, NON abandonné.** ⚠️ **Rouvre explicitement la borne CP « ancrage ISO
+    8601, aucune ancre à saisir »** (décision du 2026-06-27 ci-dessus) : c'était l'**évolution
+    option 2 anticipée** (« si l'usage réclame de choisir la phase, évolution séquencée ») — la
+    réouverture est **conforme**, à traiter quand (c) sera pris (ancre/borne saisie + durabilité
+    palier 9). Pas un trou métier maintenant.
+  - **Impersonation via dropdown rôle** (retours `## IHM - général`, l.22-23) → versé à (b)
+    (convenance admin) / amorce É10, pas le prochain sujet.
+  - **Tech (optionnel)** vide (l.40-42) → **bypass confirmé** (placeholder seul, aucune
+    contrainte technique).
+  - **Idée pour la suite** vide (l.50) → rien à verser au backlog.
+- **Risques / bornes** : (a) GOAL 1 réutilise l'existant (pas de commande/handler neuf) — risque
+  de débordement faible, tranche verticale ~2h IA ; (b) la borne anti-cliquet règle 30 reste
+  tenue (le cycle riche (c) embarque la durabilité **palier 9**, non remontée devant l'usage) ;
+  (c) aucun abandon — (b) et (c) restent au backlog, séquencés derrière l'usage.
+- **Sources** : `99-sprint10-retours.md` (Retours produit PO : `## IHM - général`,
+  `## IHM - /configuration`, `## Tech`, `# Idée pour la suite`, `# Consigne pour la suite`) ;
+  `docs/BACKLOG.md` (palier 8 É12/É6/É7/É8 ; É2 CRUD acteurs ; É7/É1 cycle ; palier 9 durabilité ;
+  dettes s03) ; spec v10 palier 6/8/9 + règle 30 (borne anti-cliquet) ; décision CP « ancrage ISO »
+  du 2026-06-27 ci-dessus (rouverte par (c)) ; **G2 tranché PO** (GOAL 1 dialogs planning).
