@@ -92,6 +92,15 @@ recours**, si un script reste cassé : il faut alors tenir les garde-fous à la 
 (branche ≠ `main`, staging **sélectif** sans `git add -A`, trailer `Co-Authored-By`).
 Ne jamais laisser un contournement silencieux des garde-fous passer pour normal.
 
+**Syntaxe selon le shell du tool.** Un commit manuel multi-ligne doit respecter le shell
+qui l'exécute. Le **tool Bash** exécute du **POSIX sh** : la here-string PowerShell
+`@'…'@` n'y existe pas et **fuit telle quelle dans le message** (constaté sprint 10 : un
+`@` parasite en tête de sujet). Pour un message multi-ligne : soit le **tool PowerShell**
+avec une vraie here-string `@'…'@` (`'@` collé en colonne 0), soit le **tool Bash** avec
+des `-m` répétés (`git commit -m "sujet" -m "corps" -m "trailer"`) ou un heredoc `sh`.
+**Ne jamais mélanger** here-string PowerShell et tool Bash. Préférer de toute façon le
+script `commit.ps1` (garde-fous portés).
+
 ## Garde-fous (portés par les scripts)
 
 - **Jamais de commit/push direct sur `main`/`master`** — cohérent avec le hook

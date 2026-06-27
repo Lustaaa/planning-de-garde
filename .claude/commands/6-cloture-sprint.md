@@ -44,6 +44,19 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
    - **Ce gate est dur** : ne prépare **pas** la PR tant que `98-retrospective.md` n'existe
      pas pour le sprint clos. C'est l'amélioration continue rendue **non contournable**.
 
+1bis. **Archivage de clôture (script) — AVANT le push, pour partir dans la PR.** Une fois
+   la rétro écrite (`98-retrospective.md` présent), **range le dossier du sprint clos** :
+   `pwsh -NoProfile -File .claude/skills/retours-challenge/scripts/archive-iteration.ps1 -Dossier docs/sprints/<sujet> -Closure`.
+   Le mode `-Closure` déplace dans `archive/` **tous** les `.md` de pilotage du sprint clos
+   (`99-sprint<NN>-retours.md`, `99-sprint<NN>-besoins-fin-itération.md`, `98-retrospective.md`,
+   plus les scénarios déjà archivés en `/4-retours`) en **ne laissant à la racine que
+   `00-sprint<NN>-suivi.md`** (seul fichier qu'un agent d'un sprint ultérieur peut lire), et
+   réécrit les liens du suivi. **Commite** ce rangement (sans pousser) pour qu'il parte dans
+   la PR. Les scripts de détection (`find-retro.ps1`, `cloture-sprint.ps1`) reconnaissent ces
+   fichiers à la racine **comme** sous `archive/` (glob `-Recurse`) : le gate de rétro et la
+   détection du sprint clos restent corrects après archivage. (Retour PO méthode sprint 10 :
+   les agents ne lisent pas `archive/` ; ne conserver hors archive que le suivi.)
+
 2. **Prépare la PR (script).** Exécute
    `pwsh -NoProfile -File .claude/skills/cloture-sprint/scripts/cloture-sprint.ps1`
    (passe `-Sprint $ARGUMENTS` si fourni). Le script **pousse** la branche et renvoie :

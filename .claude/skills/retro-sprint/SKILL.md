@@ -41,10 +41,12 @@ PR du sprint).
   changement en clair + raison reprise du retour/de l'observation). À ne pas confondre avec
   le backlog produit `99-sprint<NN>-besoins-fin-itération.md` ni avec la section produit
   `# Retours produit (PO)` du même fichier.
-- **Sprint clos** — le dossier `docs/sprints/<sprint>/` (`00-sprint<NN>-suivi.md`,
-  `99-sprint<NN>-retours.md`, `99-sprint<NN>-besoins-fin-itération.md` — `<NN>` = numéro du
-  sprint = préfixe 2 chiffres du dossier, ex. `00-sprint02-suivi.md` ; scénarios sous
-  `archive/`) : la trace de ce qui s'est passé.
+- **Sprint clos** — le dossier `docs/sprints/<sprint>/`. **Ne lis JAMAIS sous `archive/`** :
+  appuie-toi sur le **suivi** `00-sprint<NN>-suivi.md` (seul fichier laissé hors archive à la
+  clôture, `<NN>` = numéro du sprint = préfixe 2 chiffres du dossier) et, pour le sprint en
+  cours de rétro, sur `99-sprint<NN>-retours.md` + `99-sprint<NN>-besoins-fin-itération.md`
+  encore à la racine. Les scénarios et artefacts des sprints **antérieurs** sont sous
+  `archive/` et ne se lisent pas : la trace exploitable est le suivi.
 - **Le pipeline** — les fichiers `.claude/agents/`, `.claude/skills/`, `.claude/commands/`
   effectivement exercés pendant le sprint.
 - **Frictions observées** — transmises par le thread principal (le PO les a vécues : un

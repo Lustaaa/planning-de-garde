@@ -17,10 +17,20 @@
 
 .OUTPUTS
   JSON : { dossier, archiveDir, archived[], kept[], suiviLinksUpdated }
+
+.PARAMETER Closure
+  Mode CLÔTURE (appelé par /6-cloture-sprint, après la rétro). Archive AUSSI les artefacts
+  de pilotage du sprint clos (`99-sprint<NN>-retours.md`, `99-sprint<NN>-besoins-fin-itération.md`,
+  `98-retrospective.md`), ne laissant à la racine que le seul fichier de suivi
+  `00-sprint<NN>-suivi.md` (lisible par les agents). Sans ce switch (mode /4-retours), seuls
+  les fichiers de scénario `NN-slug.md` sont déplacés et les artefacts de pilotage restent à
+  la racine. Les scripts de détection (find-retro.ps1, cloture-sprint.ps1) cherchent ces
+  fichiers à la racine ET sous archive/ pour rester cohérents avec ce mode.
 #>
 [CmdletBinding()]
 param(
-  [Parameter(Mandatory)] [string]$Dossier
+  [Parameter(Mandatory)] [string]$Dossier,
+  [switch]$Closure
 )
 
 $ErrorActionPreference = 'Stop'
@@ -37,8 +47,11 @@ $Dossier = (Resolve-Path $Dossier).Path
 # aussi les legacy `NN-retours.md` d'anciens sprints ; la règle explicite
 # `99-sprint<NN>-retours.md` est conservée pour la lisibilité et la robustesse.
 function Test-Kept([string]$name) {
-  return ($name -ieq '00-suivi.md') -or
-         ($name -imatch '^00-sprint\d{2}-suivi\.md$') -or
+  # Le fichier de suivi reste TOUJOURS à la racine (lisible par les agents).
+  $isSuivi = ($name -ieq '00-suivi.md') -or ($name -imatch '^00-sprint\d{2}-suivi\.md$')
+  if ($Closure) { return $isSuivi }  # mode clôture : on n'archive QUE le suivi en moins
+  # Mode /4-retours : on garde aussi les artefacts de pilotage de l'itération.
+  return $isSuivi -or
          ($name -ilike '*-retours.md') -or
          ($name -imatch '^99-sprint\d{2}-retours\.md$') -or
          ($name -ieq '99-besoins-fin-itération.md') -or

@@ -27,7 +27,11 @@ param(
 )
 
 $ErrorActionPreference = 'Stop'
-Set-Location (git rev-parse --show-toplevel)
+# git émet ses chemins en UTF-8 ; sans cela PowerShell les décode dans la code page
+# console et corrompt les caractères accentués (ex. dépôt « privée »), faisant échouer
+# Set-Location. -LiteralPath fiabilise le cd vers les chemins à caractères spéciaux.
+$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
+Set-Location -LiteralPath (git rev-parse --show-toplevel).Trim()
 
 function Get-Prefix([string]$name) {
   if ($name -match '^(\d{2})-') { return [int]$Matches[1] } else { return -1 }
@@ -45,7 +49,10 @@ $dirs = Get-ChildItem -Path $SprintsDir -Directory |
 
 foreach ($d in $dirs) {
   $nn = '{0:D2}' -f (Get-Prefix $d.Name)
-  $besoins = Get-ChildItem -Path $d.FullName -Filter '99-sprint*-besoins-fin-itération.md' -File -ErrorAction SilentlyContinue | Select-Object -First 1
+  # Le backlog (et la rétro) peuvent vivre à la racine du dossier OU sous `archive/` :
+  # /6-cloture-sprint archive en fin de course tous les .md de pilotage SAUF le suivi.
+  # On cherche donc en récursif (-Recurse couvre racine + archive/).
+  $besoins = Get-ChildItem -Path $d.FullName -Filter '99-sprint*-besoins-fin-itération.md' -File -Recurse -ErrorAction SilentlyContinue | Select-Object -First 1
   if (-not $besoins) { continue }  # itération pas encore close (pas passée par /4-retours)
 
   # Placeholder vide (scaffolddé par tdd-analyse) ≠ backlog rempli par /4-retours.
@@ -53,9 +60,10 @@ foreach ($d in $dirs) {
   $isPlaceholder = $content -match 'Placeholder\s+—\s+\*\*rempli par'
   if ($isPlaceholder) { continue }  # /4-retours pas encore passé : itération non close
 
-  # Sprint clos : a-t-il sa rétro ?
+  # Sprint clos : a-t-il sa rétro ? (racine ou archive/ après clôture)
   $retro = Join-Path $d.FullName '98-retrospective.md'
-  $hasRetro = Test-Path $retro
+  $retroArchive = Join-Path $d.FullName 'archive/98-retrospective.md'
+  $hasRetro = (Test-Path $retro) -or (Test-Path $retroArchive)
 
   [pscustomobject]@{
     gateOpen         = $hasRetro

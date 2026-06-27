@@ -65,6 +65,8 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
 - Lis le fichier de scénarios source + le dossier de suivi (`00-sprint<NN>-suivi.md`,
   `<NN>` = numéro du sprint = préfixe 2 chiffres du dossier, ex. `00-sprint02-suivi.md`,
   + les `NN-slug.md`) + l'analyse technique.
+- **Ne lis jamais les fichiers sous un répertoire `archive/`** (scénarios des sprints clos,
+  archivés). Hors `archive/`, seul le `00-sprint<NN>-suivi.md` d'un sprint passé est consultable.
 - **Détermine le mode** : un **scénario IHM ciblé** (`🖥️ scénario IHM`, ou routé par
   refus de `tdd-auto`) → **RED→GREEN** (états `ACCEPT_RED → FIX → ACCEPT_GREEN`) ; sinon
   → **phase IHM finale** (construction : `MAP → BUILD → WIRE`).
@@ -93,6 +95,14 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   `WaitForAssertion` contre les re-render bUnit (`UnknownEventHandlerId` sur énumération async).
   **Documente le prérequis Docker** de la suite « TempsReel ». Vise un rouge **déterministe**
   (reproductible ≥3× Docker actif), pas un rouge qui dépend du timing réseau.
+- **Convention anti-flake convergence SignalR (diffusion temps réel).** Pour un test runtime
+  qui asserte la **convergence** d'une grille après diffusion (édition concurrente, MAJ sans
+  rechargement), **attends l'établissement DÉTERMINISTE de la connexion** (long polling établi /
+  signal de la pompe de diffusion) **avant** d'asserter — jamais un délai/timing fixe. Utilise
+  `WaitForAssertion` / `WaitForState` sur l'observable final, **isole l'état** entre tests
+  (store/hub propres par test) pour éviter le flake sous exécution parallèle. (Vécu s10 : un
+  test runtime SignalR Web.Tests a flaké 1×/2 au gate sous charge parallèle — vert en isolation ;
+  cause = timing au lieu d'une attente d'établissement.)
 
 ### FIX (.razor / câblage / render mode)
 - Corrige l'**IHM** : `.razor` / code-behind, **render mode** (`@rendermode
