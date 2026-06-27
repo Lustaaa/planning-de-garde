@@ -26,7 +26,7 @@ lisibilité repose sur le **nom + légende**, pas la couleur seule) — **pas un
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Lister_deux_entrees_de_legende_de_meme_couleur_distinguees_par_leur_identifiant_et_leur_nom_When_deux_acteurs_presents_partagent_la_meme_couleur` | — (caractérisation d'invariant déjà acquis) | ⚠️ **probablement early green — couvert par s07 Sc.2 + Sc.2 #1 (caractérisation, pas driver)** : la légende est **dédoublonnée par identifiant stable** (s07), **jamais par couleur** ; deux ids distincts donnent deux entrées même de teinte identique. Le recoloriage (Sc.2) ne fait que muter la couleur. Aucun rouge — filet documentant la collision **assumée**. | ⏳ Pending |
+| 1 | `Should_Lister_deux_entrees_de_legende_de_meme_couleur_distinguees_par_leur_identifiant_et_leur_nom_When_deux_acteurs_presents_partagent_la_meme_couleur` | — (caractérisation d'invariant déjà acquis) | ⚠️ **probablement early green — couvert par s07 Sc.2 + Sc.2 #1 (caractérisation, pas driver)** : la légende est **dédoublonnée par identifiant stable** (s07), **jamais par couleur** ; deux ids distincts donnent deux entrées même de teinte identique. Le recoloriage (Sc.2) ne fait que muter la couleur. Aucun rouge — filet documentant la collision **assumée**. | ✅ GREEN (caractérisation) |
 
 ## Fichiers à créer / modifier
 
