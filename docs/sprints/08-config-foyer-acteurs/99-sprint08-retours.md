@@ -33,6 +33,22 @@
 
 - (contraintes techniques éventuelles ; laisser vide si aucune → bypass dans `/4-retours`)
 
+# Idée pour la suite
+
+> Idées produit que le PO veut verser au backlog pour de futurs sprints (pas forcément le
+> prochain). Consommées par `/4-retours` (classées/séquencées) puis replacées dans les épics
+> du BACKLOG. Laisser vide si aucune.
+
+-
+
+# Consigne pour la suite
+
+> Consignes directes du PO sur l'orientation à donner à la suite (priorité, cap, contrainte
+> de séquencement). Pèsent sur le choix du prochain sujet en `/4-retours` (G2). Laisser vide
+> si aucune.
+
+-
+
 # Méthode (agents) — pour retro-sprint
 
 > Retours à la volée du PO sur la **méthode** (agents/skills/commands), appendés par le
@@ -40,6 +56,7 @@
 
 | Date | Cible (agent/skill/command) | Retour | Décision prise |
 |------|-----------------------------|--------|----------------|
+| 2026-06-27 | tdd-analyse (scaffold retours) + retours-challenge | PO au gate G3 : « j'aimerai que les sections *Idée pour la suite* et *Consigne pour la suite* soient remises à chaque fois dans le fichier de retours pour que je puisse donner des consignes pour la suite ». | **Appliqué** : `tdd-analyse` scaffolde désormais ces 2 sections forward dans tout `99-sprint<NN>-retours.md` ; `retours-challenge` les lit et les prend en compte (les consignes pèsent sur le séquencement / le prochain sujet en G2). Sections ajoutées au fichier s08 courant. |
 
 ## IA
 
