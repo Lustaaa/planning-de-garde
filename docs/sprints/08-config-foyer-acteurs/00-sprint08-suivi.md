@@ -61,7 +61,7 @@
 | 1 | [Renommer un acteur : la case et la légende suivent](01-renommer-acteur-case-et-legende-suivent.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 3/3 | ✅ GREEN — backend (3/3) + runtime IHM `@vert` |
 | 2 | [Recolorier un acteur : la case et la légende changent de couleur](02-recolorier-acteur-case-et-legende.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 3/3 | ✅ GREEN — backend (3/3) + runtime IHM `@vert` |
 | 3 | [Renommer vers un nom long : troncature, survol, légende complète](03-nom-long-troncature-survol.md) | `@limite` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ✅ GREEN (caractérisation runtime) | 0/0 | ✅ GREEN — runtime IHM `@vert` (caract., réutilise s07 Sc.6) |
-| 4 | [Collision de couleur : distingués par le nom](04-collision-couleur-distingues-par-nom.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 1/1 | 🟡 backend ✅ (caract. 1/1) — runtime IHM ⏳ `ihm-builder` |
+| 4 | [Collision de couleur : distingués par le nom](04-collision-couleur-distingues-par-nom.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 1/1 | ✅ GREEN — backend caract. (1/1) + runtime IHM `@vert` |
 | 5 | [Éditer un acteur hors set : nom suivi, teinte neutre conservée](05-acteur-hors-set-neutre-conservee.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 6 | [Éditer un acteur hors fenêtre : pas d'entrée fantôme](06-acteur-hors-fenetre-pas-d-entree-fantome.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 7 | [Deux écrans renomment : dernière écriture gagne, grilles convergent](07-deux-ecrans-derniere-ecriture-gagne.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + driver runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
@@ -76,7 +76,8 @@ backend (Sc.3, Sc.9 — 100 % runtime IHM).
 
 **Acceptation runtime IHM** : **3/8** (Sc.1 ✅ — `FrontWasmConfigRenommerActeurTempsReelTests` ;
 Sc.2 ✅ — `FrontWasmConfigRecolorierActeurTempsReelTests` ; Sc.3 ✅ caractérisation —
-`FrontWasmConfigNomLongEditeTempsReelTests`).
+`FrontWasmConfigNomLongEditeTempsReelTests` ; Sc.4 ✅ —
+`FrontWasmConfigCollisionCouleurTempsReelTests`).
 
 **Statuts** : ⏳ Pending · 🔴 Red · ✅ Green.
 

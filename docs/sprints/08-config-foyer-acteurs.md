@@ -106,7 +106,7 @@ Scenario: Renommer vers un nom long, tronqué dans la case mais lisible en entie
     et l'entrée de légende affiche le nom complet
 ```
 
-### Scenario 4 — Collision de couleur entre deux acteurs : distingués par le nom `@limite`
+### Scenario 4 — Collision de couleur entre deux acteurs : distingués par le nom `@limite` `@vert`
 
 ```gherkin
 Scenario: Recolorier deux acteurs vers la même couleur, distingués par le nom

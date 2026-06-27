@@ -15,10 +15,14 @@ lisibilité repose sur le **nom + légende**, pas la couleur seule) — **pas un
 > liste **deux** entrées de même couleur, nommées distinctement. bUnit seul ne prouve pas le
 > rendu réel.
 
-`Should_Rendre_les_cases_du_14_07_et_du_15_07_2026_toutes_deux_bleues_distinguables_par_Alice_et_Bruno_avec_deux_entrees_de_legende_bleues_nommees_distinctement_When_parent_b_est_recolorie_vers_la_couleur_de_parent_a`
+`Should_Rendre_les_cases_du_14_07_et_du_15_07_2026_toutes_deux_bleues_distinguables_par_Alice_et_Bruno_avec_deux_entrees_de_legende_bleues_nommees_distinctement_When_parent_b_est_recolorie_vers_la_couleur_de_parent_a` — ✅ GREEN
+(`tests/PlanningDeGarde.Web.Tests/FrontWasmConfigCollisionCouleurTempsReelTests.cs`)
 
-- **Niveau** : E2E/runtime sur l'app câblée. Store réel : `parent-a` (Alice, bleu) +
-  recoloriage `parent-b` (Bruno) → bleu.
+- **Niveau** : E2E/runtime sur l'app câblée (écran `ConfigurationFoyer` + grille `PlanningPartage`).
+  Store réel : `parent-a` (Alice, bleu) + recoloriage `parent-b` (Bruno) → bleu.
+- **GREEN sans code neuf** : compose le recoloriage (Sc.2) et la dédup de légende par id stable
+  (s07). Baseline orange de parent-b asserté avant recoloriage → transition orange→bleu réellement
+  observée (pas un faux-vert).
 - **Observable** : cases du 14/07 et 15/07 toutes deux bleues, l'une « Alice » l'autre
   « Bruno » ; légende = **deux** entrées bleues distinctes (« Alice », « Bruno »).
 
