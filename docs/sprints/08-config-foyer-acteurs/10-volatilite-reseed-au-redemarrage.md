@@ -27,7 +27,7 @@ n'est pas un geste d'IHM) ; dette volatile **assumée** (à éteindre au palier 
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Restituer_le_nom_et_la_couleur_d_origine_du_seed_en_perdant_les_editions_de_la_session_precedente_When_le_store_de_configuration_est_reconstruit` | — (caractérisation du seed-à-la-construction) | ⚠️ **probablement early green — couvert par Sc.1 #1 (caractérisation, pas driver)** : le store **seede depuis `Foyer` à la construction** (nécessaire pour lire « Alice » au départ, Sc.1) ; une nouvelle instance **ne porte aucune édition** → seed d'origine **par construction**. Aucun rouge — filet documentant la **volatilité assumée**. | ⏳ Pending |
+| 1 | `Should_Restituer_le_nom_et_la_couleur_d_origine_du_seed_en_perdant_les_editions_de_la_session_precedente_When_le_store_de_configuration_est_reconstruit` | — (caractérisation du seed-à-la-construction) | ⚠️ **probablement early green — couvert par Sc.1 #1 (caractérisation, pas driver)** : le store **seede depuis `Foyer` à la construction** (nécessaire pour lire « Alice » au départ, Sc.1) ; une nouvelle instance **ne porte aucune édition** → seed d'origine **par construction**. Aucun rouge — filet documentant la **volatilité assumée**. | ✅ GREEN (caractérisation) |
 
 ## Fichiers à créer / modifier
 

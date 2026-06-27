@@ -67,7 +67,7 @@
 | 7 | [Deux écrans renomment : dernière écriture gagne, grilles convergent](07-deux-ecrans-derniere-ecriture-gagne.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + driver runtime `ihm-builder` | ✅ GREEN (runtime) | 1/1 | ✅ GREEN — backend caract. (1/1) + runtime IHM `@vert` |
 | 8 | [Renommer avec un nom vide : édition refusée, ancien nom conservé](08-nom-vide-edition-refusee.md) | `@erreur` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 3/3 | ✅ GREEN — backend (3/3 : 2 drivers garde + 1 caract.) + runtime IHM `@vert` |
 | 9 | [API distante injoignable : échec clair, édition non appliquée](09-api-injoignable-echec-clair.md) | `@erreur` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ✅ GREEN (runtime) | 0/0 | ✅ GREEN — runtime IHM `@vert` (100 % runtime, réutilise la gestion d'échec transport) |
-| 10 | [Volatilité : après redémarrage, le seed d'origine réapparaît](10-volatilite-reseed-au-redemarrage.md) | `@limite` · caract. `tdd-auto` (store re-seed) | ⏳ Pending | 0/1 | ⏳ Pending |
+| 10 | [Volatilité : après redémarrage, le seed d'origine réapparaît](10-volatilite-reseed-au-redemarrage.md) | `@limite` · caract. `tdd-auto` (store re-seed) | ✅ GREEN (store-level) | 1/1 | ✅ GREEN — backend caract. (1/1) ; store-level, sans runtime IHM |
 
 **Total** : 10 scénarios · **14 tests unitaires backend** (≈ 7 drivers réels : Sc.1×3,
 Sc.2×2, Sc.8×2 ; ≈ 7 caractérisations early-green : Sc.2×1, Sc.4, Sc.5, Sc.6, Sc.7, Sc.8×1,

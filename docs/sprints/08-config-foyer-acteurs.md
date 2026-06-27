@@ -188,7 +188,7 @@ Scenario: API injoignable, l'édition n'est pas appliquée et reste à resoumett
     resoumettre, sans mise en file ni rejeu
 ```
 
-### Scenario 10 — Volatilité : après redémarrage, le seed d'origine réapparaît `@limite`
+### Scenario 10 — Volatilité : après redémarrage, le seed d'origine réapparaît `@limite` `@vert`
 
 ```gherkin
 Scenario: L'édition volatile est perdue au redémarrage, le seed réapparaît
