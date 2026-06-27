@@ -32,6 +32,12 @@ public sealed class EditerActeurHandler
 
     public Result<ActeurConfigSnapshot> Handle(EditerActeurCommand commande)
     {
+        // Garde « nom non vide » conditionnelle (Sc.8) : un nom fourni mais vide OU tout-espaces est
+        // refusé sans muter le store (l'ancien nom est conservé) ni déclencher de diffusion. La garde
+        // ne s'applique qu'au nom fourni — une édition couleur-seule (nom null) n'est pas visée.
+        if (commande.Nom is not null && string.IsNullOrWhiteSpace(commande.Nom))
+            return Result<ActeurConfigSnapshot>.Echec("le nom ne peut pas être vide");
+
         // Nom et couleur sont deux surfaces indépendantes : un champ absent (null) n'est pas
         // appliqué — recolorier sans nom ne touche pas le libellé, renommer sans couleur ne
         // touche pas la teinte.
