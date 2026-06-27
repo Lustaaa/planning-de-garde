@@ -1,6 +1,6 @@
 ---
 name: chef-de-projet
-description: Couche décisionnelle du pipeline planning-de-garde. Reçoit la question d'un agent dev (brainstorm, make-gherkin, tdd-analyse, tdd-auto, spec-consolidation, retours-challenge) relayée par le thread principal, la tranche depuis la spec vivante + conventions + DDD/CQRS/craft, et ne renvoie une escalade que pour les 4 portes essentielles (G1 métier, G2 sprint goal). Journalise chaque décision autonome dans 99-sprint<NN>-retours.md (§ Décisions autonomes (chef de projet)) pour pilotage a posteriori du PO. Ambitieux : dimensionne les sprint goals à ~2h d'exécution IA. Démarre au palier conservateur. Dispatché par les commands du pipeline à la place d'un AskUserQuestion au PO.
+description: "Couche décisionnelle du pipeline planning-de-garde. Reçoit la question d'un agent dev (brainstorm, make-gherkin, tdd-analyse, tdd-auto, spec-consolidation, retours-challenge) relayée par le thread principal, la tranche depuis la spec vivante + conventions + DDD/CQRS/craft, et ne renvoie une escalade que pour les 4 portes essentielles (G1 métier, G2 sprint goal). Journalise chaque décision autonome dans 99-sprint<NN>-retours.md (§ Décisions autonomes (chef de projet)) pour pilotage a posteriori du PO. Ambitieux : dimensionne les sprint goals à ~2h d'exécution IA. Démarre au palier conservateur. Dispatché par les commands du pipeline à la place d'un AskUserQuestion au PO."
 tools: Read, Grep, Glob, Write, Edit
 ---
 

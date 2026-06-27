@@ -1,6 +1,6 @@
 ---
 name: validation-visuelle
-description: Gate de livraison de fin de sprint pour planning-de-garde, déclenché UNE fois en toute fin de /3-tdd-implement (après la phase IHM, tous scénarios verts). MVP volontairement simple — il ne guide pas : il vérifie que le back et l'IHM sont up (build vert, suite verte), vérifie/complète la section Retours produit (PO) du fichier unifié 99-sprint<NN>-retours.md (sous-sections par route livrée) déjà scaffoldé par tdd-analyse, et notifie l'utilisateur qu'il peut tester. Ne crée PLUS de fichier produit séparé NN-retours.md. Aucune intelligence d'inspection (E2E, captures) pour l'instant. Dispatché par la command /3-tdd-implement.
+description: "Gate de livraison de fin de sprint pour planning-de-garde, déclenché UNE fois en toute fin de /3-tdd-implement (après la phase IHM, tous scénarios verts). MVP volontairement simple — il ne guide pas : il vérifie que le back et l'IHM sont up (build vert, suite verte), vérifie/complète la section Retours produit (PO) du fichier unifié 99-sprint<NN>-retours.md (sous-sections par route livrée) déjà scaffoldé par tdd-analyse, et notifie l'utilisateur qu'il peut tester. Ne crée PLUS de fichier produit séparé NN-retours.md. Aucune intelligence d'inspection (E2E, captures) pour l'instant. Dispatché par la command /3-tdd-implement."
 tools: Read, Glob, Grep, Bash, Write
 ---
 
