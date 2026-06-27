@@ -86,9 +86,22 @@
 }
 
 <h2 class="h5 mt-4 mb-3">Acteurs du foyer</h2>
+<p class="text-muted">Chaque acteur est listé avec sa pastille de couleur — la même teinte que sur la
+    grille et la légende. Un acteur sans couleur retombe sur le gris neutre.</p>
 <ul class="list-group" data-testid="liste-acteurs">
     @foreach (var a in _acteurs)
     {
-        <li class="list-group-item" data-testid="acteur-foyer" data-acteur-id="@a.Id">@a.Nom</li>
+        <li class="list-group-item acteur-ligne" data-testid="acteur-foyer"
+            data-acteur-id="@a.Id" data-couleur="@a.Couleur">
+            <span class="acteur-pastille" style="background-color:@CouleursTheme.Pleine(a.Couleur);"
+                  aria-hidden="true"></span><span class="acteur-nom">@a.Nom</span>
+        </li>
     }
 </ul>
+
+<style>
+    .acteur-ligne { display: flex; align-items: center; gap: 8px; }
+    .acteur-pastille { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none;
+        border: 1px solid rgba(0, 0, 0, .15); }
+    .acteur-nom { color: #333; }
+</style>

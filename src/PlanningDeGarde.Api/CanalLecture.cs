@@ -13,8 +13,10 @@ namespace PlanningDeGarde.Api;
 public static class CanalLecture
 {
     /// <summary>Vue d'un acteur du foyer énumérée pour l'écran de configuration : identifiant stable
-    /// (clé de résolution) + nom d'affichage courant résolu sur cet identifiant.</summary>
-    public sealed record ActeurFoyerVue(string Id, string Nom);
+    /// (clé de résolution) + nom d'affichage courant + couleur courante, tous deux résolus sur cet
+    /// identifiant (couleur neutre par contrat si l'acteur n'en a pas) — pour que la liste de
+    /// configuration affiche le nom ET sa pastille de couleur, cohérente avec la grille.</summary>
+    public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur);
 
     public static IEndpointRouteBuilder MapperCanalLecture(this IEndpointRouteBuilder routes)
     {
@@ -22,10 +24,10 @@ public static class CanalLecture
         // Foyer.ActeursEditables) : l'écran de configuration la lit pour faire apparaître un acteur
         // fraîchement ajouté (Sc.1). Le nom est résolu sur l'identifiant stable (jamais le libellé).
         routes.MapGet("/api/foyer/acteurs",
-            (IEnumerationActeursFoyer enumeration, IReferentielResponsables referentiel) =>
+            (IEnumerationActeursFoyer enumeration, IReferentielResponsables referentiel, IPaletteCouleurs palette) =>
             {
                 var acteurs = enumeration.EnumererActeurs()
-                    .Select(id => new ActeurFoyerVue(id, referentiel.NomDe(id)))
+                    .Select(id => new ActeurFoyerVue(id, referentiel.NomDe(id), palette.CouleurDe(id)))
                     .ToList();
                 return Results.Ok(acteurs);
             });
