@@ -20,7 +20,16 @@ symptôme PO). Le « sans rechargement » est un fait **runtime/SignalR** ; bUni
 > Parent B orange, en case comme en légende — la grille suit par diffusion SignalR. **Pas** un test bUnit
 > à doublure (qui ne prouve ni la DI réelle, ni le chemin d'écriture du cycle, ni la diffusion temps réel).
 
-`Should_Mettre_a_jour_la_grille_vers_Parent_B_orange_sur_la_semaine_ISO_28_sans_rechargement_When_un_parent_inverse_le_mapping_du_cycle_depuis_la_configuration` — ⏳ Pending *(runtime, `ihm-builder`)*
+`Should_Mettre_a_jour_la_grille_vers_Parent_B_orange_sur_la_semaine_ISO_28_sans_rechargement_When_un_parent_inverse_le_mapping_du_cycle_depuis_la_configuration` — ✅ GREEN *(runtime, `ihm-builder` — `FrontWasmGrilleInverserMappingCycleTempsReelTests`)*
+
+> **Early-green de câblage** (comme Sc.1) : aucune correction de prod — la définition/ré-édition du cycle
+> (canal HTTP `POST /api/canal/definir-cycle`, `DefinirCycleHandler` qui écrase le store ET déclenche la
+> diffusion), l'abonnement SignalR de `PlanningPartage` (re-projection sur `MiseAJour`) et la résolution du
+> fond (Sc.1) délivraient déjà l'observable « sans rechargement ». **Non-vacuité prouvée** : (1) baseline
+> « Alice bleu » asserté AVANT l'inversion → la bascule vers « Bruno orange » est réellement observée ;
+> (2) neutralisation temporaire de l'abonnement au hub (`_hub.On(MiseAJour)` vidé) → la grille reste sur
+> Alice/bleu → **rouge** sur la bascule (timeout `WaitForAssertion`), puis revert. Pompe de diffusion de
+> fond (idempotente) pour rendre le push déterministe APRÈS établissement du long polling vers le TestServer.
 
 ## Tests unitaires backend (boucle interne, `tdd-auto`)
 
