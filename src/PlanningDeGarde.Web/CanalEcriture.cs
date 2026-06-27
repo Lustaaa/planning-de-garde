@@ -26,4 +26,9 @@ public static class CanalEcriture
     /// Le front ne fournit que le nom (+ couleur optionnelle) : l'identifiant stable neuf est généré
     /// côté handler, jamais dérivé du libellé.</summary>
     public sealed record AjouterActeurRequete(string Nom, string? Couleur = null);
+
+    /// <summary>Corps de la requête de définition / ré-édition du cycle de fond (palier 6) émise via le
+    /// canal d'écriture : le nombre de semaines + le mapping index→responsable (identifiant stable bindé
+    /// par le sélecteur, jamais le libellé). Une nouvelle définition remplace le cycle courant.</summary>
+    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations);
 }

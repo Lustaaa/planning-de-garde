@@ -41,6 +41,26 @@ public partial class ConfigurationFoyer
     private readonly FormulaireAjout _ajout = new();
     private string? _motifEchecAjout;
 
+    private sealed class FormulaireCycle
+    {
+        public int NombreSemaines { get; set; } = 2;
+        public Dictionary<int, string> Affectations { get; } = new();
+    }
+
+    private readonly FormulaireCycle _cycle = new();
+    private string? _confirmationCycle;
+    private string? _motifEchecCycle;
+
+    /// <summary>Affecte (ou retire, si vide) un responsable à un index de semaine du cycle en cours de
+    /// saisie. La valeur bindée est l'identifiant stable de l'acteur (jamais le libellé, règle 19).</summary>
+    private void AffecterIndex(int index, string? responsableId)
+    {
+        if (string.IsNullOrWhiteSpace(responsableId))
+            _cycle.Affectations.Remove(index);
+        else
+            _cycle.Affectations[index] = responsableId;
+    }
+
     /// <summary>Acteurs du foyer énumérés <b>depuis le store durable</b> (canal de lecture HTTP), et non
     /// la liste statique front : c'est cette énumération qui fait apparaître un acteur ajouté (Sc.1).</summary>
     private IReadOnlyList<ActeurFoyer> _acteurs = Array.Empty<ActeurFoyer>();
@@ -149,5 +169,38 @@ public partial class ConfigurationFoyer
         await RechargerActeurs();
         _ajout.Nom = "";
         _ajout.Couleur = "";
+    }
+
+    /// <summary>
+    /// Définit / ré-édite le cycle de fond via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/definir-cycle</c>, règle 27). Sur succès, la grille partagée suit sans
+    /// rechargement via la diffusion temps réel déclenchée côté API. Sur refus métier (N &lt; 1, Sc.7),
+    /// le motif propagé est affiché.
+    /// </summary>
+    private async Task DefinirCycle()
+    {
+        _confirmationCycle = null;
+        _motifEchecCycle = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/definir-cycle",
+                new DefinirCycleRequete(_cycle.NombreSemaines, _cycle.Affectations));
+        }
+        catch (HttpRequestException)
+        {
+            // Service de configuration injoignable (échec de transport, pas un refus métier Sc.7) : le
+            // handler DefinirCycle ne s'exécute jamais. Message dédié, saisie du cycle (N + mapping)
+            // conservée à resoumettre, aucun cycle enregistré ni mis en file (règle 28). Cf. Sc.8 / s09 Sc.9.
+            _motifEchecCycle = PoserSlot.MessageServiceInjoignable;
+            return;
+        }
+
+        if (reponse.IsSuccessStatusCode)
+            _confirmationCycle = "Cycle de fond enregistré.";
+        else
+            _motifEchecCycle = await reponse.Content.ReadFromJsonAsync<string>();
     }
 }

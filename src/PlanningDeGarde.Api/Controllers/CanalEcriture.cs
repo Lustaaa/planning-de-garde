@@ -30,6 +30,11 @@ public static class CanalEcriture
     /// optionnelle (absente → repli neutre par contrat de palette, Sc.5).</summary>
     public sealed record AjouterActeurRequete(string Nom, string? Couleur = null);
 
+    /// <summary>Corps de la requête de définition / ré-édition du cycle de fond (palier 6) émise via le
+    /// canal d'écriture : le nombre de semaines + le mapping index→responsable (identifiant stable, jamais
+    /// le libellé). Une nouvelle définition remplace intégralement le cycle courant (dernière écriture gagne).</summary>
+    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler) =>
@@ -82,6 +87,18 @@ public static class CanalEcriture
 
             // Même convention que les autres écritures : succès acquitté (l'acteur ajouté est désormais
             // énuméré depuis le store, Sc.1), refus métier renvoyé avec son motif (nom vide, Sc.8).
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/definir-cycle", (DefinirCycleRequete requete, DefinirCycleHandler handler) =>
+        {
+            var resultat = handler.Handle(new DefinirCycleCommand(requete.NombreSemaines, requete.Affectations));
+
+            // Même convention que les autres écritures : succès acquitté (le cycle est défini, les grilles
+            // suivent via la diffusion temps réel déclenchée par le handler), refus métier renvoyé avec son
+            // motif (« le cycle doit compter au moins une semaine », N < 1, Sc.7).
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);

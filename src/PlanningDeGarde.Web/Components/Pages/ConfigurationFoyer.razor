@@ -85,6 +85,48 @@
     <div class="alert alert-danger mt-3" data-testid="motif-echec-ajout">@_motifEchecAjout</div>
 }
 
+<hr class="my-4" />
+
+<h2 class="h5 mb-3">Cycle de fond (responsabilité par défaut)</h2>
+<p class="text-muted">Définir le nombre de semaines du cycle et, pour chaque semaine (index ISO),
+    le responsable de fond. Les jours sans période explicite suivent ce cycle ; la grille se met à jour
+    sans recharger la page. Une nouvelle définition remplace le cycle courant.</p>
+
+<EditForm Model="_cycle" OnValidSubmit="DefinirCycle" FormName="definir-cycle" id="form-cycle">
+    <div class="mb-3">
+        <label class="form-label">Nombre de semaines du cycle</label>
+        <InputNumber class="form-control" @bind-Value="_cycle.NombreSemaines"
+                     @bind-Value:after="StateHasChanged" data-testid="champ-nombre-semaines" min="1" />
+    </div>
+    @for (var i = 0; i < _cycle.NombreSemaines && i < 12; i++)
+    {
+        var index = i;
+        <div class="mb-2">
+            <label class="form-label">Responsable de la semaine d'index @index</label>
+            <select class="form-select" data-testid="champ-cycle-index-@index"
+                    value="@(_cycle.Affectations.TryGetValue(index, out var r) ? r : "")"
+                    @onchange="e => AffecterIndex(index, e.Value?.ToString())">
+                <option value="">— aucun (teinte neutre) —</option>
+                @foreach (var a in Foyer.ActeursEditables)
+                {
+                    <option value="@a.Id">@a.Libelle</option>
+                }
+            </select>
+        </div>
+    }
+    <button type="submit" class="btn btn-primary">Définir le cycle</button>
+</EditForm>
+
+@if (_confirmationCycle is not null)
+{
+    <div class="alert alert-success mt-3" data-testid="confirmation-cycle">@_confirmationCycle</div>
+}
+
+@if (_motifEchecCycle is not null)
+{
+    <div class="alert alert-danger mt-3" data-testid="motif-echec-cycle">@_motifEchecCycle</div>
+}
+
 <h2 class="h5 mt-4 mb-3">Acteurs du foyer</h2>
 <p class="text-muted">Chaque acteur est listé avec sa pastille de couleur — la même teinte que sur la
     grille et la légende. Un acteur sans couleur retombe sur le gris neutre.</p>
