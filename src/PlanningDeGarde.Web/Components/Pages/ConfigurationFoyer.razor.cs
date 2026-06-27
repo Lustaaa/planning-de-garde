@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -28,6 +29,21 @@ public partial class ConfigurationFoyer
     private readonly Formulaire _form = new();
     private string? _confirmation;
     private string? _motifEchec;
+
+    /// <summary>Nom d'affichage courant de l'acteur sélectionné (aide de saisie, miroir du seed) —
+    /// <c>null</c> tant qu'aucun acteur n'est choisi. Sert d'indicateur « ce que vous éditez ».</summary>
+    private string? NomActuel
+        => Foyer.ActeursEditables.FirstOrDefault(a => a.Id == _form.ActeurId)?.Libelle;
+
+    /// <summary>À la sélection d'un acteur, pré-remplit le champ nom avec son nom courant et efface les
+    /// messages de l'édition précédente — pour qu'on parte de la valeur en place plutôt que d'un champ
+    /// vide. L'utilisateur ajuste ensuite le nom et/ou la couleur.</summary>
+    private void PreRemplirNom()
+    {
+        _confirmation = null;
+        _motifEchec = null;
+        _form.Nom = NomActuel ?? "";
+    }
 
     private async Task Soumettre()
     {

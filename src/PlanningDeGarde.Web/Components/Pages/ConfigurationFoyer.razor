@@ -8,25 +8,30 @@
 
 <p class="text-muted">Renommer et/ou recolorier un acteur du foyer. La grille (case datée et
     légende) suit immédiatement, sans recharger la page. L'identifiant stable de l'acteur ne change
-    jamais ; un champ laissé vide n'est pas modifié.</p>
+    jamais ; choisissez un acteur — son nom courant est pré-rempli — puis ajustez le nom et/ou la couleur.</p>
 
 <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="editer-acteur">
     <div class="mb-3">
-        <label class="form-label">Acteur</label>
-        <InputSelect class="form-select" @bind-Value="_form.ActeurId">
+        <label class="form-label">Acteur du foyer</label>
+        <InputSelect class="form-select" @bind-Value="_form.ActeurId" @bind-Value:after="PreRemplirNom">
             <option value="">— choisir —</option>
-            @foreach (var r in Foyer.Responsables)
+            @foreach (var a in Foyer.ActeursEditables)
             {
-                <option value="@r.Id">@r.Libelle</option>
+                <option value="@a.Id">@a.Libelle</option>
             }
         </InputSelect>
+        @if (NomActuel is not null)
+        {
+            <div class="form-text" data-testid="nom-actuel">Nom actuel : <strong>@NomActuel</strong></div>
+        }
     </div>
     <div class="mb-3">
-        <label class="form-label">Nouveau nom</label>
-        <InputText class="form-control" @bind-Value="_form.Nom" data-testid="champ-nom" />
+        <label class="form-label">Nom</label>
+        <InputText class="form-control" @bind-Value="_form.Nom" data-testid="champ-nom"
+                   placeholder="Nom affiché de l'acteur" />
     </div>
     <div class="mb-3">
-        <label class="form-label">Nouvelle couleur</label>
+        <label class="form-label">Couleur</label>
         <InputSelect class="form-select" @bind-Value="_form.Couleur" data-testid="champ-couleur">
             <option value="">— inchangée —</option>
             <option value="bleu">Bleu</option>
