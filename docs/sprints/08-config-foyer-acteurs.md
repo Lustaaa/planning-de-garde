@@ -79,7 +79,7 @@ Scenario: Renommer un acteur, la case et la légende suivent dans la session
     est inchangé
 ```
 
-### Scenario 2 — Recolorier un acteur : la case et la légende changent de couleur `@nominal` `@rouge`
+### Scenario 2 — Recolorier un acteur : la case et la légende changent de couleur `@nominal` `@vert`
 
 ```gherkin
 Scenario: Recolorier un acteur, la case et la légende changent de couleur

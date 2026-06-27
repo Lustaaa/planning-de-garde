@@ -20,8 +20,10 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
 
-    /// <summary>Corps de la requête d'édition d'un acteur (renommage) émise via le canal d'écriture.</summary>
-    public sealed record EditerActeurRequete(string ActeurId, string Nom);
+    /// <summary>Corps de la requête d'édition d'un acteur émise via le canal d'écriture. Le nom et la
+    /// couleur sont deux champs optionnels et indépendants : un champ absent (null) n'est pas appliqué
+    /// (renommage seul au Sc.1, recoloriage seul au Sc.2). L'identifiant stable n'est jamais éditable.</summary>
+    public sealed record EditerActeurRequete(string ActeurId, string? Nom = null, string? Couleur = null);
 
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
@@ -60,7 +62,7 @@ public static class CanalEcriture
 
         routes.MapPost("/api/canal/editer-acteur", (EditerActeurRequete requete, EditerActeurHandler handler) =>
         {
-            var resultat = handler.Handle(new EditerActeurCommand(requete.ActeurId, requete.Nom));
+            var resultat = handler.Handle(new EditerActeurCommand(requete.ActeurId, requete.Nom, requete.Couleur));
 
             // Même convention que les autres écritures : succès acquitté, refus métier renvoyé avec son motif.
             // Sur succès, le handler a muté le store ET déclenché la diffusion temps réel (les grilles suivent).

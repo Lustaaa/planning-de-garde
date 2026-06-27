@@ -14,9 +14,11 @@ la couleur ; +1 caractérisation indépendance nom/couleur) **+** acceptation **
 > recharger**, la case **et** l'entrée de légende changent de teinte sur la grille réellement
 > câblée (front WASM + API distante + store réel + SignalR). **Pas** un test bUnit à doublure.
 
-`Should_Rendre_la_case_du_15_07_2026_en_violet_et_passer_l_entree_de_legende_au_violet_sans_recharger_en_conservant_le_libelle_Bruno_et_l_identifiant_parent_b_When_l_acteur_parent_b_est_recolorie_de_orange_en_violet`
+`Should_Rendre_la_case_du_15_07_2026_en_violet_et_passer_l_entree_de_legende_au_violet_sans_recharger_en_conservant_le_libelle_Bruno_et_l_identifiant_parent_b_When_l_acteur_parent_b_est_recolorie_de_orange_en_violet` — ✅ GREEN
+(`tests/PlanningDeGarde.Web.Tests/FrontWasmConfigRecolorierActeurTempsReelTests.cs`)
 
-- **Niveau** : E2E/runtime sur l'app câblée, store **réel** seedé (`parent-b → orange`).
+- **Niveau** : E2E/runtime sur l'app câblée (écran `ConfigurationFoyer` + grille `PlanningPartage`
+  rendus dans le même contexte), store **réel** seedé (`parent-b → orange`).
   Anti « vert qui ment » : si la couleur n'est pas re-résolue côté grille, la case reste
   orange → rouge.
 - **Observable** : la case du 15/07/2026 devient violet en conservant le libellé « Bruno » ;
@@ -42,7 +44,18 @@ la couleur ; +1 caractérisation indépendance nom/couleur) **+** acceptation **
 - **Port d'écriture (Application)** — étendu de `recolorier` ; doublure `Fake` côté tests.
 - **`EditerActeurHandler` (Application)** — applique `couleur?` quand fournie (en plus de
   `nom?`).
-- *(Rendu couleur case + légende, suivi SignalR : hors backend — routé `ihm-builder`.)*
+- **Volet runtime IHM (✅ livré)** — câblage prouvé par l'acceptation runtime :
+  - **DI** : `ConfigurationFoyerEnMemoire` (déjà bindé lecture nom + écriture au Sc.1) bindé
+    **aussi** sur `IPaletteCouleurs` (remplace le binding statique `FoyerPaletteCouleurs`) → la
+    grille relit la **couleur éditée**. C'est l'unique fil manquant (GREEN minimal).
+  - **Canal/écran** : DTO `EditerActeurRequete` étendu d'un `Couleur?` (Web + Api), endpoint
+    `POST /api/canal/editer-acteur` route la couleur au handler ; écran `ConfigurationFoyer`
+    étendu d'un sélecteur de couleur. Un champ laissé vide part `null` (non appliqué) — un
+    recoloriage seul ne touche pas le nom (et inversement).
+  - **Présentation** : teinte « violet » ajoutée (case + créneau + pastille de légende) pour
+    le rendu visuel ; la donnée `data-couleur` reste la valeur résolue.
+  - **Propagation temps réel** : l'édition aboutie déclenche la diffusion SignalR (handler) → la
+    grille suit **sans rechargement**.
 
 ## Design notes
 

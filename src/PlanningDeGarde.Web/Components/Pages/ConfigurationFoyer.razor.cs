@@ -13,7 +13,8 @@ namespace PlanningDeGarde.Web.Components.Pages;
 /// est volatile, on peut en enchaîner d'autres) : la grille partagée suit sans rechargement via la
 /// diffusion temps réel déclenchée par l'édition aboutie côté API. Sur refus, le motif métier
 /// propagé est affiché. Aucune règle métier dans l'UI : l'identifiant stable est la clé (jamais
-/// éditable), seul le nom mute.
+/// éditable), seuls le nom et la couleur mutent — deux surfaces indépendantes (un champ laissé
+/// vide est envoyé <c>null</c> et n'est pas appliqué).
 /// </summary>
 public partial class ConfigurationFoyer
 {
@@ -21,6 +22,7 @@ public partial class ConfigurationFoyer
     {
         public string ActeurId { get; set; } = "";
         public string Nom { get; set; } = "";
+        public string Couleur { get; set; } = "";
     }
 
     private readonly Formulaire _form = new();
@@ -32,13 +34,18 @@ public partial class ConfigurationFoyer
         _confirmation = null;
         _motifEchec = null;
 
+        // Un champ laissé vide n'est pas une édition : il part null (non appliqué côté handler), pour
+        // ne pas écraser le nom par une chaîne vide lors d'un recoloriage seul (et inversement).
+        var nom = string.IsNullOrWhiteSpace(_form.Nom) ? null : _form.Nom;
+        var couleur = string.IsNullOrWhiteSpace(_form.Couleur) ? null : _form.Couleur;
+
         HttpResponseMessage reponse;
         try
         {
             // Émission de la commande d'édition via le canal HTTP de l'API distante (adaptateur de gauche).
             reponse = await Canal.PostAsJsonAsync(
                 "api/canal/editer-acteur",
-                new EditerActeurRequete(_form.ActeurId, _form.Nom));
+                new EditerActeurRequete(_form.ActeurId, nom, couleur));
         }
         catch (HttpRequestException)
         {
@@ -49,7 +56,7 @@ public partial class ConfigurationFoyer
         }
 
         if (reponse.IsSuccessStatusCode)
-            _confirmation = $"« {_form.Nom} » enregistré.";
+            _confirmation = "Modification enregistrée.";
         else
             _motifEchec = await reponse.Content.ReadAsStringAsync();
     }
