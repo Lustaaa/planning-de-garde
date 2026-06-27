@@ -1,9 +1,78 @@
 # Retours — Sprint 09 (config-foyer-persistante)
 
-> **Fichier unifié.** Il porte les retours produit (PO), la méthode (agents) et les
-> décisions autonomes du chef de projet. Amorcé au cadrage `/2-make-gherkin` (section
-> « Décisions autonomes » créée ici) ; scaffoldé par `tdd-analyse` au `/3` qui DOIT
-> **préserver** la section « Décisions autonomes (chef de projet) ».
+> **Fichier unifié.** Il porte trois choses, consommées par des étapes différentes :
+> - **Retours produit (PO)** ci-dessous → lus par `/4-retours` (challenge + besoins).
+> - **Méthode (agents)** + **`## IA`** plus bas → lus par `retro-sprint` en fin de sprint.
+> - **Décisions autonomes (chef de projet)** en fin de fichier → lues par `retro-sprint`.
+>
+> Section « Décisions autonomes » amorcée au cadrage `/2-make-gherkin` ; sections produit +
+> méthode **complétées** par `tdd-analyse` au `/3`, qui **préserve** la section « Décisions
+> autonomes (chef de projet) ». La partie produit est préparée vide ici et remplie par le PO
+> **après le gate visuel** ; la partie méthode est appendée au fil de l'eau par le thread
+> principal. Lancement de l'app : `pwsh .claude/skills/run/scripts/run.ps1` (Mongo via Docker —
+> démarrer le conteneur avant l'API).
+
+# Retours produit (PO)
+
+> Le code et les tests unitaires sont **hors scope** ici (revus en revue de code).
+> Ces retours portent sur l'**usage de l'IHM** : ce qui marche, ce qui coince, ce qui
+> manque à l'écran. Remplis les puces, puis lance `/4-retours`.
+
+## IHM - général
+
+-
+
+## IHM - /configuration
+
+-
+
+## IHM - /planning
+
+-
+
+## Tech (optionnel)
+
+- (contraintes techniques éventuelles ; laisser vide si aucune → bypass dans `/4-retours`)
+
+# Idée pour la suite
+
+> Idées produit que le PO veut verser au backlog pour de futurs sprints (pas forcément le
+> prochain). Consommées par `/4-retours` (classées/séquencées) puis replacées dans les épics
+> du BACKLOG. Laisser vide si aucune.
+
+-
+
+# Consigne pour la suite
+
+> Consignes directes du PO sur l'orientation à donner à la suite (priorité, cap, contrainte
+> de séquencement). Pèsent sur le choix du prochain sujet en `/4-retours` (G2). Laisser vide
+> si aucune.
+
+-
+
+# Méthode (agents) — pour retro-sprint
+
+> Retours à la volée du PO sur la **méthode** (agents/skills/commands), appendés par le
+> thread principal pendant le sprint. Ne PAS confondre avec les retours produit ci-dessus.
+
+| Date | Cible (agent/skill/command) | Retour | Décision prise |
+|------|-----------------------------|--------|----------------|
+| 2026-06-27 | pipeline /1→/6 (rythme global) | PO : les sprints prennent trop de temps. Décision PO : faire une **refacto technique HORS processus** (pas via make-gherkin/TDD piloté) avant de reprendre le pipeline. | Sprint 09 clôturé normalement ; le prochain chantier est une refacto hors pipeline. `retro-sprint` doit traiter en priorité la VÉLOCITÉ du pipeline (nombre d'allers-retours, coût des gates, granularité scénarios). |
+
+## IA
+
+> Observations méthode relevées par l'IA (non demandées par le PO), candidates pour `retro-sprint`.
+
+| Date | Cible (agent/skill/command) | Observation | Recommandation |
+|------|-----------------------------|-------------|----------------|
+| 2026-06-27 | tdd-auto / non-régression | Sc.1 a introduit une énumération async dans `ConfigurationFoyer` qui a rendu flaky/cassé un test runtime s08 (handler stale `UnknownEventHandlerIdException`) — non détecté au commit Sc.1, révélé seulement au RED de Sc.2 par la suite complète. | Confirme la valeur de la non-régression complète sans `--no-build` ; envisager que tdd-auto relance aussi les tests runtime Web.Tests existants après tout ajout touchant un composant partagé. |
+
+| 2026-06-27 | run/test runtime Sc.9 | `FrontWasmConfigApiInjoignableTempsReelTests` (socket réel) échoue quand Docker Desktop tourne : son proxy loopback altère la sémantique `ConnectionRefused`. Préexistant (reproduit sur HEAD propre via `git stash`), indépendant de Sc.3. Brouille la non-régression complète tant que Mongo/Docker tourne. | Rendre le test runtime « API injoignable » robuste au proxy loopback Docker (port garanti fermé / assertion d'échec transport plus large), ou documenter le prérequis d'environnement. À traiter au moment de Sc.9. |
+| 2026-06-27 | suite runtime Web.Tests « TempsReel » | Au-delà de Sc.9 : toute la famille bUnit « TempsReel » (sockets réels + timing) est FLAKY quand Docker tourne — échecs non-déterministes, variables d'un run à l'autre (HorsSetNeutre, Recolorier, NomVide…), alors que HEAD propre = 37/37. Constaté pendant Sc.5 (backend pur, ne touche aucun code Web). Risque majeur : masque/imite un vrai RED, brouille la non-régression pour Sc.8/Sc.9 qui AJOUTENT du runtime Web. | **RÉSOLU au Sc.9** : abandon du port loopback réellement libéré (sémantique altérée par le proxy Docker) au profit d'un handler de transport déterministe `GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable` qui lève `HttpRequestException` sur le seul POST ciblé, lecture transitant vers l'API live. Bug bUnit secondaire (`UnknownEventHandlerId` re-render) corrigé par `WaitForState`. Prouvé stable ≥5× Docker actif, suite 161/161. À capitaliser en convention runtime (retro-sprint). |
+
+## Notes de contexte (décisions produit, hors méthode)
+
+-
 
 # Décisions autonomes (chef de projet)
 
