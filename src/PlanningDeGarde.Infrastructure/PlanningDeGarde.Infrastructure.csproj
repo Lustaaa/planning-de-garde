@@ -1,13 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
+  <!-- Composition root — ne contient AUCUN adaptateur, seulement le câblage DI
+       (AjouterPlanningDeGarde) qui compose les use cases (Application) avec les adaptateurs
+       de droite par techno : InMemory (volatile), Mongo (config foyer durable), SignalR (temps réel).
+       Le choix Mongo/InMemory de la config foyer se fait ici depuis l'IConfiguration. -->
   <ItemGroup>
     <ProjectReference Include="..\PlanningDeGarde.Application\PlanningDeGarde.Application.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <!-- Driver Mongo : SEULE la config foyer (acteurs) est persistée derrière les ports inchangés
-         (sprint 09, pivot durabilité Sc.3). Mongo tourne via Docker (docker-compose.yml). -->
-    <PackageReference Include="MongoDB.Driver" Version="3.4.0" />
+    <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.InMemory\PlanningDeGarde.AdapterDroite.InMemory.csproj" />
+    <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.Mongo\PlanningDeGarde.AdapterDroite.Mongo.csproj" />
+    <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.SignalR\PlanningDeGarde.AdapterDroite.SignalR.csproj" />
   </ItemGroup>
 
   <ItemGroup>

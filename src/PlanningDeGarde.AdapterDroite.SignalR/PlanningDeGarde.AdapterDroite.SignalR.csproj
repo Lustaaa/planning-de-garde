@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Adaptateur de droite — diffusion TEMPS RÉEL (SignalR) : le hub hébergé par l'hôte d'API et
+       le notificateur (IHubContext<PlanningHub>) qui réalise le port INotificateurPlanning.
+       DI-agnostique : câblage dans la composition root (PlanningDeGarde.Infrastructure). -->
+  <ItemGroup>
+    <ProjectReference Include="..\PlanningDeGarde.Application\PlanningDeGarde.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

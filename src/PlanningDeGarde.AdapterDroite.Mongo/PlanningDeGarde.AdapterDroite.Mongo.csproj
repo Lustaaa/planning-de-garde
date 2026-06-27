@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Adaptateur de droite — persistance DURABLE (MongoDB) : SEULE la config foyer (acteurs :
+       noms + couleurs) est persistée derrière les ports inchangés (sprint 09, pivot durabilité Sc.3).
+       Mongo tourne via Docker (docker-compose.yml). DI-agnostique : câblage dans la composition root. -->
+  <ItemGroup>
+    <ProjectReference Include="..\PlanningDeGarde.Application\PlanningDeGarde.Application.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Driver" Version="3.4.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>
