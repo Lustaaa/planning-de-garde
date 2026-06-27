@@ -131,6 +131,18 @@ flowchart TD
 
 - **Relais pur** : le thread principal ne lit ni n'écrit code/spec/scénarios — il délègue.
 - **`AskUserQuestion`** : appelé **uniquement** par le thread principal (un subagent ne peut pas).
+- **Portes PO — il n'y en a que deux** (+ les actions git sortantes). Tout le reste est
+  tranché par le **chef de projet (CP)**, pas par le PO :
+  - **G2 — choix du sprint goal** (`/6` étape 5, et `/4` prochain sujet) : le CP propose
+    2 goals candidats (~2h IA), le PO tranche (3ᵉ injectable).
+  - **G3 — revue de sprint / gate visuel** (`/3`, `validation-visuelle`) : le PO valide la
+    livraison après test.
+  - **Git sortant** (`/6`) : push / création / merge de PR restent confirmés par le PO.
+  Toutes les autres questions d'agent (cadrage, scénarios, scaffolding, early-green
+  inattendu, collisions de spec, priorisation rétro) passent par le **CP**, qui décide ou
+  escalade en **G1** (vrai arbitrage métier). Les enchaînements de phase (`/4→/5→/6`,
+  amorce `/2`) sont **automatiques** — plus de « Enchaîner /X ? » ni « Accord pour
+  implémenter ? ». (Il n'existe **plus** de porte G4 : l'early-green inattendu va au CP.)
 - **`/3-tdd-implement`** : un scénario Gherkin par run de `tdd-auto` (RED→GREEN→commit),
   puis **enchaînement automatique** du scénario suivant jusqu'à tous `✅ GREEN`
   (sprint mené intégralement, sans blocage entre scénarios).
