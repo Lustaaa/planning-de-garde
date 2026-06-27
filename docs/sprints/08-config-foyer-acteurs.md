@@ -161,7 +161,7 @@ Scenario: Deux écrans renomment le même acteur, les grilles convergent
     et aucune édition n'est rejetée (pas de conflit, pas de version)
 ```
 
-### Scenario 8 — Renommer avec un nom vide : édition refusée, ancien nom conservé `@erreur`
+### Scenario 8 — Renommer avec un nom vide : édition refusée, ancien nom conservé `@erreur` `@vert`
 
 ```gherkin
 Scenario: Renommer avec un nom vide, édition refusée

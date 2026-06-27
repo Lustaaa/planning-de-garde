@@ -65,7 +65,7 @@
 | 5 | [Éditer un acteur hors set : nom suivi, teinte neutre conservée](05-acteur-hors-set-neutre-conservee.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 1/1 | ✅ GREEN — backend caract. (1/1) + runtime IHM `@vert` |
 | 6 | [Éditer un acteur hors fenêtre : pas d'entrée fantôme](06-acteur-hors-fenetre-pas-d-entree-fantome.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 1/1 | ✅ GREEN — backend caract. (1/1) + runtime IHM `@vert` |
 | 7 | [Deux écrans renomment : dernière écriture gagne, grilles convergent](07-deux-ecrans-derniere-ecriture-gagne.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + driver runtime `ihm-builder` | ✅ GREEN (runtime) | 1/1 | ✅ GREEN — backend caract. (1/1) + runtime IHM `@vert` |
-| 8 | [Renommer avec un nom vide : édition refusée, ancien nom conservé](08-nom-vide-edition-refusee.md) | `@erreur` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 3/3 | 🔶 backend ✅ (3/3 : 2 drivers garde + 1 caract.) — runtime IHM ⏳ `ihm-builder` |
+| 8 | [Renommer avec un nom vide : édition refusée, ancien nom conservé](08-nom-vide-edition-refusee.md) | `@erreur` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 3/3 | ✅ GREEN — backend (3/3 : 2 drivers garde + 1 caract.) + runtime IHM `@vert` |
 | 9 | [API distante injoignable : échec clair, édition non appliquée](09-api-injoignable-echec-clair.md) | `@erreur` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ⏳ Pending | 0/0 | ⏳ Pending |
 | 10 | [Volatilité : après redémarrage, le seed d'origine réapparaît](10-volatilite-reseed-au-redemarrage.md) | `@limite` · caract. `tdd-auto` (store re-seed) | ⏳ Pending | 0/1 | ⏳ Pending |
 
@@ -74,13 +74,14 @@ Sc.2×2, Sc.8×2 ; ≈ 7 caractérisations early-green : Sc.2×1, Sc.4, Sc.5, Sc
 Sc.10) · **8 acceptations runtime IHM** (Sc.1–9 ; Sc.10 = store-level). 2 scénarios sans
 backend (Sc.3, Sc.9 — 100 % runtime IHM).
 
-**Acceptation runtime IHM** : **7/8** (Sc.1 ✅ — `FrontWasmConfigRenommerActeurTempsReelTests` ;
+**Acceptation runtime IHM** : **8/8** (Sc.1 ✅ — `FrontWasmConfigRenommerActeurTempsReelTests` ;
 Sc.2 ✅ — `FrontWasmConfigRecolorierActeurTempsReelTests` ; Sc.3 ✅ caractérisation —
 `FrontWasmConfigNomLongEditeTempsReelTests` ; Sc.4 ✅ —
 `FrontWasmConfigCollisionCouleurTempsReelTests` ; Sc.5 ✅ —
 `FrontWasmConfigHorsSetNeutreTempsReelTests` ; Sc.6 ✅ caractérisation —
 `FrontWasmConfigHorsFenetrePasDeFantomeTempsReelTests` ; Sc.7 ✅ convergence deux grilles —
-`FrontWasmConfigDeuxEcransConvergenceTempsReelTests`).
+`FrontWasmConfigDeuxEcransConvergenceTempsReelTests` ; Sc.8 ✅ nom vide refusé —
+`FrontWasmConfigNomVideRefuseTempsReelTests`).
 
 **Statuts** : ⏳ Pending · 🔴 Red · ✅ Green.
 

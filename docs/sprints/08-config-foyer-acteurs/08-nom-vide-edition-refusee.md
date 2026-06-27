@@ -19,6 +19,12 @@ l'écran, case + légende inchangées).
 - **Niveau** : E2E/runtime sur l'app câblée. Store réel : `parent-b` (Bruno).
 - **Observable** : message d'erreur clair à l'écran ; case du 15/07 et légende restent
   « Bruno » (inchangé).
+- **Statut** : ✅ GREEN (runtime, `@vert`) — `FrontWasmConfigNomVideRefuseTempsReelTests`
+  (baseline « Bruno » asserté ; tentative nom tout-espaces via le canal HTTP réel → refus serveur
+  → motif « le nom ne peut pas être vide » surfacé ; case 15/07 + légende inchangées). GREEN minimal
+  côté front : un nom vide soumis sans recoloriage est transmis brut pour que le serveur le refuse
+  (vs recoloriage-seul Sc.2 où le nom vide part null), et le motif JSON du canal est désérialisé
+  proprement (sans guillemets parasites).
 
 ## Tests unitaires backend (boucle interne, `tdd-auto`)
 

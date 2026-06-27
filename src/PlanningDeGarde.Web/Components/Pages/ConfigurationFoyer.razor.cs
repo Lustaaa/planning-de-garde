@@ -36,8 +36,14 @@ public partial class ConfigurationFoyer
 
         // Un champ laissé vide n'est pas une édition : il part null (non appliqué côté handler), pour
         // ne pas écraser le nom par une chaîne vide lors d'un recoloriage seul (et inversement).
-        var nom = string.IsNullOrWhiteSpace(_form.Nom) ? null : _form.Nom;
         var couleur = string.IsNullOrWhiteSpace(_form.Couleur) ? null : _form.Couleur;
+        // Sc.8 : un nom vide / tout-espaces soumis SANS recoloriage concurrent est une tentative de
+        // renommage à vide — on transmet la valeur brute pour que le serveur la refuse avec son motif
+        // métier (« le nom ne peut pas être vide »), surfacé à l'écran. Avec un recoloriage, un nom vide
+        // reste un recoloriage-seul (nom non appliqué, Sc.2) : il part null.
+        var nom = string.IsNullOrWhiteSpace(_form.Nom)
+            ? (couleur is null ? _form.Nom : null)
+            : _form.Nom;
 
         HttpResponseMessage reponse;
         try
@@ -58,6 +64,9 @@ public partial class ConfigurationFoyer
         if (reponse.IsSuccessStatusCode)
             _confirmation = "Modification enregistrée.";
         else
-            _motifEchec = await reponse.Content.ReadAsStringAsync();
+            // Le canal renvoie le motif métier en corps JSON (Results.BadRequest(string)) : on le
+            // désérialise comme la chaîne qu'il est, pour surfacer un message propre (« le nom ne peut
+            // pas être vide ») sans guillemets parasites (Sc.8).
+            _motifEchec = await reponse.Content.ReadFromJsonAsync<string>();
     }
 }
