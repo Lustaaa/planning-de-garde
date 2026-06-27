@@ -4,7 +4,7 @@
 > une vue **par épic (fonctionnalité)** pour regrouper ce qui est lié et préparer le
 > découpage des sprints, et une vue **par palier (séquence de livraison)** pour le
 > calendrier d'un coup d'œil. Source de vérité du *quoi/quand* ; le *pourquoi* vit dans
-> la spec vivante [`docs/07-specification.md`](07-specification.md).
+> la spec vivante [`docs/08-specification.md`](08-specification.md).
 >
 > **Tenue à jour par le pipeline** : `/4-retours` y **ajoute** les besoins issus du
 > challenge ; `/6-cloture-sprint` y passe à **✅ fait** ce qui a été livré (gate visuel
@@ -22,23 +22,25 @@
 | 04 | `controllers-wasm-fondation` — canal d'écriture HTTP (adaptateur de gauche) + recâblage du front via API, SignalR cantonné à la diffusion lecture seule | ✅ fait | Canal HTTP `poser-slot`/`affecter-période` + front câblé + OpenAPI document + code-behind partiel (4 scénarios, 82 verts) |
 | 05 | `host-api-separable` — hôte d'API détaché (back démarrable seul) + front Blazor **WASM réel** consommant l'API distante + CORS + UI d'exploration **Scalar** + échec clair si API injoignable | ✅ fait | Projet `PlanningDeGarde.Api` détaché (test d'archi sur ProjectReference) + front `Sdk.BlazorWebAssembly` + Scalar/OpenAPI + CORS + SignalR distant (6 scénarios, 96 verts) — **palier 1 (fondation) refermé** |
 | 06 | `saisie-visible` — la saisie réapparaît à la bonne **date** (défaut = aujourd'hui via `IDateTimeProvider`) **et** en **couleur du parent** (identifiant stable bindé + seed) | ✅ fait | Port `IDateTimeProvider` injecté sur PoserSlot/AffecterPeriode/DefinirTransfert + sélecteurs bindant l'id stable + seed (8 scénarios, 108 verts) — **palier 2 (saisie visible) refermé** |
+| 07 | `lisibilite-theme` — **nom du responsable** + **légende** couleur dans la grille + **thème métier** (garde d'enfants) ; port nom miroir de la palette | ✅ fait | Port `IReferentielResponsables` (miroir `IPaletteCouleurs`) + composant `Legende` + troncature/survol nom long + repli gris assumé + suivi temps réel + thème CSS (6 scénarios @vert runtime, 120 verts) — **palier 3 (lisibilité & thème) refermé** |
 
 ## En cours
 
-| Sprint | Sujet | Palier (spec v07) | Statut |
+| Sprint | Sujet | Palier (spec v08) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : Lisibilité & thème, cf. ci-dessous)* | 3 — Lisibilité & thème | ⬜ |
+| — | *(aucun sprint en cours — prochain : Config foyer · édition des acteurs, cf. ci-dessous)* | 4 — Config foyer (édition volatile) | ⬜ |
 
 ## Prochains sprints envisagés
 
 > Les 2 sujets en tête de file, issus du séquencement `/4-retours`/`/5-consolidation` du
-> sprint 06 (arbitre : l'usage réel tranche → la technique séquencée derrière). Indicatif —
-> confirmé/affiné à chaque `/2-make-gherkin`.
+> sprint 07 (priorité PO affichée : « gestion des utilisateurs » → la plus petite tranche
+> cohérente d'abord ; arbitre permanent : l'usage tranche, la technique séquencée derrière).
+> Indicatif — confirmé/affiné à chaque `/2-make-gherkin`.
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 | **Lisibilité & thème** — nom + légende du responsable dans les cases (la couleur seule ne dit pas qui garde, règle 16) + thème en accord avec le domaine ; pris **en bloc** (choix PO), garde-fou corollaire de découpe si débordement | É5 | Enchaîne la valeur d'usage visible une fois la saisie réapparue correctement (palier 2 ✅) |
-| +2 | **Calendrier navigable & écriture en contexte** — navigation passé/futur, vues prédéfinies, dialogs depuis les cases | É4, É6, É7, É8, É12 | Sujet d'usage suivant une fois la grille lisible |
+| +1 | **Config foyer · édition des acteurs (volatile)** — écran pour éditer les noms + couleurs des acteurs ; le seed devient éditable en mémoire/session et la grille (case + légende) le relit immédiatement. **Aucune persistance durable** (séquencée palier persistance réelle) | É2, É1 | Priorité PO « gestion des utilisateurs » ; s'appuie sur le nom + légende livrés au s07 ; passe **devant** le calendrier navigable (re-séquencement acté /4-retours s07) |
+| +2 | **Récurrence des périodes (cycle de fond)** — définir/éditer une récurrence de responsabilité de garde | É7, É1 | Seconde moitié de la priorité « gestion des utilisateurs », derrière l'édition des acteurs |
 
 ---
 
@@ -56,7 +58,8 @@
 |--------|:------:|---------------|---------|
 | Extraire la config foyer de `Foyer.cs` vers persistance (base) | ⬜ | Palier 4 | retours s03 (#11, dette) · spec p4 |
 | Déclaration des enfants du foyer (N enfants, ≥1, organisation propre) | 🟡 | s01 socle + Palier 4 | spec règle 1 |
-| Familles recomposées (enfants de parents différents, même planning) | ⬜ | Palier 4-5 | spec règle 2 |
+| Familles recomposées (enfants de parents différents, même planning ; parents en couple gérant **leurs enfants respectifs**) | ⬜ | Palier 5-6 | spec règle 2 · retours s07 (idée) |
+| **Parents liés entre eux à travers leur(s) enfant(s)** (graphe foyer : un parent ↔ ses enfants ↔ l'autre parent) | ⬜ | Palier 5-6 | retours s07 (idée) · spec règles 2-3 |
 | Deux parents (toujours exactement 2 ; le 1er saisit l'autre) | ⬜ | Palier 5 | retours s01 · spec règle 3 |
 | Acteurs « autres » éditables (nounou, grands-parents…) | ⬜ | Palier 5 | spec règle 4 · retours s01 |
 | Lieux éditables et persistés (référentiel des sélecteurs) | 🟡 | Palier 4 | spec règle 11 |
@@ -69,7 +72,8 @@
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
 | Trois types d'acteurs avec rôles distincts (Admin / Parent / Autre) | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
-| Écran de configuration du foyer (acteurs + cycle de fond + couleurs) | ⬜ | Palier 5 | retours s01 (#7) · spec p5 |
+| Écran de config foyer — **édition des acteurs (noms + couleurs) en VOLATILE** (mémoire/session, grille relue immédiatement, sans persistance durable) | 🟡 | Palier 4 (prochain) | retours s07 · spec v08 règle 5 |
+| Écran de configuration du foyer complet (acteurs + cycle de fond + couleurs, persisté) | ⬜ | Palier 6 | retours s01 (#7) · spec p5 |
 | Édition des acteurs « autres » (ajout/édition/suppression) | ⬜ | Palier 5 | spec règle 4 |
 | Affichage/actions adaptés au type d'acteur | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
 
@@ -104,9 +108,12 @@
 
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
-| Libellé + nom du responsable dans les cases (pas que la teinte) | ⬜ | Palier 3 (prochain) | retours s03 (#3) · spec règle 16 |
-| Légende des couleurs persistante (mapping acteur → couleur) | ⬜ | Palier 3 (prochain) | spec règle 16 · retours s03 (#3) |
-| Thème visuel en accord avec le domaine (garde d'enfants) | ⬜ | Palier 3 (en bloc) | retours s01/s02/s03 (« j'aime pas le thème ») · spec règle 20 |
+| Libellé + nom du responsable dans les cases (pas que la teinte) | ✅ | s07 / Palier 3 | retours s03 (#3) · spec règle 16 |
+| Légende des couleurs (mapping acteur → couleur, dédoublonnée, masquée si vide) | ✅ | s07 / Palier 3 | spec règle 16 · retours s03 (#3) |
+| Thème visuel en accord avec le domaine (garde d'enfants) | ✅ | s07 / Palier 3 | retours s01/s02/s03 (« j'aime pas le thème ») · spec règle 20 |
+| Nom long lisible (troncature + nom complet au survol) | ✅ | s07 / Palier 3 | spec règle 16 (dérivé) |
+| Thème sombre + toggle (avec persistance de la préférence) | ⬜ | backlog (additif) | retours s07 (idée) · spec v08 règle 21 |
+| Personnalisation des couleurs par utilisateur authentifié | ⬜ | Palier 9 (auth) | spec règle 16 |
 
 ### Épic 6 — Créneaux & slots de localisation
 *Poser et gérer les slots (où est l'enfant) : création, validation, affichage.*
@@ -119,7 +126,8 @@
 | Rejet : lieu inexistant | ✅ | s01 + s02 + s04 (API) | scénario 4 s01 |
 | Signalement de chevauchement (création acceptée + avertissement) | ✅ | s01 | scénario 5 s01 |
 | Droits : seul Parent crée/édite les slots | ✅ | s01 | spec règle 7 |
-| Poser un slot en contexte via dialog (depuis une case) | ⬜ | Palier 3 item 3 | retours s02 (#10) · spec p3 |
+| Poser un slot en contexte via dialog (depuis une case) | ⬜ | Palier 7 item 3 | retours s02 (#10) · spec p3 |
+| **Slot imbriqué** — un slot peut en contenir un autre (ex. enfant chez mamie **et** doit aller à son cours de natation) | ⬜ | à séquencer | retours s07 (idée) |
 
 ### Épic 7 — Périodes de garde & responsabilité récurrente
 *Modéliser la responsabilité de garde sur une période (distincte des slots).*
@@ -188,10 +196,10 @@
 
 ---
 
-## À faire (paliers de la spec vivante v07)
+## À faire (paliers de la spec vivante v08)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
-> Numérotation alignée sur la **séquence de livraison de v07**. Les sujets techniques
+> Numérotation alignée sur la **séquence de livraison de v08**. Les sujets techniques
 > (persistance réelle, PWA) sont séquencés **derrière l'usage** (arbitre : l'usage tranche),
 > Docker en garde-fou d'outillage.
 
@@ -199,20 +207,24 @@
 |-------:|--------|-----------------|---------|:------:|
 | 1 | Fermeture de la fondation — **hôte d'API détachable** (back démarrable seul) + **UI d'exploration interactive** (Scalar) + CORS + échec clair si API injoignable | É3 | spec v05 p1 · besoins s04 | ✅ s05 |
 | 2 | **Saisie visible** — la saisie réapparaît à la bonne **date** (défaut = aujourd'hui) **et** en **couleur du parent** (identifiant stable) | É6, É7, É12 | spec v05 p2 · besoins s04 (défaut confirmé) | ✅ s06 |
-| 3 | **Lisibilité & thème** — nom + légende des périodes/responsable **+** thème en accord avec le domaine (pris **en bloc**) | É5 | spec v07 p3 · besoins s06 (G1) | ⬜ (prochain) |
-| 4 | Calendrier navigable (passé/futur, vues prédéfinies) **+** écriture en contexte (dialogs depuis les cases) | É4, É6, É7, É8, É12 | spec v05 p4 · retours s02/s03 | ⬜ |
-| 5 | Alimentation & saisie — persistance config foyer (sortir le dur de `Foyer.cs`) + cycle de fond + lieux/couleurs | É1 | spec v05 p5 · retours s03 (#11, dette) | ⬜ |
-| 6 | Modèle d'acteurs & foyer — Admin/Parent/Autre, écran de config, responsabilité de fond, couleurs par défaut | É1, É2, É7 | spec v05 p6 · retours s01 | ⬜ |
-| 7 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
-| 8 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
-| 9 | Ouverture de l'accès (auth OAuth, landing, personnalisation des couleurs) | É10, É5 | spec v05 p9 · retours s01 | ⬜ |
-| 10 | **Adaptateurs de droite — persistance réelle** (store durable derrière les ports, remplace `InMemory*Repository` ; recoupe la config foyer du palier 5) | É1, É3 | spec v06 · besoins s05 (séquencé derrière l'usage) | ⬜ |
-| 11 | **PWA — saisie hors-ligne** (cache + file d'écritures rejouée au retour de connexion, au-delà de l'échec clair livré au s05) | É12, É3 | spec v06 · besoins s05 (séquencé derrière l'usage) | ⬜ |
+| 3 | **Lisibilité & thème** — nom + légende des périodes/responsable **+** thème en accord avec le domaine (pris **en bloc**) | É5 | spec v07 p3 · besoins s06 (G1) | ✅ s07 |
+| 4 | **Config foyer · édition des acteurs (VOLATILE)** — écran éditant noms + couleurs en mémoire/session, grille relue immédiatement ; **aucune persistance durable** (séquencée palier 13) | É2, É1 | spec v08 règle 5 · besoins s07 (G2 PO) | ⬜ (prochain) |
+| 5 | **Récurrence des périodes** (cycle de fond définissable/éditable) | É7, É1 | spec v08 règle 10 · besoins s07 | ⬜ |
+| 6 | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v08 règle 22 · besoins s07 | ⬜ |
+| 7 | Calendrier navigable (passé/futur, vues prédéfinies) **+** écriture en contexte (dialogs depuis les cases) — **démoté derrière les 3 incréments d'usage ci-dessus** | É4, É6, É7, É8, É12 | spec v05 p4 · retours s02/s03 | ⬜ |
+| 8 | Alimentation & saisie — **persistance** config foyer (sortir le dur de `Foyer.cs`) + cycle de fond + lieux/couleurs (part DURABLE de la config, dont le palier 4 est l'amorce volatile) | É1 | spec v05 p5 · retours s03 (#11, dette) | ⬜ |
+| 9 | Modèle d'acteurs & foyer — Admin/Parent/Autre, écran de config complet, responsabilité de fond, couleurs par défaut | É1, É2, É7 | spec v05 p6 · retours s01 | ⬜ |
+| 10 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
+| 11 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
+| 12 | Ouverture de l'accès (auth OAuth, landing, personnalisation des couleurs, thème sombre persisté) | É10, É5 | spec v05 p9 · retours s01/s07 | ⬜ |
+| 13 | **Adaptateurs de droite — persistance réelle** (store durable derrière les ports, remplace `InMemory*Repository` ; recoupe la config foyer du palier 8, premier client de la config durable) | É1, É3 | spec v06 · besoins s05/s07 (séquencé derrière l'usage) | ⬜ |
+| 14 | **PWA — saisie hors-ligne** (cache + file d'écritures rejouée au retour de connexion, au-delà de l'échec clair livré au s05) | É12, É3 | spec v06 · besoins s05 (séquencé derrière l'usage) | ⬜ |
 
-> **Séquencement acté (v06, `/5-consolidation` s05) :** les sujets techniques débloqués par
-> la fermeture du palier 1 sont placés **tout derrière la chaîne d'usage** (paliers 10-11),
-> et **Docker** est traité en **garde-fou d'outillage** (cf. section dédiée), non comme un
-> palier à observable métier. Arbitre : l'usage réel tranche.
+> **Séquencement acté (v08, `/5-consolidation` s07) :** la **config foyer (édition volatile)**
+> passe **devant** le calendrier navigable (priorité PO « gestion des utilisateurs »).
+> Corollaire d'arbitrage **« éditable maintenant ≠ durable »** : l'édition en mémoire (palier 4)
+> se livre tôt, la **persistance réelle** reste **tout derrière la chaîne d'usage** (palier 13).
+> **Docker** reste un **garde-fou d'outillage** (cf. section dédiée). Arbitre : l'usage tranche.
 
 > **Piste technique (PWA)** — *Event sourcing + outbox pattern* comme socle d'une file
 > d'écritures rejouable : l'**outbox** garantit qu'une commande acceptée hors-ligne sera
@@ -251,3 +263,8 @@
 - Faux sentiment de progrès — 2 sprints structurels d'affilée (s04, s05) sans besoin produit observable ; **résorbé au s06** : le palier 2 (Saisie visible) a rendu la main à l'usage (8/8 vert). Vigilance maintenue : ne pas remonter les paliers techniques 10/11 devant l'usage.
 - 7 composants encore en `@code` inline (É3) — retours s03 (#7).
 - Cycle multi-semaines non affiché/éditable (É1) — modèle existe, IHM absente.
+
+> **Idées PO consolidées (retours s07)** — les 3 idées de la section « Idée pour la suite »
+> ont été replacées dans leurs épics : *slot imbriqué* → **É6** ; *parents liés via leurs
+> enfants* → **É1** ; *parents recomposés en couple gérant leurs enfants respectifs* → **É1**
+> (familles recomposées, enrichie).
