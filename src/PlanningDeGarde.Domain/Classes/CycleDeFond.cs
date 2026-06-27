@@ -27,11 +27,12 @@ public sealed class CycleDeFond
     /// <summary>
     /// Responsable de fond résolu pour la date donnée, ou <c>null</c> si aucun fond ne s'applique.
     /// Fonction pure de la date : <c>index = ISOWeek(date) mod N</c> (parité ISO 8601), résolu sur
-    /// le mapping index→responsableId.
+    /// le mapping index→responsableId. Index non mappé → <c>null</c> (pas de fond → neutre), contrat
+    /// de repli miroir de <c>IPaletteCouleurs.CouleurDe</c> / <c>IReferentielResponsables.NomDe</c>.
     /// </summary>
     public string? ResponsableDeFond(DateOnly date)
     {
         var index = ISOWeek.GetWeekOfYear(date.ToDateTime(TimeOnly.MinValue)) % NombreSemaines;
-        return _affectations[index];
+        return _affectations.TryGetValue(index, out var responsableId) ? responsableId : null;
     }
 }
