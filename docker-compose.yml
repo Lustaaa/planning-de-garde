@@ -1,0 +1,15 @@
+# Mongo pour la config foyer persistante (sprint 09, pivot durabilité Sc.3).
+# SEULE la configuration du foyer (référentiel acteurs : noms, couleurs, acteurs ajoutés)
+# est persistée ici ; slots / périodes / transferts restent InMemory (borne anti-cliquet,
+# règle 30). Démarré via Docker (contrainte PO) : `docker compose up -d mongo`.
+services:
+  mongo:
+    image: mongo:7
+    container_name: planning-de-garde-mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:

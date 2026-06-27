@@ -85,30 +85,13 @@ public partial class PlanningPartage
         }
     }
 
-    /// <summary>
-    /// Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible avec
-    /// du texte sombre) ; repli blanc pour la couleur neutre / inconnue.
-    /// </summary>
-    private static string Teinte(string couleur) => couleur switch
-    {
-        "bleu" => "#dbeafe",
-        "orange" => "#ffedd5",
-        "vert" => "#dcfce7",
-        "violet" => "#ede9fe",
-        "gris" => "#f1f3f5",
-        _ => "#ffffff",
-    };
+    /// <summary>Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible
+    /// avec du texte sombre), via le thème couleur partagé.</summary>
+    private static string Teinte(string couleur) => CouleursTheme.Claire(couleur);
 
-    /// <summary>Couleur pleine du créneau pour la couleur propre de l'acteur du slot.</summary>
-    private static string Couleur(string couleur) => couleur switch
-    {
-        "bleu" => "#2563eb",
-        "orange" => "#ea580c",
-        "vert" => "#16a34a",
-        "violet" => "#7c3aed",
-        "gris" => "#6b7280",
-        _ => "#6b7280",
-    };
+    /// <summary>Couleur pleine du créneau pour la couleur propre de l'acteur du slot, via le
+    /// thème couleur partagé.</summary>
+    private static string Couleur(string couleur) => CouleursTheme.Pleine(couleur);
 
     public async ValueTask DisposeAsync()
     {

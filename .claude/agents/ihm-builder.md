@@ -83,6 +83,16 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   test apparaît nommément, pas `0 total`). **N'utilise PAS bUnit** comme preuve : il
   passerait à vide. Passe la ligne **Acceptation** du `NN-slug.md` à `🔴 RED` et le statut
   agrégé dans `00-sprint<NN>-suivi.md` à `🔴 RED` ; tag de cycle source `@pending`→`@rouge`.
+- **Convention runtime anti-flake Docker (service injoignable / transport en échec).** Pour
+  un scénario « API/service injoignable », **PRÉFÈRE un handler de transport déterministe**
+  (lève `HttpRequestException` sur le seul appel ciblé — type
+  `GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable`) **plutôt qu'un port loopback
+  réellement libéré** : la sémantique `ConnectionRefused` d'un port loopback est **altérée par
+  le proxy de Docker Desktop**, ce qui rend la famille de tests runtime « TempsReel »
+  **non-déterministe** quand Docker tourne (cf. s09 Sc.9). Utilise `WaitForState` /
+  `WaitForAssertion` contre les re-render bUnit (`UnknownEventHandlerId` sur énumération async).
+  **Documente le prérequis Docker** de la suite « TempsReel ». Vise un rouge **déterministe**
+  (reproductible ≥3× Docker actif), pas un rouge qui dépend du timing réseau.
 
 ### FIX (.razor / câblage / render mode)
 - Corrige l'**IHM** : `.razor` / code-behind, **render mode** (`@rendermode
@@ -122,6 +132,11 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   projet partiel.** Un `--no-build` / filtre laisse un projet de prod non recompilé
   éventuellement cassé → le **vert ment** (cf. Sc.1 s07 : front Web non compilable masqué par
   `dotnet test --no-build`).
+- **Balayage runtime après composant partagé** : si le `FIX` a touché un **composant
+  partagé** (read model / légende, port commun, énumération de store, type partagé type
+  `ConfigurationFoyer`), relance **nommément la suite runtime `Web.Tests` EXISTANTE** (pas
+  seulement le test du scénario courant) **avant** le commit — une régression runtime doit être
+  attrapée au commit du scénario coupable, **pas** au RED du suivant (cf. s09 Sc.1→Sc.2).
 - Pour un **scénario IHM**, l'acceptation **runtime/E2E** doit être verte (c'est la
   preuve). Tu **peux** ajouter des **tests de composant bUnit** en complément, **jamais**
   comme preuve d'acceptation d'un bug runtime ; ne double que les ports, jamais le domaine.

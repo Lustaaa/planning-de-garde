@@ -5,6 +5,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Driver Mongo : SEULE la config foyer (acteurs) est persistée derrière les ports inchangés
+         (sprint 09, pivot durabilité Sc.3). Mongo tourne via Docker (docker-compose.yml). -->
+    <PackageReference Include="MongoDB.Driver" Version="3.4.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
 

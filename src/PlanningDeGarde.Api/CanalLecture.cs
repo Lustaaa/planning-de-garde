@@ -1,3 +1,4 @@
+using System.Linq;
 using PlanningDeGarde.Application;
 
 namespace PlanningDeGarde.Api;
@@ -11,8 +12,26 @@ namespace PlanningDeGarde.Api;
 /// </summary>
 public static class CanalLecture
 {
+    /// <summary>Vue d'un acteur du foyer énumérée pour l'écran de configuration : identifiant stable
+    /// (clé de résolution) + nom d'affichage courant + couleur courante, tous deux résolus sur cet
+    /// identifiant (couleur neutre par contrat si l'acteur n'en a pas) — pour que la liste de
+    /// configuration affiche le nom ET sa pastille de couleur, cohérente avec la grille.</summary>
+    public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur);
+
     public static IEndpointRouteBuilder MapperCanalLecture(this IEndpointRouteBuilder routes)
     {
+        // Énumération des acteurs du foyer DEPUIS LE STORE (et non la liste statique front
+        // Foyer.ActeursEditables) : l'écran de configuration la lit pour faire apparaître un acteur
+        // fraîchement ajouté (Sc.1). Le nom est résolu sur l'identifiant stable (jamais le libellé).
+        routes.MapGet("/api/foyer/acteurs",
+            (IEnumerationActeursFoyer enumeration, IReferentielResponsables referentiel, IPaletteCouleurs palette) =>
+            {
+                var acteurs = enumeration.EnumererActeurs()
+                    .Select(id => new ActeurFoyerVue(id, referentiel.NomDe(id), palette.CouleurDe(id)))
+                    .ToList();
+                return Results.Ok(acteurs);
+            });
+
         // Grille projetée à une date de référence (« aujourd'hui »), passée en segments yyyy/MM/dd
         // pour le déterminisme côté front (jamais DateTime.Now côté serveur). Renvoie le read model
         // GrilleAgenda (records framework-free de l'Application), sérialisé en JSON.

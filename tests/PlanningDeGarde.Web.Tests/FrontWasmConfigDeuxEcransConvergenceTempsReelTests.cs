@@ -53,12 +53,14 @@ public sealed class FrontWasmConfigDeuxEcransConvergenceTempsReelTests : TestCon
 
         // When — le premier écran renomme parent-b en « Bruno M. » et enregistre (canal d'écriture HTTP réel)…
         var config1 = RenderComponent<ConfigurationFoyer>();
+        AttendreChargementEcranConfig(config1);
         config1.Find("select.form-select").Change("parent-b");
         config1.Find("[data-testid='champ-nom']").Change("Bruno M.");
         config1.Find("form").Submit();
 
         // … puis, juste après, le second écran le renomme en « Bruno Martin » et enregistre (même store).
         var config2 = ecran2.RenderComponent<ConfigurationFoyer>();
+        AttendreChargementEcranConfig(config2);
         config2.Find("select.form-select").Change("parent-b");
         config2.Find("[data-testid='champ-nom']").Change("Bruno Martin");
         config2.Find("form").Submit();
@@ -92,6 +94,17 @@ public sealed class FrontWasmConfigDeuxEcransConvergenceTempsReelTests : TestCon
             await pousseurDeDiffusion;
         }
     }
+
+    /// <summary>
+    /// Attend que l'écran de configuration ait fini d'énumérer ses acteurs depuis le store (GET HTTP réel
+    /// asynchrone, introduit au Sc.1 du sprint 09) avant toute interaction : ce chargement re-rend l'écran
+    /// et, s'il s'intercale entre <c>Find</c> et <c>Change</c> sur le select, invalide le handler d'événement
+    /// (état réaliste : l'écran a fini de charger).
+    /// </summary>
+    private static void AttendreChargementEcranConfig(IRenderedComponent<ConfigurationFoyer> config)
+        => config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
 
     /// <summary>Asserte que la case du 15/07 ET l'entrée de légende d'une grille portent <paramref name="nom"/>.</summary>
     private static void AssertNomDans(IRenderedComponent<PlanningPartage> grille, string nom)

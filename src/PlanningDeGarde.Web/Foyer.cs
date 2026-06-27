@@ -47,3 +47,9 @@ public static class Foyer
 
 /// <summary>Un responsable du foyer : identifiant stable (bindé) et libellé (affiché).</summary>
 public sealed record Responsable(string Id, string Libelle);
+
+/// <summary>Un acteur du foyer <b>énuméré depuis le store durable</b> via le canal de lecture (et non
+/// la liste statique <see cref="Foyer.ActeursEditables"/>) : identifiant stable + nom d'affichage
+/// courant + couleur courante (neutre « gris » par contrat si l'acteur n'en a pas). C'est cette
+/// énumération qui fait apparaître un acteur fraîchement ajouté (Sc.1), nom et pastille de couleur.</summary>
+public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris");

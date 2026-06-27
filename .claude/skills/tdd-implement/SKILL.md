@@ -263,6 +263,22 @@ qui le mène en **vrai cycle RED→GREEN** :
    InteractiveServer`, `@onclick`/`@bind`, DI, hub SignalR). Aucune règle métier dans l'UI.
 3. **Vert** — le test runtime passe, suite complète verte.
 
+> **Convention runtime anti-flake Docker (service injoignable / transport en échec).** Pour
+> un scénario « API/service injoignable », **préfère un handler de transport déterministe**
+> (lève `HttpRequestException` sur le seul appel ciblé — type
+> `GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable`) **plutôt qu'un port loopback
+> réellement libéré** : la sémantique `ConnectionRefused` d'un port loopback est **altérée par
+> le proxy de Docker Desktop**, ce qui rend la famille de tests runtime « TempsReel »
+> **non-déterministe** quand Docker tourne (s09 Sc.9). Utilise `WaitForState` /
+> `WaitForAssertion` contre les re-render bUnit (`UnknownEventHandlerId` sur énumération
+> async). Documente le prérequis Docker de la suite « TempsReel ». Vise un rouge
+> **déterministe** (reproductible ≥3× Docker actif), pas dépendant du timing réseau.
+>
+> **Balayage runtime après composant partagé.** Après un fix touchant un composant partagé
+> (read model / légende, port commun, énumération de store, type partagé), relance
+> **nommément la suite runtime `Web.Tests` existante** avant le commit : une régression
+> runtime doit être attrapée au commit du scénario coupable, pas au RED du suivant (s09 Sc.1→Sc.2).
+
 `tdd-auto` reste **backend/Application uniquement** : s'il reçoit un scénario IHM, il le
 **refuse** (round-trip) au lieu de produire un test bUnit composant qui passe à vide.
 

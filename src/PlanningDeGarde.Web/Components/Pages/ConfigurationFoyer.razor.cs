@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -26,9 +28,29 @@ public partial class ConfigurationFoyer
         public string Couleur { get; set; } = "";
     }
 
+    private sealed class FormulaireAjout
+    {
+        public string Nom { get; set; } = "";
+        public string Couleur { get; set; } = "";
+    }
+
     private readonly Formulaire _form = new();
     private string? _confirmation;
     private string? _motifEchec;
+
+    private readonly FormulaireAjout _ajout = new();
+    private string? _motifEchecAjout;
+
+    /// <summary>Acteurs du foyer énumérés <b>depuis le store durable</b> (canal de lecture HTTP), et non
+    /// la liste statique front : c'est cette énumération qui fait apparaître un acteur ajouté (Sc.1).</summary>
+    private IReadOnlyList<ActeurFoyer> _acteurs = Array.Empty<ActeurFoyer>();
+
+    /// <summary>Au montage de l'écran, charge la liste des acteurs depuis le store via l'API distante.</summary>
+    protected override Task OnInitializedAsync() => RechargerActeurs();
+
+    private async Task RechargerActeurs()
+        => _acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs")
+            ?? new List<ActeurFoyer>();
 
     /// <summary>Nom d'affichage courant de l'acteur sélectionné (aide de saisie, miroir du seed) —
     /// <c>null</c> tant qu'aucun acteur n'est choisi. Sert d'indicateur « ce que vous éditez ».</summary>
@@ -84,5 +106,48 @@ public partial class ConfigurationFoyer
             // désérialise comme la chaîne qu'il est, pour surfacer un message propre (« le nom ne peut
             // pas être vide ») sans guillemets parasites (Sc.8).
             _motifEchec = await reponse.Content.ReadFromJsonAsync<string>();
+    }
+
+    /// <summary>
+    /// Ajoute un acteur neuf au foyer via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/ajouter-acteur</c>, règle 27 — aucune vue n'écrit le domaine en direct),
+    /// puis ré-énumère le store pour faire apparaître l'acteur ajouté <b>sans rechargement</b> (Sc.1).
+    /// Sur refus métier (Sc.8, nom vide), le motif renvoyé par le canal est surfacé sans muter la liste.
+    /// Sur <b>service injoignable</b> (Sc.9 s09, échec de transport <see cref="HttpRequestException"/> avant
+    /// que le handler ne tourne), un message dédié s'affiche, la saisie est conservée et rien n'est enregistré.
+    /// </summary>
+    private async Task Ajouter()
+    {
+        _motifEchecAjout = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/ajouter-acteur",
+                new AjouterActeurRequete(_ajout.Nom, _ajout.Couleur));
+        }
+        catch (HttpRequestException)
+        {
+            // Service de configuration injoignable (échec de transport, pas un refus métier Sc.8) : le
+            // handler AjouterActeur ne s'exécute jamais. Message dédié, saisie « Carla / rose » conservée
+            // à resoumettre, aucune écriture ni mise en file (règle 28). Cf. Sc.9 (s09).
+            _motifEchecAjout = PoserSlot.MessageServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            // Refus métier (nom vide / tout-espaces, Sc.8) : le canal renvoie le motif en corps JSON
+            // (Results.BadRequest(string)). On le surface tel quel à l'écran, sans muter la liste ni
+            // effacer la saisie — aucun identifiant n'est généré, la liste des acteurs reste inchangée.
+            _motifEchecAjout = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        // La liste reflète l'ajout sans recharger la page : on relit l'énumération du store durable.
+        await RechargerActeurs();
+        _ajout.Nom = "";
+        _ajout.Couleur = "";
     }
 }

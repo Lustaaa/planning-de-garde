@@ -1,7 +1,5 @@
 using System;
-using System.Net;
 using System.Net.Http;
-using System.Net.Sockets;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Web.Components.Pages;
@@ -11,41 +9,33 @@ namespace PlanningDeGarde.Web.Tests;
 
 /// <summary>
 /// Acceptation de NIVEAU RUNTIME du Sc.9 (🖥️ IHM, <c>@erreur</c>) — VOLET RUNTIME (backend néant) :
-/// la grille réelle affiche parent-a (« Alice », bleu) le 14/07/2026, mais l'<b>API distante est
-/// injoignable</b> (échec de <b>transport</b>, pas un refus métier comme Sc.8). Depuis l'<b>écran de
-/// configuration réellement câblé</b> (<see cref="ConfigurationFoyer"/>) connecté à une API <b>réellement
-/// arrêtée</b>, on renomme parent-a en « Alicia » et on enregistre : l'émission via le canal d'écriture
-/// HTTP réel échoue (<see cref="HttpRequestException"/> sur un vrai <c>ConnectionRefused</c>), l'écran
-/// surface un <b>message clair</b> (« Enregistrement impossible : le service est injoignable, réessayez. »),
-/// l'édition <b>n'est pas appliquée</b> et reste à resoumettre — la grille (sur l'API live) conserve
-/// « Alice » dans la case du 14/07 et en légende ; sans mise en file ni rejeu.
+/// la grille réelle affiche parent-a (« Alice », bleu) le 14/07/2026, mais le <b>service de configuration
+/// est injoignable</b> (échec de <b>transport</b>, pas un refus métier comme Sc.8). Depuis l'<b>écran de
+/// configuration réellement câblé</b> (<see cref="ConfigurationFoyer"/>) dont le <b>canal d'écriture
+/// d'édition</b> est injoignable, on renomme parent-a en « Alicia » et on enregistre : l'émission via le
+/// canal d'écriture HTTP échoue (<see cref="HttpRequestException"/>), l'écran surface un <b>message clair</b>
+/// (« Enregistrement impossible : le service est injoignable, réessayez. »), l'édition <b>n'est pas appliquée</b>
+/// et reste à resoumettre — la grille (sur l'API live) conserve « Alice » dans la case du 14/07 et en légende ;
+/// sans mise en file ni rejeu.
 ///
-/// Anti « vert qui ment » : le transport est un <b>vrai socket</b> vers un port réellement libéré (pas un
-/// stub de statut 4xx — ce serait un refus métier, pas un service injoignable). Le baseline « Alice » est
-/// asserté avant ; la grille reste « Alice » car aucune écriture n'a transité (store live non muté). Un
-/// bUnit à doublure ne prouverait ni l'échec de transport réseau réel, ni le rendu du message.
+/// <para><b>Robustesse vs proxy loopback Docker (anti-flake).</b> On NE s'appuie PLUS sur un
+/// <c>ConnectionRefused</c> vers un port loopback réellement libéré : quand Docker Desktop tourne, son proxy
+/// loopback intercepte la connexion et altère la sémantique du refus (l'exception n'est plus une
+/// <see cref="HttpRequestException"/> captée par l'écran, ou la connexion pend au-delà du délai d'attente) → ce
+/// test flakait selon l'environnement. L'échec de transport est désormais <b>déterministe et indépendant de
+/// Docker</b> : le canal d'écriture d'édition (POST .../editer-acteur) lève une <see cref="HttpRequestException"/>
+/// au niveau du handler — le contrat exact que l'écran attrape — tandis que l'énumération en lecture transite
+/// normalement vers l'API live (le rendu initial de l'écran ne crashe plus). Ce n'est pas une doublure de statut
+/// 4xx (refus métier) : aucune réponse n'est fabriquée, l'échec est bien au transport.</para>
+///
+/// Anti « vert qui ment » : le baseline « Alice » est asserté avant ; la grille reste « Alice » car aucune
+/// écriture n'a transité (store live non muté). Un bUnit à pure doublure ne prouverait ni l'échec via le canal
+/// HTTP réel, ni le rendu du message.
 /// </summary>
 public sealed class FrontWasmConfigApiInjoignableTempsReelTests : TestContext
 {
     private const string MessageInjoignable =
         "Enregistrement impossible : le service est injoignable, réessayez.";
-
-    // HttpClient réel pointant sur une adresse d'API RÉELLEMENT arrêtée : on réserve un port TCP
-    // localhost libre puis on le LIBÈRE → plus rien n'écoute. Toute émission réseau réelle vers ce port
-    // produit un vrai ConnectionRefused ⇒ HttpRequestException — le symptôme exact d'un service
-    // injoignable côté navigateur (transport réseau réel, pas une doublure de statut).
-    private static HttpClient ClientVersApiArretee()
-    {
-        var sonde = new TcpListener(IPAddress.Loopback, 0);
-        sonde.Start();
-        var port = ((IPEndPoint)sonde.LocalEndpoint).Port;
-        sonde.Stop(); // port libéré : plus rien n'écoute → toute connexion sera refusée.
-
-        return new HttpClient(new SocketsHttpHandler())
-        {
-            BaseAddress = new Uri($"http://127.0.0.1:{port}/"),
-        };
-    }
 
     [Fact]
     public void Should_Afficher_un_message_de_service_injoignable_et_conserver_Alice_dans_la_case_du_14_07_2026_et_en_legende_sans_appliquer_l_edition_When_on_renomme_parent_a_alors_que_l_API_distante_est_arretee()
@@ -65,18 +55,26 @@ public sealed class FrontWasmConfigApiInjoignableTempsReelTests : TestContext
         var entreeInitiale = Assert.Single(grille.FindAll("[data-testid='legende-entree']"));
         Assert.Equal("Alice", entreeInitiale.QuerySelector(".legende-nom")!.TextContent.Trim());
 
-        // When — depuis l'écran de configuration câblé à une API distante RÉELLEMENT ARRÊTÉE, je renomme
-        // parent-a en « Alicia » et j'enregistre (l'émission HTTP réelle se heurte à un ConnectionRefused).
+        // When — depuis l'écran de configuration câblé à la même API distante LIVE mais dont le CANAL
+        // D'ÉCRITURE D'ÉDITION est injoignable (échec de transport déterministe), je renomme parent-a en
+        // « Alicia » et j'enregistre (l'émission HTTP réelle se heurte à une HttpRequestException).
         using var ecranConfig = new TestContext();
-        ecranConfig.Services.AddSingleton(ClientVersApiArretee());
+        ecranConfig.Services.AddSingleton(
+            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "editer-acteur"));
         var config = ecranConfig.RenderComponent<ConfigurationFoyer>();
+
+        // … l'énumération en lecture (GET HTTP réel vers l'API live) déclenche un re-render asynchrone : on
+        // attend qu'elle se pose (liste peuplée) avant d'interagir, sinon les handlers d'événements sont
+        // ré-attribués entre le Find et le Change (bUnit UnknownEventHandlerId).
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+
         config.Find("select.form-select").Change("parent-a");
         config.Find("[data-testid='champ-nom']").Change("Alicia");
         config.Find("form").Submit();
 
-        // Then — l'enregistrement échoue clairement : le message de service injoignable s'affiche (l'échec
-        // de transport est asynchrone : un vrai ConnectionRefused peut dépasser le timeout par défaut,
-        // d'où une fenêtre d'attente explicite).
+        // Then — l'enregistrement échoue clairement : le message de service injoignable s'affiche.
         var alerte = config.WaitForElement("[data-testid='motif-echec']", TimeSpan.FromSeconds(10));
         Assert.Equal(MessageInjoignable, alerte.TextContent.Trim());
 

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using PlanningDeGarde.Application;
 
 namespace PlanningDeGarde.Infrastructure;
@@ -12,7 +13,7 @@ namespace PlanningDeGarde.Infrastructure;
 /// Remplaçant éditable du dictionnaire <c>static readonly</c> lu par
 /// <see cref="FoyerReferentielResponsables"/> — la résolution reste sur l'identifiant stable.
 /// </summary>
-public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEditeurConfigurationFoyer, IPaletteCouleurs
+public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEditeurConfigurationFoyer, IPaletteCouleurs, IEnumerationActeursFoyer
 {
     private readonly Dictionary<string, string> _noms;
     private readonly Dictionary<string, string> _couleurs;
@@ -25,6 +26,16 @@ public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEdi
 
     public string NomDe(string responsableId)
         => _noms.TryGetValue(responsableId, out var nom) ? nom : responsableId;
+
+    public void Ajouter(string acteurId, string nom, string? couleur)
+    {
+        _noms[acteurId] = nom;                  // l'acteur ajouté existe désormais sur son id neuf
+        if (couleur is not null)
+            _couleurs[acteurId] = couleur;      // couleur absente → repli neutre par contrat CouleurDe (Sc.5)
+    }
+
+    public IReadOnlyCollection<string> EnumererActeurs()
+        => _noms.Keys.ToList(); // tous les acteurs du store : seeds + ajoutés (résolution nom/couleur sur l'id)
 
     public void Renommer(string acteurId, string nouveauNom)
         => _noms[acteurId] = nouveauNom; // dernière écriture gagne (écrase, sans version)

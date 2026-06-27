@@ -135,6 +135,16 @@ scénario.
      spec/convention, ou escalade G1 si c'est un vrai choix métier).
    La boucle stoppe aussi si l'utilisateur interrompt.
 
+   > **Lot de caractérisations early-green (vélocité).** Quand plusieurs scénarios
+   > **backend consécutifs** sont des caractérisations early-green **ANTICIPÉES** (cellule
+   > `Contradiction` du `NN-slug.md` préfixée « ⚠️ probablement early green … » / tag
+   > `caractérisation` au suivi), tu peux dispatcher `tdd-auto` sur **le lot en un seul run
+   > et un seul commit** au lieu d'un round-trip par scénario (levier vélocité, cf. s09
+   > Sc.4–7). Strictement borné : **uniquement** des caractérisations anticipées
+   > consécutives ; un **driver réel** (vrai RED) **rompt le lot** et reprend un scénario =
+   > un commit ; tout **early-green INATTENDU** dans le lot → **STOP G4 immédiat sur le lot**,
+   > aucun commit, direct PO. Cf. `tdd-auto.md` § « Lot de caractérisations early-green ».
+
 7. **Phase IHM finale (agent `ihm-builder`).** **Uniquement quand tous les scénarios
    sont `✅ GREEN`** dans le `00-sprint<NN>-suivi.md` (backend **et** scénarios IHM
    complets). Propose la construction de l'IHM restante (vues/écrans non encore couverts

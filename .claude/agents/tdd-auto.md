@@ -82,7 +82,12 @@ la solution** — `dotnet test` (et/ou `dotnet build` de la solution) **JAMAIS `
 ni filtre projet partiel qui laisserait un projet de prod non recompilé. Un `--no-build` sur
 un sous-ensemble masque un projet cassé et fait **mentir le vert** (cf. Sc.1 s07 : front Web
 non compilable masqué par `dotnet test --no-build` sur Web.Tests). Une régression se corrige
-avant de continuer. Puis **refactor sous filet vert** (même comportement). **OBLIGATOIRE
+avant de continuer. **Balayage runtime après composant partagé** : si l'ajout/la modif de ce
+test touche un **composant partagé** (read model / légende, port commun, énumération de store,
+type partagé type `ConfigurationFoyer`), relance **nommément la suite runtime `Web.Tests`
+EXISTANTE** (pas seulement les tests du scénario courant) **avant** le commit du scénario — une
+régression runtime doit être attrapée au commit du scénario coupable, **pas** au RED du suivant
+(cf. s09 : énumération async de Sc.1 cassant un test runtime s08, révélée seulement au RED Sc.2). Puis **refactor sous filet vert** (même comportement). **OBLIGATOIRE
 — avant de continuer** : `Edit` le `NN-slug.md`, cellule `🔴 RED → ✅ GREEN`, **et** le
 `00-sprint<NN>-suivi.md`, compte `Tests` du scénario incrémenté (`X/N`). Tests restants dans la
 table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
@@ -115,6 +120,24 @@ table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
   scénario (ex. `feat: scénario 3 — réservation d'un créneau libre`).
 - **STOP & WAIT** : rends la main avec le récap. Le thread principal décidera
   d'enchaîner le scénario suivant.
+
+## Lot de caractérisations early-green (vélocité)
+
+**Regroupement STRICTEMENT borné.** Le principe « un scénario = un commit » reste la
+règle générale et n'est **pas** levé. Seule exception : plusieurs scénarios consécutifs qui
+sont des early green **ANTICIPÉS** (caractérisations — cellule `Contradiction` du `NN-slug.md`
+préfixée « ⚠️ probablement early green … », et/ou tag de suivi `caractérisation`) peuvent
+être traités en **un seul run et un seul commit** (filets de non-régression, aucun code neuf ;
+cf. s09 Sc.4–7). Conditions cumulatives :
+1. **uniquement** des caractérisations anticipées **consécutives** ; un driver réel (vrai
+   RED qui pilote du code) n'est **JAMAIS** batché — il **rompt le lot** et reprend la règle
+   un scénario = un commit ;
+2. tout early-green **INATTENDU** (non anticipé par `tdd-analyse`) rencontré dans le lot →
+   **STOP G4 immédiat sur tout le lot**, **aucun commit**, question au PO (`"gate":"G4"`) —
+   **jamais** de batch silencieux qui avalerait le signal ;
+3. le **suivi reste tenu scénario par scénario** (`NN-slug.md` + compte `X/N` du
+   `00-sprint<NN>-suivi.md`), même en lot ;
+4. **un seul commit de lot** listant explicitement les scénarios couverts.
 
 ## Garde-fous (cf. skill — Signaux d'alarme)
 

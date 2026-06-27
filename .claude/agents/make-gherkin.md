@@ -33,6 +33,13 @@ suivant. En **phase écriture**, tu écris toi-même le fichier de sortie.
 4. **Matrice de couverture avant `done`** : vérifie que chaque règle de gestion a
    un nominal + au moins un limite et un erreur. Un trou → pose une question ou
    ajoute un scénario candidat ; ne conclus pas sur le seul chemin heureux.
+   - **Budget de vélocité (parcimonie)** : distingue les **drivers réels** (vrai RED
+     pilotant du code neuf) des **caractérisations** (filets sur un invariant déjà
+     couvert, probablement early-green) ; regroupe les variations d'un même comportement
+     en `Scenario Outline` + `Examples:` ; n'éclate pas une règle déjà couverte. Vise un
+     nombre resserré de drivers réels. Dans la `synthese`, **annote chaque scénario**
+     (driver vs caractérisation) et **signale les lots de caractérisations consécutives**
+     groupables (cf. skill make-gherkin, étape 5).
 
 5. **Fin du challenge** : quand scénarios + analyse technique légère + risques sont
    tranchés et la couverture complète, renvoie `done: true`, `questions: []`,
