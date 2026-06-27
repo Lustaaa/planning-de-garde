@@ -346,3 +346,73 @@
   `docs/BACKLOG.md` (palier 8 É12/É6/É7/É8 ; É2 CRUD acteurs ; É7/É1 cycle ; palier 9 durabilité ;
   dettes s03) ; spec v10 palier 6/8/9 + règle 30 (borne anti-cliquet) ; décision CP « ancrage ISO »
   du 2026-06-27 ci-dessus (rouverte par (c)) ; **G2 tranché PO** (GOAL 1 dialogs planning).
+
+## 2026-06-27 — Collision `/5-consolidation` : « cycle de fond riche » vs décision CP ancrage ISO (spec v11)
+
+- **Question (spec-consolidation)** : le besoin forward « cycle de fond riche » (R3 ancre/début +
+  R4 frontière de jour, plage début/fin, sur-cycle vacances, WE-only) rouvre la décision CP
+  « ancrage ISO 8601, aucune ancre à saisir » et chevauche la durabilité (palier 9). Comment v11
+  l'intègre ?
+- **Décision (CP, sans escalade)** : **option 1 — palier forward séquencé, ancre rouverte au
+  cadrage**. v11 consigne « cycle de fond riche » comme **palier forward rang 3** (derrière les
+  dialogs GOAL 1 et le CRUD/impersonation), qui **rouvre explicitement la décision ancrage au
+  moment de SON make-gherkin**. **Règle 11 NON révisée maintenant** (reste « ISO sans ancre » =
+  état courant livré), seulement **enrichie d'une note** « évolution séquencée si l'usage la
+  réclame (ancre/borne de saisie + frontière jour + plage validité + sur-cycle/WE-only), à
+  trancher au make-gherkin du palier dédié ».
+- **Rationale (résolution déterministe, pas de conflit de valeur)** :
+  (1) **Convention « Révisions de règle hors boucle »** : une règle se révise **dans le
+  make-gherkin de son palier**, pas rétroactivement en consolidation. Option 1 la respecte ;
+  option 2 (renverser la décision CP dès v11) la viole frontalement.
+  (2) La **décision CP ancrage ISO du 2026-06-27 a pré-autorisé** cette évolution (« option 2
+  date d'ancrage écartée AVEC note : évolution séquencée si l'usage la réclame ») — la réouverture
+  est **conforme et anticipée**, pas une régression de borne.
+  (3) L'**arbitrage `/4-retours` (l.328-334)** a déjà séquencé (c) « cycle de fond riche » comme
+  forward **NON abandonné**, embarquant la durabilité palier 9 — v11 ne fait que **transcrire** ce
+  séquencement, sans le re-trancher.
+  (4) **Option 3 (éclater R3/R4 en 5 paliers a/b/c/d/e dès v11)** écartée : **découpe prématurée**
+  avant cadrage make-gherkin, sur-engage la granularité et le grain ~2h IA — la découpe fine est
+  un travail de make-gherkin, pas de consolidation (corollaire de découpe). v11 garde le besoin
+  **groupé** comme un seul palier forward, à découper au cadrage.
+- **Pas d'escalade** : aucune **règle de gestion neuve** actée (règle 11 inchangée) → pas de G1 ;
+  aucun **cap de sprint** touché (GOAL 1 dialogs déjà tranché PO) → pas de G2. Pas de trou métier :
+  l'état livré (ISO sans ancre) reste cohérent et utilisable tel quel.
+- **Sources** : `99-sprint10-besoins-fin-itération.md` (R3 l.36, R4 l.37) ; décision CP « ancrage
+  ISO 8601 » du 2026-06-27 (ci-dessus, note « évolution séquencée si l'usage la réclame ») ;
+  arbitrage `/4-retours` l.328-334 (séquencement forward (c), réouverture conforme) ; convention
+  pipeline « Révisions de règle hors boucle » (CLAUDE.md / spec) ; corollaire de découpe (~2h IA) ;
+  spec v10 règle 11 + Risques « coût de saisie du cycle » ; palier 9 durabilité.
+
+## 2026-06-27 — Validation de l'écriture de la spec vivante v11 (`/5-consolidation`)
+
+- **Question (spec-consolidation)** : la consolidation v11 sur v10 est-elle cohérente, et peut-on
+  autoriser l'écriture de `docs/11-specification.md` (remplace v10 figée) ?
+- **Décision (CP, sans escalade)** : **VALIDÉ — feu vert à l'écriture de v11**. La synthèse est
+  intégralement dérivable de l'état livré (palier 6, 8 scénarios @vert) + des besoins fin
+  d'itération + des 6 décisions CP du 2026-06-27 ci-dessus. **Aucun conflit de valeur ne subsiste**
+  → pas de G1 ; **cap déjà tranché PO** (GOAL 1 dialogs planning) → pas de G2.
+- **Cohérence vérifiée (synthèse → source) :**
+  - **(1) Palier 6 fondu dans l'état courant** (Contexte/Objectif, Séquence §6, Mécaniques) ⇐
+    suivi `00-sprint10-suivi.md` (cycle de fond résolu sous les périodes, EN MÉMOIRE, 8/8 @vert).
+    **Règle 12** (surcharge > fond > neutre, **priorité structurelle** branche `periode is null`,
+    légende agrège le fond) ⇐ décisions CP grain + validations `/2`/`/3` (Sc.2 caractérisation).
+  - **(2) Règle 11 révisée pour DÉCRIRE LE LIVRÉ** (N semaines, parité **ISO sans ancre**, mapping
+    sur **id stable** règle 19, refus **N=0**, édition depuis section « Cycle de fond ») —
+    **cohérent**, et distinct de la non-révision *forward* : la note « ancre/phase = évolution
+    séquencée si l'usage la réclame » consigne le rang 3 **sans** tirer la fonctionnalité d'ancre
+    en avant. Conforme à la décision *collision* ci-dessus (option 1, règle 11 « ISO sans ancre »
+    + note). **Règle 30 + borne anti-cliquet + §9** : cycle EN MÉMOIRE, durabilité au palier 9.
+  - **(3) Prochain sujet basculé → dialogs depuis le planning (palier 8/É12)** ⇐ G2 tranché PO.
+  - **(4) Forward séquencés sans abandon** : rang 2 CRUD acteurs complet (Delete + impersonation
+    **bornée convenance admin**, **règle 6**) ; rang 3 cycle de fond riche **groupé** (rouvre
+    ancrage ISO à SON make-gherkin) ⇐ besoins fin d'itération + décision *collision*.
+  - **(5) R2 = `/3` hors-spec, aucune règle** ; **palier 7 (survol enrichi) séquencé** (skippé
+    faute de demande PO) ⇐ besoins fin d'itération.
+- **Points de vigilance non bloquants** : aucune **règle de gestion neuve** (révisions sur 11/12/30/6
+  + note, pas de règle ajoutée) ; **pas de changelog** assumé (cohérent avec les consolidations
+  antérieures qui figent l'historique par numéro de version) ; v11 **remplace** v10, figée.
+- **Sources** : `00-sprint10-suivi.md` (livré palier 6) ; `99-sprint10-besoins-fin-itération.md`
+  (séquence forward, R2/R3/R4/C1/C2-C4) ; **6 décisions CP du 2026-06-27** ci-dessus (grain /
+  ancrage ISO / concurrence / écriture scénarios / plan tdd / besoins + collision) ; spec v10
+  règles 6, 7, 11, 12, 18, 19, 30 + palier 6/8/9 + Mécaniques + Risques ; convention « Révisions
+  de règle hors boucle ».
