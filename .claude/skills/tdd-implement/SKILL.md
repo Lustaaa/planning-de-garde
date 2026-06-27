@@ -206,6 +206,15 @@ toute facilité d'implémentation.
 
 6. **Confirme le VERT, puis REFACTOR.** Lance le test d'acceptation **et** la
    suite complète (non-régression). Tout doit être vert.
+   - **La non-régression recompile TOUS les projets.** Lance-la **sans jamais `--no-build`**
+     ni filtre projet partiel : `dotnet test` (et/ou `dotnet build` de la solution) doit
+     recompiler **tous** les projets de prod, pas seulement ceux des tests lancés. Un
+     `--no-build` / filtre laisse un projet de prod non recompilé éventuellement cassé et fait
+     **mentir le vert** (cf. Sc.1 s07 : front Web non compilable masqué par `dotnet test
+     --no-build` sur Web.Tests, détecté seulement au scénario suivant).
+   - **Auto-revue de minimalité avant commit.** Relis le diff : toute construction neuve
+     (généralisation, branche, boucle) non forcée par un rouge de ce scénario vole le rouge
+     d'un scénario futur (early-green déguisé) → retire-la, ou STOP (G4) si déjà couverte.
    - **Le test ne bouge pas pour passer.** Tu fais évoluer l'**implémentation**
      jusqu'au vert ; tu ne modifies **jamais** l'assertion du test d'acceptation
      pour la faire correspondre au code. Test à corriger = retour à l'étape 3.
@@ -517,6 +526,13 @@ JSON.
   dépendance → garde le cœur sans `using` d'infra.
 - **Test compté vert sans apparaître dans la sortie** (`0 total`, mauvais trait /
   projet) → GREEN-PAR-ABSENCE → fais-le collecter.
+- **Non-régression avec `--no-build` ou filtre projet partiel** → un projet de prod non
+  recompilé peut être cassé sans être vu → le **vert ment** (cf. Sc.1 s07) → recompile
+  **tous** les projets de la solution, jamais `--no-build`.
+- **Code GREEN généralisé au-delà du rouge courant** (un `.Distinct()`, une branche, une
+  boucle non exigée par le rouge de ce scénario) → vole le rouge d'un scénario futur
+  (early-green déguisé, cf. `.Distinct()` Sc.1 → early-green Sc.2 au s07) → auto-revue de
+  minimalité avant commit ; retire-la ou STOP (G4) si déjà couverte.
 - **Garde conditionnelle dès le 1er scénario d'erreur** → vole le rouge du nominal →
   refus inconditionnel d'abord.
 - **Un test qui ne contredit aucun code antérieur** → doublon → supprime ou

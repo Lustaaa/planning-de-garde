@@ -77,7 +77,11 @@ cellule `Status` du test courant `⏳ Pending → 🔴 RED`. Si le test passe d'
 ### GREEN_PHASE (par test unitaire)
 Implémente le **minimum** (YAGNI, TPP : constante → conditionnel → général), règle
 métier **dans l'agrégat** (Tell-Don't-Ask), domaine **sans framework**. Lance le test
-→ vert. **Non-régression** : relance la suite complète ; une régression se corrige
+→ vert. **Non-régression** : relance la suite complète **qui recompile TOUS les projets de
+la solution** — `dotnet test` (et/ou `dotnet build` de la solution) **JAMAIS `--no-build`**
+ni filtre projet partiel qui laisserait un projet de prod non recompilé. Un `--no-build` sur
+un sous-ensemble masque un projet cassé et fait **mentir le vert** (cf. Sc.1 s07 : front Web
+non compilable masqué par `dotnet test --no-build` sur Web.Tests). Une régression se corrige
 avant de continuer. Puis **refactor sous filet vert** (même comportement). **OBLIGATOIRE
 — avant de continuer** : `Edit` le `NN-slug.md`, cellule `🔴 RED → ✅ GREEN`, **et** le
 `00-sprint<NN>-suivi.md`, compte `Tests` du scénario incrémenté (`X/N`). Tests restants dans la
@@ -87,6 +91,18 @@ table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
 - Le test d'acceptation **et** la suite complète sont verts → passe la ligne
   **Acceptation** du `NN-slug.md` à `✅ GREEN`, et dans `00-sprint<NN>-suivi.md` le statut agrégé du
   scénario à `✅ GREEN` (compte `Tests` = `N/N`).
+- **Auto-revue de minimalité GREEN (OBLIGATOIRE, avant le commit).** Relis le **diff
+  d'implémentation** du scénario et confirme que **chaque construction neuve** (généralisation
+  type `.Distinct()`, boucle, branche, `if`, garde) a été **forcée par un rouge de CE
+  scénario**. Toute généralisation **non exigée** par un rouge courant **vole le rouge d'un
+  scénario futur** (early-green déguisé, cf. `.Distinct()` posé en Sc.1 → early-green inattendu
+  Sc.2 au s07) :
+  - si elle n'est **pas** encore couverte par un test → **retire-la** (laisse-la émerger au
+    scénario qui la contredira) ;
+  - si elle est **déjà** couverte / inévitable → **STOP** `{"type":"question","gate":"G4",…}`
+    (early-green déguisé) **sans committer**, laisse le PO trancher.
+  Cette revue reste chez **toi** (où le diff est produit) ; le chef de projet **ne fait pas**
+  de revue de code (sa nature reste de trancher des questions, pas de relire le GREEN).
 - Dans le **fichier de scénarios source**, remplace le tag de cycle `@rouge`→`@vert`
   (le tag de type reste). **N'ajoute PAS de `# vert — <hash>`** : référencer le commit qui
   contient le tag est **auto-référentiel** et impose un `--amend` qui décale le hash à
@@ -104,6 +120,12 @@ table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
 
 - Jamais modifier un test pour le faire passer (c'est l'implémentation qui évolue).
 - Jamais de `if`/garde/`throw` sans rouge qui l'exige ; refus inconditionnel d'abord.
+- **Code GREEN généralisé au-delà du rouge courant** (`.Distinct()`, boucle, branche non
+  exigée) → vole le rouge d'un scénario futur (early-green déguisé) → **auto-revue de
+  minimalité avant commit** (cf. SCENARIO_DONE).
+- **Non-régression avec `--no-build` ou filtre projet partiel** → un projet de prod non
+  recompilé peut être cassé et le **vert ment** (cf. Sc.1 s07). La garde recompile **tous** les
+  projets de la solution.
 - Jamais de framework de mock ; doublures à la main, ne doubler que les ports.
 - Asserter sur le **snapshot** / la frontière publique, jamais un champ privé.
 - Règle métier dans l'agrégat, pas le handler ; domaine sans EF/SignalR.

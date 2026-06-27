@@ -15,15 +15,24 @@
   Ce script démarre d'abord l'hôte d'API EN ARRIÈRE-PLAN, puis le front WASM AU PREMIER PLAN
   (Ctrl+C arrête le front ; l'API en arrière-plan est arrêtée à la sortie du script).
 
-  On lance chaque projet directement (`dotnet run --project …`) plutôt que de builder la
-  solution entière : construire la solution (qui inclut le projet de test bUnit référençant le
-  front WASM) peut empoisonner le manifest des static web assets. `dotnet run` ne construit que
-  ce qu'il faut.
+  On builde chaque projet directement (`dotnet build --project …`) plutôt que la solution
+  entière : construire la solution (qui inclut le projet de test bUnit référençant le front
+  WASM) peut empoisonner le manifest des static web assets.
 
-  Avant le run, le script arrête les instances résiduelles d'un lancement précédent (API + front) :
-  un hôte zombie verrouille les DLL de sortie et fait échouer le build (MSB3027).
+  Build SÉQUENTIEL avant lancement (anti-race CS2012). Les deux hôtes (API + front WASM)
+  partagent Domain.dll / Application.dll. Si on laisse `dotnet run` rebuilder chaque hôte au
+  démarrage, l'API et le front recompilent CES MÊMES DLL en même temps → l'un les verrouille
+  pendant que l'autre les écrit (CS2012 « used by another process », observé au gate visuel du
+  sprint 07). Pour l'éviter, le script : (1) arrête les serveurs de build résiduels
+  (`dotnet build-server shutdown`) ; (2) builde API puis Web SÉQUENTIELLEMENT (une seule passe,
+  sans concurrence) ; (3) lance ensuite les deux hôtes en `--no-build`. Le param -NoBuild saute
+  entièrement les étapes (1)/(2) si la sortie est déjà compilée.
+
+  Avant le run, le script arrête aussi les instances résiduelles d'un lancement précédent
+  (API + front) : un hôte zombie verrouille les DLL de sortie et fait échouer le build (MSB3027).
 .PARAMETER NoBuild
-  Lance sans rebuild (`--no-build`) : suppose une sortie déjà compilée.
+  Saute la phase de build séquentiel anti-race (build-server shutdown + build API/Web) et
+  suppose une sortie déjà compilée. Les hôtes sont lancés en `--no-build` dans tous les cas.
 .PARAMETER Watch
   Lance le front via `dotnet watch run` (hot reload), pratique pendant la phase IHM.
 .PARAMETER NoBrowser
@@ -64,9 +73,26 @@ foreach ($z in $zombies) {
 }
 if ($zombies) { Start-Sleep -Milliseconds 500 }  # laisse l'OS relâcher les verrous DLL
 
+# --- Build SÉQUENTIEL anti-race (CS2012) -----------------------------------------------------
+# API et front WASM partagent Domain.dll / Application.dll. Laisser chaque `dotnet run` rebuilder
+# son hôte au démarrage fait recompiler CES MÊMES DLL en parallèle → verrou de fichier
+# (CS2012 « used by another process », vu au gate visuel s07). On builde donc API puis Web
+# SÉQUENTIELLEMENT (une seule passe, aucune concurrence) AVANT de lancer les hôtes, qui tourneront
+# ensuite en `--no-build`. -NoBuild saute cette phase (sortie supposée déjà compilée).
+if (-not $NoBuild) {
+    Write-Host 'Arrêt des serveurs de build résiduels (dotnet build-server shutdown)…' -ForegroundColor Cyan
+    dotnet build-server shutdown | Out-Null
+    foreach ($proj in @($api, $web)) {
+        Write-Host "Build séquentiel de $proj…" -ForegroundColor Cyan
+        dotnet build $proj --nologo
+        if ($LASTEXITCODE -ne 0) { throw "Échec du build de $proj (code $LASTEXITCODE)." }
+    }
+}
+
 # --- Hôte d'API détaché (arrière-plan) -------------------------------------------------------
-$apiArgs = @('run', '--project', $api, '--launch-profile', 'http')
-if ($NoBuild) { $apiArgs += '--no-build' }
+# Les projets sont déjà buildés ci-dessus (ou supposés l'être via -NoBuild) → on lance toujours
+# en `--no-build` pour ne PAS rebuilder au démarrage (ce qui rouvrirait la race CS2012).
+$apiArgs = @('run', '--project', $api, '--launch-profile', 'http', '--no-build')
 Write-Host "Démarrage de l'hôte d'API détaché (http://localhost:5180, Scalar : /scalar/v1)…" -ForegroundColor Green
 $apiProc = Start-Process -FilePath 'dotnet' -ArgumentList $apiArgs -PassThru -NoNewWindow
 
@@ -87,7 +113,9 @@ try {
     } else {
         $webArgs += @('--launch-profile', 'http')
     }
-    if ($NoBuild) { $webArgs += '--no-build' }
+    # Front déjà buildé (phase séquentielle) → `--no-build`, SAUF en mode -Watch où le hot
+    # reload doit pouvoir recompiler. (Sans Watch, on évite ainsi la race CS2012 au démarrage.)
+    if (-not $Watch) { $webArgs += '--no-build' }
 
     Write-Host 'Lancement du front WASM (http://localhost:5292)…' -ForegroundColor Green
     if ($Watch) {
