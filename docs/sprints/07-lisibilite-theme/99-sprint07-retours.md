@@ -166,6 +166,30 @@
   `FakePaletteCouleurs`) ; s06 Sc.8 (anti-pattern libellé-comme-identité) ; dette persistance
   config foyer (palier 5/10) ; BACKLOG palier 3 (É5).
 
+## 2026-06-27 — Portée de l'édition « infos utilisateurs » (cap persistance, 1ère tranche)
+
+- **Question (retours-challenge, Q2)** : pour le prochain sujet `/2` « écran de config foyer
+  — éditer les acteurs (noms + couleurs) », « le seed devient éditable » se lit en deux coûts
+  très différents : édition **volatile** (en mémoire, relue par la grille) ou **persistée**
+  (store durable derrière les ports → tire le Palier 10 en avant). Le port nom s07
+  (`IReferentielResponsables`, miroir `IPaletteCouleurs`) porte la même dette : seed semé,
+  aucune persistance construite.
+- **Décision (CP, sans escalade)** : option 1 — **édition volatile (noms + couleurs), relue
+  par la grille, AUCUNE persistance durable**. Observable Gherkin : « je renomme Alice→Alicia
+  / re-colorie Bruno → la case et la légende suivent dans la session ». La persistance durable
+  (survie au redémarrage, sortie du dur de `Foyer.cs`) reste **Palier 10**, séquencée derrière
+  l'usage.
+- **Rationale** : le séquencement est **déjà acté** (spec v06/v07, `/5-consolidation` s05 :
+  « persistance réelle = Palier 10, tout derrière la chaîne d'usage ; arbitre = l'usage
+  tranche »). L'édition volatile **mirroite** la dette déjà assumée du seed (`IPaletteCouleurs`
+  / port nom s07) sans construire d'adaptateur durable → YAGNI, plus petite tranche lisible,
+  fidèle au cadrage PO « la plus petite tranche cohérente ». Persister d'emblée (option 2)
+  sortirait du plus petit incrément et pré-empterait le Palier 10. Aucun arbitrage métier neuf,
+  aucun cap nouveau (le sujet = G2 déjà tranché PO).
+- **Sources** : BACKLOG Palier 10 (persistance réelle séquencée derrière l'usage) ; spec v07
+  séquencement ; dette `IPaletteCouleurs` + port nom s07 (`IReferentielResponsables`) ;
+  réponse PO G2 (sujet = écran config foyer).
+
 # Retours produit (PO)
 
 > Le code et les tests sont **hors scope** ici (revus en revue de code). Ces retours
@@ -176,15 +200,28 @@
 
 ## IHM - général
 
--
+- Tout est ok sur ce sprint sauf le survol
 
 ## IHM - /planning
 
--
+- ca pourrai etre cool que le survole d'une case (apres une seconde) affiche le résumé de la journée.
 
 ## Tech (optionnel)
 
 - (contraintes techniques éventuelles ; laisser vide si aucune → bypass dans `/4-retours`)
+
+# Idées pour les prochain sprint
+
+- avoir un indicateur que l'autre parent est connecté sur le planning
+- pouvoir gerer plusieurs enfants
+- pouvoir gérer des famille recomposé 
+- j'aimerai un théme sombre (avec un toggle pour switch)
+
+## Priorité pour la suite
+
+- je pense que la suite doit etre la gestion des utilisateurs
+  - pouvoir renseigner les informations des utilisateurs
+  - pouvoir setter de la récurence sur les périodes
 
 # Méthode (agents) — pour retro-sprint
 

@@ -44,12 +44,12 @@
 
 | # | Scénario | Tag | Acceptation (runtime IHM) | Tests backend | Statut |
 |---|----------|-----|---------------------------|---------------|--------|
-| 1 | [Période affectée : nom + entrée de légende](01-periode-affectee-nom-et-legende.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ Green (runtime) | 2/2 ✅ backend | ✅ GREEN |
-| 2 | [Plusieurs responsables : légende dédoublonnée](02-legende-dedoublonnee.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ Green (runtime ; caract., early-green attendu) | 1/1 ✅ backend (caract. ; driver #1 retiré PO/G4) | ✅ GREEN |
-| 3 | [Fenêtre sans affectation : légende masquée](03-fenetre-vide-legende-masquee.md) | `@limite` 🖥️ IHM · driver masquage `ihm-builder` (+ caract. `tdd-auto`) | ✅ Green (runtime ; driver masquage RED→GREEN) | 1/1 ✅ backend (caract.) | ✅ GREEN |
-| 4 | [Ajout vivant par diffusion temps réel](04-ajout-vivant-temps-reel.md) | `@limite` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ✅ Green (runtime SignalR de bout en bout) | 0/0 | ✅ GREEN |
-| 5 | [Acteur hors set : gris assumé, nom conservé](05-acteur-hors-set-gris-assume.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ✅ Green (runtime ; caract., early-green attendu) | 1/1 ✅ backend (caract.) | ✅ GREEN |
-| 6 | [Nom long : lisibilité de la case préservée](06-nom-long-lisible.md) | `@limite` 🖥️ IHM · driver troncature `ihm-builder` (+ caract. `tdd-auto`) | ✅ Green (runtime ; driver troncature+survol RED→GREEN) | 1/1 ✅ backend (caract.) | ✅ GREEN |
+| 1 | [Période affectée : nom + entrée de légende](archive/01-periode-affectee-nom-et-legende.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ Green (runtime) | 2/2 ✅ backend | ✅ GREEN |
+| 2 | [Plusieurs responsables : légende dédoublonnée](archive/02-legende-dedoublonnee.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ Green (runtime ; caract., early-green attendu) | 1/1 ✅ backend (caract. ; driver #1 retiré PO/G4) | ✅ GREEN |
+| 3 | [Fenêtre sans affectation : légende masquée](archive/03-fenetre-vide-legende-masquee.md) | `@limite` 🖥️ IHM · driver masquage `ihm-builder` (+ caract. `tdd-auto`) | ✅ Green (runtime ; driver masquage RED→GREEN) | 1/1 ✅ backend (caract.) | ✅ GREEN |
+| 4 | [Ajout vivant par diffusion temps réel](archive/04-ajout-vivant-temps-reel.md) | `@limite` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ✅ Green (runtime SignalR de bout en bout) | 0/0 | ✅ GREEN |
+| 5 | [Acteur hors set : gris assumé, nom conservé](archive/05-acteur-hors-set-gris-assume.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ✅ Green (runtime ; caract., early-green attendu) | 1/1 ✅ backend (caract.) | ✅ GREEN |
+| 6 | [Nom long : lisibilité de la case préservée](archive/06-nom-long-lisible.md) | `@limite` 🖥️ IHM · driver troncature `ihm-builder` (+ caract. `tdd-auto`) | ✅ Green (runtime ; driver troncature+survol RED→GREEN) | 1/1 ✅ backend (caract.) | ✅ GREEN |
 
 **Total** : 6 scénarios · 7 tests unitaires backend (3 drivers réels Sc.1×2 + Sc.2×1 ;
 4 caractérisations early-green Sc.2×1, Sc.3, Sc.5, Sc.6) · 6 acceptations runtime IHM.
