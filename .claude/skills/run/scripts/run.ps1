@@ -73,6 +73,29 @@ foreach ($z in $zombies) {
 }
 if ($zombies) { Start-Sleep -Milliseconds 500 }  # laisse l'OS relâcher les verrous DLL
 
+# --- Mongo (config foyer DURABLE, sprint 09) -------------------------------------------------
+# SEULE la config foyer (acteurs : noms, couleurs, acteurs ajoutés) est persistée, derrière les
+# ports inchangés (borne anti-cliquet règle 30 — slots/périodes/transferts restent InMemory).
+# Mongo tourne via Docker (contrainte PO, docker-compose.yml). On le démarre AVANT l'API :
+#   - Docker + Mongo OK  → Foyer:Persistance = Mongo (l'ajout et l'édition survivent au redémarrage) ;
+#   - Docker indisponible → repli InMemory VOLATILE + avertissement (l'app reste lançable).
+$mongoOk = $false
+if (Get-Command docker -ErrorAction SilentlyContinue) {
+    docker info *> $null
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host 'Démarrage de Mongo (config foyer durable) via docker compose…' -ForegroundColor Cyan
+        docker compose up -d mongo *> $null
+        if ($LASTEXITCODE -eq 0) { $mongoOk = $true }
+    }
+}
+if ($mongoOk) {
+    $env:Foyer__Persistance = 'Mongo'
+    Write-Host 'Config foyer DURABLE (Mongo, mongodb://localhost:27017).' -ForegroundColor Green
+} else {
+    $env:Foyer__Persistance = 'InMemory'
+    Write-Host "Docker/Mongo indisponible → config foyer VOLATILE (InMemory). Lancez 'docker compose up -d mongo' pour la durabilité." -ForegroundColor Yellow
+}
+
 # --- Build SÉQUENTIEL anti-race (CS2012) -----------------------------------------------------
 # API et front WASM partagent Domain.dll / Application.dll. Laisser chaque `dotnet run` rebuilder
 # son hôte au démarrage fait recompiler CES MÊMES DLL en parallèle → verrou de fichier

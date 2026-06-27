@@ -82,7 +82,7 @@ Scenario: Renommer un acteur déjà semé met à jour la grille
 
 ### Scenario 3 — L'ajout et l'édition survivent au redémarrage du serveur
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: L'ajout et l'édition survivent au redémarrage du serveur

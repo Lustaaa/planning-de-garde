@@ -25,8 +25,9 @@ builder.Services.AddSignalR();
 builder.Services.AddCors();
 builder.Services.AddSingleton<IConfigureOptions<CorsOptions>, ConfigurationCorsOptions>();
 
-// Application + Infrastructure (persistance en mémoire, SignalR réel, use cases).
-builder.Services.AjouterPlanningDeGarde();
+// Application + Infrastructure (use cases, SignalR réel). La config foyer (acteurs) est persistée
+// derrière les ports inchangés : Mongo durable si « Foyer:Persistance = Mongo », sinon InMemory.
+builder.Services.AjouterPlanningDeGarde(builder.Configuration);
 
 var app = builder.Build();
 
