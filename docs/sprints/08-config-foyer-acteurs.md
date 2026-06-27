@@ -93,7 +93,7 @@ Scenario: Recolorier un acteur, la case et la légende changent de couleur
     « parent-b » est inchangé
 ```
 
-### Scenario 3 — Renommer vers un nom long : troncature, complet au survol et en légende `@limite`
+### Scenario 3 — Renommer vers un nom long : troncature, complet au survol et en légende `@limite` `@vert`
 
 ```gherkin
 Scenario: Renommer vers un nom long, tronqué dans la case mais lisible en entier

@@ -60,7 +60,7 @@
 |---|----------|-----|---------------------------|---------------|--------|
 | 1 | [Renommer un acteur : la case et la légende suivent](01-renommer-acteur-case-et-legende-suivent.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 3/3 | ✅ GREEN — backend (3/3) + runtime IHM `@vert` |
 | 2 | [Recolorier un acteur : la case et la légende changent de couleur](02-recolorier-acteur-case-et-legende.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 3/3 | ✅ GREEN — backend (3/3) + runtime IHM `@vert` |
-| 3 | [Renommer vers un nom long : troncature, survol, légende complète](03-nom-long-troncature-survol.md) | `@limite` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ⏳ Pending | 0/0 | ⏳ Pending |
+| 3 | [Renommer vers un nom long : troncature, survol, légende complète](03-nom-long-troncature-survol.md) | `@limite` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ✅ GREEN (caractérisation runtime) | 0/0 | ✅ GREEN — runtime IHM `@vert` (caract., réutilise s07 Sc.6) |
 | 4 | [Collision de couleur : distingués par le nom](04-collision-couleur-distingues-par-nom.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 5 | [Éditer un acteur hors set : nom suivi, teinte neutre conservée](05-acteur-hors-set-neutre-conservee.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 6 | [Éditer un acteur hors fenêtre : pas d'entrée fantôme](06-acteur-hors-fenetre-pas-d-entree-fantome.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
@@ -74,8 +74,9 @@ Sc.2×2, Sc.8×2 ; ≈ 7 caractérisations early-green : Sc.2×1, Sc.4, Sc.5, Sc
 Sc.10) · **8 acceptations runtime IHM** (Sc.1–9 ; Sc.10 = store-level). 2 scénarios sans
 backend (Sc.3, Sc.9 — 100 % runtime IHM).
 
-**Acceptation runtime IHM** : **2/8** (Sc.1 ✅ — `FrontWasmConfigRenommerActeurTempsReelTests` ;
-Sc.2 ✅ — `FrontWasmConfigRecolorierActeurTempsReelTests`).
+**Acceptation runtime IHM** : **3/8** (Sc.1 ✅ — `FrontWasmConfigRenommerActeurTempsReelTests` ;
+Sc.2 ✅ — `FrontWasmConfigRecolorierActeurTempsReelTests` ; Sc.3 ✅ caractérisation —
+`FrontWasmConfigNomLongEditeTempsReelTests`).
 
 **Statuts** : ⏳ Pending · 🔴 Red · ✅ Green.
 

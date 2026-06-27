@@ -15,10 +15,16 @@ porte **toujours le nom complet** ; la troncature + le survol vivent dans le `.r
 > affiche le nom complet. bUnit seul ne prouve pas le rendu réel (CSS de troncature, attribut
 > natif) — acceptation sur l'app câblée.
 
-`Should_Tronquer_Marie_Helene_Grand_Dubois_dans_la_case_du_16_07_2026_avec_le_nom_complet_au_survol_et_en_legende_When_l_acteur_parent_c_est_renomme_de_Marie_en_un_nom_long_de_25_caracteres`
+`Should_Tronquer_Marie_Helene_Grand_Dubois_dans_la_case_du_16_07_2026_avec_le_nom_complet_au_survol_et_en_legende_When_l_acteur_parent_c_est_renomme_de_Marie_en_un_nom_long_de_25_caracteres` — ✅ GREEN (caractérisation)
+(`tests/PlanningDeGarde.Web.Tests/FrontWasmConfigNomLongEditeTempsReelTests.cs`)
 
 - **Niveau** : E2E/runtime sur l'app câblée (réutilise le composant troncature + survol
   livré s07 Sc.6). Store réel : renommage `parent-c` « Marie » → « Marie-Hélène Grand-Dubois ».
+- **GREEN sans code neuf** (caractérisation anticipée) : compose la chaîne d'édition (Sc.1,
+  store bindé sur `IReferentielResponsables`) et le rendu troncature/survol (s07 Sc.6). Le
+  baseline court « Marie » est posé via le **canal d'écriture réel** (Given) — `Foyer` seed
+  parent-c **inchangé** (le test s07 `FrontWasmGrilleNomLongLisibleTests` reste vert) ; le test
+  observe la transition court→long, donc rouge si l'édition ne propageait pas (pas un faux vert).
 - **Observable** : la case du 16/07/2026 affiche le nom tronqué (ex. « Marie-Hél… »), son
   `title` natif porte « Marie-Hélène Grand-Dubois », l'entrée de légende affiche le nom
   **complet**.
