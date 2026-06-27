@@ -4,7 +4,7 @@
 > une vue **par épic (fonctionnalité)** pour regrouper ce qui est lié et préparer le
 > découpage des sprints, et une vue **par palier (séquence de livraison)** pour le
 > calendrier d'un coup d'œil. Source de vérité du *quoi/quand* ; le *pourquoi* vit dans
-> la spec vivante [`docs/10-specification.md`](10-specification.md).
+> la spec vivante [`docs/11-specification.md`](11-specification.md).
 >
 > **Tenue à jour par le pipeline** : `/4-retours` y **ajoute** les besoins issus du
 > challenge ; `/6-cloture-sprint` y passe à **✅ fait** ce qui a été livré (gate visuel
@@ -25,24 +25,27 @@
 | 07 | `lisibilite-theme` — **nom du responsable** + **légende** couleur dans la grille + **thème métier** (garde d'enfants) ; port nom miroir de la palette | ✅ fait | Port `IReferentielResponsables` (miroir `IPaletteCouleurs`) + composant `Legende` + troncature/survol nom long + repli gris assumé + suivi temps réel + thème CSS (6 scénarios @vert runtime, 120 verts) — **palier 3 (lisibilité & thème) refermé** |
 | 08 | `config-foyer-acteurs` — écran de config pour **éditer les acteurs** (renommer + recolorier) en **VOLATILE** (mémoire/session), grille (case + légende) relue immédiatement, convergence temps réel | ✅ fait | Store mutable `ConfigurationFoyerEnMemoire` (singleton derrière `IReferentielResponsables`/`IPaletteCouleurs`/`IEditeurConfigurationFoyer`) + commande/handler `EditerActeur` + écran `ConfigurationFoyer` (4 acteurs, nom pré-rempli) + diffusion SignalR (10 scénarios @vert runtime, 143 verts) — **palier 4 (édition volatile) refermé** |
 | 09 | `config-foyer-persistante` — **ajout d'acteurs** (id stable neuf opaque) + **persistance Mongo BORNÉE à la config foyer** (adaptateur de droite `ConfigurationFoyerMongo`, ports inchangés, seed-once) ; survit au redémarrage. Reste du domaine InMemory | ✅ fait | `AjouterActeurHandler` + ports `IEnumerationActeursFoyer`/`IEditeurConfigurationFoyer` + adaptateur durable `ConfigurationFoyerMongo` (Docker) + écran config (ajout + liste + pastille couleur + messages refus/transport) (9 scénarios @vert, 161 verts, pivot Mongo réel) — **palier 5 (config foyer persistante) refermé** |
+| 10 | `recurrence-des-periodes` — **cycle de fond** définissable/éditable (N semaines, alternance par parité ISO 8601, mapping index→responsable sur id stable) ; la grille résout le responsable de fond (case + légende) sans saisie de période ; surcharge > fond > neutre ; **EN MÉMOIRE** (durabilité = palier 9) | ✅ fait | `CycleDeFond` (Domain, parité ISO + invariant N≥1) + port `IReferentielCycleDeFond` + `DefinirCycleHandler` + extension `GrilleAgendaQuery` + adaptateur `CycleDeFondEnMemoire` (singleton) + endpoint `POST /definir-cycle` + section « Cycle de fond » de l'écran config (mapping sur acteurs persistés) (8 scénarios @vert end-to-end, 183 verts) — **palier 6 (récurrence des périodes) refermé** |
+
+> **Refacto technique HORS pipeline (PR #21, avant s10) : faite** — adaptateurs de droite par techno, `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, outil `test-count.ps1`. Critère de sortie 161/161 tenu.
 
 ## En cours
 
-| Sprint | Sujet | Palier (spec v10) | Statut |
+| Sprint | Sujet | Palier (spec v11) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : refacto technique HORS pipeline, cf. ci-dessous)* | — (hors palier) | ⬜ |
+| — | *(aucun sprint en cours — prochain : dialogs d'écriture en contexte, cf. ci-dessous)* | 8 (écriture en contexte) | ⬜ |
 
 ## Prochains sprints envisagés
 
-> **Décision PO (clôture s09)** : prochain chantier = **refacto technique HORS processus**
-> BDD/TDD piloté (ne réamorce pas `/2-make-gherkin`), motivée par la lenteur des sprints.
-> La récurrence des périodes (palier 6) reste le prochain sujet **make-gherkin**, séquencé
-> **derrière** la refacto. Indicatif — confirmé/affiné au démarrage de chaque chantier.
+> **Décision PO (clôture s10, porte G2)** : prochain sujet **make-gherkin** = **écriture en
+> contexte — dialogs depuis le planning** (palier 8). Les autres besoins du backlog s10 sont
+> séquencés derrière, aucun abandonné. Indicatif — confirmé/affiné au démarrage de chaque sprint.
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 | **Refacto technique — restructuration du code applicatif** (HORS pipeline) : code-behind (`@code` inline restant), frontières hexagonales gauche/droite homogènes, séparation des projets. **Iso-comportement strict** ; critère de sortie = suite complète **161/161 verte** sans `--no-build`, Docker actif | É3 (dette) | Cap PO (clôture s09) : réduire le coût/la lenteur des itérations avant de reprendre le pipeline |
-| +2 | **Récurrence des périodes (cycle de fond)** — définir/éditer une récurrence de responsabilité de garde (flaggé IMPORTANT par le PO) — **prochain sujet make-gherkin**, après la refacto | É7, É1 | Complète l'appropriation du foyer ; reprend le pipeline après la refacto |
+| +1 | **Écriture en contexte — dialogs depuis le planning** (palier 8) : supprimer les écrans dédiés Poser slot / Affecter période / Définir transfert et les rouvrir comme **dialogs** ouvertes depuis le planning. Scope ~2h : 2 dialogs (Poser slot + Affecter période), transfert en tranche de secours. Réutilise commandes/handlers + canal HTTP + SignalR existants | É12, É6, É7, É8 | Consigne PO la plus détaillée (clôture s10) ; rend la main à l'usage sur la surface centrale |
+| +2 | **CRUD acteurs complet + impersonation bornée** : ajouter la **suppression** d'acteur (cadrage des cases orphelines, règle 6) + amorce d'impersonation (utilisateur principal incarne un acteur, convenance admin, **pas** l'auth réelle du palier 12) | É2, É10 | Termine l'appropriation des acteurs ; consigne PO s10 |
+| +3 | **Cycle de fond riche** : choisir le **début/ancre** + config fine (frontière de jour vendredi→vendredi, plage début/fin, sur-cycle vacances, 1 WE sur 2). Sujet plein à découper — **rouvre la décision CP « ancrage ISO sans ancre »** à son make-gherkin ; chevauche la durabilité du cycle (palier 9) | É7, É1 | Retour PO /configuration s10 ; l'usage réclame un cycle réellement configurable |
 
 ---
 
@@ -65,7 +68,7 @@
 | Deux parents (toujours exactement 2 ; le 1er saisit l'autre) | ⬜ | Palier 5 | retours s01 · spec règle 3 |
 | Acteurs « autres » éditables (nounou, grands-parents…) | ⬜ | Palier 5 | spec règle 4 · retours s01 |
 | Lieux éditables et persistés (référentiel des sélecteurs) | 🟡 | Palier 4 | spec règle 11 |
-| Cycle récurrent multi-semaines persisté et éditable | ⬜ | Palier 4 | spec règles 9/118 |
+| Cycle récurrent multi-semaines **éditable** (EN MÉMOIRE ; persistance durable = palier 9) | 🟡 | s10 (éditable) / Palier 9 (durable) | spec règle 11 · besoins s10 |
 | Set de couleurs par défaut persisté (acteur → couleur) | 🟡 | s03 statique + Palier 4 | spec règle 15 |
 
 ### Épic 2 — Modèle & configuration d'acteurs
@@ -144,7 +147,8 @@
 | Édition concurrente — rejet sur état périmé | ✅ | s01 | scénario 10 s01 |
 | Suppression de période (depuis dialog) | ⬜ | Palier 3 item 3 | retours s02 (#6) · retours s03 (trou) |
 | Affecter période en contexte via dialog | ⬜ | Palier 3 item 3 | retours s02 (#7) · spec p3 |
-| Responsabilité de fond déclarée en config foyer (le cycle) | ⬜ | Palier 4-5 | spec règles 5/118 |
+| Responsabilité de fond déclarée en config foyer (le cycle, alternance parité ISO, EN MÉMOIRE) | ✅ | s10 / Palier 6 | spec règles 5/11 · besoins s07/s08 |
+| Cycle de fond **riche** (ancre/début explicite, frontière de jour, plage début/fin, sur-cycle vacances, WE-only) | ⬜ | à séquencer (rouvre l'ancrage ISO) | retours s10 (R3/R4) |
 
 ### Épic 8 — Transferts & bascule de responsabilité
 *Modéliser les transferts (qui dépose, qui récupère, où, quand) bornant les périodes.*
@@ -203,7 +207,7 @@
 
 ---
 
-## À faire (paliers de la spec vivante v10)
+## À faire (paliers de la spec vivante v11)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
 > Numérotation alignée sur la **séquence de livraison de v09**. Les sujets techniques
@@ -217,7 +221,7 @@
 | 3 | **Lisibilité & thème** — nom + légende des périodes/responsable **+** thème en accord avec le domaine (pris **en bloc**) | É5 | spec v07 p3 · besoins s06 (G1) | ✅ s07 |
 | 4 | **Config foyer · édition des acteurs (VOLATILE)** — écran éditant noms + couleurs en mémoire/session, grille relue immédiatement | É2, É1 | spec v08 règle 5 · besoins s07 (G2 PO) | ✅ s08 |
 | 5 | **Config foyer PERSISTANTE** — **ajout/édition d'acteurs** (parent/autre/nounou, id stable neuf) **+ persistance Mongo BORNÉE à la config foyer** (adaptateur de droite, ports inchangés) ; survit au redémarrage. Reste du domaine InMemory | É2, É1, É3 | spec v09 règle 6 · besoins s08 (G2 PO, révision d'arbitre bornée) | ✅ s09 |
-| 6 | **Récurrence des périodes** (cycle de fond définissable/éditable) | É7, É1 | spec v09 règle 10 · besoins s07/s08 (IMPORTANT) | ⬜ |
+| 6 | **Récurrence des périodes** (cycle de fond définissable/éditable, alternance parité ISO, EN MÉMOIRE) | É7, É1 | spec v09 règle 10 · besoins s07/s08 (IMPORTANT) | ✅ s10 |
 | 7 | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 | ⬜ |
 | 8 | Calendrier navigable (passé/futur, vues prédéfinies) **+** écriture en contexte (dialogs depuis les cases + **sélection de plage de cases** pour définir une période) | É4, É6, É7, É8, É12 | spec v05 p4 · retours s02/s03/s08 | ⬜ |
 | 9 | Alimentation & saisie — **config foyer durable restante** (lieux, set couleurs, cycle de fond) + Admin/Parent/Autre, écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 | ⬜ |
@@ -270,7 +274,9 @@
 - Risque d'adoption du second parent (É10) — repoussé au palier 9 (auth), « ne pas laisser glisser ».
 - Faux sentiment de progrès — 2 sprints structurels d'affilée (s04, s05) sans besoin produit observable ; **résorbé au s06** : le palier 2 (Saisie visible) a rendu la main à l'usage (8/8 vert). Vigilance maintenue : ne pas remonter les paliers techniques 10/11 devant l'usage.
 - `@code` inline restant (`Legende.razor`, `Pages/Home.razor`) + frontières hexagonales à homogénéiser + séparation des projets (É3) — **cible de la refacto technique HORS pipeline décidée à la clôture s09** (iso-comportement, invariant 161/161). Retours s03 (#7).
-- Cycle multi-semaines non affiché/éditable (É1) — modèle existe, IHM absente.
+- ~~Cycle multi-semaines non affiché/éditable (É1)~~ — **éteint au s10 (palier 6)** : cycle de fond affiché (grille + légende) et éditable (section config), EN MÉMOIRE ; durabilité séquencée au palier 9.
+- **Dropdown « Acteur du foyer » périmée au renommage** (É2, /configuration) — défaut signalé au gate s10 : la dropdown + l'aide « Nom actuel » lisent une liste statique au lieu du store vivant `_acteurs`. **Fix /3 ciblé léger** (hors make-gherkin), en tête de file.
+- **Cycle de fond riche réclamé** (É7) — l'usage (gate s10) demande ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only : au-delà du plus petit incrément livré, sujet plein séquencé (+3).
 
 > **Idées PO consolidées (retours s07)** — les 3 idées de la section « Idée pour la suite »
 > ont été replacées dans leurs épics : *slot imbriqué* → **É6** ; *parents liés via leurs
