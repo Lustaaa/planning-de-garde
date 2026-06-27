@@ -149,7 +149,12 @@ Scenario: Deux acteurs de même libellé reçoivent deux identifiants distincts
 
 ### Scenario 8 — Ajouter un acteur sans nom est refusé
 
-`@erreur`
+`@erreur` `@vert`
+
+> Backend **vert** (`tdd-auto`) : garde « nom non vide » conditionnelle (vide / tout-espaces refusé,
+> motif « le nom ne peut pas être vide », **aucun identifiant généré**, **liste inchangée**) +
+> caractérisation absence d'effet de bord. **Runtime IHM ⏳** — message affiché à l'écran de config,
+> routé `ihm-builder`.
 
 ```gherkin
 Scenario: Ajouter un acteur sans nom est refusé

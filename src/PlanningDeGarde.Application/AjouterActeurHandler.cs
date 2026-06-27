@@ -30,6 +30,13 @@ public sealed class AjouterActeurHandler
 
     public Result<AjouterActeurResultat> Handle(AjouterActeurCommand commande)
     {
+        // Garde « nom non vide » CONDITIONNELLE (Sc.8) : un nom fourni vide OU tout-espaces (nom non
+        // utile) est refusé AVANT toute génération d'id et toute mutation du store (aucun acteur
+        // fantôme, liste inchangée). Garde sur le nom UTILE (espaces ignorés, à la EditerActeurHandler).
+        // Conditionnelle : le nominal d'ajout (Sc.1) reste vert — seul le nom vide / tout-espaces est visé.
+        if (string.IsNullOrWhiteSpace(commande.Nom))
+            return Result<AjouterActeurResultat>.Echec("le nom ne peut pas être vide");
+
         // Identifiant stable neuf OPAQUE, généré (jamais dérivé du libellé, anti-pattern s06) et
         // unique (GUID → jamais un id existant). La résolution nom/couleur se fait sur cet id.
         var acteurId = $"acteur-{Guid.NewGuid():N}";
