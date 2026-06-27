@@ -16,4 +16,7 @@ public static class CanalEcriture
 
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
+
+    /// <summary>Corps de la requête d'édition d'un acteur (renommage) émise via le canal d'écriture.</summary>
+    public sealed record EditerActeurRequete(string ActeurId, string Nom);
 }

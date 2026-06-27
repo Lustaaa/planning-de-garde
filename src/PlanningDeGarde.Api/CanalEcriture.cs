@@ -20,6 +20,9 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
 
+    /// <summary>Corps de la requête d'édition d'un acteur (renommage) émise via le canal d'écriture.</summary>
+    public sealed record EditerActeurRequete(string ActeurId, string Nom);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler) =>
@@ -50,6 +53,17 @@ public static class CanalEcriture
                 requete.DeposeParId, requete.RecupereParId, requete.LieuId, requete.Heure, requete.Date));
 
             // Même convention que les autres écritures : succès acquitté, refus métier renvoyé avec son motif.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/editer-acteur", (EditerActeurRequete requete, EditerActeurHandler handler) =>
+        {
+            var resultat = handler.Handle(new EditerActeurCommand(requete.ActeurId, requete.Nom));
+
+            // Même convention que les autres écritures : succès acquitté, refus métier renvoyé avec son motif.
+            // Sur succès, le handler a muté le store ET déclenché la diffusion temps réel (les grilles suivent).
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);

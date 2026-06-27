@@ -1,0 +1,39 @@
+@page "/configuration"
+@inject HttpClient Canal
+@using static PlanningDeGarde.Web.CanalEcriture
+
+<PageTitle>Configuration du foyer</PageTitle>
+
+<h1 class="h3 mb-3">Configuration du foyer</h1>
+
+<p class="text-muted">Renommer un acteur du foyer. La grille (case datée et légende) suit
+    immédiatement, sans recharger la page. L'identifiant stable de l'acteur ne change jamais.</p>
+
+<EditForm Model="_form" OnValidSubmit="Soumettre" FormName="editer-acteur">
+    <div class="mb-3">
+        <label class="form-label">Acteur</label>
+        <InputSelect class="form-select" @bind-Value="_form.ActeurId">
+            <option value="">— choisir —</option>
+            @foreach (var r in Foyer.Responsables)
+            {
+                <option value="@r.Id">@r.Libelle</option>
+            }
+        </InputSelect>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Nouveau nom</label>
+        <InputText class="form-control" @bind-Value="_form.Nom" data-testid="champ-nom" />
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="planning" class="btn btn-link">Retour au planning</a>
+</EditForm>
+
+@if (_confirmation is not null)
+{
+    <div class="alert alert-success mt-3" data-testid="confirmation-edition">@_confirmation</div>
+}
+
+@if (_motifEchec is not null)
+{
+    <div class="alert alert-danger mt-3" data-testid="motif-echec">@_motifEchec</div>
+}

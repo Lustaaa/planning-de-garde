@@ -65,7 +65,7 @@ persistance durable. L'identifiant stable ne change jamais ; la résolution rest
 sur l'id stable (règle 18). Mémoire partagée du foyer : dernière écriture gagne,
 propagée par la diffusion temps réel. État volatile assumé, miroir du seed en dur.
 
-### Scenario 1 — Renommer un acteur : la case et la légende suivent `@nominal`
+### Scenario 1 — Renommer un acteur : la case et la légende suivent `@nominal` `@vert`
 
 ```gherkin
 Scenario: Renommer un acteur, la case et la légende suivent dans la session

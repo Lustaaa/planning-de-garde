@@ -16,11 +16,13 @@ IHM** (`ihm-builder` : la case + la légende suivent **sans rechargement**).
 > **et** la légende. **Pas** un test bUnit à doublure (qui ne prouve ni la DI réelle, ni le
 > chemin HTTP d'écriture, ni la diffusion).
 
-`Should_Afficher_Alicia_dans_la_case_du_14_07_2026_et_dans_l_entree_de_legende_sans_recharger_la_page_et_conserver_l_identifiant_parent_a_When_l_acteur_parent_a_est_renomme_de_Alice_en_Alicia_depuis_l_ecran_de_configuration`
+`Should_Afficher_Alicia_dans_la_case_du_14_07_2026_et_dans_l_entree_de_legende_sans_recharger_la_page_et_conserver_l_identifiant_parent_a_When_l_acteur_parent_a_est_renomme_de_Alice_en_Alicia_depuis_l_ecran_de_configuration` — ✅ GREEN
+(`tests/PlanningDeGarde.Web.Tests/FrontWasmConfigRenommerActeurTempsReelTests.cs`)
 
 - **Niveau** : E2E/runtime sur l'app câblée (pattern `ApiDistanteFactory` + écran de config
-  réel + grille réelle), store **réel** seedé (`parent-a → « Alice »`), diffusion SignalR
-  **existante** (palier 1). Anti « vert qui ment » : si l'écriture n'emprunte pas le canal
+  réel `ConfigurationFoyer` + grille réelle `PlanningPartage` rendus dans le même contexte),
+  store **réel** seedé (`parent-a → « Alice »`), diffusion SignalR **existante** (palier 1).
+  Anti « vert qui ment » : si l'écriture n'emprunte pas le canal
   HTTP réel ou si la grille ne re-projette pas, l'observable reste « Alice » → rouge.
 - **Observable** : après enregistrement, sans rechargement, la case du 14/07/2026 porte
   « Alicia » et l'entrée de légende affiche « Alicia » (toujours en bleu) ; l'identifiant
@@ -55,7 +57,16 @@ IHM** (`ihm-builder` : la case + la légende suivent **sans rechargement**).
   `INotificateurPlanning` sur succès, renvoie `Result<…>` (convention de refus existante).
 - **Doublures tests** — `Fake` du port d'écriture (store en mémoire) ; réutiliser
   `FakeNotificateurPlanning` (Spy déjà présent).
-- *(Écran de config, câblage HTTP réel et suivi SignalR : hors backend — routé `ihm-builder`.)*
+- **Volet runtime IHM (✅ livré)** — câblage prouvé par l'acceptation runtime :
+  - **DI** : `ConfigurationFoyerEnMemoire` enregistré singleton, bindé sur les ports **lecture**
+    `IReferentielResponsables` **et** écriture `IEditeurConfigurationFoyer` (remplace le binding
+    statique `FoyerReferentielResponsables`) ; `EditerActeurHandler` enregistré
+    (`ServiceCollectionExtensions`). La grille relit donc le store édité.
+  - **Endpoint HTTP d'écriture** `POST /api/canal/editer-acteur` (Api `CanalEcriture`) → handler.
+  - **Écran de config** Blazor `ConfigurationFoyer.razor` (+ code-behind) appelant l'API distante
+    via le canal (règle 27) ; DTO `EditerActeurRequete` (Web) ; lien dans `NavMenu`.
+  - **Propagation temps réel** : l'édition aboutie déclenche la diffusion SignalR (handler) → la
+    grille suit **sans rechargement**.
 
 ## Design notes
 
