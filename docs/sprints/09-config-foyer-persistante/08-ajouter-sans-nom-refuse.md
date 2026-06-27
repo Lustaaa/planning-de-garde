@@ -18,7 +18,7 @@ muter le store.
 > la **liste des acteurs reste inchangée**. Sur l'app réellement câblée (réutilise la gestion du
 > motif métier surfacé du s08 Sc.8).
 
-`Should_Refuser_l_ajout_avec_le_message_le_nom_ne_peut_pas_etre_vide_et_laisser_la_liste_des_acteurs_inchangee_When_un_parent_valide_un_ajout_au_nom_vide` — ⏳ Pending
+`Should_Refuser_l_ajout_avec_le_message_le_nom_ne_peut_pas_etre_vide_et_laisser_la_liste_des_acteurs_inchangee_When_un_parent_valide_un_ajout_au_nom_vide` — ✅ GREEN (runtime, `FrontWasmConfigAjouterSansNomRefuseTempsReelTests`)
 
 ## Tests unitaires backend (boucle interne, `tdd-auto`)
 

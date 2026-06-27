@@ -39,6 +39,7 @@ public partial class ConfigurationFoyer
     private string? _motifEchec;
 
     private readonly FormulaireAjout _ajout = new();
+    private string? _motifEchecAjout;
 
     /// <summary>Acteurs du foyer énumérés <b>depuis le store durable</b> (canal de lecture HTTP), et non
     /// la liste statique front : c'est cette énumération qui fait apparaître un acteur ajouté (Sc.1).</summary>
@@ -116,9 +117,20 @@ public partial class ConfigurationFoyer
     /// </summary>
     private async Task Ajouter()
     {
-        await Canal.PostAsJsonAsync(
+        _motifEchecAjout = null;
+
+        var reponse = await Canal.PostAsJsonAsync(
             "api/canal/ajouter-acteur",
             new AjouterActeurRequete(_ajout.Nom, _ajout.Couleur));
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            // Refus métier (nom vide / tout-espaces, Sc.8) : le canal renvoie le motif en corps JSON
+            // (Results.BadRequest(string)). On le surface tel quel à l'écran, sans muter la liste ni
+            // effacer la saisie — aucun identifiant n'est généré, la liste des acteurs reste inchangée.
+            _motifEchecAjout = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
 
         // La liste reflète l'ajout sans recharger la page : on relit l'énumération du store durable.
         await RechargerActeurs();

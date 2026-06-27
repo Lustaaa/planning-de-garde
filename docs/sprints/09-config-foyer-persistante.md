@@ -153,8 +153,9 @@ Scenario: Deux acteurs de même libellé reçoivent deux identifiants distincts
 
 > Backend **vert** (`tdd-auto`) : garde « nom non vide » conditionnelle (vide / tout-espaces refusé,
 > motif « le nom ne peut pas être vide », **aucun identifiant généré**, **liste inchangée**) +
-> caractérisation absence d'effet de bord. **Runtime IHM ⏳** — message affiché à l'écran de config,
-> routé `ihm-builder`.
+> caractérisation absence d'effet de bord. **Runtime IHM ✅** — message « le nom ne peut pas être
+> vide » surfacé à l'écran de config (app réellement câblée), liste inchangée
+> (`FrontWasmConfigAjouterSansNomRefuseTempsReelTests`). Scénario pleinement **@vert** (backend ✅ + runtime ✅).
 
 ```gherkin
 Scenario: Ajouter un acteur sans nom est refusé
