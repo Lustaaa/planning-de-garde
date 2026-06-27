@@ -25,6 +25,11 @@ public static class CanalEcriture
     /// (renommage seul au Sc.1, recoloriage seul au Sc.2). L'identifiant stable n'est jamais éditable.</summary>
     public sealed record EditerActeurRequete(string ActeurId, string? Nom = null, string? Couleur = null);
 
+    /// <summary>Corps de la requête d'ajout d'un acteur neuf au foyer émise via le canal d'écriture.
+    /// Le handler génère l'identifiant stable neuf opaque (jamais fourni par le front). La couleur est
+    /// optionnelle (absente → repli neutre par contrat de palette, Sc.5).</summary>
+    public sealed record AjouterActeurRequete(string Nom, string? Couleur = null);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler) =>
@@ -66,6 +71,17 @@ public static class CanalEcriture
 
             // Même convention que les autres écritures : succès acquitté, refus métier renvoyé avec son motif.
             // Sur succès, le handler a muté le store ET déclenché la diffusion temps réel (les grilles suivent).
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/ajouter-acteur", (AjouterActeurRequete requete, AjouterActeurHandler handler) =>
+        {
+            var resultat = handler.Handle(new AjouterActeurCommand(requete.Nom, requete.Couleur));
+
+            // Même convention que les autres écritures : succès acquitté (l'acteur ajouté est désormais
+            // énuméré depuis le store, Sc.1), refus métier renvoyé avec son motif (nom vide, Sc.8).
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);

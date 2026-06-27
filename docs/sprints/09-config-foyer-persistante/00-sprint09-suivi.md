@@ -62,7 +62,7 @@
 
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
-| 1 | [Ajouter la nounou : identifiant stable neuf](01-ajouter-acteur-identifiant-stable-neuf.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ GREEN backend (frontière Application) · ⏳ runtime `ihm-builder` (Carla apparaît dans la liste config) | 3/3 | ✅ GREEN backend · ⏳ runtime |
+| 1 | [Ajouter la nounou : identifiant stable neuf](01-ajouter-acteur-identifiant-stable-neuf.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ GREEN backend (frontière Application) · ✅ GREEN runtime `ihm-builder` (Carla apparaît dans la liste config, énumérée depuis le store via API distante réelle) | 3/3 + runtime | ✅ GREEN (backend + runtime) |
 | 2 | [Renommer un acteur déjà semé met à jour la grille](02-renommer-acteur-met-a-jour-grille.md) | `@nominal` 🖥️ IHM · caractérisation (s08) + runtime `ihm-builder` | ⏳ Pending (runtime : case + légende suivent sans rechargement) | 0/0 | ⏳ Pending |
 | 3 | [L'ajout et l'édition survivent au redémarrage](03-ajout-edition-survivent-redemarrage.md) | `@nominal` 🖥️ pivot durabilité · **intégration Mongo réel (Docker)** + runtime `ihm-builder` | ⏳ Pending (**intégration/E2E sur Mongo réel** : seed-once, survie au redémarrage) | 0/0 | ⏳ Pending |
 | 4 | [Un acteur ajouté apparaît en légende une fois une période affectée](04-acteur-ajoute-apparait-en-legende.md) | `@nominal` · caractérisation `tdd-auto` + runtime `ihm-builder` | ⏳ Pending (runtime : entrée légende « Carla » rose sur id neuf) | 0/1 | ⏳ Pending |

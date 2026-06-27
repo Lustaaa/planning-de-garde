@@ -19,7 +19,7 @@ store durable**, jamais la liste statique front).
 > le store). Si l'écran énumère encore la **liste statique front** (`Foyer.ActeursEditables`),
 > Carla n'apparaît pas → rouge.
 
-`Should_Afficher_Carla_dans_la_liste_des_acteurs_de_l_ecran_de_configuration_sans_recharger_la_page_When_un_parent_ajoute_l_actrice_Carla_en_rose_depuis_l_ecran_de_configuration` — ⏳ Pending *(runtime, routé `ihm-builder`)*
+`Should_Afficher_Carla_dans_la_liste_des_acteurs_de_l_ecran_de_configuration_sans_recharger_la_page_When_un_parent_ajoute_l_actrice_Carla_en_rose_depuis_l_ecran_de_configuration` — ✅ GREEN *(runtime, `ihm-builder` — test `FrontWasmConfigAjouterActeurTempsReelTests`, app câblée à l'API distante réelle)*
 
 > **Acceptation backend (boucle externe à la frontière Application, menée par `tdd-auto`)** —
 > filet sociable traduisant le Gherkin sans IHM : via le handler `AjouterActeur` sur le **store

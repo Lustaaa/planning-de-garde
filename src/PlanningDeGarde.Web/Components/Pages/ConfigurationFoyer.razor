@@ -53,3 +53,37 @@
 {
     <div class="alert alert-danger mt-3" data-testid="motif-echec">@_motifEchec</div>
 }
+
+<hr class="my-4" />
+
+<h2 class="h5 mb-3">Ajouter un acteur au foyer</h2>
+<p class="text-muted">Le nouvel acteur reçoit un identifiant stable neuf (jamais dérivé du nom) et
+    apparaît aussitôt dans la liste ci-dessous, sans recharger la page.</p>
+
+<EditForm Model="_ajout" OnValidSubmit="Ajouter" FormName="ajouter-acteur" id="form-ajout">
+    <div class="mb-3">
+        <label class="form-label">Nom</label>
+        <InputText class="form-control" @bind-Value="_ajout.Nom" data-testid="champ-nom-ajout"
+                   placeholder="Nom du nouvel acteur" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Couleur</label>
+        <InputSelect class="form-select" @bind-Value="_ajout.Couleur" data-testid="champ-couleur-ajout">
+            <option value="">— neutre —</option>
+            <option value="rose">Rose</option>
+            <option value="bleu">Bleu</option>
+            <option value="orange">Orange</option>
+            <option value="vert">Vert</option>
+            <option value="violet">Violet</option>
+        </InputSelect>
+    </div>
+    <button type="submit" class="btn btn-primary">Ajouter</button>
+</EditForm>
+
+<h2 class="h5 mt-4 mb-3">Acteurs du foyer</h2>
+<ul class="list-group" data-testid="liste-acteurs">
+    @foreach (var a in _acteurs)
+    {
+        <li class="list-group-item" data-testid="acteur-foyer" data-acteur-id="@a.Id">@a.Nom</li>
+    }
+</ul>
