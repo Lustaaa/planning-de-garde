@@ -27,7 +27,7 @@ partagé serveur, **dernière écriture gagne**, sans version ni rejet.
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Resoudre_le_dernier_nom_ecrit_sans_rejeter_aucune_edition_When_le_meme_acteur_est_renomme_deux_fois_successivement_dans_le_store_partage` | — (caractérisation du store, dernière-écriture-gagne) | ⚠️ **probablement early green — couvert par Sc.1 #1 (caractérisation, pas driver)** : le store **écrase** la valeur (affectation, pas de version ni de garde de conflit) → la dernière écriture gagne **par construction**. Aucun rouge — filet documentant l'absence de rejet/version (décision CP). | ⏳ Pending |
+| 1 | `Should_Resoudre_le_dernier_nom_ecrit_sans_rejeter_aucune_edition_When_le_meme_acteur_est_renomme_deux_fois_successivement_dans_le_store_partage` | — (caractérisation du store, dernière-écriture-gagne) | ⚠️ **probablement early green — couvert par Sc.1 #1 (caractérisation, pas driver)** : le store **écrase** la valeur (affectation, pas de version ni de garde de conflit) → la dernière écriture gagne **par construction**. Aucun rouge — filet documentant l'absence de rejet/version (décision CP). | ✅ GREEN (caractérisation) |
 
 > **Le driver réel de ce scénario est RUNTIME** (convergence des deux grilles via SignalR),
 > routé `ihm-builder` — pas un test backend. La diffusion (palier 1) n'est **pas** une infra
