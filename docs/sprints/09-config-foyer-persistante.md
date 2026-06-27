@@ -136,7 +136,7 @@ Scenario: Un acteur ajouté sans période ne crée pas d'entrée fantôme
 
 ### Scenario 7 — Deux acteurs de même libellé reçoivent deux identifiants distincts
 
-`@limite`
+`@limite` `@vert`
 
 ```gherkin
 Scenario: Deux acteurs de même libellé reçoivent deux identifiants distincts
