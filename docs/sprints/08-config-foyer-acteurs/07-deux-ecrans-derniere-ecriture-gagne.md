@@ -22,6 +22,10 @@ partagé serveur, **dernière écriture gagne**, sans version ni rejet.
   asserté, pas reconstruit. Store **partagé** côté serveur (singleton).
 - **Observable** : après les deux enregistrements, les **deux** grilles affichent
   « Bruno Martin » dans la case du 15/07 et en légende ; aucune édition rejetée.
+- **Statut** : ✅ GREEN (runtime, `@vert`) — `FrontWasmConfigDeuxEcransConvergenceTempsReelTests`
+  (deux grilles dans deux `TestContext` distincts, même API distante / store singleton partagé ;
+  baseline « Bruno » asserté sur les deux avant ; convergence « Bruno Martin » via diffusion réelle ;
+  aucun code de production neuf — GREEN minimal).
 
 ## Tests unitaires backend (boucle interne, `tdd-auto`)
 

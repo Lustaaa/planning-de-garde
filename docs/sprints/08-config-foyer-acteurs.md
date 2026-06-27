@@ -148,7 +148,7 @@ Scenario: Éditer un acteur sans période dans la fenêtre, sans entrée fantôm
     (pas d'entrée fantôme tant qu'aucune période ne le porte dans la fenêtre)
 ```
 
-### Scenario 7 — Deux écrans renomment le même acteur : dernière écriture gagne, les grilles convergent `@limite`
+### Scenario 7 — Deux écrans renomment le même acteur : dernière écriture gagne, les grilles convergent `@limite` `@vert`
 
 ```gherkin
 Scenario: Deux écrans renomment le même acteur, les grilles convergent
