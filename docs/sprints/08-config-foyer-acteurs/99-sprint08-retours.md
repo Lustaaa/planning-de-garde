@@ -5,6 +5,53 @@
 > « Décisions autonomes » créée ici) ; scaffoldé par `tdd-analyse` au `/3` qui DOIT
 > **préserver** la section « Décisions autonomes (chef de projet) ».
 
+# Retours produit (PO)
+
+> Le code et les tests unitaires sont **hors scope** ici (revus en revue de code).
+> Ces retours portent sur l'**usage de l'IHM** : ce qui marche, ce qui coince, ce qui
+> manque à l'écran. Remplis les puces, puis lance `/4-retours`.
+> Lancement de l'app : `pwsh .claude/skills/run/scripts/run.ps1`.
+
+## IHM - général
+
+-
+
+<!-- une sous-section `## IHM - /<route>` par route du sprint ; routes à confirmer au gate -->
+## IHM - /configuration
+
+> Écran de configuration du foyer (nouveau) : renommer / recolorier les acteurs semés.
+
+-
+
+## IHM - /planning
+
+> Grille partagée (case + légende) : suit l'édition sans rechargement, convergence temps réel.
+
+-
+
+## Tech (optionnel)
+
+- (contraintes techniques éventuelles ; laisser vide si aucune → bypass dans `/4-retours`)
+
+# Méthode (agents) — pour retro-sprint
+
+> Retours à la volée du PO sur la **méthode** (agents/skills/commands), appendés par le
+> thread principal pendant le sprint. Ne PAS confondre avec les retours produit ci-dessus.
+
+| Date | Cible (agent/skill/command) | Retour | Décision prise |
+|------|-----------------------------|--------|----------------|
+
+## IA
+
+> Observations méthode relevées par l'IA (non demandées par le PO), candidates pour `retro-sprint`.
+
+| Date | Cible (agent/skill/command) | Observation | Recommandation |
+|------|-----------------------------|-------------|----------------|
+
+## Notes de contexte (décisions produit, hors méthode)
+
+-
+
 # Décisions autonomes (chef de projet)
 
 > Journal des décisions tranchées par l'agent `chef-de-projet` sans escalade PO.
