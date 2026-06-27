@@ -130,3 +130,45 @@
     qu'un faux vert.
 - **Sources** : consigne PO directe (2026-06-27) ; BACKLOG « Conteneurisation Docker » (garde-fou
   d'outillage) ; spec v09 R4 (acceptation runtime sur store réel).
+
+## 2026-06-27 — Ancrage de la refacto hors-pipeline dans la spec v10 (empreinte minimale)
+
+- **Question (spec-consolidation, id `ancrage-refacto-hors-pipeline`)** : où/comment acter dans
+  la spec vivante v10 la direction « refacto technique de restructuration du code applicatif,
+  menée HORS make-gherkin, à iso-comportement strict » SANS inventer de mécanique fonctionnelle
+  ni la transformer en palier d'usage ?
+- **Décision (CP, sans escalade)** : **option 1 — empreinte minimale, aucun palier nouveau**.
+  1) **Étendre le blockquote « Garde-fous hors-spec »** (qui porte déjà le code-behind, l'API
+     explorable, la conteneurisation) pour y acter la refacto comme **garde-fou de structure
+     sans observable métier** : invariant **iso-comportement** + critère de sortie **161/161
+     `dotnet test` sans `--no-build` ni filtre, Docker actif** (pivot Mongo inclus). 2) **Risques**
+     : consigner « refacto hors gate TDD piloté → régression invisible » avec sa mitigation
+     (le critère 161/161 comme condition de fin) + la **borne anti-débordement** (iso-comportement,
+     persistance du reste du domaine NON tirée en avant — renvoi règle 30 / borne anti-cliquet).
+     3) **Pointeur « Prochain sujet »** : reste **palier 6 — récurrence des périodes**, précédé
+     **hors-pipeline** par la refacto (mention de séquencement, pas un incrément produit).
+  - **NE PAS** créer de palier technique dans la Séquence (option 2 : se ferait passer pour un
+    incrément produit observable — faux). **NE PAS** alourdir le Contexte d'usage d'une note
+    d'archi (option 3). **NE PAS** rester muet (option 4) : le séquencement réel — refacto AVANT
+    reprise palier 6 — doit rester fidèlement traçable dans la spec, source de vérité du « et après ».
+- **Rationale** : convention **« la spec vivante décrit la vision / le pourquoi produit, pas la
+  technique ni l'historique »** + principe d'**empreinte minimale**. Le blockquote « Garde-fous
+  hors-spec » est précisément le réceptacle existant des chantiers de structure/outillage **sans
+  règle de gestion ni palier** — y rattacher la refacto est l'option qui n'invente **aucune**
+  mécanique fonctionnelle. Aucun arbitrage métier (pas d'observable, pas de règle neuve) → pas
+  de G1. La direction PO « refacto avant reprise du pipeline » est une **consigne de séquencement
+  processus**, pas une valeur produit en compétition.
+- **Garde-fous de rédaction transmis à spec-consolidation (craft, pas un arbitrage PO)** :
+  - **Aucune nouvelle règle de gestion**, **aucun nouveau palier numéroté** : la v10 reste, sur
+    le fond produit, **iso-v09** (la refacto ne modifie aucun observable).
+  - Le **critère 161/161** se formule comme **garde-fou de sécurité** (non-régression prime sur
+    la vitesse, arbitre de sécurité non négociable du backlog s09), pas comme une mécanique d'usage.
+  - Réutiliser les bornes **déjà écrites** (règle 30, borne anti-cliquet, R « édition vs
+    persistance ») plutôt que d'en réécrire : la refacto **ne tire pas** la persistance du reste
+    du domaine devant l'usage (slots/périodes/transferts restent InMemory).
+  - Garder le wording **court** : 1–3 lignes ajoutées au blockquote + 1 puce Risques. Pas de
+    section dédiée.
+- **Sources** : convention spec vivante (pourquoi produit, pas la technique/l'historique) ;
+  principe empreinte minimale ; spec v09 blockquote « Garde-fous hors-spec » + règle 30 + borne
+  anti-cliquet + R « édition vs persistance » ; backlog s09 `99-besoins-fin-itération` (arbitre
+  de sécurité 161/161 non négociable, refacto hors-pipeline, palier 6 séquencé derrière).
