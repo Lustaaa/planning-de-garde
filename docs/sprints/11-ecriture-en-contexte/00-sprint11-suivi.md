@@ -68,17 +68,19 @@
 |---|----------|-----|-------------|-------|--------|
 | 1 | [Poser un slot depuis une case ouvre la dialog et le slot réapparaît](01-poser-slot-depuis-case.md) | `@nominal 🖥️ IHM` | ✅ GREEN | 0/2 | ✅ GREEN |
 | 2 | [Affecter une période depuis une case colore et nomme la case](02-affecter-periode-depuis-case.md) | `@nominal 🖥️ IHM` | ✅ GREEN | 0/2 | ✅ GREEN |
-| 3 | [La dialog se pré-remplit sur la date de la case cliquée](03-pre-remplir-date-de-la-case.md) | `@limite 🖥️ IHM` | ⏳ Pending | 0/2 | ⏳ Pending |
+| 3 | [La dialog se pré-remplit sur la date de la case cliquée](03-pre-remplir-date-de-la-case.md) | `@limite 🖥️ IHM` | ✅ GREEN (caractérisation) | 0/2 | ✅ GREEN |
 | 4 | [Échec clair : la dialog reste ouverte et conserve la saisie](04-echec-clair-dialog-reste-ouverte.md) | `@erreur 🖥️ IHM` | ⏳ Pending | 0/3 | ⏳ Pending |
 | 5 | [Annuler la dialog ne modifie pas le planning](05-annuler-dialog-sans-ecrire.md) | `@limite 🖥️ IHM` | ⏳ Pending | 0/2 | ⏳ Pending |
 | 6 | [Un Invité ne peut pas ouvrir la dialog depuis une case](06-invite-ne-peut-pas-ouvrir-dialog.md) | `@erreur 🖥️ IHM` | ⏳ Pending | 0/2 | ⏳ Pending |
 | 7 | [Slot chevauchant accepté avec avertissement non bloquant](07-chevauchement-accepte-averti.md) | `@limite 🖥️ IHM` | ⏳ Pending | 0/2 | ⏳ Pending |
 
-**Avancement** : **2/7** scénarios au vert — Sc.1 (poser un slot) + Sc.2 (affecter une période)
-livrés depuis une case. Décision CP appliquée : **un menu d'actions au clic-case** (deux entrées
-« Poser un slot » / « Affecter une période »), mutualisant le gating Invité (Sc.6).
+**Avancement** : **3/7** scénarios au vert — Sc.1 (poser un slot) + Sc.2 (affecter une période)
+livrés depuis une case ; Sc.3 (ancrage date de la case, règle 17) acté **caractérisation early-green**
+(design acquis au fix Sc.1, filet anti-régression conservé). Décision CP appliquée : **un menu
+d'actions au clic-case** (deux entrées « Poser un slot » / « Affecter une période »), mutualisant le
+gating Invité (Sc.6).
 
-**Acceptation runtime IHM** : **2/7** (Sc.1 ✅, Sc.2 ✅).
+**Acceptation runtime IHM** : **3/7** (Sc.1 ✅, Sc.2 ✅, Sc.3 ✅ caractérisation).
 
 **Total** : 7 scénarios — **7 IHM/runtime** (`ihm-builder`, acceptation **E2E/runtime** sur
 front WASM réel + API distante + store réel + SignalR), **0 backend** (aucun handler ni

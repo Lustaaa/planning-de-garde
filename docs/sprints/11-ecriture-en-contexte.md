@@ -111,7 +111,7 @@ Scenario: Affecter une période depuis une case colore et nomme la case au respo
   Et la légende agrège "Alice" avec sa couleur
 ```
 
-### Scenario 3 — La dialog se pré-remplit sur la date de la case cliquée `@limite`
+### Scenario 3 — La dialog se pré-remplit sur la date de la case cliquée `@limite` `@vert`
 
 ```gherkin
 Scenario: Ouvrir une dialog depuis une case future pré-remplit la saisie sur la date de cette case
