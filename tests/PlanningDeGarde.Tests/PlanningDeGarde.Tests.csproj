@@ -21,6 +21,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\PlanningDeGarde.Domain\PlanningDeGarde.Domain.csproj" />
     <ProjectReference Include="..\..\src\PlanningDeGarde.Application\PlanningDeGarde.Application.csproj" />
+    <!-- Sprint 08 — pilote en unitaire le store mutable réel (ConfigurationFoyerEnMemoire),
+         seedé depuis le Foyer puis éditable. Les cycles handler (Application) restent doublés à la main. -->
+    <ProjectReference Include="..\..\src\PlanningDeGarde.Infrastructure\PlanningDeGarde.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

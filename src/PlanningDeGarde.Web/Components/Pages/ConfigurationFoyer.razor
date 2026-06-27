@@ -1,0 +1,55 @@
+@page "/configuration"
+@inject HttpClient Canal
+@using static PlanningDeGarde.Web.CanalEcriture
+
+<PageTitle>Configuration du foyer</PageTitle>
+
+<h1 class="h3 mb-3">Configuration du foyer</h1>
+
+<p class="text-muted">Renommer et/ou recolorier un acteur du foyer. La grille (case datée et
+    légende) suit immédiatement, sans recharger la page. L'identifiant stable de l'acteur ne change
+    jamais ; choisissez un acteur — son nom courant est pré-rempli — puis ajustez le nom et/ou la couleur.</p>
+
+<EditForm Model="_form" OnValidSubmit="Soumettre" FormName="editer-acteur">
+    <div class="mb-3">
+        <label class="form-label">Acteur du foyer</label>
+        <InputSelect class="form-select" @bind-Value="_form.ActeurId" @bind-Value:after="PreRemplirNom">
+            <option value="">— choisir —</option>
+            @foreach (var a in Foyer.ActeursEditables)
+            {
+                <option value="@a.Id">@a.Libelle</option>
+            }
+        </InputSelect>
+        @if (NomActuel is not null)
+        {
+            <div class="form-text" data-testid="nom-actuel">Nom actuel : <strong>@NomActuel</strong></div>
+        }
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Nom</label>
+        <InputText class="form-control" @bind-Value="_form.Nom" data-testid="champ-nom"
+                   placeholder="Nom affiché de l'acteur" />
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Couleur</label>
+        <InputSelect class="form-select" @bind-Value="_form.Couleur" data-testid="champ-couleur">
+            <option value="">— inchangée —</option>
+            <option value="bleu">Bleu</option>
+            <option value="orange">Orange</option>
+            <option value="vert">Vert</option>
+            <option value="violet">Violet</option>
+        </InputSelect>
+    </div>
+    <button type="submit" class="btn btn-primary">Enregistrer</button>
+    <a href="planning" class="btn btn-link">Retour au planning</a>
+</EditForm>
+
+@if (_confirmation is not null)
+{
+    <div class="alert alert-success mt-3" data-testid="confirmation-edition">@_confirmation</div>
+}
+
+@if (_motifEchec is not null)
+{
+    <div class="alert alert-danger mt-3" data-testid="motif-echec">@_motifEchec</div>
+}

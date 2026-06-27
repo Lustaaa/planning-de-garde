@@ -118,6 +118,10 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
 ### VERIFY (obligatoire — ne jamais sauter)
 - `dotnet build` la solution → vert.
 - Relance la **suite complète** → toujours verte (aucune régression du backend).
+  **La non-régression recompile TOUS les projets : `dotnet test` SANS `--no-build` ni filtre
+  projet partiel.** Un `--no-build` / filtre laisse un projet de prod non recompilé
+  éventuellement cassé → le **vert ment** (cf. Sc.1 s07 : front Web non compilable masqué par
+  `dotnet test --no-build`).
 - Pour un **scénario IHM**, l'acceptation **runtime/E2E** doit être verte (c'est la
   preuve). Tu **peux** ajouter des **tests de composant bUnit** en complément, **jamais**
   comme preuve d'acceptation d'un bug runtime ; ne double que les ports, jamais le domaine.
@@ -128,6 +132,9 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
 - Commit : composants Blazor + render mode / câblage SignalR + test runtime (scénario
   IHM) ou tests UI (phase finale) + suivi mis à jour, message clair (ex. `fix: scénario
   N — render mode IHM (rouge runtime → vert)` ou `feat: IHM Blazor du planning partagé`).
+- **Cohérence du suivi** : mets à jour l'**agrégat** « Acceptation runtime IHM N/N » du
+  `00-sprint<NN>-suivi.md` **en même temps** que la **liste détaillée** des scénarios — le
+  nombre doit toujours égaler le nombre de lignes ✅ (jamais l'un sans l'autre).
 - **STOP & WAIT** : rends la main avec le récap (scénario IHM : rouge runtime → vert ;
   phase finale : vues créées, ports réels câblés ; état du build et de la suite, commande
   de lancement).
@@ -144,6 +151,8 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   « ment au vert ». Preuve = test **E2E/runtime** sur l'app réellement câblée.
 - **Ne PAS** prétendre un scénario IHM vert sans avoir d'abord eu un **rouge runtime**
   qui reproduit le symptôme PO (sauter le rouge = aucune garantie).
+- **Ne PAS** lancer la non-régression avec `--no-build` ni filtre projet partiel — la garde
+  recompile **tous** les projets de la solution, sinon le **vert ment** (cf. Sc.1 s07).
 - **Ne PAS** démarrer la **phase IHM finale** si un scénario **backend** n'est pas vert
   (un **scénario IHM ciblé**, lui, est le travail attendu, pas un blocage).
 

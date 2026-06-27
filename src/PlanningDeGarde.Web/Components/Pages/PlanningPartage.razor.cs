@@ -94,6 +94,7 @@ public partial class PlanningPartage
         "bleu" => "#dbeafe",
         "orange" => "#ffedd5",
         "vert" => "#dcfce7",
+        "violet" => "#ede9fe",
         "gris" => "#f1f3f5",
         _ => "#ffffff",
     };
@@ -104,6 +105,7 @@ public partial class PlanningPartage
         "bleu" => "#2563eb",
         "orange" => "#ea580c",
         "vert" => "#16a34a",
+        "violet" => "#7c3aed",
         "gris" => "#6b7280",
         _ => "#6b7280",
     };

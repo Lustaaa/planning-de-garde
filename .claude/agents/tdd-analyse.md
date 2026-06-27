@@ -240,6 +240,22 @@ fichier prêt. Ne les écrase **jamais** s'ils existent déjà.
 
   - (contraintes techniques éventuelles ; laisser vide si aucune → bypass dans `/4-retours`)
 
+  # Idée pour la suite
+
+  > Idées produit que le PO veut verser au backlog pour de futurs sprints (pas forcément le
+  > prochain). Consommées par `/4-retours` (classées/séquencées) puis replacées dans les épics
+  > du BACKLOG. Laisser vide si aucune.
+
+  -
+
+  # Consigne pour la suite
+
+  > Consignes directes du PO sur l'orientation à donner à la suite (priorité, cap, contrainte
+  > de séquencement). Pèsent sur le choix du prochain sujet en `/4-retours` (G2). Laisser vide
+  > si aucune.
+
+  -
+
   # Méthode (agents) — pour retro-sprint
 
   > Retours à la volée du PO sur la **méthode** (agents/skills/commands), appendés par le

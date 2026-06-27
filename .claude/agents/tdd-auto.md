@@ -132,7 +132,9 @@ table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
 - **Un seul scénario Gherkin par run/commit** (traçabilité).
 - **Tenir le suivi à jour à chaque transition** — `NN-slug.md` (cellule du test) **et**
   `00-sprint<NN>-suivi.md` (compte `X/N` + statut agrégé) doivent refléter l'état réel à tout instant
-  (sauter un de ces Edit est une violation).
+  (sauter un de ces Edit est une violation). **L'agrégat (compte `X/N`) se met à jour EN MÊME
+  TEMPS que la liste détaillée des scénarios — le nombre doit toujours égaler le nombre de
+  lignes ✅** (jamais l'un sans l'autre).
 - **Ne JAMAIS toucher** le fichier unifié `99-sprint<NN>-retours.md` (retours produit du PO
   + journal méthode/IA) ni le `99-sprint<NN>-besoins-fin-itération.md` (backlog `/4-retours`)
   du dossier — hors pipeline TDD.
