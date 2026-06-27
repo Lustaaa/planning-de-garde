@@ -126,7 +126,7 @@ Scenario: Ouvrir une dialog depuis une case future pré-remplit la saisie sur la
   Alors un slot apparaît dans la case du jeudi 25 juin 2026
 ```
 
-### Scenario 4 — Échec clair : la dialog reste ouverte et conserve la saisie `@erreur`
+### Scenario 4 — Échec clair : la dialog reste ouverte et conserve la saisie `@erreur` `@vert`
 
 ```gherkin
 Scenario Outline: Une commande qui n'aboutit pas laisse la dialog ouverte et la grille inchangée
