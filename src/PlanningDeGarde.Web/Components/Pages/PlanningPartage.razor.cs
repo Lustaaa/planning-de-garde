@@ -25,6 +25,10 @@ public partial class PlanningPartage
 
     private HubConnection? _hub;
 
+    // Date de contexte de la dialog « Poser un slot » ouverte depuis une case (null = aucune dialog).
+    // La grille reste en LECTURE SEULE (règle 14) : la case ne fait qu'ouvrir la dialog, jamais écrire.
+    private DateOnly? _dateDialogPoserSlot;
+
     private string Desactive => Session.EstParent ? string.Empty : "disabled";
 
     private RoleAuteur RoleSelectionne
@@ -84,6 +88,30 @@ public partial class PlanningPartage
             // API distante injoignable : la grille reste vide plutôt que de planter la vue.
         }
     }
+
+    /// <summary>
+    /// Ouvre la dialog « Poser un slot » pré-remplie sur la date de la case cliquée. Gating Invité
+    /// (règle 9) : en consultation seule, le clic n'ouvre rien — le déclencheur d'écriture est gardé
+    /// à l'entrée. Aucune écriture ici : la dialog porte la commande, la grille reste en lecture seule.
+    /// </summary>
+    private void OuvrirPoserSlot(DateOnly date)
+    {
+        if (!Session.EstParent)
+            return;
+
+        _dateDialogPoserSlot = date;
+    }
+
+    /// <summary>Ferme la dialog sur succès et <b>relit</b> la grille depuis l'API distante : la pose
+    /// aboutie réapparaît, positionnée à la date de la case (relecture, jamais une mutation locale).</summary>
+    private async Task FermerDialogEtRecharger()
+    {
+        _dateDialogPoserSlot = null;
+        await ChargerAsync();
+    }
+
+    /// <summary>Ferme la dialog sans aucune écriture (annulation) : la grille reste intacte.</summary>
+    private void FermerDialog() => _dateDialogPoserSlot = null;
 
     /// <summary>Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible
     /// avec du texte sombre), via le thème couleur partagé.</summary>

@@ -1,0 +1,55 @@
+@inject HttpClient Canal
+@inject SessionPlanning Session
+
+@* Dialog (modal) « Poser un slot » réutilisable, déclenchée depuis une case du planning (palier 7,
+   écriture en contexte). Le formulaire est extrait de la page PoserSlot ; il émet sa commande via le
+   MÊME canal d'écriture HTTP (POST /api/canal/poser-slot) — aucune règle métier dans l'UI. La date de
+   contexte (case cliquée) pré-remplit la saisie. Issues : succès → OnValide (le parent ferme et relit
+   la grille) ; refus domaine / API injoignable → message DANS la dialog, saisie conservée. *@
+<div class="dialog-backdrop" data-testid="dialog-poser-slot">
+    <div class="dialog-panneau">
+        <h2 class="h4 mb-3">Poser un slot</h2>
+        <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="poser-slot-dialog">
+            <div class="mb-3">
+                <label class="form-label">Enfant</label>
+                <input class="form-control" value="@Session.EnfantId" disabled />
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Lieu</label>
+                <InputSelect class="form-select" data-testid="champ-lieu" @bind-Value="_form.LieuId">
+                    <option value="">— choisir —</option>
+                    @foreach (var lieu in Foyer.Lieux)
+                    {
+                        <option value="@lieu">@lieu</option>
+                    }
+                </InputSelect>
+            </div>
+            <div class="row">
+                <div class="col mb-3">
+                    <label class="form-label">Début</label>
+                    <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="_form.Debut" />
+                </div>
+                <div class="col mb-3">
+                    <label class="form-label">Fin</label>
+                    <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="_form.Fin" />
+                </div>
+            </div>
+            <div class="d-flex gap-2">
+                <button type="submit" class="btn btn-primary">Poser le slot</button>
+                <button type="button" class="btn btn-link" @onclick="Annuler">Annuler</button>
+            </div>
+        </EditForm>
+
+        @if (_motifEchec is not null)
+        {
+            <div class="alert alert-danger mt-3" data-testid="motif-echec">@_motifEchec</div>
+        }
+    </div>
+</div>
+
+<style>
+    .dialog-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex;
+                       align-items: center; justify-content: center; z-index: 1050; }
+    .dialog-panneau { background: #fff; border-radius: 6px; padding: 20px; width: min(480px, 92vw);
+                      box-shadow: 0 8px 28px rgba(0,0,0,.25); }
+</style>

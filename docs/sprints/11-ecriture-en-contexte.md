@@ -80,7 +80,7 @@ grille, positionnée à la bonne date, colorée et nommée par responsable, prou
 câblage réel. La grille reste en lecture seule : la rétroaction passe par la dialog ou un
 bandeau, jamais par une écriture de la grille.
 
-### Scenario 1 — Poser un slot depuis une case du planning `@nominal`
+### Scenario 1 — Poser un slot depuis une case du planning `@nominal` `@vert`
 
 ```gherkin
 Scenario: Poser un slot depuis une case ouvre la dialog et le slot réapparaît dans cette case
