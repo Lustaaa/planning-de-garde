@@ -21,33 +21,32 @@
 
 > Écran de configuration du foyer (nouveau) : renommer / recolorier les acteurs semés.
 
--
+- pour la configuration du foyer, j'aimerai un palette de couleur pour choisir la couleur de l'acteur.
+- j'aimerai des onglet pour configurer le foyer par acteur
+  - actuellement un seul foyé, donc tous les acteur doivent etre présent dans le meme écran
+  - j'aimerai la possibilité d'ajouter des acteur, parent ou autre (ex: nounou) dans la conf du foyer.
 
 ## IHM - /planning
 
+- j'ai l'impression que les couleurs de la légende ne sont pas celle des acteur (parent) 
+
 > Grille partagée (case + légende) : suit l'édition sans rechargement, convergence temps réel.
 
--
+## Idée pour la suite
+
+- faire des dialog a la place de écran d'édition pour pour concentrer ce qui touche a l'enfant sur un seul ecran
+- mettre en place la persistance dans une base mongo a travers un adaptateur de droite.
+- Pouvoir interagir sur le planning en selectionnant les case du planning (ex: selection du 29/05 au 05/07 pour définir une période)
+- IMPORTANT : Mettre en placa la configuration de la récurence au niveau du foyer. 
+
+## Consigne pour le suite
+
+- essayer de faire un sprint pour et creer un foyer de A a Z
+- persistance des donnée en base mongo
 
 ## Tech (optionnel)
 
 - (contraintes techniques éventuelles ; laisser vide si aucune → bypass dans `/4-retours`)
-
-# Idée pour la suite
-
-> Idées produit que le PO veut verser au backlog pour de futurs sprints (pas forcément le
-> prochain). Consommées par `/4-retours` (classées/séquencées) puis replacées dans les épics
-> du BACKLOG. Laisser vide si aucune.
-
--
-
-# Consigne pour la suite
-
-> Consignes directes du PO sur l'orientation à donner à la suite (priorité, cap, contrainte
-> de séquencement). Pèsent sur le choix du prochain sujet en `/4-retours` (G2). Laisser vide
-> si aucune.
-
--
 
 # Méthode (agents) — pour retro-sprint
 
@@ -56,7 +55,6 @@
 
 | Date | Cible (agent/skill/command) | Retour | Décision prise |
 |------|-----------------------------|--------|----------------|
-| 2026-06-27 | tdd-analyse (scaffold retours) + retours-challenge | PO au gate G3 : « j'aimerai que les sections *Idée pour la suite* et *Consigne pour la suite* soient remises à chaque fois dans le fichier de retours pour que je puisse donner des consignes pour la suite ». | **Appliqué** : `tdd-analyse` scaffolde désormais ces 2 sections forward dans tout `99-sprint<NN>-retours.md` ; `retours-challenge` les lit et les prend en compte (les consignes pèsent sur le séquencement / le prochain sujet en G2). Sections ajoutées au fichier s08 courant. |
 
 ## IA
 
