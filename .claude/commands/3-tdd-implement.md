@@ -105,6 +105,9 @@ scénario.
      `tdd-implement` en agent autonome (cf. agent tdd-auto pour un scénario backend, ou
      agent ihm-builder pour un scénario IHM mené RED→GREEN runtime) » + le chemin du
      dossier de suivi et le scénario cible. Ne bascule **pas** en inline.
+     **Rappel à porter dans le prompt de dispatch IHM/runtime fallback** (le general-purpose
+     ne lit pas forcément les agents/skills) : « non-régression `dotnet test` SANS `--no-build`
+     ni filtre projet partiel — recompile TOUS les projets, sinon le vert ment (cf. Sc.1 s07) ».
    - `{ "type": "question", … }` → applique le **Protocole d'escalade CP** (dispatch
      `chef-de-projet` ; relaie sa `decision`, ou `AskUserQuestion` sur une `escalate` G1).
      **Exception G4** : un **early-green inattendu** va **direct au PO** (pas par le CP).
@@ -141,6 +144,8 @@ scénario.
    refaits ici.)
    - **Fallback** : type absent → `general-purpose` avec « applique la phase IHM finale
      du skill `tdd-implement` (cf. agent ihm-builder) » + les chemins. Pas d'inline.
+     **Rappel à porter dans le prompt** : « non-régression `dotnet test` SANS `--no-build` ni
+     filtre projet partiel — recompile TOUS les projets, sinon le vert ment (cf. Sc.1 s07) ».
    - `{ "type": "question", … }` → applique le **Protocole d'escalade CP** (dispatch
      `chef-de-projet` ; relaie sa `decision`, ou `AskUserQuestion` sur une `escalate` G1) →
      `SendMessage` (réponse brute). Répète.
@@ -188,6 +193,14 @@ scénario.
 - **Un scénario Gherkin par run de `tdd-auto`** — red-green-commit, puis récap et
   enchaînement automatique du scénario suivant. Pas d'implémentation en bloc, mais
   pas de blocage `AskUserQuestion` entre scénarios : le sprint est mené intégralement.
+- **Reprise sur mort d'agent (watchdog 600s / stall).** Si un agent runtime/IHM meurt en
+  laissant un **test non commité** et le scénario source resté `@pending` (vécu au sprint 08,
+  Sc.6), le thread principal **finalise à la main** plutôt que de re-dispatcher aveuglément :
+  (1) vérifie que le test est **signifiant** (baseline/témoin asserté, câblage réel — pas un
+  faux-vert) **et vert** (`dotnet test` complet, sans `--no-build`) ; (2) tague `@vert` dans le
+  fichier source **et** le `NN-slug.md` ; (3) **resynchronise** le compteur du
+  `00-sprint<NN>-suivi.md` (agrégat = nombre de lignes ✅) ; (4) commite. Ne **pas** relancer un
+  nouvel agent sur un état laissé à moitié.
 - Le test d'acceptation **doit** échouer d'abord (rouge), sinon il n'observe rien.
 - Relance la suite complète avant chaque commit (non-régression).
 - **Routage par niveau de symptôme** : un scénario **backend** s'arrête à la frontière
