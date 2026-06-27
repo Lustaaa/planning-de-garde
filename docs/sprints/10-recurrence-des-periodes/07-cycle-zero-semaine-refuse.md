@@ -20,7 +20,7 @@ inconditionnel **régresserait** ce nominal. La garde ne refuse que **N = 0**, s
 > avec le message « le cycle doit compter au moins une semaine » affiché à l'écran ; le cycle de 2
 > semaines précédent **reste inchangé** (la grille continue d'afficher l'alternance A/B).
 
-`Should_Refuser_l_edition_avec_le_message_le_cycle_doit_compter_au_moins_une_semaine_et_conserver_le_cycle_precedent_When_un_parent_tente_d_enregistrer_un_cycle_de_zero_semaine` — ⏳ Pending *(runtime, `ihm-builder`)*
+`Should_Refuser_l_edition_avec_le_message_le_cycle_doit_compter_au_moins_une_semaine_et_conserver_le_cycle_precedent_When_un_parent_tente_d_enregistrer_un_cycle_de_zero_semaine` — ✅ GREEN *(runtime, `ihm-builder` — `FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests`, app câblée front WASM + API distante réelle : cycle N=2 défini depuis l'écran config, tentative N=0 refusée → message « le cycle doit compter au moins une semaine » à l'écran, cycle précédent intact dans le store réel ET alternance A/B encore affichée sur la grille. **Early-green de câblage** : aucune correction de prod — la garde N≥1 du handler + `Results.BadRequest(motif)` du canal + lecture du motif dans l'UI délivraient déjà l'observable ; **non-vacuité prouvée** par neutralisation temporaire de la garde N≥1 → rouge sur le message absent, puis revert)*
 
 > **Acceptation backend (frontière Application, `tdd-auto`)** — via `DefinirCycleHandler` sur un store
 > portant déjà un cycle N=2 : `DefinirCycleCommand(0, …)` renvoie `Result.Echec("le cycle doit compter au
