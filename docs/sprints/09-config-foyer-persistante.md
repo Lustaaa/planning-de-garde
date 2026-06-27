@@ -68,7 +68,7 @@ Scenario: Ajouter la nounou au foyer génère un identifiant stable neuf
 
 ### Scenario 2 — Renommer un acteur déjà semé met à jour la grille
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: Renommer un acteur déjà semé met à jour la grille
