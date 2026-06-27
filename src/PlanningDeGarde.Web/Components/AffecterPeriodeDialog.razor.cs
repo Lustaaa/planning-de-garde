@@ -61,7 +61,7 @@ public partial class AffecterPeriodeDialog
         catch (HttpRequestException)
         {
             // API distante injoignable (échec de transport) : message dédié, saisie conservée, pas de fermeture.
-            _motifEchec = PlanningDeGarde.Web.Components.Pages.PoserSlot.MessageServiceInjoignable;
+            _motifEchec = MessagesEcriture.ServiceInjoignable;
             return;
         }
 

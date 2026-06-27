@@ -115,7 +115,7 @@ public partial class ConfigurationFoyer
         {
             // API distante injoignable (échec de transport) : message dédié, saisie conservée,
             // aucune écriture ni mise en file. Cf. Sc.9.
-            _motifEchec = PoserSlot.MessageServiceInjoignable;
+            _motifEchec = MessagesEcriture.ServiceInjoignable;
             return;
         }
 
@@ -152,7 +152,7 @@ public partial class ConfigurationFoyer
             // Service de configuration injoignable (échec de transport, pas un refus métier Sc.8) : le
             // handler AjouterActeur ne s'exécute jamais. Message dédié, saisie « Carla / rose » conservée
             // à resoumettre, aucune écriture ni mise en file (règle 28). Cf. Sc.9 (s09).
-            _motifEchecAjout = PoserSlot.MessageServiceInjoignable;
+            _motifEchecAjout = MessagesEcriture.ServiceInjoignable;
             return;
         }
 
@@ -194,7 +194,7 @@ public partial class ConfigurationFoyer
             // Service de configuration injoignable (échec de transport, pas un refus métier Sc.7) : le
             // handler DefinirCycle ne s'exécute jamais. Message dédié, saisie du cycle (N + mapping)
             // conservée à resoumettre, aucun cycle enregistré ni mis en file (règle 28). Cf. Sc.8 / s09 Sc.9.
-            _motifEchecCycle = PoserSlot.MessageServiceInjoignable;
+            _motifEchecCycle = MessagesEcriture.ServiceInjoignable;
             return;
         }
 

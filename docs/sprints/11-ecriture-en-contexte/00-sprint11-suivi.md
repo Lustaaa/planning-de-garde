@@ -91,6 +91,16 @@ canal poser-slot (plomberie d'adaptateur surfaçant un acquis). CQRS préservé.
 
 **Acceptation runtime IHM** : **7/7** (Sc.1 ✅, Sc.2 ✅, Sc.3–6 ✅ caractérisations, Sc.7 ✅ RED→GREEN).
 
+**Phase IHM finale (nettoyage, décision CP)** — ✅ faite : retrait des **pages/routes dédiées**
+`/planning/poser-slot` et `/planning/affecter-periode` (`PoserSlot.razor` / `AffecterPeriode.razor` +
+code-behind) et de leurs **liens** (barre du planning + NavMenu) ; le **menu clic-case** couvre
+intégralement ces écrans (acceptation runtime Sc.1/Sc.2 verte). Le constant `MessageServiceInjoignable`
+est relocalisé en `MessagesEcriture.ServiceInjoignable` (partagé dialogs + pages conservées).
+**`/planning/definir-transfert` GARDÉ** (route + page + lien) — la **3ᵉ dialog transfert** et l'**édition
+concurrente** sont **déférées au backlog** (tranche de secours close, à tracer en /4-retours). Suite
+complète **179/179 verte** après nettoyage (13 tests des écrans supprimés retirés ; comportement couvert
+par les dialogs + acceptation runtime).
+
 **Total** : 7 scénarios — **7 IHM/runtime** (`ihm-builder`, acceptation **E2E/runtime** sur
 front WASM réel + API distante + store réel + SignalR), **0 backend** (aucun handler ni
 règle neuve, palier 7 = déplacement de la saisie en contexte). Le Sc.7 est une
