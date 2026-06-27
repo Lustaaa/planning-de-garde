@@ -50,7 +50,12 @@
 
 ## Notes de contexte (décisions produit, hors méthode)
 
--
+- **À compléter en phase IHM finale** : le sélecteur d'acteur de l'écran `ConfigurationFoyer`
+  (et celui d'`AffecterPeriode`) ne liste que `parent-a`/`parent-b` (`Web/Foyer.Responsables`)
+  — ni `parent-c` ni `grand-pere`. Les tests runtime Sc.3/Sc.5 pilotent la sélection par
+  `.Change()` (câblage réel prouvé), mais au **gate visuel** le PO ne pourra pas choisir
+  grand-pere/parent-c depuis l'UI. Compléter la liste des acteurs éditables (les 4 du foyer)
+  à la phase IHM finale, avant le gate G3.
 
 # Décisions autonomes (chef de projet)
 

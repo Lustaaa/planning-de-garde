@@ -135,7 +135,7 @@ Scenario: Renommer un acteur hors set de couleurs sans lui créer de couleur
     ne crée pas de couleur
 ```
 
-### Scenario 6 — Éditer un acteur absent de la fenêtre affichée : pas d'entrée fantôme `@limite`
+### Scenario 6 — Éditer un acteur absent de la fenêtre affichée : pas d'entrée fantôme `@limite` `@vert`
 
 ```gherkin
 Scenario: Éditer un acteur sans période dans la fenêtre, sans entrée fantôme

@@ -22,6 +22,7 @@ inchangée, la légende n'introduit **aucune entrée fantôme**).
 - **Observable** : l'écran de config affiche désormais « Mathilde » pour `parent-c` ; la
   grille de la fenêtre courante est inchangée ; la légende **ne liste aucune** entrée
   `parent-c`.
+- **Statut** : ✅ GREEN (runtime) — `tests/PlanningDeGarde.Web.Tests/FrontWasmConfigHorsFenetrePasDeFantomeTempsReelTests.cs` (témoin parent-a présent rend l'absence d'entrée fantôme non triviale ; câblage réel, pas de bUnit à doublure).
 
 ## Tests unitaires backend (boucle interne, `tdd-auto`)
 
