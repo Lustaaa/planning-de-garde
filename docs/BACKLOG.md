@@ -23,24 +23,25 @@
 | 05 | `host-api-separable` — hôte d'API détaché (back démarrable seul) + front Blazor **WASM réel** consommant l'API distante + CORS + UI d'exploration **Scalar** + échec clair si API injoignable | ✅ fait | Projet `PlanningDeGarde.Api` détaché (test d'archi sur ProjectReference) + front `Sdk.BlazorWebAssembly` + Scalar/OpenAPI + CORS + SignalR distant (6 scénarios, 96 verts) — **palier 1 (fondation) refermé** |
 | 06 | `saisie-visible` — la saisie réapparaît à la bonne **date** (défaut = aujourd'hui via `IDateTimeProvider`) **et** en **couleur du parent** (identifiant stable bindé + seed) | ✅ fait | Port `IDateTimeProvider` injecté sur PoserSlot/AffecterPeriode/DefinirTransfert + sélecteurs bindant l'id stable + seed (8 scénarios, 108 verts) — **palier 2 (saisie visible) refermé** |
 | 07 | `lisibilite-theme` — **nom du responsable** + **légende** couleur dans la grille + **thème métier** (garde d'enfants) ; port nom miroir de la palette | ✅ fait | Port `IReferentielResponsables` (miroir `IPaletteCouleurs`) + composant `Legende` + troncature/survol nom long + repli gris assumé + suivi temps réel + thème CSS (6 scénarios @vert runtime, 120 verts) — **palier 3 (lisibilité & thème) refermé** |
+| 08 | `config-foyer-acteurs` — écran de config pour **éditer les acteurs** (renommer + recolorier) en **VOLATILE** (mémoire/session), grille (case + légende) relue immédiatement, convergence temps réel | ✅ fait | Store mutable `ConfigurationFoyerEnMemoire` (singleton derrière `IReferentielResponsables`/`IPaletteCouleurs`/`IEditeurConfigurationFoyer`) + commande/handler `EditerActeur` + écran `ConfigurationFoyer` (4 acteurs, nom pré-rempli) + diffusion SignalR (10 scénarios @vert runtime, 143 verts) — **palier 4 (édition volatile) refermé** |
 
 ## En cours
 
-| Sprint | Sujet | Palier (spec v08) | Statut |
+| Sprint | Sujet | Palier (spec v09) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : Config foyer · édition des acteurs, cf. ci-dessous)* | 4 — Config foyer (édition volatile) | ⬜ |
+| — | *(aucun sprint en cours — prochain : Config foyer persistante, cf. ci-dessous)* | 5 — Config foyer persistante | ⬜ |
 
 ## Prochains sprints envisagés
 
 > Les 2 sujets en tête de file, issus du séquencement `/4-retours`/`/5-consolidation` du
-> sprint 07 (priorité PO affichée : « gestion des utilisateurs » → la plus petite tranche
-> cohérente d'abord ; arbitre permanent : l'usage tranche, la technique séquencée derrière).
+> sprint 08. Cap PO : « foyer A→Z + Mongo » **coupé** au plus petit pas d'usage ; révision
+> d'arbitre actée (Mongo tiré devant l'usage mais **borné à la config foyer**).
 > Indicatif — confirmé/affiné à chaque `/2-make-gherkin`.
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 | **Config foyer · édition des acteurs (volatile)** — écran pour éditer les noms + couleurs des acteurs ; le seed devient éditable en mémoire/session et la grille (case + légende) le relit immédiatement. **Aucune persistance durable** (séquencée palier persistance réelle) | É2, É1 | Priorité PO « gestion des utilisateurs » ; s'appuie sur le nom + légende livrés au s07 ; passe **devant** le calendrier navigable (re-séquencement acté /4-retours s07) |
-| +2 | **Récurrence des périodes (cycle de fond)** — définir/éditer une récurrence de responsabilité de garde | É7, É1 | Seconde moitié de la priorité « gestion des utilisateurs », derrière l'édition des acteurs |
+| +1 | **Config foyer persistante** — (a) **ajout/édition d'acteurs** (parent/autre/nounou, id stable neuf) + (b) **persistance Mongo BORNÉE à la config foyer** (référentiel acteurs : noms, couleurs, ajouts) via adaptateur de droite ; survit au redémarrage. Reste du domaine InMemory | É2, É1, É3 | Cap PO ; prolonge l'édition volatile livrée (s08) en la rendant durable ; config foyer = premier client de la persistance durable (révision d'arbitre bornée) |
+| +2 | **Récurrence des périodes (cycle de fond)** — définir/éditer une récurrence de responsabilité de garde (flaggé IMPORTANT par le PO) | É7, É1 | Derrière la config foyer persistante ; complète l'appropriation du foyer |
 
 ---
 
@@ -72,9 +73,10 @@
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
 | Trois types d'acteurs avec rôles distincts (Admin / Parent / Autre) | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
-| Écran de config foyer — **édition des acteurs (noms + couleurs) en VOLATILE** (mémoire/session, grille relue immédiatement, sans persistance durable) | 🟡 | Palier 4 (prochain) | retours s07 · spec v08 règle 5 |
-| Écran de configuration du foyer complet (acteurs + cycle de fond + couleurs, persisté) | ⬜ | Palier 6 | retours s01 (#7) · spec p5 |
-| Édition des acteurs « autres » (ajout/édition/suppression) | ⬜ | Palier 5 | spec règle 4 |
+| Écran de config foyer — **édition des acteurs (noms + couleurs) en VOLATILE** (mémoire/session, grille relue immédiatement, sans persistance durable) | ✅ | s08 / Palier 4 | retours s07 · spec v08 règle 5 |
+| **Ajout d'acteurs (parent/autre/nounou, id stable neuf) + persistance Mongo BORNÉE à la config foyer** (survit au redémarrage) | 🟡 | Palier 5 (prochain) | retours s08 · spec v09 règle 6 |
+| Écran de configuration du foyer complet (acteurs + cycle de fond + couleurs, persisté) | ⬜ | Palier 9 | retours s01 (#7) · spec p5 |
+| Édition des acteurs « autres » (ajout/édition/suppression) | 🟡 | Palier 5 (ajout) / suppression derrière | spec règle 4 · retours s08 |
 | Affichage/actions adaptés au type d'acteur | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
 | **Création d'acteurs par le parent configurateur** (nounou / grand-parent / nouveau parent en couple / autre), **email obligatoire** à la création → crée le compte utilisateur (inactif, cf. É10) | ⬜ | Palier 5-6 | retours s08 (idée) · spec règles 4/6-7 |
 
@@ -200,35 +202,36 @@
 
 ---
 
-## À faire (paliers de la spec vivante v08)
+## À faire (paliers de la spec vivante v09)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
-> Numérotation alignée sur la **séquence de livraison de v08**. Les sujets techniques
-> (persistance réelle, PWA) sont séquencés **derrière l'usage** (arbitre : l'usage tranche),
-> Docker en garde-fou d'outillage.
+> Numérotation alignée sur la **séquence de livraison de v09**. Les sujets techniques
+> (persistance réelle du reste du domaine, PWA) sont séquencés **derrière l'usage**
+> (arbitre : l'usage tranche), Docker en garde-fou d'outillage.
 
 | Palier | Besoin | Épics concernés | Origine | Statut |
 |-------:|--------|-----------------|---------|:------:|
 | 1 | Fermeture de la fondation — **hôte d'API détachable** (back démarrable seul) + **UI d'exploration interactive** (Scalar) + CORS + échec clair si API injoignable | É3 | spec v05 p1 · besoins s04 | ✅ s05 |
 | 2 | **Saisie visible** — la saisie réapparaît à la bonne **date** (défaut = aujourd'hui) **et** en **couleur du parent** (identifiant stable) | É6, É7, É12 | spec v05 p2 · besoins s04 (défaut confirmé) | ✅ s06 |
 | 3 | **Lisibilité & thème** — nom + légende des périodes/responsable **+** thème en accord avec le domaine (pris **en bloc**) | É5 | spec v07 p3 · besoins s06 (G1) | ✅ s07 |
-| 4 | **Config foyer · édition des acteurs (VOLATILE)** — écran éditant noms + couleurs en mémoire/session, grille relue immédiatement ; **aucune persistance durable** (séquencée palier 13) | É2, É1 | spec v08 règle 5 · besoins s07 (G2 PO) | ⬜ (prochain) |
-| 5 | **Récurrence des périodes** (cycle de fond définissable/éditable) | É7, É1 | spec v08 règle 10 · besoins s07 | ⬜ |
-| 6 | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v08 règle 22 · besoins s07 | ⬜ |
-| 7 | Calendrier navigable (passé/futur, vues prédéfinies) **+** écriture en contexte (dialogs depuis les cases) — **démoté derrière les 3 incréments d'usage ci-dessus** | É4, É6, É7, É8, É12 | spec v05 p4 · retours s02/s03 | ⬜ |
-| 8 | Alimentation & saisie — **persistance** config foyer (sortir le dur de `Foyer.cs`) + cycle de fond + lieux/couleurs (part DURABLE de la config, dont le palier 4 est l'amorce volatile) | É1 | spec v05 p5 · retours s03 (#11, dette) | ⬜ |
-| 9 | Modèle d'acteurs & foyer — Admin/Parent/Autre, écran de config complet, responsabilité de fond, couleurs par défaut | É1, É2, É7 | spec v05 p6 · retours s01 | ⬜ |
+| 4 | **Config foyer · édition des acteurs (VOLATILE)** — écran éditant noms + couleurs en mémoire/session, grille relue immédiatement | É2, É1 | spec v08 règle 5 · besoins s07 (G2 PO) | ✅ s08 |
+| 5 | **Config foyer PERSISTANTE** — **ajout/édition d'acteurs** (parent/autre/nounou, id stable neuf) **+ persistance Mongo BORNÉE à la config foyer** (adaptateur de droite, ports inchangés) ; survit au redémarrage. Reste du domaine InMemory | É2, É1, É3 | spec v09 règle 6 · besoins s08 (G2 PO, révision d'arbitre bornée) | ⬜ (prochain) |
+| 6 | **Récurrence des périodes** (cycle de fond définissable/éditable) | É7, É1 | spec v09 règle 10 · besoins s07/s08 (IMPORTANT) | ⬜ |
+| 7 | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 | ⬜ |
+| 8 | Calendrier navigable (passé/futur, vues prédéfinies) **+** écriture en contexte (dialogs depuis les cases + **sélection de plage de cases** pour définir une période) | É4, É6, É7, É8, É12 | spec v05 p4 · retours s02/s03/s08 | ⬜ |
+| 9 | Alimentation & saisie — **config foyer durable restante** (lieux, set couleurs, cycle de fond) + Admin/Parent/Autre, écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 | ⬜ |
 | 10 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
 | 11 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
-| 12 | Ouverture de l'accès (auth OAuth, landing, personnalisation des couleurs, thème sombre persisté) | É10, É5 | spec v05 p9 · retours s01/s07 | ⬜ |
-| 13 | **Adaptateurs de droite — persistance réelle** (store durable derrière les ports, remplace `InMemory*Repository` ; recoupe la config foyer du palier 8, premier client de la config durable) | É1, É3 | spec v06 · besoins s05/s07 (séquencé derrière l'usage) | ⬜ |
+| 12 | Ouverture de l'accès (auth OAuth, landing, comptes inactifs + impersonation + prise en main par rôle, personnalisation des couleurs, thème sombre persisté) | É10, É2, É5 | spec v05 p9 · retours s01/s07/s08 | ⬜ |
+| 13 | **Adaptateurs de droite — persistance réelle du RESTE du domaine** (slots/périodes/transferts ; la config foyer en a été le premier client, amorcé au palier 5). **Borne anti-cliquet : ne remonte pas devant l'usage** | É1, É3 | spec v09 règle 30 · besoins s05/s08 (séquencé derrière l'usage) | ⬜ |
 | 14 | **PWA — saisie hors-ligne** (cache + file d'écritures rejouée au retour de connexion, au-delà de l'échec clair livré au s05) | É12, É3 | spec v06 · besoins s05 (séquencé derrière l'usage) | ⬜ |
 
-> **Séquencement acté (v08, `/5-consolidation` s07) :** la **config foyer (édition volatile)**
-> passe **devant** le calendrier navigable (priorité PO « gestion des utilisateurs »).
-> Corollaire d'arbitrage **« éditable maintenant ≠ durable »** : l'édition en mémoire (palier 4)
-> se livre tôt, la **persistance réelle** reste **tout derrière la chaîne d'usage** (palier 13).
-> **Docker** reste un **garde-fou d'outillage** (cf. section dédiée). Arbitre : l'usage tranche.
+> **Séquencement acté (v09, `/5-consolidation` s08) :** la **config foyer persistante** (ajout
+> d'acteurs + Mongo borné) passe **devant** la récurrence. **Révision d'arbitre bornée** (G2 PO) :
+> Mongo (persistance réelle) est tiré **devant l'usage mais BORNÉ à la config foyer** (premier
+> client de la config durable). **Borne anti-cliquet** : la persistance du **reste** du domaine
+> (slots/périodes/transferts) reste en queue (palier 13). Corollaire reformulé **« durable ICI
+> (config foyer), volatile encore ailleurs »**. **Docker** reste un **garde-fou d'outillage**.
 
 > **Piste technique (PWA)** — *Event sourcing + outbox pattern* comme socle d'une file
 > d'écritures rejouable : l'**outbox** garantit qu'une commande acceptée hors-ligne sera
