@@ -107,9 +107,13 @@
                     value="@(_cycle.Affectations.TryGetValue(index, out var r) ? r : "")"
                     @onchange="e => AffecterIndex(index, e.Value?.ToString())">
                 <option value="">— aucun (teinte neutre) —</option>
-                @foreach (var a in Foyer.ActeursEditables)
+                @* Mapping index→responsable alimenté par les acteurs PERSISTÉS du foyer (énumérés
+                   depuis le store via api/foyer/acteurs, comme la liste du bas) : un acteur renommé
+                   ou fraîchement ajouté est aussitôt sélectionnable comme responsable de fond, sur
+                   son identifiant stable (règle 19 — jamais le libellé). *@
+                @foreach (var a in _acteurs)
                 {
-                    <option value="@a.Id">@a.Libelle</option>
+                    <option value="@a.Id">@a.Nom</option>
                 }
             </select>
         </div>
