@@ -37,10 +37,12 @@ $compareUrl = if ($slug) { 'https://github.com/' + $slug + '/compare/' + $Base +
 $ahead = @(git log --oneline "$Base..HEAD" 2>$null)
 $aheadCount = $ahead.Count
 
-# Sprint clos : dernier dossier docs/sprints/* avec un *-retours.md
+# Sprint clos : dernier dossier docs/sprints/* avec un *-retours.md.
+# -Recurse : après clôture, le retours est déplacé sous archive/ (mode clôture de
+# archive-iteration.ps1) ; on le reconnaît à la racine comme sous archive/.
 if (-not $Sprint) {
   $sprintDir = Get-ChildItem 'docs/sprints' -Directory -ErrorAction SilentlyContinue |
-    Where-Object { Get-ChildItem $_.FullName -Filter '*-retours.md' -File -ErrorAction SilentlyContinue } |
+    Where-Object { Get-ChildItem $_.FullName -Filter '*-retours.md' -File -Recurse -ErrorAction SilentlyContinue } |
     Sort-Object Name -Descending | Select-Object -First 1
   if ($sprintDir) { $Sprint = $sprintDir.Name }
 }

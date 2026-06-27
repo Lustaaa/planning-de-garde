@@ -416,3 +416,54 @@
   ancrage ISO / concurrence / écriture scénarios / plan tdd / besoins + collision) ; spec v10
   règles 6, 7, 11, 12, 18, 19, 30 + palier 6/8/9 + Mécaniques + Risques ; convention « Révisions
   de règle hors boucle ».
+
+## 2026-06-27 — Priorisation des actions de rétro sprint 10 (`/6-cloture-sprint`, étape 1)
+
+- **Question (retro-sprint, via CP)** : sur les 5 actions de rétro méthode proposées,
+  lesquelles auto-appliquer (tweaks faible risque) et lesquelles escalader au PO (G1,
+  structurel/risqué) ? Palier d'autonomie 0 (conservateur).
+- **Décision (CP)** : **4 actions auto-appliquées** (faible risque) → transmises à
+  `retro-sprint` pour application + écriture `98-retrospective.md` ; **1 action escaladée G1**
+  (structurelle).
+  - **Action 1 — AUTO-APPLIQUÉE.** Consigne « ne lis JAMAIS sous `archive/` ; hors archive,
+    seul `00-sprint<NN>-suivi.md` d'un sprint passé est lisible » ajoutée aux 7 agents qui
+    explorent `docs/sprints/` (tdd-analyse, tdd-auto, ihm-builder, retours-challenge,
+    spec-consolidation, retro-sprint, chef-de-projet) ; reformuler la mention « scénarios sous
+    `archive/` » de retro-sprint comme source **non lue directement**. **Faible risque** :
+    édition de prompt **directement mandatée par le PO** (table Méthode, l.72, point 1) ; ne
+    touche aucune logique de script.
+  - **Action 3 — AUTO-APPLIQUÉE.** Propager le patron UTF-8 +
+    `Set-Location -LiteralPath (git rev-parse --show-toplevel).Trim()` à `find-retro.ps1`
+    (l.30 actuelle : `Set-Location (git rev-parse --show-toplevel)` sans `-LiteralPath` ni
+    forçage d'encodage → casse sur le chemin accentué `…/source/privée/…`) ; auditer
+    `find-retours`/`find-spec`/`archive-iteration.ps1`. **Faible risque** : **bug confirmé**,
+    patron déjà éprouvé sur les 6 scripts git au sprint 05, non propagé ici par oubli.
+  - **Action 4 — AUTO-APPLIQUÉE.** Consigne ihm-builder : tests runtime SignalR attendent
+    l'**établissement déterministe** du long polling (pas un timing fixe) + **isolation d'état**
+    entre tests. **Faible risque** : ajout de consigne cohérent avec l'anti-flake Docker déjà
+    présent (ihm-builder l.86-95) ; observation IA, flake 1×/2 au gate.
+  - **Action 5 — AUTO-APPLIQUÉE.** Note dans `git/SKILL.md` : « syntaxe selon le shell du tool »
+    (Bash POSIX vs PowerShell here-string) pour éviter qu'un here-string fuite dans un commit.
+    **Faible risque** : note de doc, aucune logique modifiée.
+  - **Action 2 — ESCALADÉE G1 (structurelle, NON auto-appliquée).** Étape d'archivage finale
+    déplaçant en `archive/` tous les `.md` de pilotage du sprint clos SAUF
+    `00-sprint<NN>-suivi.md` (donc `99-retours`, `99-besoins`, `98-retrospective`) + réécriture
+    des liens + extension `archive-iteration.ps1` (mode clôture). **Escaladée car structurelle
+    ET porteuse d'un risque de régression non trivial** : déplacer `99-besoins` et
+    `98-retrospective` **casse les scripts de détection qui scrutent la racine du dossier de
+    sprint sans `-Recurse`** — `find-retro.ps1` (l.48 glob `99-sprint*-besoins-fin-itération.md`,
+    l.57 `98-retrospective.md`) et `cloture-sprint.ps1` (l.42-44 détecte le sprint par
+    `*-retours.md`). Sans refonte coordonnée de ces gardes, le gate de rétro non-contournable et
+    la détection du sprint clos tombent. Hors palier 0 conservateur → revient au PO.
+- **Rationale** : actions 1/3/4/5 = **tweaks de méthode à faible risque** (prompt/doc + bug-fix
+  d'un patron éprouvé), dont 1 et l'intention de 2 sont **mandatés PO** (table Méthode l.72) ;
+  je tranche l'**implémentation** des seules 1/3/4/5. L'action 2, bien que son **intention** soit
+  mandatée par le PO, exige une **refonte coordonnée de scripts de détection** (logique +
+  déplacement irréversible de fichiers + réécriture de liens) : c'est un **changement structurel
+  du pipeline** au sens de `/6-cloture-sprint` (étape 1) → escalade G1, pas d'auto-application.
+- **Sources** : `99-sprint10-retours.md` (table **Méthode** l.72, section **IA** l.80) ;
+  `.claude/skills/retro-sprint/scripts/find-retro.ps1` (l.30, l.48, l.57 — détection racine non
+  récursive) ; `.claude/skills/cloture-sprint/scripts/cloture-sprint.ps1` (l.42-44) ;
+  `.claude/skills/git/SKILL.md` (patron UTF-8/`-LiteralPath` l.85-88, propagé au s05) ;
+  `.claude/agents/ihm-builder.md` (anti-flake Docker l.86-95) ; `/6-cloture-sprint` étape 1
+  (CP sélectionne faible risque, escalade G1 le structurel/risqué).
