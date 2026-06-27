@@ -27,6 +27,12 @@ public sealed class DefinirCycleHandler
 
     public Result<CycleDeFond> Handle(DefinirCycleCommand commande)
     {
+        // Garde conditionnelle N ≥ 1 : un cycle de zéro semaine est insensé (ISOWeek mod 0 indéfini).
+        // Refus AVANT toute écriture/diffusion → le cycle précédent reste inchangé. Le nominal N ≥ 1
+        // (ex. N=2 défini dès Sc.1) reste accepté : la garde ne vise que N < 1.
+        if (commande.NombreSemaines < 1)
+            return Result<CycleDeFond>.Echec("le cycle doit compter au moins une semaine");
+
         var cycle = new CycleDeFond(commande.NombreSemaines, commande.Affectations);
         _cycle.DefinirCycle(cycle);
         _notificateur.NotifierMiseAJour(); // diffusion temps réel sur écriture aboutie
