@@ -65,6 +65,17 @@ technique reste **légère** : juste de quoi amorcer `tdd-implement`.
    |---|---|---|---|
    | RG1 — … | ✅ | ✅ | ❌ → à combler |
 
+   > **Budget de vélocité (parcimonie des scénarios).** La couverture ne justifie pas la
+   > prolifération : chaque scénario coûte un cycle TDD complet (dispatch + checkpoint +
+   > commit). Avant de conclure : (1) **distingue les drivers réels** (un vrai RED qui pilote
+   > du code neuf) des **caractérisations** (filets de non-régression sur un invariant DÉJÀ
+   > couvert, qui passeront probablement early-green) — annote chacun ; (2) **regroupe** les
+   > variations d'un même comportement en `Scenario Outline` + `Examples:` au lieu de scénarios
+   > séparés ; (3) **n'éclate pas** une règle déjà couverte en plusieurs scénarios distincts ;
+   > (4) **vise un nombre resserré de drivers réels** par incrément. Signale dans la synthèse
+   > les lots de caractérisations consécutives (groupables en un seul commit côté `tdd-auto`,
+   > cf. s09 : 4 caractérisations early-green sur 9 scénarios = vélocité diluée).
+
 6. **Synthétise puis écris.** Une fois tranché, produis le fichier de sortie au
    format ci-dessous.
 
