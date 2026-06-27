@@ -25,7 +25,7 @@ neutre (gris) est conservée pour l'acteur hors set.
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Suivre_le_nouveau_nom_en_conservant_la_teinte_neutre_When_un_acteur_absent_du_set_de_couleurs_est_renomme_sans_recolorier` | — (caractérisation d'indépendance déjà acquise) | ⚠️ **probablement early green — couvert par Sc.1 #1 + s07 Sc.5 (caractérisation, pas driver)** : `renommer` mute la **seule** surface nom du store ; `CouleurDe` retombe sur le **neutre** par repli (acteur absent du set, s07 Sc.5) **par construction**. Renommer ne touche jamais la couleur. Aucun rouge — filet documentant « renommer ≠ créer une couleur ». | ⏳ Pending |
+| 1 | `Should_Suivre_le_nouveau_nom_en_conservant_la_teinte_neutre_When_un_acteur_absent_du_set_de_couleurs_est_renomme_sans_recolorier` | — (caractérisation d'indépendance déjà acquise) | ⚠️ **probablement early green — couvert par Sc.1 #1 + s07 Sc.5 (caractérisation, pas driver)** : `renommer` mute la **seule** surface nom du store ; `CouleurDe` retombe sur le **neutre** par repli (acteur absent du set, s07 Sc.5) **par construction**. Renommer ne touche jamais la couleur. Aucun rouge — filet documentant « renommer ≠ créer une couleur ». | ✅ GREEN (caractérisation) |
 
 ## Fichiers à créer / modifier
 
