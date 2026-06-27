@@ -14,10 +14,14 @@ neutre (gris) est conservée pour l'acteur hors set.
 > teinte, la case + la légende affichent le nouveau nom mais **restent grises**. bUnit seul ne
 > prouve pas le rendu réel.
 
-`Should_Afficher_Papy_Jo_dans_la_case_du_17_07_2026_et_en_legende_en_conservant_la_teinte_neutre_grise_When_l_acteur_hors_set_grand_pere_est_renomme_sans_couleur_attribuee`
+`Should_Afficher_Papy_Jo_dans_la_case_du_17_07_2026_et_en_legende_en_conservant_la_teinte_neutre_grise_When_l_acteur_hors_set_grand_pere_est_renomme_sans_couleur_attribuee` — ✅ GREEN
+(`tests/PlanningDeGarde.Web.Tests/FrontWasmConfigHorsSetNeutreTempsReelTests.cs`)
 
-- **Niveau** : E2E/runtime sur l'app câblée. Store réel : `grand-pere` (hors
-  `CouleursParActeur`) renommé « grand-père » → « Papy Jo ».
+- **Niveau** : E2E/runtime sur l'app câblée (écran `ConfigurationFoyer` + grille `PlanningPartage`).
+  Store réel : `grand-pere` (hors `CouleursParActeur`) renommé « grand-père » → « Papy Jo ».
+- **GREEN sans code neuf** : compose le renommage (Sc.1) et le repli neutre (s07 Sc.5). Baseline
+  « grand-père » + gris asserté avant le renommage → transition de nom observée + persistance du
+  neutre prouvée (pas un faux-vert ; renommer ≠ créer une couleur).
 - **Observable** : la case du 17/07/2026 et l'entrée de légende affichent « Papy Jo » ; la
   teinte reste neutre (grise) — le renommage ne crée pas de couleur.
 

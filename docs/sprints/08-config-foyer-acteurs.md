@@ -121,7 +121,7 @@ Scenario: Recolorier deux acteurs vers la même couleur, distingués par le nom
     sur le nom)
 ```
 
-### Scenario 5 — Éditer un acteur hors set de couleurs : nom suivi, teinte neutre conservée `@limite`
+### Scenario 5 — Éditer un acteur hors set de couleurs : nom suivi, teinte neutre conservée `@limite` `@vert`
 
 ```gherkin
 Scenario: Renommer un acteur hors set de couleurs sans lui créer de couleur
