@@ -190,6 +190,27 @@
   séquencement ; dette `IPaletteCouleurs` + port nom s07 (`IReferentielResponsables`) ;
   réponse PO G2 (sujet = écran config foyer).
 
+## 2026-06-27 — Consolidation v08 : collision « édition volatile » vs « config foyer persistée ET éditable »
+
+- **Question (spec-consolidation, Q1)** : le prochain sujet (écran config foyer) édite les
+  acteurs en **volatile** (mémoire/session, aucune persistance durable — décision CP). Or la
+  spec v07 énonce que « la config foyer est une donnée **persistée ET éditable**, pas une
+  constante figée » (mécanique) et que les données durables vivent derrière les ports
+  (règles 5/27). Comment fondre l'incrément sans contradiction interne ?
+- **Décision (CP, sans escalade)** : option 1 — **scinder édition et durabilité**. Créer une
+  **règle dédiée** « édition des acteurs livrable maintenant, en mémoire/session, relue
+  immédiatement par la grille (case + légende) » et **conserver intacte** la règle de
+  durabilité (persistance réelle = **Palier 10**, derrière l'usage). Le « éditable » se livre
+  tôt ; le « durable » reste séquencé. Dette volatile assumée, explicitement **transitoire**
+  (miroir du seed en dur).
+- **Rationale** : résolution **déterministe** (pas un conflit de valeur PO). Le cap volatile
+  est déjà tranché (réponse PO G2 + décision CP Q2 du /4-retours) ; il ne reste qu'à le
+  **représenter** dans la spec vivante sans la contredire. Scinder respecte le séquencement
+  acté (persistance = Palier 10) et évite de réécrire la règle de durabilité comme si le
+  durable arrivait maintenant. Aucun arbitrage métier neuf.
+- **Sources** : spec v07 mécanique config foyer + règles 5/27 ; BACKLOG Palier 10 ;
+  décisions /4-retours (G2 PO + cap persistance volatile) ; ports nom/couleur s07.
+
 # Retours produit (PO)
 
 > Le code et les tests sont **hors scope** ici (revus en revue de code). Ces retours
