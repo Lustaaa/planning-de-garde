@@ -109,7 +109,7 @@ Scenario: Un acteur ajouté apparaît en légende une fois une période affecté
 
 ### Scenario 5 — Un acteur ajouté sans couleur retombe sur la teinte neutre
 
-`@limite`
+`@limite` `@vert`
 
 ```gherkin
 Scenario: Un acteur ajouté sans couleur retombe sur la teinte neutre
