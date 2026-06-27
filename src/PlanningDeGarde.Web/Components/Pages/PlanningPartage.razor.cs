@@ -25,9 +25,13 @@ public partial class PlanningPartage
 
     private HubConnection? _hub;
 
-    // Date de contexte de la dialog « Poser un slot » ouverte depuis une case (null = aucune dialog).
-    // La grille reste en LECTURE SEULE (règle 14) : la case ne fait qu'ouvrir la dialog, jamais écrire.
+    // Écriture en contexte (palier 7) — la grille reste en LECTURE SEULE (règle 14) : la case ouvre un
+    // menu d'actions, jamais une écriture. Un seul déclencheur par case (mutualise le gating Invité, Sc.6).
+    // null = fermé. Date de la case dont le menu d'actions est ouvert :
+    private DateOnly? _dateMenu;
+    // Date de contexte de chaque dialog ouverte depuis le menu (null = dialog fermée) :
     private DateOnly? _dateDialogPoserSlot;
+    private DateOnly? _dateDialogAffecterPeriode;
 
     private string Desactive => Session.EstParent ? string.Empty : "disabled";
 
@@ -90,28 +94,51 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Ouvre la dialog « Poser un slot » pré-remplie sur la date de la case cliquée. Gating Invité
-    /// (règle 9) : en consultation seule, le clic n'ouvre rien — le déclencheur d'écriture est gardé
-    /// à l'entrée. Aucune écriture ici : la dialog porte la commande, la grille reste en lecture seule.
+    /// Ouvre le <b>menu d'actions</b> de la case cliquée (décision CP, palier 7) : un seul déclencheur
+    /// d'écriture par case, deux entrées (poser un slot / affecter une période). Gating Invité (règle 9)
+    /// mutualisé ici : en consultation seule, le clic n'ouvre rien — le déclencheur est gardé à l'entrée.
+    /// Aucune écriture : le menu et les dialogs portent la commande, la grille reste en lecture seule.
     /// </summary>
-    private void OuvrirPoserSlot(DateOnly date)
+    private void OuvrirMenu(DateOnly date)
     {
         if (!Session.EstParent)
             return;
 
+        _dateMenu = date;
+    }
+
+    /// <summary>Ferme le menu d'actions sans rien ouvrir (clic hors panneau).</summary>
+    private void FermerMenu() => _dateMenu = null;
+
+    /// <summary>Depuis le menu, ouvre la dialog « Poser un slot » pré-remplie sur la date de la case.</summary>
+    private void OuvrirPoserSlot(DateOnly date)
+    {
+        _dateMenu = null;
         _dateDialogPoserSlot = date;
     }
 
-    /// <summary>Ferme la dialog sur succès et <b>relit</b> la grille depuis l'API distante : la pose
-    /// aboutie réapparaît, positionnée à la date de la case (relecture, jamais une mutation locale).</summary>
+    /// <summary>Depuis le menu, ouvre la dialog « Affecter une période » pré-remplie sur la date de la case.</summary>
+    private void OuvrirAffecterPeriode(DateOnly date)
+    {
+        _dateMenu = null;
+        _dateDialogAffecterPeriode = date;
+    }
+
+    /// <summary>Ferme la dialog ouverte sur succès et <b>relit</b> la grille depuis l'API distante :
+    /// l'écriture aboutie réapparaît, positionnée à la date de la case (relecture, jamais une mutation
+    /// locale de la grille).</summary>
     private async Task FermerDialogEtRecharger()
     {
-        _dateDialogPoserSlot = null;
+        FermerDialog();
         await ChargerAsync();
     }
 
-    /// <summary>Ferme la dialog sans aucune écriture (annulation) : la grille reste intacte.</summary>
-    private void FermerDialog() => _dateDialogPoserSlot = null;
+    /// <summary>Ferme toute dialog sans aucune écriture (annulation / succès) : la grille reste intacte.</summary>
+    private void FermerDialog()
+    {
+        _dateDialogPoserSlot = null;
+        _dateDialogAffecterPeriode = null;
+    }
 
     /// <summary>Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible
     /// avec du texte sombre), via le thème couleur partagé.</summary>

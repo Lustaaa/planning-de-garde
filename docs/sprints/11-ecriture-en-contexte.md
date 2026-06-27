@@ -94,7 +94,7 @@ Scenario: Poser un slot depuis une case ouvre la dialog et le slot réapparaît 
   Et un slot "École" de 08:30 à 16:30 apparaît dans la case du mardi 16 juin 2026
 ```
 
-### Scenario 2 — Affecter une période depuis une case du planning `@nominal`
+### Scenario 2 — Affecter une période depuis une case du planning `@nominal` `@vert`
 
 ```gherkin
 Scenario: Affecter une période depuis une case colore et nomme la case au responsable choisi

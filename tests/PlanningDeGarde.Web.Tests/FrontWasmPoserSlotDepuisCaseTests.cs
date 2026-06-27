@@ -40,9 +40,18 @@ public sealed class FrontWasmPoserSlotDepuisCaseTests : TestContext
         Assert.Empty(GrilleRuntimeHarness.CaseDuJour(grille, "16/06").QuerySelectorAll("[data-testid='slot-case']"));
         Assert.Empty(grille.FindAll("[data-testid='dialog-poser-slot']"));
 
-        // When — un Parent clique la case du mardi 16/06 → la dialog « Poser un slot » s'ouvre.
-        GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-        Assert.NotEmpty(grille.FindAll("[data-testid='dialog-poser-slot']"));
+        // When — un Parent clique la case du mardi 16/06 → le menu d'actions s'ouvre → il choisit
+        // « Poser un slot » → la dialog s'ouvre (décision CP : un menu d'actions, deux entrées).
+        // Ouverture idempotente sous WaitForAssertion : robuste aux re-renders async (connexion du hub
+        // SignalR du harnais) qui, sous charge parallèle, peuvent invalider l'event-handler d'un clic.
+        grille.WaitForAssertion(
+            () =>
+            {
+                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
+                grille.Find("[data-testid='action-poser-slot']").Click();
+                Assert.NotEmpty(grille.FindAll("[data-testid='dialog-poser-slot']"));
+            },
+            TimeSpan.FromSeconds(10));
 
         // … il choisit le lieu « école » (08:30 → 16:30 pré-remplis sur la date de la case) et valide.
         grille.Find("[data-testid='champ-lieu']").Change("école");
