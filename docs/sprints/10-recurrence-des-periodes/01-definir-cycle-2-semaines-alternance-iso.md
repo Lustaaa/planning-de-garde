@@ -27,7 +27,21 @@ du Sc.7 **conditionnelle**.
 > un test bUnit à doublure (qui ne prouve ni la DI réelle, ni le chemin HTTP d'écriture du cycle, ni la
 > diffusion). Si la grille ignore le cycle (jours sans période = gris neutre), aucun fond n'apparaît → rouge.
 
-`Should_Afficher_le_responsable_de_fond_par_parite_ISO_en_case_et_en_legende_sans_aucune_saisie_de_periode_When_un_parent_definit_un_cycle_de_fond_de_deux_semaines_depuis_la_configuration` — ⏳ Pending *(runtime, `ihm-builder`)*
+`Should_Afficher_le_responsable_de_fond_par_parite_ISO_en_case_et_en_legende_sans_aucune_saisie_de_periode_When_un_parent_definit_un_cycle_de_fond_de_deux_semaines_depuis_la_configuration` — ✅ GREEN *(runtime, `ihm-builder` — `FrontWasmGrilleCycleDeFondParPariteIsoTempsReelTests`)*
+
+> **Résultat runtime (`ihm-builder`) — early-green de câblage, garde discriminante prouvée.** Le test
+> runtime (front WASM `ConfigurationFoyer` + `PlanningPartage` câblés à la **même** API distante réelle
+> `ApiDistanteFactory`, store cycle InMemory singleton partagé) est passé **vert sans aucune correction
+> de production** : la tranche backend (résolution du fond dans `GrilleAgendaQuery`) **+** l'IHM posée par
+> **Sc.8** (formulaire de cycle dans `ConfigurationFoyer`, endpoint `POST /api/canal/definir-cycle`) **+**
+> le rendu générique `NomResponsable`/`CouleurResponsable` de la grille (s07) délivraient **déjà** end-to-end
+> l'observable. Le seul « rouge » initial était un défaut de plomberie de test (services enregistrés après
+> 1er rendu du `TestServiceProvider`), corrigé en enregistrant tous les services avant tout rendu. **Garde
+> non-vacante prouvée** : en neutralisant temporairement la résolution du fond dans `GrilleAgendaQuery`
+> (`responsableId = periode?.ResponsableId`), le test échoue **sur le symptôme PO exact** — la case 29/06
+> ne porte aucun `nom-responsable` (jour gris/neutre) ⇒ `NullReferenceException` à l'assertion ; restaurée,
+> il repasse vert. Le test reste comme **filet d'acceptation runtime** (chemin HTTP d'écriture + lecture +
+> projection + rendu réels). Cf. doctrine early-green CP de ce sprint (« ne pas inventer de faux rouge »).
 
 > **Acceptation backend (boucle externe à la frontière Application, menée par `tdd-auto`)** — filet
 > sociable traduisant le Gherkin sans IHM : via `DefinirCycleHandler` (définir un cycle de 2 semaines,
