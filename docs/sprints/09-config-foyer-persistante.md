@@ -168,7 +168,7 @@ Scenario: Ajouter un acteur sans nom est refusé
 
 ### Scenario 9 — Ajout impossible si le service de configuration est injoignable
 
-`@erreur`
+`@erreur` `@vert`
 
 ```gherkin
 Scenario: Ajout impossible si le service de configuration est injoignable

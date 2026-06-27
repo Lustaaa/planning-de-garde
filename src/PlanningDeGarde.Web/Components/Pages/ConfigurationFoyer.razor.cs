@@ -112,16 +112,29 @@ public partial class ConfigurationFoyer
     /// Ajoute un acteur neuf au foyer via le <b>canal d'écriture HTTP</b> de l'API distante
     /// (<c>POST /api/canal/ajouter-acteur</c>, règle 27 — aucune vue n'écrit le domaine en direct),
     /// puis ré-énumère le store pour faire apparaître l'acteur ajouté <b>sans rechargement</b> (Sc.1).
-    /// Le repli couleur neutre (Sc.5) et les chemins d'échec (Sc.8 refus, Sc.9 service injoignable)
-    /// relèvent de scénarios runtime ultérieurs et ne sont pas câblés ici sans rouge qui les exige.
+    /// Sur refus métier (Sc.8, nom vide), le motif renvoyé par le canal est surfacé sans muter la liste.
+    /// Sur <b>service injoignable</b> (Sc.9 s09, échec de transport <see cref="HttpRequestException"/> avant
+    /// que le handler ne tourne), un message dédié s'affiche, la saisie est conservée et rien n'est enregistré.
     /// </summary>
     private async Task Ajouter()
     {
         _motifEchecAjout = null;
 
-        var reponse = await Canal.PostAsJsonAsync(
-            "api/canal/ajouter-acteur",
-            new AjouterActeurRequete(_ajout.Nom, _ajout.Couleur));
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/ajouter-acteur",
+                new AjouterActeurRequete(_ajout.Nom, _ajout.Couleur));
+        }
+        catch (HttpRequestException)
+        {
+            // Service de configuration injoignable (échec de transport, pas un refus métier Sc.8) : le
+            // handler AjouterActeur ne s'exécute jamais. Message dédié, saisie « Carla / rose » conservée
+            // à resoumettre, aucune écriture ni mise en file (règle 28). Cf. Sc.9 (s09).
+            _motifEchecAjout = PoserSlot.MessageServiceInjoignable;
+            return;
+        }
 
         if (!reponse.IsSuccessStatusCode)
         {

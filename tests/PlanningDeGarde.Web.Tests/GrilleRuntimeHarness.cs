@@ -31,6 +31,53 @@ internal static class GrilleRuntimeHarness
         => new(api.Server.CreateHandler()) { BaseAddress = api.Server.BaseAddress };
 
     /// <summary>
+    /// Client HTTP du front pointé sur l'API distante réelle, MAIS dont une <b>écriture précise</b>
+    /// (un <c>POST</c> dont le chemin se termine par <paramref name="suffixeEndpointEcriture"/>) subit un
+    /// <b>échec de transport déterministe</b> (<see cref="HttpRequestException"/> levée par le handler,
+    /// avant tout aller-retour réseau) — exactement le symptôme « service injoignable » côté navigateur.
+    /// Les autres requêtes (énumération en lecture, etc.) transitent normalement vers l'API live.
+    ///
+    /// <para><b>Robustesse vs proxy loopback Docker.</b> On ne s'appuie PAS sur un <c>ConnectionRefused</c>
+    /// d'un port loopback réellement libéré : quand Docker Desktop tourne, son proxy loopback intercepte
+    /// la connexion et altère la sémantique du refus (l'exception n'est plus une <see cref="HttpRequestException"/>
+    /// captée, ou la connexion pend) → flake environnemental. Lever l'<see cref="HttpRequestException"/> au
+    /// niveau du handler reproduit le <b>contrat exact</b> que le composant attrape (catch HttpRequestException),
+    /// de façon <b>déterministe que Docker tourne ou non</b>. Ce n'est pas une doublure de statut 4xx (qui serait
+    /// un refus métier) : aucune réponse n'est fabriquée, l'échec est bien au transport.</para>
+    /// </summary>
+    public static HttpClient ClientVersAvecEcritureInjoignable(ApiDistanteFactory api, string suffixeEndpointEcriture)
+        => new(new EcritureInjoignableHandler(api.Server.CreateHandler(), suffixeEndpointEcriture))
+        {
+            BaseAddress = api.Server.BaseAddress,
+        };
+
+    /// <summary>
+    /// Handler de transport qui relaie tout vers l'API distante réelle SAUF un <c>POST</c> vers l'endpoint
+    /// d'écriture ciblé, pour lequel il lève une <see cref="HttpRequestException"/> — échec de transport
+    /// déterministe et indépendant de l'environnement (anti-flake proxy loopback Docker).
+    /// </summary>
+    private sealed class EcritureInjoignableHandler : DelegatingHandler
+    {
+        private readonly string _suffixeEndpointEcriture;
+
+        public EcritureInjoignableHandler(HttpMessageHandler inner, string suffixeEndpointEcriture)
+            : base(inner) => _suffixeEndpointEcriture = suffixeEndpointEcriture;
+
+        protected override System.Threading.Tasks.Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Post
+                && (request.RequestUri?.AbsolutePath.EndsWith(_suffixeEndpointEcriture, StringComparison.Ordinal) ?? false))
+            {
+                throw new HttpRequestException(
+                    $"service injoignable (échec de transport simulé, déterministe) vers {_suffixeEndpointEcriture}");
+            }
+
+            return base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    /// <summary>
     /// Sème une période dans le store réel de l'API distante (Given d'un scénario de lecture) — la
     /// projection réelle la relira et le référentiel réel résoudra le nom du responsable.
     /// </summary>
