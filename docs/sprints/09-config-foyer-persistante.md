@@ -55,7 +55,7 @@ derrière les ports de droite.
 
 ### Scenario 1 — Ajouter la nounou au foyer génère un identifiant stable neuf
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: Ajouter la nounou au foyer génère un identifiant stable neuf

@@ -25,6 +25,13 @@ public sealed class FakeConfigurationFoyer : IEditeurConfigurationFoyer, IRefere
         _couleurs = couleurs is null ? new Dictionary<string, string>() : new Dictionary<string, string>(couleurs);
     }
 
+    public void Ajouter(string acteurId, string nom, string? couleur)
+    {
+        _noms[acteurId] = nom;
+        if (couleur is not null)
+            _couleurs[acteurId] = couleur; // couleur absente → repli neutre par contrat CouleurDe
+    }
+
     public void Renommer(string acteurId, string nouveauNom) => _noms[acteurId] = nouveauNom;
 
     public void Recolorier(string acteurId, string nouvelleCouleur) => _couleurs[acteurId] = nouvelleCouleur;

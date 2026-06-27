@@ -29,6 +29,7 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IReferentielResponsables>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
         services.AddSingleton<IPaletteCouleurs>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
         services.AddSingleton<IEditeurConfigurationFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
+        services.AddSingleton<IEnumerationActeursFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
 
         // Port temps réel réel (SignalR) — remplace le fake des scénarios.
         services.AddSingleton<INotificateurPlanning, SignalRNotificateurPlanning>();
@@ -40,6 +41,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ModifierPeriodeHandler>();
         services.AddScoped<DefinirTransfertHandler>();
         services.AddScoped<EditerActeurHandler>();
+        services.AddScoped<AjouterActeurHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();

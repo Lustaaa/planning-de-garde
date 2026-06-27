@@ -9,6 +9,13 @@ namespace PlanningDeGarde.Application;
 /// </summary>
 public interface IEditeurConfigurationFoyer
 {
+    /// <summary>Ajoute un acteur <b>neuf</b> au foyer sur un identifiant stable neuf (jamais un id
+    /// existant) : persiste le nom et, si fournie, la couleur (couleur absente → repli neutre par
+    /// le contrat <see cref="IPaletteCouleurs"/>, aucune écriture couleur). Surface d'<b>ajout</b>
+    /// distincte de l'édition (<see cref="Renommer"/> / <see cref="Recolorier"/> mutent un acteur
+    /// déjà présent sur son id stable).</summary>
+    void Ajouter(string acteurId, string nom, string? couleur);
+
     /// <summary>Affecte un nouveau nom d'affichage à l'acteur identifié de façon stable.</summary>
     void Renommer(string acteurId, string nouveauNom);
 
