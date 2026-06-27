@@ -123,7 +123,7 @@ Scenario: Un acteur ajouté sans couleur retombe sur la teinte neutre
 
 ### Scenario 6 — Un acteur ajouté sans période ne crée pas d'entrée fantôme
 
-`@limite`
+`@limite` `@vert`
 
 ```gherkin
 Scenario: Un acteur ajouté sans période ne crée pas d'entrée fantôme
