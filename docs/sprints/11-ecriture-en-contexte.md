@@ -163,7 +163,7 @@ Scenario: Annuler une dialog n'émet aucune écriture et laisse la grille intact
   Et la case du samedi 20 juin 2026 affiche toujours le responsable de fond "Bruno"
 ```
 
-### Scenario 6 — Un Invité ne peut pas ouvrir la dialog depuis une case `@erreur`
+### Scenario 6 — Un Invité ne peut pas ouvrir la dialog depuis une case `@erreur` `@vert`
 
 ```gherkin
 Scenario: En consultation seule, cliquer une case n'ouvre aucune dialog d'écriture
