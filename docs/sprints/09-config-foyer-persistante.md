@@ -96,7 +96,7 @@ Scenario: L'ajout et l'édition survivent au redémarrage du serveur
 
 ### Scenario 4 — Un acteur ajouté apparaît en légende une fois une période affectée
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario: Un acteur ajouté apparaît en légende une fois une période affectée
