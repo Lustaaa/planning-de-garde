@@ -86,10 +86,13 @@ ou dossier de sprint le contenant.
    **Ne réécris pas le pointeur à la main** (l'étape manuelle a été sautée au sprint 03,
    pointeur périmé de 2 versions — cf. rétro). L'ancienne version reste figée en historique.
 
-7. **Handoff make-gherkin.** Présente la nouvelle spec et **propose** d'enchaîner
-   `/2-make-gherkin` sur elle (en ciblant le `prochain_sujet` du backlog) via
-   `AskUserQuestion`. Si l'utilisateur valide, invoque `/2-make-gherkin` avec le chemin de
-   la nouvelle spec + le slug du prochain sujet.
+7. **Handoff clôture (automatique).** Présente la nouvelle spec, puis **enchaîne
+   directement** `/6-cloture-sprint` (sans `AskUserQuestion`) — c'est le maillon canonique
+   suivant : il fait tourner la **rétro de méthode**, puis **pousse / ouvre / merge la PR**
+   (les seules confirmations PO restantes sont ces actions git sortantes), et **amorce
+   enfin `/2-make-gherkin`** sur la nouvelle spec en ciblant le `prochain_sujet` (porte
+   **G2** du choix de sprint goal). N'invoque **pas** `/2-make-gherkin` toi-même ici : son
+   gate d'entrée exige la rétro du dernier sprint clos, produite par `/6`.
 
    > **Gate anti-bypass de la rétro.** L'itération précédente est close (backlog `/4`
    > écrit) : la **rétrospective de la méthode (`retro-sprint`, étape 1 de
@@ -98,8 +101,8 @@ ou dossier de sprint le contenant.
    > `find-retro.ps1`). Ne présente pas l'enchaînement comme s'il pouvait sauter la rétro :
    > le chemin canonique est `/5-consolidation → /6-cloture-sprint (retro-sprint + push/PR) → /2-make-gherkin`.
 
-8. **Commit.** Propose un commit de la nouvelle version de spec (sans pousser sauf demande
-   explicite).
+8. **Commit (automatique).** Commite la nouvelle version de spec + la propagation README
+   (sans pousser). Pas de demande d'accord : commit local et réversible.
 
 ## Notes
 

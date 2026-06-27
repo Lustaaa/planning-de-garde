@@ -55,8 +55,13 @@ Sujet (optionnel) : $ARGUMENTS
      question de séquencement — c'est voulu. **N'analyse pas**, **ne devine pas** la
      question suivante.
 
-3. **Validation PO.** Quand `done: true`, présente la `synthese` de l'agent (verbatim)
-   et demande l'accord avant de rédiger.
+3. **Validation (CP).** Quand `done: true`, fais valider l'écriture par le **chef de
+   projet** : dispatche `chef-de-projet` avec la `synthese`. S'il renvoie
+   `{type:"decision"}` (cadrage cohérent, rien de bloquant) → **ordonne de rédiger sans
+   déranger le PO**. S'il renvoie `{type:"escalate", gate:"G1"|"G2"}` (arbitrage métier ou
+   cap à fixer) → appelle `AskUserQuestion` (payload riche), puis rédige. Affiche la
+   `synthese` verbatim avec la décision du CP ou l'escalade. *(Plus de « demande d'accord »
+   systématique : le PO n'est sollicité que sur une porte G1/G2.)*
 
 4. **Rédaction (agent) :**
    - Dispatche l'agent `redaction-spec` avec le chemin cible + la `synthese`.
@@ -66,7 +71,8 @@ Sujet (optionnel) : $ARGUMENTS
 
 5. **Propagation.** Mets à jour les docs qui référencent la spec (README, roadmap) ; garde une seule source de vérité, pointe les brouillons obsolètes vers elle.
 
-6. **Commit.** Propose un commit (sans pousser sauf demande explicite).
+6. **Commit (automatique).** Commite la spec + propagation (sans pousser). Pas de
+   demande d'accord : le commit est local et réversible.
 
 ## Notes
 

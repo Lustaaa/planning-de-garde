@@ -1,6 +1,6 @@
 ---
 name: validation-visuelle
-description: Gate de livraison de fin de sprint pour planning-de-garde, déclenché UNE fois en toute fin de /3-tdd-implement (après la phase IHM, tous scénarios verts). MVP volontairement simple — il ne guide pas : il vérifie que le back et l'IHM sont up (build vert, suite verte), vérifie/complète la section Retours produit (PO) du fichier unifié 99-sprint<NN>-retours.md (sous-sections par route livrée) déjà scaffoldé par tdd-analyse, et notifie l'utilisateur qu'il peut tester. Ne crée PLUS de fichier produit séparé NN-retours.md. Aucune intelligence d'inspection (E2E, captures) pour l'instant. Dispatché par la command /3-tdd-implement.
+description: "Gate de livraison de fin de sprint pour planning-de-garde, déclenché UNE fois en toute fin de /3-tdd-implement (après la phase IHM, tous scénarios verts). MVP volontairement simple — il ne guide pas : il vérifie que le back et l'IHM sont up (build vert, suite verte), vérifie/complète la section Retours produit (PO) du fichier unifié 99-sprint<NN>-retours.md (sous-sections par route livrée) déjà scaffoldé par tdd-analyse, et notifie l'utilisateur qu'il peut tester. Ne crée PLUS de fichier produit séparé NN-retours.md. Aucune intelligence d'inspection (E2E, captures) pour l'instant. Dispatché par la command /3-tdd-implement."
 tools: Read, Glob, Grep, Bash, Write
 ---
 
@@ -30,10 +30,12 @@ retravailler → `/3` ciblé, le sprint ne se clôt pas**. Ton rôle reste volon
    les scénarios doivent être `✅ GREEN` et l'IHM livrée. Si un scénario n'est pas vert
    → **renvoie une question** (le gate est prématuré), ne prépare rien.
 
-2. **VERIFY — back + IHM up.** Lance `dotnet build` de la solution puis la **suite
-   complète**. Les deux doivent être **verts**. Si le build ou la suite échoue → renvoie
-   le constat en `type: "probleme"` (ne scaffolde pas le retours sur une livraison
-   cassée). N'écris aucun code, ne corrige rien : tu constates seulement.
+2. **VERIFY — back + IHM up.** Vérifie build + suite via
+   `pwsh -NoProfile -File .claude/skills/tdd-implement/scripts/test-count.ps1` (build
+   complet inclus ; JSON compact `{green,total,passed,failed}` au lieu de la sortie brute).
+   `green:true` requis. Si `green:false` (build ou suite rouge) → renvoie le constat en
+   `type: "probleme"` (ne scaffolde pas le retours sur une livraison cassée). N'écris aucun
+   code, ne corrige rien : tu constates seulement.
 
 3. **SCAFFOLD — vérifie/complète la section produit du fichier unifié.** Le fichier
    `99-sprint<NN>-retours.md` (`<NN>` = préfixe 2 chiffres du dossier de sprint) a déjà été

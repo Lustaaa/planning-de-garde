@@ -14,6 +14,13 @@ structure.
 **Principe central :** fonctionnel uniquement. Aucun choix technique. Chaque
 règle est un comportement métier, nommé et tenant en une ligne.
 
+**Concision = spec vivante, pas cumul.** La spec décrit l'**état courant** cohérent, jamais
+un changelog. À chaque version (notamment en consolidation) : **fusionne** les règles qui se
+recouvrent, **retire** les règles caduques (un comportement remplacé disparaît, il ne
+s'empile pas), reformule plutôt que d'ajouter. Vise la **densité** — une règle = une ligne ;
+si une section enfle sans gagner en information, élague. Une spec qui grossit version après
+version sans que le périmètre grandisse d'autant est un signal d'alarme, pas un progrès.
+
 ## Quand l'utiliser
 
 - Après une passe `brainstorm`, pour écrire les décisions
@@ -78,3 +85,4 @@ Restreins le périmètre d'écriture au chemin fourni — n'écris nulle part ai
 - **Contexte trop long** — si le Contexte dépasse 3 lignes, il mange la spec. Élague.
 - **Règles vagues** — une règle sans sujet ni comportement clair n'est pas une règle. Nomme-la précisément.
 - **Exemples en prose détachée** — garde la précision en ligne sur la règle, pas dans un paragraphe séparé.
+- **Spec qui gonfle à chaque version** — règles redondantes empilées, comportements caducs jamais retirés. Fusionne et élague : la spec vivante reste dense, elle ne cumule pas.

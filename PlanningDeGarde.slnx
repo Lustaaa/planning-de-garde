@@ -3,6 +3,9 @@
     <Project Path="src/PlanningDeGarde.Application/PlanningDeGarde.Application.csproj" />
     <Project Path="src/PlanningDeGarde.Domain/PlanningDeGarde.Domain.csproj" />
     <Project Path="src/PlanningDeGarde.Infrastructure/PlanningDeGarde.Infrastructure.csproj" />
+    <Project Path="src/PlanningDeGarde.AdapterDroite.InMemory/PlanningDeGarde.AdapterDroite.InMemory.csproj" />
+    <Project Path="src/PlanningDeGarde.AdapterDroite.Mongo/PlanningDeGarde.AdapterDroite.Mongo.csproj" />
+    <Project Path="src/PlanningDeGarde.SignalR/PlanningDeGarde.SignalR.csproj" />
     <Project Path="src/PlanningDeGarde.Web/PlanningDeGarde.Web.csproj" />
     <Project Path="src/PlanningDeGarde.Api/PlanningDeGarde.Api.csproj" />
   </Folder>

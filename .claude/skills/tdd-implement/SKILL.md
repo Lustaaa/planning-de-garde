@@ -212,9 +212,17 @@ toute facilité d'implémentation.
      `--no-build` / filtre laisse un projet de prod non recompilé éventuellement cassé et fait
      **mentir le vert** (cf. Sc.1 s07 : front Web non compilable masqué par `dotnet test
      --no-build` sur Web.Tests, détecté seulement au scénario suivant).
+   - **Outil (économie de tokens).** Pour la non-régression, préfère
+     `pwsh -NoProfile -File .claude/skills/tdd-implement/scripts/test-count.ps1` : il lance la
+     suite COMPLÈTE (build complet, défaut sûr) et ne renvoie qu'un **JSON compact**
+     `{ green, total, passed, failed, assemblies }` au lieu de la sortie verbeuse de `dotnet
+     test` — n'ingère pas des milliers de lignes à chaque cycle. Sur rouge il ajoute
+     `failures` (plafonné). N'utilise `-Filter` que pour un **RED ciblé**, jamais comme preuve
+     de non-régression.
    - **Auto-revue de minimalité avant commit.** Relis le diff : toute construction neuve
      (généralisation, branche, boucle) non forcée par un rouge de ce scénario vole le rouge
-     d'un scénario futur (early-green déguisé) → retire-la, ou STOP (G4) si déjà couverte.
+     d'un scénario futur (early-green déguisé) → retire-la, ou STOP (escalade CP) si déjà
+     couverte.
    - **Le test ne bouge pas pour passer.** Tu fais évoluer l'**implémentation**
      jusqu'au vert ; tu ne modifies **jamais** l'assertion du test d'acceptation
      pour la faire correspondre au code. Test à corriger = retour à l'étape 3.

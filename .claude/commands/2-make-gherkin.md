@@ -83,7 +83,8 @@ Sujet (optionnel) : $ARGUMENTS
    du dossier suffit. `SendMessage` l'ordre d'écrire avec ce chemin. L'agent écrit le
    fichier (au format imposé du skill) et renvoie `{ path, scenarios, notes }`.
 
-5. **Commit.** Propose un commit (sans pousser sauf demande explicite).
+5. **Commit (automatique).** Commite le plan Gherkin (sans pousser). Pas de demande
+   d'accord : le commit est local et réversible.
 
 6. **`/clear` (après le plan).** Le `/clear` de fin de cycle se fait **APRÈS** la
    rédaction du plan Gherkin — c.-à-d. une fois `docs/sprints/NN-<sujet>.md` écrit (étape 4),

@@ -1,6 +1,6 @@
 ---
 name: ihm-builder
-description: Agent IHM Blazor pour planning-de-garde — unique agent autorisé à écrire l'IHM (.razor, render mode, câblage SignalR réel). Deux modes. (1) Scénario IHM RED→GREEN — pour un scénario étiqueté 🖥️ par tdd-analyse (ou refusé par tdd-auto) : écrit un test d'acceptation de niveau RUNTIME qui ÉCHOUE (reproduit le symptôme PO sur l'app réellement câblée, DI réelle ; jamais bUnit comme preuve car il ne voit pas un render mode manquant), corrige le .razor/le câblage, repasse au vert. (2) Phase IHM finale — une fois les scénarios backend verts, bâtit les vues restantes appelant les use cases (aucune règle métier dans l'UI). Vérifie build + suite, commite, rend la main. Mode orchestré, round-trip de questions puis exécution. Dispatché par /3-tdd-implement.
+description: "Agent IHM Blazor pour planning-de-garde — unique agent autorisé à écrire l'IHM (.razor, render mode, câblage SignalR réel). Deux modes. (1) Scénario IHM RED→GREEN — pour un scénario étiqueté 🖥️ par tdd-analyse (ou refusé par tdd-auto) : écrit un test d'acceptation de niveau RUNTIME qui ÉCHOUE (reproduit le symptôme PO sur l'app réellement câblée, DI réelle ; jamais bUnit comme preuve car il ne voit pas un render mode manquant), corrige le .razor/le câblage, repasse au vert. (2) Phase IHM finale — une fois les scénarios backend verts, bâtit les vues restantes appelant les use cases (aucune règle métier dans l'UI). Vérifie build + suite, commite, rend la main. Mode orchestré, round-trip de questions puis exécution. Dispatché par /3-tdd-implement."
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
@@ -131,7 +131,9 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   **La non-régression recompile TOUS les projets : `dotnet test` SANS `--no-build` ni filtre
   projet partiel.** Un `--no-build` / filtre laisse un projet de prod non recompilé
   éventuellement cassé → le **vert ment** (cf. Sc.1 s07 : front Web non compilable masqué par
-  `dotnet test --no-build`).
+  `dotnet test --no-build`). **Outil (économie de tokens)** :
+  `pwsh -NoProfile -File .claude/skills/tdd-implement/scripts/test-count.ps1` → JSON compact
+  `{green,total,passed,failed}` au lieu de la sortie brute.
 - **Balayage runtime après composant partagé** : si le `FIX` a touché un **composant
   partagé** (read model / légende, port commun, énumération de store, type partagé type
   `ConfigurationFoyer`), relance **nommément la suite runtime `Web.Tests` EXISTANTE** (pas

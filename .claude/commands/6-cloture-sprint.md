@@ -29,11 +29,14 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
    `pwsh -NoProfile -File .claude/skills/retro-sprint/scripts/find-retro.ps1`.
    - Si `gateOpen=false` (le sprint clos n'a **pas** de `98-retrospective.md`) →
      **dispatche l'agent `retro-sprint`** avec le dossier du sprint (`docs/sprints/<sujet>/`)
-     et les frictions vécues. Round-trip : l'agent renvoie `{ bilan, actions, questions, … }` ;
-     rends **chaque** `question` via `AskUserQuestion` (la priorisation est **multiSelect** :
-     le PO coche les actions à appliquer), relaie la réponse **brute** via `SendMessage`.
-     Quand le PO a tranché, ordonne à l'agent d'**appliquer** les actions validées et
-     d'écrire `98-retrospective.md`.
+     et les frictions vécues. L'agent renvoie `{ bilan, actions, questions, … }`. **La
+     priorisation des actions passe par le CP** (plus de multiSelect PO systématique) :
+     dispatche `chef-de-projet` avec la liste d'`actions`. Le CP **sélectionne les actions à
+     appliquer** (tweaks de méthode à faible risque) et n'**escalade au PO (G1)** que les
+     changements **structurels/risqués** du pipeline (ex. refonte d'un agent, suppression
+     d'un gate). Relaie la sélection (décision CP ou réponse PO) à l'agent via `SendMessage`,
+     puis ordonne d'**appliquer** les actions retenues et d'écrire `98-retrospective.md`.
+     Chaque action auto-appliquée par le CP est **journalisée** (pilotage a posteriori du PO).
      - **Fallback** : type `retro-sprint` absent du registre → `general-purpose` avec
        « applique le skill `retro-sprint`, section *Mode agent (orchestré)* » + le dossier
        du sprint + les frictions. Pas d'inline.
@@ -71,22 +74,24 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
    suivant s'appuie sur un backlog à jour, pas seulement sur des lignes cochées. (Retour PO
    sprint 04.)
 
-5. **Amorce l'itération suivante.** Propose (via `AskUserQuestion`) d'enchaîner
-   `/2-make-gherkin` sur la **nouvelle version de spec** (`docs/NN-specification.md`, la
-   plus récente) en ciblant le `prochain_sujet` du backlog du sprint clos
-   (`99-sprint<NN>-besoins-fin-itération.md`, `<NN>` = numéro du sprint = préfixe 2 chiffres
-   du dossier, ex. `99-sprint02-besoins-fin-itération.md`). Si le PO valide, invoque `/2-make-gherkin` avec le
-   chemin de la spec + le slug du prochain sujet → un nouveau sprint démarre. (Le gate
-   d'entrée de `/2` revérifie que la rétro du dernier sprint clos a bien tourné.)
+5. **Amorce l'itération suivante — porte G2 (choix du sprint goal).** C'est l'**une des
+   deux seules portes PO** du pipeline (avec G3). Dispatche `chef-de-projet` : il propose
+   **2 sprint goals candidats** (~2h IA, tirés du backlog consolidé) ; appelle
+   `AskUserQuestion` pour que **le PO tranche** (3ᵉ goal injectable). Une fois le goal
+   choisi, **invoque automatiquement `/2-make-gherkin`** sur la **nouvelle version de spec**
+   (`docs/NN-specification.md`, la plus récente) en ciblant ce goal → un nouveau sprint
+   démarre. (Le gate d'entrée de `/2` revérifie que la rétro du dernier sprint clos a bien
+   tourné.) Pas d'autre `AskUserQuestion` ici que ce choix G2.
 
 ## Notes
 
-- **Chef de projet (CP) — hors champ ici.** `/6` n'a pas de boucle de questions d'agent dev à
-  router vers le CP. Ses validations restent **PO par conception** : le **push/PR/merge** sont des
-  **actions sortantes** (gates légitimes, non délégables au CP), et la **priorisation des actions
-  de rétro** (`retro-sprint`, étape 1) est un moment PO. L'**amorce du sprint suivant** (étape 5)
-  est le moment **G2** : le cap revient au PO (le CP peut proposer 2 goals candidats ~2h IA tirés
-  du backlog, le PO tranche, 3ᵉ injectable).
+- **Chef de projet (CP) dans `/6`.** La **priorisation des actions de rétro** (étape 1) passe
+  désormais **par le CP** : il applique les tweaks de méthode à faible risque et n'escalade au
+  PO (G1) que les changements structurels/risqués (journalisés pour pilotage a posteriori).
+  Restent **PO par conception** : le **push/PR/merge** (actions **sortantes**, gates git non
+  délégables au CP) et le **choix du sprint goal** (étape 5, porte **G2** : le CP propose 2 goals
+  ~2h IA tirés du backlog, le PO tranche, 3ᵉ injectable). Avec **G3** (revue de sprint, `/3`),
+  G2 et les confirmations git sont les **seules** sollicitations PO du pipeline.
 - **Jamais de merge ni de push sans validation explicite** — ce sont des actions
   sortantes et (pour `main`) difficilement réversibles.
 - Le script **ne merge jamais** lui-même ; il prépare le matériel de PR. Le merge est
