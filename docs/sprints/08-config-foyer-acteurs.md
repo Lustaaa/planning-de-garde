@@ -174,7 +174,7 @@ Scenario: Renommer avec un nom vide, édition refusée
     (inchangé)
 ```
 
-### Scenario 9 — API distante injoignable : échec clair, édition non appliquée `@erreur`
+### Scenario 9 — API distante injoignable : échec clair, édition non appliquée `@erreur` `@vert`
 
 ```gherkin
 Scenario: API injoignable, l'édition n'est pas appliquée et reste à resoumettre

@@ -22,6 +22,12 @@ le **client d'écriture front** (`ClientCanalEcriture`). Pas de mise en file ni 
   (Alice).
 - **Observable** : message d'échec clair à l'écran ; case du 14/07 et légende restent
   « Alice » ; l'édition reste à resoumettre (aucune file, aucun rejeu automatique).
+- **Statut** : ✅ GREEN (runtime, `@vert`) — `FrontWasmConfigApiInjoignableTempsReelTests`
+  (grille sur API live affichant « Alice » ; écran de config câblé à une API réellement arrêtée —
+  port TCP libéré → vrai `ConnectionRefused` ⇒ `HttpRequestException`, pas un stub 4xx ; message
+  « service injoignable » surfacé, grille inchangée, formulaire à resoumettre). **Zéro code de
+  production** : réutilise la gestion d'échec transport déjà câblée (`catch HttpRequestException`
+  → `PoserSlot.MessageServiceInjoignable`).
 
 ## Tests unitaires backend
 
