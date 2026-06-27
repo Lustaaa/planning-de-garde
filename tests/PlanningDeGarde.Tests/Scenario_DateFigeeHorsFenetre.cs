@@ -50,7 +50,8 @@ public class Scenario_DateFigeeHorsFenetre
         var query = new GrilleAgendaQuery(
             slots,
             new FakePeriodeRepository(),
-            new FakePaletteCouleurs(new Dictionary<string, string>()));
+            new FakePaletteCouleurs(new Dictionary<string, string>()),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
         // When — la grille du 26/06/2026 est projetée
         var grille = query.Projeter(Date_26_06_2026);
@@ -78,7 +79,8 @@ public class Scenario_DateFigeeHorsFenetre
         var query = new GrilleAgendaQuery(
             slots,
             new FakePeriodeRepository(),
-            new FakePaletteCouleurs(new Dictionary<string, string>()));
+            new FakePaletteCouleurs(new Dictionary<string, string>()),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
         var grille = query.Projeter(Date_26_06_2026);
 

@@ -3,6 +3,8 @@
 @inject HttpClient Canal
 @inject SessionPlanning Session
 @inject NavigationManager Nav
+@inject IDateTimeProvider Horloge
+@inject OptionsConnexionHub OptionsHub
 
 <PageTitle>Planning partagé</PageTitle>
 
@@ -42,8 +44,16 @@
             @foreach (var jourCase in semaine.Jours)
             {
                 <div class="grille-jour" data-testid="jour-case"
+                     data-couleur="@jourCase.CouleurResponsable"
                      style="background-color:@Teinte(jourCase.CouleurResponsable);">
                     <div class="grille-jour-date">@jourCase.Date.ToString("dd/MM")</div>
+                    @if (!string.IsNullOrEmpty(jourCase.NomResponsable))
+                    {
+                        @* Lisibilité du nom long (Sc.6) : troncature visuelle (CSS) dans la case, nom
+                           complet accessible au survol (title). La donnée reste intègre (texte complet). *@
+                        <div class="grille-jour-responsable nom-tronque" data-testid="nom-responsable"
+                             title="@jourCase.NomResponsable">@jourCase.NomResponsable</div>
+                    }
                     <div class="grille-jour-slots">
                         @foreach (var slot in jourCase.Slots)
                         {
@@ -60,12 +70,16 @@
     }
 </section>
 
+<Legende Entrees="_grille.Légende" />
+
 <style>
     .grille-agenda { display: flex; flex-direction: column; gap: 4px; }
     .grille-entete, .grille-semaine { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
     .grille-entete-jour { font-weight: 600; text-align: center; color: #555; padding: 2px 0; }
     .grille-jour { min-height: 90px; border: 1px solid #dee2e6; border-radius: 4px; padding: 4px; display: flex; flex-direction: column; gap: 4px; }
     .grille-jour-date { font-size: .8rem; font-weight: 600; color: #333; }
+    .grille-jour-responsable { font-size: .78rem; font-weight: 600; color: #222; }
+    .nom-tronque { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .grille-jour-slots { display: flex; flex-direction: column; gap: 3px; }
     .grille-slot { border-radius: 3px; padding: 2px 4px; font-size: .72rem; color: #fff; display: flex; flex-direction: column; line-height: 1.1; }
     .grille-slot-libelle { font-weight: 600; }

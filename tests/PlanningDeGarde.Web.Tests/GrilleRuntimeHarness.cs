@@ -1,0 +1,77 @@
+using System;
+using System.Linq;
+using System.Net.Http;
+using AngleSharp.Dom;
+using Bunit;
+using Microsoft.AspNetCore.Http.Connections;
+using Microsoft.Extensions.DependencyInjection;
+using PlanningDeGarde.Application;
+using PlanningDeGarde.Domain;
+using PlanningDeGarde.Web;
+using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.State;
+
+namespace PlanningDeGarde.Web.Tests;
+
+/// <summary>
+/// Harnais d'acceptation de NIVEAU RUNTIME des scénarios du sprint 07 : rend la <b>vraie</b> grille de
+/// lecture <see cref="PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
+/// (<see cref="ApiDistanteFactory"/>, store réel, projection <see cref="GrilleAgendaQuery"/>, palette et
+/// référentiel <b>réels</b> du foyer). Le chemin observé n'est jamais doublé : le nom et la légende
+/// rendus à l'écran proviennent du référentiel réel résolu côté API, transitant par le canal de lecture
+/// HTTP réel — rempart anti « vert qui ment » (un bUnit à doublure de transport ne le prouverait pas).
+/// </summary>
+internal static class GrilleRuntimeHarness
+{
+    // Lundi 29/06/2026 : date de référence des scénarios (début de la fenêtre de 5 semaines).
+    public static readonly DateTime Lundi_29_06_2026 = new(2026, 6, 29);
+
+    /// <summary>Client HTTP du front pointé sur le transport réel de l'API distante in-test.</summary>
+    public static HttpClient ClientVers(ApiDistanteFactory api)
+        => new(api.Server.CreateHandler()) { BaseAddress = api.Server.BaseAddress };
+
+    /// <summary>
+    /// Sème une période dans le store réel de l'API distante (Given d'un scénario de lecture) — la
+    /// projection réelle la relira et le référentiel réel résoudra le nom du responsable.
+    /// </summary>
+    public static void SemerPeriode(ApiDistanteFactory api, string responsableId, DateTime debut, DateTime fin)
+        => api.Services.GetRequiredService<IPeriodeRepository>()
+            .Enregistrer(PeriodeDeGarde.Affecter(responsableId, debut, fin).Valeur!);
+
+    /// <summary>
+    /// Rend la grille réelle câblée à l'API distante, à la date de référence injectée. Le hub SignalR
+    /// est redirigé vers le TestServer de l'API (long polling) pour que la diffusion temps réel soit
+    /// réellement observable au runtime (Sc.4) — pour les scénarios de lecture pure, il se connecte
+    /// proprement sans interférer.
+    /// </summary>
+    public static IRenderedComponent<PlanningPartage> RendreGrille(
+        Bunit.TestContext ctx, ApiDistanteFactory api, DateTime aujourdhui)
+    {
+        ctx.Services.AddSingleton(ClientVers(api));
+        ctx.Services.AddSingleton(new SessionPlanning());
+        ctx.Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(aujourdhui));
+        ctx.Services.AddSingleton(new OptionsConnexionHub
+        {
+            Configurer = options =>
+            {
+                options.HttpMessageHandlerFactory = _ => api.Server.CreateHandler();
+                options.Transports = HttpTransportType.LongPolling;
+            },
+        });
+
+        var grille = ctx.RenderComponent<PlanningPartage>();
+
+        // Le chargement de la grille (GET HTTP vers l'API distante) est asynchrone : on attend que la
+        // fenêtre soit réellement projetée (35 cases-jour rendues) avant d'observer nom/légende.
+        grille.WaitForState(
+            () => grille.FindAll("[data-testid='jour-case']").Count == 35,
+            TimeSpan.FromSeconds(10));
+
+        return grille;
+    }
+
+    /// <summary>La case-jour rendue dont l'en-tête de date affiche <paramref name="jjMM"/> (« dd/MM »).</summary>
+    public static IElement CaseDuJour(IRenderedComponent<PlanningPartage> grille, string jjMM)
+        => grille.FindAll("[data-testid='jour-case']")
+            .Single(c => c.QuerySelector(".grille-jour-date")!.TextContent.Trim() == jjMM);
+}

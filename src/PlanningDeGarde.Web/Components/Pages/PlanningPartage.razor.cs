@@ -21,7 +21,7 @@ public partial class PlanningPartage
     private static readonly string[] JoursDeLaSemaine =
         { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
 
-    private GrilleAgenda _grille = new(Array.Empty<JourCase>(), Array.Empty<SemaineLigne>());
+    private GrilleAgenda _grille = new(Array.Empty<JourCase>(), Array.Empty<SemaineLigne>(), Array.Empty<EntreeLegende>());
 
     private HubConnection? _hub;
 
@@ -43,9 +43,11 @@ public partial class PlanningPartage
         try
         {
             // Hub SignalR de l'API DISTANTE (même hôte que le canal d'écriture/lecture : Canal.BaseAddress).
+            // OptionsHub.Configurer est neutre en WASM réel (WebSocket navigateur) ; un hôte de test le
+            // surcharge pour rediriger la connexion vers son TestServer en mémoire (acceptation runtime Sc.4).
             var urlHub = new Uri(Canal.BaseAddress!, "hubs/planning");
             _hub = new HubConnectionBuilder()
-                .WithUrl(urlHub)
+                .WithUrl(urlHub, OptionsHub.Configurer)
                 .WithAutomaticReconnect()
                 .Build();
 
@@ -64,11 +66,12 @@ public partial class PlanningPartage
         }
     }
 
-    // Date de référence = aujourd'hui (le canal de lecture distant prend une date en segments pour le
-    // déterminisme ; à l'exécution réelle on lui passe la date courante du navigateur).
+    // Date de référence = aujourd'hui, lue via le port d'horloge injecté (jamais DateTime.Now en dur :
+    // déterminisme en test, symétrie avec Projeter(dateReference) côté lecture). Le canal de lecture
+    // distant prend cette date en segments yyyy/MM/dd.
     private async Task ChargerAsync()
     {
-        var aujourdHui = DateOnly.FromDateTime(DateTime.Now);
+        var aujourdHui = Horloge.Aujourdhui;
         try
         {
             var grille = await Canal.GetFromJsonAsync<GrilleAgenda>(

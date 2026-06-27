@@ -1,0 +1,46 @@
+@* Composant Légende du planning : une entrée nom↔couleur par responsable présent dans la fenêtre
+   affichée, dérivée du read model GrilleAgenda.Légende (déjà dédoublonné côté projection). Lecture
+   seule, aucune règle métier. *@
+
+@* Masquage (Sc.3) : légende vide ⇒ aucun bloc rendu (absent du DOM, pas un conteneur vide) —
+   une fenêtre sans responsable ne doit pas suggérer une légende. *@
+@if (Entrees is { Count: > 0 })
+{
+    <section class="legende" data-testid="legende">
+        <h2 class="legende-titre">Légende</h2>
+        <ul class="legende-liste">
+            @foreach (var entree in Entrees)
+            {
+                <li class="legende-entree" data-testid="legende-entree" data-couleur="@entree.Couleur">
+                    <span class="legende-pastille" style="background-color:@CouleurPastille(entree.Couleur);"></span>
+                    <span class="legende-nom">@entree.Nom</span>
+                </li>
+            }
+        </ul>
+    </section>
+}
+
+@code {
+    /// <summary>Les entrées de légende dérivées de la fenêtre affichée (déjà dédoublonnées).</summary>
+    [Parameter]
+    public IReadOnlyList<EntreeLegende> Entrees { get; set; } = Array.Empty<EntreeLegende>();
+
+    // Couleur pleine de la pastille (mêmes teintes que les créneaux côté grille).
+    private static string CouleurPastille(string couleur) => couleur switch
+    {
+        "bleu" => "#2563eb",
+        "orange" => "#ea580c",
+        "vert" => "#16a34a",
+        "gris" => "#9ca3af",
+        _ => "#9ca3af",
+    };
+}
+
+<style>
+    .legende { margin-top: 12px; border: 1px solid #dee2e6; border-radius: 4px; padding: 8px 12px; }
+    .legende-titre { font-size: .9rem; font-weight: 600; color: #555; margin: 0 0 6px; }
+    .legende-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; }
+    .legende-entree { display: flex; align-items: center; gap: 6px; font-size: .85rem; }
+    .legende-pastille { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none; }
+    .legende-nom { color: #333; }
+</style>

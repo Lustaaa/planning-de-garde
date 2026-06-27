@@ -64,7 +64,8 @@ public class Scenario_CouleurActeurSurCreneau
         => new(
             SlotsAvecNounouLe_25_06_de_17h_a_19h(),
             PeriodeConfiantLeaAParentALe_25_06(),
-            PaletteParentABleuNounouVert());
+            PaletteParentABleuNounouVert(),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
     private static SlotCase CreneauNounouDuJeudi(GrilleAgenda grille)
         => grille.Jours.Single(j => j.Date == Jeudi_25_06_2026).Slots.Single();

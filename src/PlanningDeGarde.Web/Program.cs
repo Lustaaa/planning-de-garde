@@ -29,7 +29,12 @@ builder.Services.AddScoped<SessionPlanning>();
 
 // Horloge « du jour » : les formulaires d'écriture pré-remplissent leur date depuis ce port
 // (jamais une date figée ni DateTime.Today en dur dans la vue). L'implémentation système lit
-// l'horloge réelle du navigateur ; le double de test la fige pour le déterminisme.
+// l'horloge réelle du navigateur ; le double de test la fige pour le déterminisme. La grille de
+// lecture s'en sert aussi comme date de référence de la fenêtre projetée (jamais DateTime.Now).
 builder.Services.AddSingleton<IDateTimeProvider, HorlogeNavigateur>();
+
+// Câblage de la connexion au hub SignalR de lecture. Neutre en WASM réel (le navigateur négocie
+// en WebSocket vers l'API distante) ; surchargeable par un hôte de test pour pointer son TestServer.
+builder.Services.AddSingleton(new OptionsConnexionHub());
 
 await builder.Build().RunAsync();

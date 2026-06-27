@@ -1,15 +1,21 @@
+/* Thème métier « garde des enfants » (palier 3, règle 20) : identité douce et accueillante —
+   fond crème chaud, accent vert sauge apaisant, cartes arrondies. Choisi pour rester DISTINCT des
+   couleurs de responsabilité (parent-a → bleu, parent-b → orange) : l'accent n'emprunte ni le bleu
+   ni l'orange, et les teintes de responsabilité (appliquées en style inline sur les cases) priment.
+   Ergonomie de surface : aucune règle métier, aucun observable — purement CSS. */
 :root {
-    --pdg-accent: #4f46e5;
-    --pdg-accent-dark: #4338ca;
-    --pdg-bg: #f4f5fb;
-    --pdg-card: #ffffff;
-    --pdg-border: #e6e8f0;
-    --pdg-ink: #1f2333;
-    --pdg-muted: #6b7280;
+    --pdg-accent: #2f9e86;        /* vert sauge accueillant */
+    --pdg-accent-dark: #257e6b;
+    --pdg-accent-soft: #e6f4ef;   /* fond pâle des pastilles/badges */
+    --pdg-bg: #fbf6ee;            /* crème chaud */
+    --pdg-card: #fffdf9;          /* blanc chaud */
+    --pdg-border: #ece1d2;        /* sable doux */
+    --pdg-ink: #3c352b;           /* brun-charbon lisible */
+    --pdg-muted: #8c8273;
 }
 
 html, body {
-    font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI Rounded', 'SF Pro Rounded', system-ui, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
     background-color: var(--pdg-bg);
     color: var(--pdg-ink);
 }
@@ -77,12 +83,29 @@ a, .btn-link {
 /* Responsable « maintenant » mis en valeur */
 [data-testid="responsable-actuel"] strong {
     display: inline-block;
-    background: #eef2ff;
+    background: var(--pdg-accent-soft);
     color: var(--pdg-accent-dark);
     padding: 0.15rem 0.6rem;
     border-radius: 999px;
     font-weight: 600;
 }
+
+/* ---- Habillage du domaine (grille agenda + légende) ----
+   Sélecteurs préfixés .content pour primer sur les styles de base du composant SANS le modifier ;
+   les teintes de responsabilité restent en style inline (priorité maximale) → bleu/orange intacts. */
+.content .grille-entete-jour { color: var(--pdg-muted); text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; }
+.content .grille-jour { border-color: var(--pdg-border); border-radius: 12px; }
+.content .grille-jour-date { color: var(--pdg-ink); }
+.content .legende { background: var(--pdg-card); border-color: var(--pdg-border); border-radius: 12px; }
+.content .legende-titre { color: var(--pdg-muted); text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; }
+
+/* En-tête de domaine de la barre latérale : marque + sous-titre « garde des enfants ». */
+.pdg-brand { display: flex; flex-direction: column; line-height: 1.1; }
+.pdg-brand-titre { font-weight: 700; letter-spacing: -0.01em; }
+.pdg-brand-sous-titre { font-size: 0.72rem; font-weight: 500; opacity: 0.85; }
+
+/* Bandeau de domaine de la barre supérieure. */
+.pdg-domaine { font-weight: 600; color: var(--pdg-accent-dark); }
 
 /* Alertes plus douces */
 .content .alert {

@@ -24,7 +24,8 @@ public class Scenario_GrilleStructure5Semaines
 
     private static GrilleAgendaQuery QueryVide()
         => new(new FakeSlotRepository(), new FakePeriodeRepository(),
-            new FakePaletteCouleurs(new Dictionary<string, string>()));
+            new FakePaletteCouleurs(new Dictionary<string, string>()),
+            new FakeReferentielResponsables(new Dictionary<string, string>()));
 
     // ---------- Test d'acceptation (boucle externe, BDD) ----------
 
