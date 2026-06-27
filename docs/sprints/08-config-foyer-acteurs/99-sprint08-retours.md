@@ -95,6 +95,28 @@
   BACKLOG palier 4 (ce sujet) vs palier 5 (cycle) ; besoins /4-retours s07 (plus petite
   tranche cohérente, G2 PO).
 
+## 2026-06-27 — Consolidation v09 : collision règle 29 (durabilité en queue) vs Mongo borné config foyer
+
+- **Question (spec-consolidation)** : le PO a acté en G2 (/4-retours) que Mongo (persistance
+  réelle, palier 13) est tiré DEVANT l'usage mais BORNÉ à la config foyer. Or la règle 29
+  (durabilité = persistance réelle séquencée derrière l'usage) + le corollaire v08 « éditable
+  maintenant ≠ durable » disent l'inverse. Comment l'écrire dans la spec v09 sans contradiction ?
+- **Décision (CP, sans escalade)** : option 1 — **exception bornée écrite noir sur blanc**.
+  Conserver la règle 29 mais l'amender d'une **clause d'exception** : la **config foyer**
+  devient le **premier client de la persistance durable**, tirée devant l'usage car la survie
+  au redémarrage est un **observable d'usage direct**. Reformuler le corollaire en « **durable
+  ICI (config foyer), volatile encore ailleurs** » : la volatilité du palier 4 s'éteint pour la
+  config foyer uniquement. Écrire la **borne anti-cliquet** : slots/périodes/transferts restent
+  en queue (palier 13). Palier 4 figé livré ; nouveau palier « Config foyer persistante » inséré
+  devant la récurrence.
+- **Rationale** : résolution **déterministe** de représentation — la **valeur** est déjà
+  tranchée par le PO (G2 acté au /4). Ce n'est pas un renversement de l'arbitre permanent
+  (option 2, rejetée : effet de cliquet) ni un statu quo qui ignore la décision PO (option 3,
+  rejetée). L'exception bornée est cohérente avec le BACKLOG (config foyer = « premier client de
+  la config durable », palier 13↔8). Aucun nouvel arbitrage métier.
+- **Sources** : spec v08 règle 29 + corollaire « éditable ≠ durable » ; décision PO G2 (/4-retours,
+  Mongo borné config foyer) ; BACKLOG palier 13↔8.
+
 ## 2026-06-27 — Concurrence : où vit l'édition volatile et conflit sur le même acteur
 
 - **Question (make-gherkin)** : où vit le store d'édition volatile, et que se passe-t-il quand
