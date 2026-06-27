@@ -14,6 +14,12 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de pose de slot émise via le canal requête/réponse.</summary>
     public sealed record PoserSlotRequete(string EnfantId, string LieuId, DateTime Debut, DateTime Fin);
 
+    /// <summary>Corps de la réponse de succès de la pose de slot : porte l'<b>avertissement de
+    /// chevauchement</b> (règle 16, accepté + averti) comme attribut de l'outcome de la commande
+    /// (CQRS — distinct de la diffusion SignalR et de la lecture <c>GrilleAgendaQuery</c>). L'avertissement
+    /// provient du read model EXISTANT <c>JourneeEnfantQuery</c> (vert s01) : aucune règle ni recalcul neuf.</summary>
+    public sealed record PoserSlotReponse(bool Chevauchement);
+
     /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
     public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
 
@@ -37,15 +43,20 @@ public static class CanalEcriture
 
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
-        routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler) =>
+        routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
         {
             var resultat = handler.Handle(new PoserSlotCommand(
                 requete.EnfantId, requete.LieuId, requete.Debut, requete.Fin));
 
-            // Le canal propage l'issue du handler : succès acquitté, refus métier renvoyé avec son motif.
-            return resultat.EstSucces
-                ? Results.Ok()
-                : Results.BadRequest(resultat.Motif);
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            // Succès acquitté. La pose chevauchante est ACCEPTÉE (règle 16) ; on porte l'avertissement
+            // de chevauchement dans l'outcome de la commande, lu depuis le read model EXISTANT
+            // JourneeEnfantQuery (aucune règle ni recalcul neuf, aucun nouvel endpoint). CQRS préservé :
+            // c'est un attribut de la réponse du canal requête/réponse, pas la diffusion ni la projection.
+            var chevauchement = journee.Chevauchements(requete.EnfantId, requete.Debut).Count > 0;
+            return Results.Ok(new PoserSlotReponse(chevauchement));
         });
 
         routes.MapPost("/api/canal/affecter-periode", (AffecterPeriodeRequete requete, AffecterPeriodeHandler handler) =>

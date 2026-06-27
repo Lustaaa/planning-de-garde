@@ -24,6 +24,16 @@
     <div class="alert alert-info py-2">Vous consultez en lecture seule. Les actions d'édition sont désactivées.</div>
 }
 
+@* Avertissement de chevauchement « à part » (Sc.7) : la pose chevauchante est ACCEPTÉE (règle 16),
+   l'avertissement s'affiche dans un bandeau hors de la dialog, NON bloquant (refermable). *@
+@if (_avertissementChevauchement)
+{
+    <div class="alert alert-warning alert-dismissible py-2" data-testid="avertissement-chevauchement" role="alert">
+        Chevauchement signalé : le créneau posé en recouvre un autre le même jour (accepté, à vérifier).
+        <button type="button" class="btn-close" aria-label="Fermer" @onclick="FermerAvertissement"></button>
+    </div>
+}
+
 <div class="mb-3 d-flex gap-2">
     <a class="btn btn-primary @Desactive" href="planning/poser-slot">Poser un slot</a>
     <a class="btn btn-primary @Desactive" href="planning/affecter-periode">Affecter une période</a>
@@ -92,7 +102,7 @@
 @if (_dateDialogPoserSlot is { } datePoserSlot)
 {
     <PoserSlotDialog DateContexte="datePoserSlot"
-                     OnValide="FermerDialogEtRecharger"
+                     OnValide="FermerPoserSlotEtRecharger"
                      OnAnnule="FermerDialog" />
 }
 

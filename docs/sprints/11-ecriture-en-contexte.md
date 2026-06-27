@@ -175,7 +175,7 @@ Scenario: En consultation seule, cliquer une case n'ouvre aucune dialog d'écrit
   Et la grille reste en lecture seule
 ```
 
-### Scenario 7 — Slot chevauchant accepté avec avertissement non bloquant `@limite`
+### Scenario 7 — Slot chevauchant accepté avec avertissement non bloquant `@limite` `@vert`
 
 > Caractérisation (filet) : la **règle 16** (accepté + averti) est déjà verte depuis le
 > s01 ; seul l'**habillage IHM** est neuf (fermeture de la dialog + avertissement à part,

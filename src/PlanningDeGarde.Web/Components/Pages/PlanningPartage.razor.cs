@@ -32,6 +32,9 @@ public partial class PlanningPartage
     // Date de contexte de chaque dialog ouverte depuis le menu (null = dialog fermée) :
     private DateOnly? _dateDialogPoserSlot;
     private DateOnly? _dateDialogAffecterPeriode;
+    // Avertissement de chevauchement « à part » (Sc.7, règle 16) : pose acceptée mais signalée, bandeau
+    // NON bloquant et refermable. Drapeau porté par l'outcome de la commande (jamais recalculé ici).
+    private bool _avertissementChevauchement;
 
     private string Desactive => Session.EstParent ? string.Empty : "disabled";
 
@@ -114,6 +117,7 @@ public partial class PlanningPartage
     private void OuvrirPoserSlot(DateOnly date)
     {
         _dateMenu = null;
+        _avertissementChevauchement = false; // un avertissement précédent ne survit pas à une nouvelle saisie
         _dateDialogPoserSlot = date;
     }
 
@@ -132,6 +136,18 @@ public partial class PlanningPartage
         FermerDialog();
         await ChargerAsync();
     }
+
+    /// <summary>Issue succès de la pose (Sc.7) : ferme la dialog, relit la grille, et lève le bandeau
+    /// d'avertissement « à part » <b>si</b> l'outcome de la commande a signalé un chevauchement (règle 16,
+    /// accepté + averti). Le drapeau vient de l'API (read model existant) — jamais recalculé ici.</summary>
+    private async Task FermerPoserSlotEtRecharger(bool chevauchement)
+    {
+        await FermerDialogEtRecharger();
+        _avertissementChevauchement = chevauchement;
+    }
+
+    /// <summary>Referme le bandeau d'avertissement de chevauchement (non bloquant).</summary>
+    private void FermerAvertissement() => _avertissementChevauchement = false;
 
     /// <summary>Ferme toute dialog sans aucune écriture (annulation / succès) : la grille reste intacte.</summary>
     private void FermerDialog()

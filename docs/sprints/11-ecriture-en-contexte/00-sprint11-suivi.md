@@ -72,18 +72,24 @@
 | 4 | [Échec clair : la dialog reste ouverte et conserve la saisie](04-echec-clair-dialog-reste-ouverte.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation) | 2/3 | ✅ GREEN |
 | 5 | [Annuler la dialog ne modifie pas le planning](05-annuler-dialog-sans-ecrire.md) | `@limite 🖥️ IHM` | ✅ GREEN (caractérisation) | 1/2 | ✅ GREEN |
 | 6 | [Un Invité ne peut pas ouvrir la dialog depuis une case](06-invite-ne-peut-pas-ouvrir-dialog.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation) | 1/2 | ✅ GREEN |
-| 7 | [Slot chevauchant accepté avec avertissement non bloquant](07-chevauchement-accepte-averti.md) | `@limite 🖥️ IHM` | ⏳ Pending | 0/2 | ⏳ Pending |
+| 7 | [Slot chevauchant accepté avec avertissement non bloquant](07-chevauchement-accepte-averti.md) | `@limite 🖥️ IHM` | ✅ GREEN (RED→GREEN) | 2/2 | ✅ GREEN |
 
-**Avancement** : **6/7** scénarios au vert — Sc.1 (poser un slot) + Sc.2 (affecter une période)
+**Avancement** : **7/7** scénarios au vert — Sc.1 (poser un slot) + Sc.2 (affecter une période)
 livrés depuis une case ; Sc.3 (ancrage date, règle 17), Sc.4 (échec clair, règle 28), Sc.5
 (annulation sans écriture, règle 14) et Sc.6 (gating Invité, règle 9) actés **caractérisations
 early-green** (design acquis aux fix Sc.1/Sc.2, filets anti-régression conservés — dont API injoignable
-sur transport réellement coupé, spy de canal à 0 écriture, contrôle positif Parent vs négatif Invité).
-Décision CP appliquée : **un menu d'actions au clic-case** (deux entrées « Poser un slot » / « Affecter
-une période »), mutualisant le gating Invité. **Reste Sc.7** (avertissement de chevauchement à part) =
-seul vrai cycle RED→GREEN — voir escalade backend ci-dessous.
+sur transport réellement coupé, spy de canal à 0 écriture, contrôle positif Parent vs négatif Invité) ;
+Sc.7 (chevauchement accepté + averti, règle 16) = **vrai cycle RED→GREEN** (bandeau d'avertissement à
+part, non bloquant). Décision CP appliquée : **un menu d'actions au clic-case** (deux entrées « Poser un
+slot » / « Affecter une période »), mutualisant le gating Invité.
 
-**Acceptation runtime IHM** : **6/7** (Sc.1 ✅, Sc.2 ✅, Sc.3–6 ✅ caractérisations).
+**Exception de scope bornée (Sc.7, décision CP)** : le canal `POST /api/canal/poser-slot` renvoie dans
+son corps de succès `PoserSlotReponse(bool Chevauchement)`, lu depuis le read model **existant**
+`JourneeEnfantQuery` (règle 16, verte s01). **Aucune règle/handler/recalcul neuf**, **`GrilleAgendaQuery`
+et Domain intacts**, pas de nouvel endpoint. Seule surface modifiée hors Web : le DTO de réponse du
+canal poser-slot (plomberie d'adaptateur surfaçant un acquis). CQRS préservé.
+
+**Acceptation runtime IHM** : **7/7** (Sc.1 ✅, Sc.2 ✅, Sc.3–6 ✅ caractérisations, Sc.7 ✅ RED→GREEN).
 
 **Total** : 7 scénarios — **7 IHM/runtime** (`ihm-builder`, acceptation **E2E/runtime** sur
 front WASM réel + API distante + store réel + SignalR), **0 backend** (aucun handler ni

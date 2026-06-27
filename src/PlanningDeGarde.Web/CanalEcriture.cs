@@ -11,6 +11,12 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de pose de slot émise via le canal requête/réponse.</summary>
     public sealed record PoserSlotRequete(string EnfantId, string LieuId, DateTime Debut, DateTime Fin);
 
+    /// <summary>Corps de la réponse de succès de la pose : l'avertissement de chevauchement (règle 16,
+    /// accepté + averti) porté par l'outcome de la commande. Déserialisé par la dialog pour afficher un
+    /// bandeau à part, non bloquant (Sc.7). Aucune logique métier côté front : le front ne fait que lire
+    /// ce drapeau résolu côté API (read model existant), il ne recalcule jamais le chevauchement.</summary>
+    public sealed record PoserSlotReponse(bool Chevauchement);
+
     /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
     public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
 

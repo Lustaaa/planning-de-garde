@@ -38,21 +38,35 @@ public sealed class FrontWasmInviteNePeutPasOuvrirDialogTests : TestContext
             TimeSpan.FromSeconds(10));
         Assert.Contains("grille-jour-cliquable",
             GrilleRuntimeHarness.CaseDuJour(grille, "16/06").ClassName);
-        grille.Find("[data-testid='menu-actions-case']").Click(); // referme le menu (clic hors panneau)
-        Assert.Empty(grille.FindAll("[data-testid='menu-actions-case']"));
+        // Referme le menu (clic hors panneau) — idempotent sous WaitForAssertion : robuste au clic perdu
+        // par re-render async du hub sous charge parallèle.
+        grille.WaitForAssertion(
+            () =>
+            {
+                if (grille.FindAll("[data-testid='menu-actions-case']").Count > 0)
+                    grille.Find("[data-testid='menu-actions-case']").Click();
+                Assert.Empty(grille.FindAll("[data-testid='menu-actions-case']"));
+            },
+            TimeSpan.FromSeconds(10));
 
-        // When — l'utilisateur bascule en « Invité (consultation seule) » via le sélecteur de rôle réel,
-        // puis clique la case du 16/06.
+        // When — l'utilisateur bascule en « Invité (consultation seule) » via le sélecteur de rôle réel.
         grille.Find("select.form-select").Change("Invite");
-        GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
 
-        // Then — aucune dialog d'écriture ni menu ne s'ouvre (gating règle 9), le déclencheur de la case
-        // est désactivé (plus de classe cliquable), et la consultation seule est signalée.
-        Assert.Empty(grille.FindAll("[data-testid='menu-actions-case']"));
-        Assert.Empty(grille.FindAll("[data-testid='dialog-poser-slot']"));
-        Assert.Empty(grille.FindAll("[data-testid='dialog-affecter-periode']"));
-        Assert.DoesNotContain("grille-jour-cliquable",
-            GrilleRuntimeHarness.CaseDuJour(grille, "16/06").ClassName);
+        // Then — en Invité, cliquer la case n'ouvre NI menu NI dialog (gating règle 9), le déclencheur de
+        // la case est désactivé (plus de classe cliquable). Sous WaitForAssertion pour laisser le
+        // re-render du changement de rôle s'appliquer ; le clic répété reste sans effet (OuvrirMenu sort
+        // tôt en consultation seule).
+        grille.WaitForAssertion(
+            () =>
+            {
+                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
+                Assert.Empty(grille.FindAll("[data-testid='menu-actions-case']"));
+                Assert.Empty(grille.FindAll("[data-testid='dialog-poser-slot']"));
+                Assert.Empty(grille.FindAll("[data-testid='dialog-affecter-periode']"));
+                Assert.DoesNotContain("grille-jour-cliquable",
+                    GrilleRuntimeHarness.CaseDuJour(grille, "16/06").ClassName);
+            },
+            TimeSpan.FromSeconds(10));
         Assert.Contains("lecture seule", grille.Markup, StringComparison.OrdinalIgnoreCase);
     }
 }

@@ -38,9 +38,11 @@ public partial class PoserSlotDialog
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
-    /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et relit la grille.</summary>
+    /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et relit la grille.
+    /// L'argument <c>bool</c> = un <b>chevauchement</b> a été signalé par l'outcome de la commande (règle 16,
+    /// accepté + averti) → le parent affiche un bandeau à part, non bloquant (Sc.7).</summary>
     [Parameter]
-    public EventCallback OnValide { get; set; }
+    public EventCallback<bool> OnValide { get; set; }
 
     /// <summary>Notifié sur annulation : le parent ferme la dialog sans aucune écriture.</summary>
     [Parameter]
@@ -71,7 +73,12 @@ public partial class PoserSlotDialog
         }
 
         if (reponse.IsSuccessStatusCode)
-            await OnValide.InvokeAsync();
+        {
+            // L'outcome de la commande porte l'avertissement de chevauchement (résolu côté API depuis le
+            // read model existant) : le front ne fait que le LIRE, jamais le recalculer.
+            var corps = await reponse.Content.ReadFromJsonAsync<PoserSlotReponse>();
+            await OnValide.InvokeAsync(corps?.Chevauchement ?? false);
+        }
         else
             _motifEchec = await reponse.Content.ReadAsStringAsync();
     }
