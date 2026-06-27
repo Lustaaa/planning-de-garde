@@ -8,7 +8,7 @@
     <ProjectReference Include="..\PlanningDeGarde.Application\PlanningDeGarde.Application.csproj" />
     <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.InMemory\PlanningDeGarde.AdapterDroite.InMemory.csproj" />
     <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.Mongo\PlanningDeGarde.AdapterDroite.Mongo.csproj" />
-    <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.SignalR\PlanningDeGarde.AdapterDroite.SignalR.csproj" />
+    <ProjectReference Include="..\PlanningDeGarde.SignalR\PlanningDeGarde.SignalR.csproj" />
   </ItemGroup>
 
   <ItemGroup>
