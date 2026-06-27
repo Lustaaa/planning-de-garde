@@ -11,4 +11,8 @@ public interface IEditeurConfigurationFoyer
 {
     /// <summary>Affecte un nouveau nom d'affichage à l'acteur identifié de façon stable.</summary>
     void Renommer(string acteurId, string nouveauNom);
+
+    /// <summary>Affecte une nouvelle couleur à l'acteur identifié de façon stable (surface
+    /// distincte du nom — recolorier ne touche jamais le nom).</summary>
+    void Recolorier(string acteurId, string nouvelleCouleur);
 }

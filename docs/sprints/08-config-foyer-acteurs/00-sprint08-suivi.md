@@ -59,7 +59,7 @@
 | # | Scénario | Tag | Acceptation (runtime IHM) | Tests backend | Statut |
 |---|----------|-----|---------------------------|---------------|--------|
 | 1 | [Renommer un acteur : la case et la légende suivent](01-renommer-acteur-case-et-legende-suivent.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ✅ GREEN (runtime) | 3/3 | ✅ GREEN — backend (3/3) + runtime IHM `@vert` |
-| 2 | [Recolorier un acteur : la case et la légende changent de couleur](02-recolorier-acteur-case-et-legende.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 0/3 | ⏳ Pending |
+| 2 | [Recolorier un acteur : la case et la légende changent de couleur](02-recolorier-acteur-case-et-legende.md) | `@nominal` 🖥️ IHM · backend `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 3/3 | 🟡 backend GREEN (3/3) · runtime IHM ⏳ (ihm-builder) |
 | 3 | [Renommer vers un nom long : troncature, survol, légende complète](03-nom-long-troncature-survol.md) | `@limite` 🖥️ IHM · driver runtime `ihm-builder` (backend néant) | ⏳ Pending | 0/0 | ⏳ Pending |
 | 4 | [Collision de couleur : distingués par le nom](04-collision-couleur-distingues-par-nom.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 5 | [Éditer un acteur hors set : nom suivi, teinte neutre conservée](05-acteur-hors-set-neutre-conservee.md) | `@limite` 🖥️ IHM · caract. `tdd-auto` + runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |

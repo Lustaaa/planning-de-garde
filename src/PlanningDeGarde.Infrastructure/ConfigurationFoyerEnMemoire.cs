@@ -12,13 +12,15 @@ namespace PlanningDeGarde.Infrastructure;
 /// Remplaçant éditable du dictionnaire <c>static readonly</c> lu par
 /// <see cref="FoyerReferentielResponsables"/> — la résolution reste sur l'identifiant stable.
 /// </summary>
-public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEditeurConfigurationFoyer
+public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEditeurConfigurationFoyer, IPaletteCouleurs
 {
     private readonly Dictionary<string, string> _noms;
+    private readonly Dictionary<string, string> _couleurs;
 
     public ConfigurationFoyerEnMemoire()
     {
         _noms = new Dictionary<string, string>(Foyer.NomsParResponsable);
+        _couleurs = new Dictionary<string, string>(Foyer.CouleursParActeur);
     }
 
     public string NomDe(string responsableId)
@@ -26,4 +28,12 @@ public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEdi
 
     public void Renommer(string acteurId, string nouveauNom)
         => _noms[acteurId] = nouveauNom; // dernière écriture gagne (écrase, sans version)
+
+    public string CouleurNeutre => Foyer.CouleurNeutre;
+
+    public string CouleurDe(string acteurId)
+        => _couleurs.TryGetValue(acteurId, out var couleur) ? couleur : Foyer.CouleurNeutre;
+
+    public void Recolorier(string acteurId, string nouvelleCouleur)
+        => _couleurs[acteurId] = nouvelleCouleur; // dernière écriture gagne (surface distincte du nom)
 }
