@@ -33,13 +33,17 @@ thread principal, qui les pose et te rend les réponses brutes via `SendMessage`
 **Phase rétro** — renvoie UNIQUEMENT le JSON :
 `{ bilan: { bien:[…], ameliorer:[{friction, preuve}] }, actions:[{id, cible, edition, raison}],
 questions:[{question, header, multiSelect:true, options:[{label, description}]}], synthese:null, done:false }`.
-`bilan` + `actions` remplis au 1er tour. La question de priorisation est **multiSelect**
-(le PO coche les actions à appliquer). Quand le PO a tranché : `done:true`, `questions:[]`,
+`bilan` + `actions` remplis au 1er tour. **La priorisation est désormais tranchée par le
+chef de projet (CP)**, pas par un multiSelect PO systématique : le thread principal
+transmet ta liste d'`actions` au CP, qui sélectionne celles à appliquer (tweaks de méthode
+à faible risque) et n'escalade au PO (G1) que les changements **structurels/risqués**
+(refonte d'agent, suppression de gate). Tu peux **quand même** fournir une `questions`
+multiSelect (une action = une option) : le thread ne s'en sert **que** si le CP escalade au
+PO. Quand la sélection revient (CP ou PO) : `done:true`, `questions:[]`,
 `synthese = { appliquees:[ids], reportees:[ids], ecartees:[ids] }`.
 
-> ⚠️ `AskUserQuestion` plafonne à **4 options** : si tu proposes plus de 4 actions, le
-> thread principal devra grouper/scinder le multiSelect — formule des `options` autonomes
-> (une action = une option) pour faciliter ce regroupement.
+> ⚠️ Si le CP escalade et que `AskUserQuestion` est utilisé, il plafonne à **4 options** :
+> formule des `options` autonomes (une action = une option) pour faciliter le regroupement.
 
 **Phase application** — quand le thread principal renvoie l'ordre d'appliquer (liste des
 actions validées + chemin `98-retrospective.md`) : **édite les fichiers cibles retenus**,
@@ -51,8 +55,8 @@ validées. Aucun texte hors du JSON dans chaque phase.
 
 - **Rétro méthode, pas produit** : si une action parle de l'app (features, écrans), tu as
   dérivé vers `/4-retours` — recentre sur agents/skills/commands.
-- **Pas d'auto-application non validée** : n'édite un fichier du pipeline qu'après l'aval
-  explicite du PO relayé par le thread principal.
+- **Pas d'auto-application non validée** : n'édite un fichier du pipeline qu'après la
+  sélection relayée par le thread principal (décision du CP, ou aval PO si le CP a escaladé).
 - **Pas de complaisance** : il y a toujours une friction (un fallback, un format dévié, une
   question reposée, un early-green non anticipé).
 - Compte rendu : `docs/sprints/<sujet>/98-retrospective.md` (préfixe `98`, juste avant le

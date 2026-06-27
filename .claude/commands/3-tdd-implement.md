@@ -29,23 +29,26 @@ tu suis l'avancement dans le tableau de bord** `docs/sprints/<sujet>/00-sprint<N
 > - **Fallback** : type `chef-de-projet` absent → `general-purpose` + « applique le skill
 >   `chef-de-projet` ».
 >
-> **⚠️ Deux exceptions câblées DIRECT PO — ne passent JAMAIS par le CP :**
-> 1. **G4 — early-green INATTENDU** (`tdd-auto`, `type:"question"` signalant un early green non
->    anticipé) → `AskUserQuestion` **directement au PO**. C'est une porte essentielle.
-> 2. **G3 — validation visuelle** (étape 8, `validation-visuelle`) → notification/gate **direct
->    PO**.
-> Le **routage IHM** (refus d'un scénario IHM par `tdd-auto`) reste mécanique : re-dispatch vers
-> `ihm-builder` (pas besoin du CP ni du PO).
+> **⚠️ Une seule exception câblée DIRECT PO — ne passe JAMAIS par le CP :**
+> - **G3 — validation visuelle** (étape 8, `validation-visuelle`) → notification/gate **direct
+>   PO**. C'est, avec **G2** (choix du sprint goal), l'**unique** porte PO du pipeline.
+>
+> **L'early-green INATTENDU passe désormais par le CP** (plus de porte G4 dédiée au PO) : c'est
+> au CP de trancher (doublon / filet manquant / à investiguer) depuis la spec et les
+> conventions, et de n'escalader en **G1** que si un vrai trou métier est en jeu. Le **routage
+> IHM** (refus d'un scénario IHM par `tdd-auto`) reste mécanique : re-dispatch vers
+> `ihm-builder` (ni CP ni PO).
 
 > **Agents requis dans le registre.** Cette command dispatche `tdd-analyse`, `tdd-auto`,
-> `ihm-builder` et `validation-visuelle`. Les fichiers `.claude/agents/ihm-builder.md` et
-> `.claude/agents/validation-visuelle.md` existent, mais s'ils ne sont **pas chargés dans
-> le registre de la session**, le dispatch tombe en **fallback `general-purpose`** à chaque
-> fois (observé aux sprints 03 et 04). Le registre n'étant **pas pilotable depuis le dépôt**,
-> ce fallback est le **régime nominal documenté** quand ces types ne sont pas chargeables :
-> dispatcher `general-purpose` avec « applique le skill … (cf. agent ihm-builder /
-> validation-visuelle) » n'est **pas une dégradation à corriger**, c'est le mode attendu.
-> (La table des agents du `README-claude.md` les liste tous, `retro-sprint` inclus.)
+> `ihm-builder` et `validation-visuelle`. Aux sprints 03–05, `ihm-builder` et
+> `validation-visuelle` (ainsi que `chef-de-projet`) **retombaient systématiquement** sur
+> `general-purpose` : cause racine identifiée et **corrigée** (refacto technique) — leur
+> `description` de frontmatter contenait un `" : "` (espace-deux-points-espace) non quoté,
+> illégal en scalaire YAML plain, ce qui faisait **échouer le parse du frontmatter** et
+> **écartait l'agent du registre**. Les descriptions sont désormais quotées : ces types
+> **se chargent normalement**. Le **fallback `general-purpose`** (« applique le skill … (cf.
+> agent ihm-builder / validation-visuelle) ») ne reste qu'un **filet** si un type est
+> réellement absent — ce n'est **plus** le régime nominal.
 
 > **`/clear` après le plan.** Si un `/clear` est fait, c'est **après** l'écriture du plan
 > Gherkin de `/2` (`docs/sprints/NN-<sujet>.md`), jamais avant — retour PO adopté au sprint 03.
@@ -77,11 +80,15 @@ scénario.
      `# Méthode (agents)` + `## IA` (appendées par le thread principal pendant le sprint —
      voir Notes).
 
-3. **Validation du plan.** Présente brièvement le suivi (nb de scénarios, total de
-   tests, scaffolding/doublons signalés, **et le routage backend vs IHM** : quels
-   scénarios sont étiquetés `🖥️ scénario IHM` → `ihm-builder`, lesquels sont backend →
-   `tdd-auto`) et demande l'accord d'implémenter via `AskUserQuestion`. C'est le tableau
-   de bord que l'utilisateur suivra.
+3. **Validation du plan (CP, sans arrêt PO).** Présente brièvement le suivi (nb de
+   scénarios, total de tests, scaffolding/doublons signalés, **et le routage backend vs
+   IHM** : quels scénarios sont étiquetés `🖥️ scénario IHM` → `ihm-builder`, lesquels sont
+   backend → `tdd-auto`) — **en affichage seul**, c'est le tableau de bord que
+   l'utilisateur suivra. Puis fais **valider le plan par le chef de projet** (dispatch
+   `chef-de-projet` avec le suivi) : `{type:"decision"}` → **enchaîne directement
+   l'implémentation** ; `{type:"escalate", gate:"G1"}` (vrai trou métier) → `AskUserQuestion`.
+   **Plus de « demande d'accord d'implémenter »** : le démarrage est automatique
+   (l'utilisateur garde la main, il peut interrompre).
 
    > **Routage des scénarios (Cause B/C).** `tdd-analyse` étiquette chaque scénario sur
    > l'axe **backend vs IHM**. Le **niveau du test d'acceptation suit le niveau du
@@ -110,7 +117,8 @@ scénario.
      ni filtre projet partiel — recompile TOUS les projets, sinon le vert ment (cf. Sc.1 s07) ».
    - `{ "type": "question", … }` → applique le **Protocole d'escalade CP** (dispatch
      `chef-de-projet` ; relaie sa `decision`, ou `AskUserQuestion` sur une `escalate` G1).
-     **Exception G4** : un **early-green inattendu** va **direct au PO** (pas par le CP).
+     Un **early-green inattendu** passe **par le CP** (il tranche doublon/filet/à-investiguer ;
+     escalade G1 seulement si vrai trou métier) — **plus de porte G4 dédiée au PO**.
      **Si `tdd-auto` refuse un scénario comme IHM** (question de routage), **re-dispatche le
      scénario vers `ihm-builder`** (mécanique — ni CP ni PO) au lieu de forcer un test bUnit.
    - `{ "type": "result", … }` (tdd-auto) ou `{ "type": "ihm-scenario", … }`
@@ -129,7 +137,8 @@ scénario.
    **La boucle se suspend dès qu'un agent renvoie `{ "type": "question", … }`** —
    applique le **Protocole d'escalade CP**, relaie la réponse brute (décision CP ou PO) via
    `SendMessage`, puis reprends la boucle. Routage des questions de `tdd-auto` :
-   - **early-green inattendu** (obligatoire) → **direct PO** (porte G4), **pas** le CP ;
+   - **early-green inattendu** → **CP** (tranche doublon/filet/à-investiguer ; escalade G1 si
+     vrai trou métier) — plus de porte G4 dédiée au PO ;
    - **routage IHM** (refus d'un scénario IHM) → **mécanique**, re-dispatch vers `ihm-builder` ;
    - **scaffolding** / **problème d'implémentation** détecté → **CP** (qui tranche depuis la
      spec/convention, ou escalade G1 si c'est un vrai choix métier).
@@ -142,16 +151,18 @@ scénario.
    > et un seul commit** au lieu d'un round-trip par scénario (levier vélocité, cf. s09
    > Sc.4–7). Strictement borné : **uniquement** des caractérisations anticipées
    > consécutives ; un **driver réel** (vrai RED) **rompt le lot** et reprend un scénario =
-   > un commit ; tout **early-green INATTENDU** dans le lot → **STOP G4 immédiat sur le lot**,
-   > aucun commit, direct PO. Cf. `tdd-auto.md` § « Lot de caractérisations early-green ».
+   > un commit ; tout **early-green INATTENDU** dans le lot → **STOP immédiat sur le lot**,
+   > aucun commit, **escalade au CP** (qui tranche). Cf. `tdd-auto.md` § « Lot de
+   > caractérisations early-green ».
 
 7. **Phase IHM finale (agent `ihm-builder`).** **Uniquement quand tous les scénarios
    sont `✅ GREEN`** dans le `00-sprint<NN>-suivi.md` (backend **et** scénarios IHM
-   complets). Propose la construction de l'IHM restante (vues/écrans non encore couverts
-   par un scénario IHM) via `AskUserQuestion` ; si l'utilisateur valide, dispatche
-   `ihm-builder` en **mode construction** avec le chemin du fichier de scénarios + le
-   dossier de suivi. (Les scénarios IHM déjà menés RED→GREEN à l'étape 4/6 ne sont pas
-   refaits ici.)
+   complets). **Enchaîne automatiquement** la construction de l'IHM restante (vues/écrans
+   non encore couverts par un scénario IHM) : dispatche `ihm-builder` en **mode
+   construction** avec le chemin du fichier de scénarios + le dossier de suivi. **Plus
+   d'AskUserQuestion** — l'IHM restante fait partie de la livraison à présenter au gate
+   visuel (G3). (Les scénarios IHM déjà menés RED→GREEN à l'étape 4/6 ne sont pas refaits
+   ici. L'utilisateur garde la main, il peut interrompre.)
    - **Fallback** : type absent → `general-purpose` avec « applique la phase IHM finale
      du skill `tdd-implement` (cf. agent ihm-builder) » + les chemins. Pas d'inline.
      **Rappel à porter dans le prompt** : « non-régression `dotnet test` SANS `--no-build` ni

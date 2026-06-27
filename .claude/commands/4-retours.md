@@ -54,14 +54,13 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `99-spr
    - Si `found=false` → préviens l'utilisateur qu'aucun `99-sprint<NN>-retours.md` n'existe
      et stoppe. **Ne lis pas** le retours toi-même — l'agent s'en charge.
 
-2. **Bypass Tech (conditionnel).** Si `hasTech=false` (pas de sous-section `## Tech` dans
-   la section `# Retours produit (PO)`), **demande** via `AskUserQuestion` :
-   « La section Retours produit (PO) ne contient pas de sous-section Tech. Y a-t-il des
-   contraintes techniques à injecter (dette, perf, archi, issues d'une revue GitHub) ? » — options :
-   *Aucune (Recommandé)* / *Oui, je les précise* (l'utilisateur saisit le texte) /
-   *Les chercher dans une revue de code*. Conserve la réponse **brute** pour la passer à
-   l'agent. Si `hasTech=true`, saute cette étape (les retours Tech sont déjà dans le
-   fichier).
+2. **Contraintes Tech (automatique, sans arrêt PO).** Si `hasTech=true`, les retours Tech
+   sont déjà dans la section `## Tech` du fichier → passe-les tels quels à l'agent. Si
+   `hasTech=false`, **par défaut aucune contrainte technique** (« Aucune ») — ne **demande
+   plus** au PO : le canal d'injection Tech est la sous-section `## Tech` du fichier de
+   retours, que le PO remplit **avant** de lancer `/4-retours` s'il a des contraintes
+   (dette/perf/archi/issues). Le CP peut, s'il le juge utile lors du challenge, proposer une
+   revue de code (escalade G1).
 
 3. **Dispatch (agent `retours-challenge`).** Lance-le avec : `retoursPath`, le chemin
    cible `nextBesoins`, le résultat du bypass Tech (étape 2), et les chemins de contexte
@@ -104,12 +103,13 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `99-spr
    et `99-sprint<NN>-besoins-fin-itération.md`, et réécrit les liens de `00-sprint<NN>-suivi.md` vers `archive/`.
    Présente le récap (champ `archived` / `kept`).
 
-8. **Handoff consolidation.** Présente le `prochain_sujet` et **propose** d'enchaîner
-   `/5-consolidation` via `AskUserQuestion` : l'étage de consolidation fusionne ce backlog
-   `99-sprint<NN>-besoins-fin-itération.md` avec la spec courante pour produire la **nouvelle version
-   de spec** (`NN-specification.md`), qui devient ensuite l'entrée de `/2-make-gherkin`.
-   Si l'utilisateur valide, invoque `/5-consolidation`. (Ne saute **pas** vers
-   `/2-make-gherkin` directement : la consolidation de la spec vivante vient d'abord.)
+8. **Handoff consolidation (automatique).** Présente le `prochain_sujet`, puis **enchaîne
+   directement** `/5-consolidation` (sans `AskUserQuestion`) : l'étage de consolidation
+   fusionne ce backlog `99-sprint<NN>-besoins-fin-itération.md` avec la spec courante pour
+   produire la **nouvelle version de spec** (`NN-specification.md`), entrée de
+   `/2-make-gherkin`. (Ne saute **pas** vers `/2-make-gherkin` directement : la consolidation
+   de la spec vivante vient d'abord. Le choix du prochain sujet a déjà été tranché en **G2**
+   à l'étape 5 — pas de nouvelle porte ici.)
 
    > **Gate anti-bypass de la rétro (amélioration continue).** Écrire le backlog
    > `99-sprint<NN>-besoins-fin-itération.md` **clôt l'itération** : à partir d'ici, le sprint
@@ -120,16 +120,16 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `99-spr
    > comme s'il pouvait sauter la rétro. Le chemin canonique reste
    > `/4-retours → /5-consolidation → /6-cloture-sprint (retro-sprint + push/PR) → /2-make-gherkin`.
 
-9. **Commit.** Propose un commit du backlog + de l'archivage (sans pousser sauf demande
-   explicite).
+9. **Commit (automatique).** Commite le backlog + l'archivage (sans pousser). Pas de
+   demande d'accord : commit local et réversible.
 
 ## Notes
 
 - **Relais pur** : si tu te surprends à lire le retours, classer un item ou rédiger la
   synthèse toi-même, tu as quitté ton rôle — redélègue à l'agent.
-- `AskUserQuestion` est appelé **par toi** (thread principal), jamais par l'agent ;
-  c'est l'unique chose qu'il ne peut pas faire — sauf le **bypass Tech** (étape 2) qui
-  est de ta responsabilité avant même le dispatch.
+- `AskUserQuestion` n'est appelé **par toi** (thread principal) **que** sur la porte **G2**
+  (choix du prochain sujet / cap, étape 5, via le CP). Plus de bypass Tech interactif
+  (étape 2 automatique), plus de handoff interactif (étape 8 auto-enchaînée).
 - Une question à la fois pendant le challenge — pas de rafale.
 - **Un seul prochain sujet** désigné pour `/2-make-gherkin` ; le reste est séquencé dans
   le backlog. Un `bug` (comportement vert cassé) repart par `/3-tdd-implement` ciblé,

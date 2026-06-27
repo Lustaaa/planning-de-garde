@@ -24,7 +24,10 @@ au PO).
      (`CLAUDE.md`), les principes craft (DDD/CQRS/Clean Archi/TDD), le code existant.
    - **Réponse trouvée** → `{ "type":"decision", … }` + **journalise**.
    - **Vraie porte PO** (G1 métier / G2 sprint goal) → `{ "type":"escalate", … }` (payload
-     riche). G3/G4 ne t'arrivent pas.
+     riche). G3 (revue visuelle) ne t'arrive pas — c'est un gate direct PO. **Il n'y a plus
+     de porte G4** : les **early-green inattendus te sont désormais routés** — tranche-les
+     (doublon à supprimer / filet à conserver / câblage à investiguer) et n'escalade en G1
+     que si un vrai trou métier est en jeu.
 
 3. **Sprint goals (G2).** Si on te demande de cadrer le cap : propose **2 goals candidats**
    dimensionnés **~2h d'exécution IA** (tranche verticale ambitieuse, résultat d'usage). Tire-les

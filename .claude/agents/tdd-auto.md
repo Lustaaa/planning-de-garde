@@ -67,12 +67,13 @@ cellule `Status` du test courant `⏳ Pending → 🔴 RED`. Si le test passe d'
   est **attendu** → marque `✅ GREEN (caractérisation)` (filet de non-régression), pas
   `⚠️`, et mentionne-le sobrement (pas une alarme). Pas de question.
 - **Early green INATTENDU (non anticipé)** : **STOP immédiat** → n'enchaîne pas, ne
-  commite pas. Renvoie `{"type":"question", "gate":"G4", …}` pour que **le PO** tranche
-  (doublon à supprimer / filet de non-régression à conserver / câblage à investiguer). Le
-  champ **`"gate":"G4"`** est **obligatoire** ici : il signale à l'orchestrateur que cette
-  question va **direct au PO** (porte essentielle), **sans passer par le chef de projet**.
-  C'est un signal : un test censé piloter du code passe sans rouge = soit le comportement est
-  déjà couvert, soit le test n'observe rien. Le PO décide avant tout commit.
+  commite pas. Renvoie une `{"type":"question", …}` **sans** champ `gate` : l'orchestrateur
+  la route vers le **chef de projet (CP)**, qui tranche (doublon à supprimer / filet de
+  non-régression à conserver / câblage à investiguer) depuis la spec et les conventions, et
+  n'escalade au PO (G1) que si un vrai trou métier est en jeu. **Plus de porte G4 directe au
+  PO.** C'est un signal : un test censé piloter du code passe sans rouge = soit le
+  comportement est déjà couvert, soit le test n'observe rien. Rien n'est commité tant que ce
+  n'est pas tranché.
 
 ### GREEN_PHASE (par test unitaire)
 Implémente le **minimum** (YAGNI, TPP : constante → conditionnel → général), règle
@@ -104,8 +105,8 @@ table → RED_PHASE suivant ; sinon → SCENARIO_DONE.
   Sc.2 au s07) :
   - si elle n'est **pas** encore couverte par un test → **retire-la** (laisse-la émerger au
     scénario qui la contredira) ;
-  - si elle est **déjà** couverte / inévitable → **STOP** `{"type":"question","gate":"G4",…}`
-    (early-green déguisé) **sans committer**, laisse le PO trancher.
+  - si elle est **déjà** couverte / inévitable → **STOP** `{"type":"question",…}` (sans
+    `gate`, early-green déguisé) **sans committer**, escalade au chef de projet.
   Cette revue reste chez **toi** (où le diff est produit) ; le chef de projet **ne fait pas**
   de revue de code (sa nature reste de trancher des questions, pas de relire le GREEN).
 - Dans le **fichier de scénarios source**, remplace le tag de cycle `@rouge`→`@vert`
@@ -133,8 +134,8 @@ cf. s09 Sc.4–7). Conditions cumulatives :
    RED qui pilote du code) n'est **JAMAIS** batché — il **rompt le lot** et reprend la règle
    un scénario = un commit ;
 2. tout early-green **INATTENDU** (non anticipé par `tdd-analyse`) rencontré dans le lot →
-   **STOP G4 immédiat sur tout le lot**, **aucun commit**, question au PO (`"gate":"G4"`) —
-   **jamais** de batch silencieux qui avalerait le signal ;
+   **STOP immédiat sur tout le lot**, **aucun commit**, question **sans `gate`** escaladée au
+   chef de projet — **jamais** de batch silencieux qui avalerait le signal ;
 3. le **suivi reste tenu scénario par scénario** (`NN-slug.md` + compte `X/N` du
    `00-sprint<NN>-suivi.md`), même en lot ;
 4. **un seul commit de lot** listant explicitement les scénarios couverts.
@@ -171,9 +172,9 @@ ces cas :
   `.razor` : interactivité, render mode, DI réelle, SignalR) — *obligatoire* : tu refuses
   et demandes le **routage vers `ihm-builder`** ; tu ne produis **pas** de test bUnit
   composant qui passerait à vide.
-- **Early green inattendu** (non anticipé par `tdd-analyse`) — *obligatoire* : laisse le
-  PO trancher (doublon / filet / câblage à investiguer) avant tout commit. **Tague
-  `"gate":"G4"`** — porte essentielle qui va **direct au PO** (jamais par le chef de projet).
+- **Early green inattendu** (non anticipé par `tdd-analyse`) — *obligatoire* : STOP, ne
+  commite pas, et **escalade au chef de projet** (question **sans** `gate`) qui tranche
+  (doublon / filet / câblage à investiguer) — plus de porte G4 directe au PO.
 
 Tu **peux** stopper et renvoyer `type:question` quand tu détectes un **problème
 d'implémentation** qui dépasse le YAGNI du test courant : câblage incohérent ou
@@ -185,15 +186,15 @@ en silence — expose le problème et les options.
 
 **Cas question** (scaffolding, early green inattendu, ou problème d'implémentation) :
 
-> **Routage (champ `gate`)** : ajoute `"gate":"G4"` **uniquement** pour un **early green
-> inattendu** (→ va direct au PO). Pour le **scaffolding**, le **routage IHM** et un **problème
-> d'implémentation**, **n'ajoute pas** de `gate` : l'orchestrateur les route vers le **chef de
-> projet**, qui tranche (ou escalade lui-même en G1 si c'est un vrai choix métier).
+> **Routage** : **n'ajoute jamais** de champ `gate`. Toutes les questions (scaffolding,
+> routage IHM, early green inattendu, problème d'implémentation) sont routées par
+> l'orchestrateur vers le **chef de projet**, qui tranche ou escalade lui-même au PO en G1
+> si c'est un vrai choix métier. (Les seules portes PO du pipeline sont G2 — sprint goal —
+> et G3 — revue visuelle ; aucune ne part d'ici.)
 
 ```json
 {
   "type": "question",
-  "gate": "G4 (uniquement pour un early green inattendu ; sinon omettre)",
   "question": {
     "question": "Question complète, finissant par ?",
     "header": "≤12 car",
