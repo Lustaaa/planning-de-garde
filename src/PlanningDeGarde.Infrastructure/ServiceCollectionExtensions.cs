@@ -48,6 +48,11 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IEnumerationActeursFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
         }
 
+        // Cycle de fond (palier 6) : adaptateur InMemory singleton = source de vérité partagée du
+        // foyer, volatile (PAS Mongo — durabilité portée par un palier ultérieur, borne anti-cliquet
+        // règle 30). Réalise le port cycle (lecture par GrilleAgendaQuery, écriture par DefinirCycleHandler).
+        services.AddSingleton<IReferentielCycleDeFond, CycleDeFondEnMemoire>();
+
         // Port temps réel réel (SignalR) — remplace le fake des scénarios.
         services.AddSingleton<INotificateurPlanning, SignalRNotificateurPlanning>();
 
@@ -59,6 +64,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DefinirTransfertHandler>();
         services.AddScoped<EditerActeurHandler>();
         services.AddScoped<AjouterActeurHandler>();
+        services.AddScoped<DefinirCycleHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();

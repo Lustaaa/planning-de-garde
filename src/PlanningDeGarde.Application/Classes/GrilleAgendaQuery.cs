@@ -17,17 +17,20 @@ public sealed class GrilleAgendaQuery
     private readonly IPeriodeRepository _periodes;
     private readonly IPaletteCouleurs _palette;
     private readonly IReferentielResponsables _referentiel;
+    private readonly IReferentielCycleDeFond? _cycle;
 
     public GrilleAgendaQuery(
         ISlotRepository slots,
         IPeriodeRepository periodes,
         IPaletteCouleurs palette,
-        IReferentielResponsables referentiel)
+        IReferentielResponsables referentiel,
+        IReferentielCycleDeFond? cycle = null)
     {
         _slots = slots;
         _periodes = periodes;
         _palette = palette;
         _referentiel = referentiel;
+        _cycle = cycle;
     }
 
     /// <summary>
@@ -61,8 +64,11 @@ public sealed class GrilleAgendaQuery
     private JourCase CaseJourAu(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots)
     {
         var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
-        var couleur = periode is null ? _palette.CouleurNeutre : _palette.CouleurDe(periode.ResponsableId);
-        var nom = periode is null ? "" : _referentiel.NomDe(periode.ResponsableId);
+        // Priorité de résolution : surcharge (période saisie) > fond (cycle) > neutre. La période
+        // prime structurellement (branche else intacte) ; le fond ne s'applique que sans période.
+        var responsableId = periode?.ResponsableId ?? _cycle?.CycleCourant()?.ResponsableDeFond(date);
+        var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
+        var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
         return new JourCase(date, couleur, nom, SlotsCasePour(slots));
     }
 
@@ -70,18 +76,31 @@ public sealed class GrilleAgendaQuery
         => date >= DateOnly.FromDateTime(periode.Debut) && date <= DateOnly.FromDateTime(periode.Fin);
 
     /// <summary>
-    /// Légende = responsables présents dans la fenêtre (périodes intersectant l'intervalle affiché),
-    /// dédoublonnés par identifiant stable (jamais le libellé — règle 17), avec nom et couleur résolus
-    /// côte à côte. Vide si aucune période ne couvre la fenêtre.
+    /// Légende = responsables présents dans la fenêtre, dédoublonnés par identifiant stable (jamais
+    /// le libellé — règle 17), avec nom et couleur résolus côte à côte. Présents = responsables des
+    /// périodes intersectant l'intervalle affiché ET responsables de fond couvrant un jour de la
+    /// fenêtre (« en case comme en légende »). Vide si aucun ne couvre la fenêtre.
     /// </summary>
     private IReadOnlyList<EntreeLegende> LegendeDesPresents(
         IReadOnlyList<PeriodeSnapshot> periodes, DateOnly premierJour, DateOnly dernierJour)
-        => periodes
+    {
+        var idsPeriodes = periodes
             .Where(p => DateOnly.FromDateTime(p.Debut) <= dernierJour && DateOnly.FromDateTime(p.Fin) >= premierJour)
-            .Select(p => p.ResponsableId)
+            .Select(p => p.ResponsableId);
+
+        var cycle = _cycle?.CycleCourant();
+        var idsFond = cycle is null
+            ? Enumerable.Empty<string>()
+            : Enumerable.Range(0, 35)
+                .Select(offset => cycle.ResponsableDeFond(premierJour.AddDays(offset)))
+                .Where(id => id is not null)
+                .Select(id => id!);
+
+        return idsPeriodes.Concat(idsFond)
             .Distinct()
             .Select(id => new EntreeLegende(id, _referentiel.NomDe(id), _palette.CouleurDe(id)))
             .ToList();
+    }
 
     private IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots)
         => snapshots
