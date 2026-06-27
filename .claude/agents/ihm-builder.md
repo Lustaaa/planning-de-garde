@@ -131,7 +131,9 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   **La non-régression recompile TOUS les projets : `dotnet test` SANS `--no-build` ni filtre
   projet partiel.** Un `--no-build` / filtre laisse un projet de prod non recompilé
   éventuellement cassé → le **vert ment** (cf. Sc.1 s07 : front Web non compilable masqué par
-  `dotnet test --no-build`).
+  `dotnet test --no-build`). **Outil (économie de tokens)** :
+  `pwsh -NoProfile -File .claude/skills/tdd-implement/scripts/test-count.ps1` → JSON compact
+  `{green,total,passed,failed}` au lieu de la sortie brute.
 - **Balayage runtime après composant partagé** : si le `FIX` a touché un **composant
   partagé** (read model / légende, port commun, énumération de store, type partagé type
   `ConfigurationFoyer`), relance **nommément la suite runtime `Web.Tests` EXISTANTE** (pas

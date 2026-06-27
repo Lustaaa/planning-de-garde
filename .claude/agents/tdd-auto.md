@@ -83,7 +83,9 @@ la solution** — `dotnet test` (et/ou `dotnet build` de la solution) **JAMAIS `
 ni filtre projet partiel qui laisserait un projet de prod non recompilé. Un `--no-build` sur
 un sous-ensemble masque un projet cassé et fait **mentir le vert** (cf. Sc.1 s07 : front Web
 non compilable masqué par `dotnet test --no-build` sur Web.Tests). Une régression se corrige
-avant de continuer. **Balayage runtime après composant partagé** : si l'ajout/la modif de ce
+avant de continuer. **Outil (économie de tokens)** : lance la non-régression via
+`pwsh -NoProfile -File .claude/skills/tdd-implement/scripts/test-count.ps1` → JSON compact
+`{green,total,passed,failed}` au lieu de la sortie brute. **Balayage runtime après composant partagé** : si l'ajout/la modif de ce
 test touche un **composant partagé** (read model / légende, port commun, énumération de store,
 type partagé type `ConfigurationFoyer`), relance **nommément la suite runtime `Web.Tests`
 EXISTANTE** (pas seulement les tests du scénario courant) **avant** le commit du scénario — une
