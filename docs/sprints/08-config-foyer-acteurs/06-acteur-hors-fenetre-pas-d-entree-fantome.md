@@ -27,7 +27,7 @@ inchangée, la légende n'introduit **aucune entrée fantôme**).
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_Confirmer_le_renommage_sans_faire_apparaitre_l_acteur_en_legende_When_l_acteur_renomme_n_a_aucune_periode_dans_la_fenetre_affichee` | — (caractérisation de deux invariants déjà acquis) | ⚠️ **probablement early green — couvert par Sc.1 #2 (confirmation, validation = id connu) + s07 Sc.3 (légende = présents dans la fenêtre) (caractérisation, pas driver)** : le handler valide l'**existence de l'id** (pas la présence en fenêtre) → confirme ; la légende dérive des **périodes couvrant la fenêtre** → pas d'entrée fantôme **par construction**. Aucun rouge — filet anti entrée-fantôme. | ⏳ Pending |
+| 1 | `Should_Confirmer_le_renommage_sans_faire_apparaitre_l_acteur_en_legende_When_l_acteur_renomme_n_a_aucune_periode_dans_la_fenetre_affichee` | — (caractérisation de deux invariants déjà acquis) | ⚠️ **probablement early green — couvert par Sc.1 #2 (confirmation, validation = id connu) + s07 Sc.3 (légende = présents dans la fenêtre) (caractérisation, pas driver)** : le handler valide l'**existence de l'id** (pas la présence en fenêtre) → confirme ; la légende dérive des **périodes couvrant la fenêtre** → pas d'entrée fantôme **par construction**. Aucun rouge — filet anti entrée-fantôme. | ✅ GREEN (caractérisation) |
 
 ## Fichiers à créer / modifier
 
