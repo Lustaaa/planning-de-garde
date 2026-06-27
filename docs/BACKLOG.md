@@ -76,6 +76,7 @@
 | Écran de configuration du foyer complet (acteurs + cycle de fond + couleurs, persisté) | ⬜ | Palier 6 | retours s01 (#7) · spec p5 |
 | Édition des acteurs « autres » (ajout/édition/suppression) | ⬜ | Palier 5 | spec règle 4 |
 | Affichage/actions adaptés au type d'acteur | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
+| **Création d'acteurs par le parent configurateur** (nounou / grand-parent / nouveau parent en couple / autre), **email obligatoire** à la création → crée le compte utilisateur (inactif, cf. É10) | ⬜ | Palier 5-6 | retours s08 (idée) · spec règles 4/6-7 |
 
 ### Épic 3 — Fondations techniques (architecture & API)
 *Socle découplé : API exposée, front WASM, conventions de code, swagger.*
@@ -175,6 +176,9 @@
 | Gestion des sessions utilisateur (persistance, logout) | ⬜ | Palier 8 | spec p8 |
 | Droits d'accès par utilisateur identifié (selon rôle) | ⬜ | Palier 5 + 8 | spec règles 6-7 |
 | Personnalisation des couleurs par utilisateur authentifié | ⬜ | Palier 8 | spec règle 16 |
+| **Compte utilisateur créé inactif** (à la création d'un acteur avec email, cf. É2) ; le créateur a **tous les droits en modification + impersonation** tant que le compte est inactif | ⬜ | Palier 8 | retours s08 (idée) |
+| **Prise en main de son compte** par l'utilisateur réel à sa 1ʳᵉ connexion (via une **demande**) ; après prise en main, il édite ses caractéristiques selon son rôle | ⬜ | Palier 8 | retours s08 (idée) |
+| **Droits par rôle après prise en main** : Nounou / Grand-parent = éditer son profil + faire des demandes aux parents ; Second parent = éditer son profil + administrer le planning de l'enfant **sur sa période** + demandes d'adaptation de période / d'ajout de slot | ⬜ | Palier 8 | retours s08 (idée) · spec règles 6-7 |
 
 ### Épic 11 — Imprévu & échange
 *Gérer les exceptions : malade, retard, échange de dernière minute avec accord.*
@@ -268,3 +272,10 @@
 > ont été replacées dans leurs épics : *slot imbriqué* → **É6** ; *parents liés via leurs
 > enfants* → **É1** ; *parents recomposés en couple gérant leurs enfants respectifs* → **É1**
 > (familles recomposées, enrichie).
+
+> **Idées PO consolidées (retours s08)** — l'idée « gestion des comptes utilisateurs »
+> (créer les acteurs avec email → compte inactif, impersonation par le créateur, prise en
+> main par demande, droits par rôle) a été replacée dans ses épics : *création d'acteurs avec
+> email* → **É2** ; *compte inactif / impersonation / prise en main / droits par rôle (nounou,
+> grand-parent, second parent)* → **É10** (Palier 8). Le couplage É2↔É10 (création d'acteur =
+> amorce du compte) est à expliciter quand le palier 8 sera pris. 
