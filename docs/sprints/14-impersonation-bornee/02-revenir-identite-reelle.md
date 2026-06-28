@@ -22,7 +22,16 @@ Prouvé sur l'app réellement câblée (render mode interactif, DI réelle).
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_RestaurerLIdentitéRéelleEtRetirerLeBandeau_When_OnRevientAprèsAvoirIncarnéUnActeur` | variable → constant (geste inverse) | driver — après Sc.1 (incarné), aucun chemin ne restaure l'identité réelle ; `RevenirIdentiteReelle` est neuf (Sc.1 ne l'implémente pas) → ramène l'effective à la réelle, retire le bandeau, ré-autorise le menu (assertions cohésives du même geste) | ⏳ Pending |
+| 1 | `Should_RestaurerLIdentitéRéelleEtRetirerLeBandeau_When_OnRevientAprèsAvoirIncarnéUnActeur` | variable → constant (geste inverse) | driver — après Sc.1 (incarné), aucun chemin ne restaure l'identité réelle ; `RevenirIdentiteReelle` est neuf (Sc.1 ne l'implémente pas) → ramène l'effective à la réelle, retire le bandeau, ré-autorise le menu (assertions cohésives du même geste) | ✅ Green |
+
+> **Réalisé — acceptation runtime EARLY-GREEN (caractérisation).** `RevenirIdentiteReelle` et l'affordance
+> de retour (bouton « Revenir à mon identité » du bandeau) ont été posés avec le **socle Sc.1** (cascade de
+> câblage IHM partagé anticipée). L'inner-loop driver est couvert par
+> `SessionPlanningIncarnationTests.Should_RestaurerLIdentiteReelle_When_OnRevientApresUneIncarnation`.
+> L'**acceptation runtime** `FrontWasmRevenirIdentiteReelleTempsReelTests` (clic réel sur l'affordance →
+> bandeau retiré + menu réel restauré) passe **d'emblée** sur l'app câblée : pas de rouge propre à
+> produire ici (le symptôme était déjà couvert par Sc.1) → caractérisé honnêtement comme early-green, pas
+> un faux rouge. Contrôle de non-vacuité intégré (état incarné prouvé avant le retour).
 
 ## Fichiers à créer
 
