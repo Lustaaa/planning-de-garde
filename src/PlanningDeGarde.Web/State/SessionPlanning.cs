@@ -73,6 +73,24 @@ public sealed class SessionPlanning
 
     /// <summary>Revient à l'identité réelle : l'incarnation est levée, l'état restauré (Sc.2).</summary>
     public void RevenirIdentiteReelle() => IdentiteEffective = IdentiteReelle;
+
+    /// <summary>
+    /// Repli automatique sur l'identité réelle (D2, projection des règles 6/18/19) : si une incarnation est
+    /// active mais que l'acteur incarné <b>n'est plus présent</b> dans le catalogue
+    /// (<see cref="ActeursIncarnables"/>, rafraîchi depuis le référentiel réel) — typiquement supprimé
+    /// concurremment depuis un autre écran —, la référence orpheline cesse de primer → retour à l'identité
+    /// réelle, sans nom fantôme. Hors incarnation, ou si l'acteur incarné existe toujours, no-op. Retourne
+    /// <c>true</c> si un repli a eu lieu (l'appelant peut re-rendre).
+    /// </summary>
+    public bool ReplierSiActeurIncarneAbsent()
+    {
+        if (IncarnationActive && !ActeursIncarnables.Any(a => a.Id == IdentiteEffective.Id))
+        {
+            RevenirIdentiteReelle();
+            return true;
+        }
+        return false;
+    }
 }
 
 /// <summary>Une identité d'acteur du foyer : identifiant stable + nom d'affichage + type

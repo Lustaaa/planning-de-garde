@@ -24,7 +24,19 @@ stable ≥ 3×). **Pas** bUnit seul.
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_RevenirAutomatiquementÀLIdentitéRéelle_When_LActeurIncarnéDisparaîtDuRéférentiel` | conditionnel (détection d'orphelin) | driver — après une suppression concurrente, l'identité effective pointe un acteur **absent du référentiel** (acteur fantôme) ; rien ne le détecte aujourd'hui → force le repli « effective absente du référentiel relu → retour identité réelle » (projection des règles 6/18/19, D2) | ⏳ Pending |
+| 1 | `Should_RevenirAutomatiquementÀLIdentitéRéelle_When_LActeurIncarnéDisparaîtDuRéférentiel` | conditionnel (détection d'orphelin) | driver — après une suppression concurrente, l'identité effective pointe un acteur **absent du référentiel** (acteur fantôme) ; rien ne le détecte aujourd'hui → force le repli « effective absente du référentiel relu → retour identité réelle » (projection des règles 6/18/19, D2) | ✅ Green |
+
+> **Réalisé — VRAI driver (RED→GREEN runtime).** Code de prod neuf : `SessionPlanning.ReplierSiActeurIncarneAbsent`
+> (repli si l'acteur incarné n'est plus au catalogue) + `PlanningPartage` ré-évalue sur l'événement SignalR
+> (rafraîchit le catalogue d'incarnables puis replie). Inner-loop driver + garde-fou no-op dans
+> `SessionPlanningIncarnationTests`. **Acceptation runtime / G3**
+> `FrontWasmIncarnationSuppressionConcurrenteTempsReelTests` : 2 écrans sur la MÊME API réelle (store +
+> hub SignalR partagés), l'écran qui incarne Nina la nounou revient automatiquement à l'identité réelle
+> quand l'autre écran la supprime (diffusion réelle) — bandeau retiré, aucun nom fantôme, menu réel
+> restauré. **RED d'abord constaté déterministe (3×, bandeau persistant)**, puis vert **stable 5× en
+> isolation** (convention anti-flake : pompe de diffusion idempotente → établissement déterministe,
+> `WaitForState`/`WaitForAssertion`, isolation TestContext, JAMAIS de délai fixe ; le clic-menu réentrant
+> a été déplacé APRÈS l'arrêt de la pompe pour éviter une réentrance du renderer bUnit).
 
 ## Fichiers à créer
 

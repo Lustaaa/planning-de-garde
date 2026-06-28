@@ -119,4 +119,43 @@ public sealed class SessionPlanningIncarnationTests
 
         Assert.False(session.EstParent);
     }
+
+    // Sc.5 driver — repli automatique : après une suppression concurrente, l'acteur incarné disparaît du
+    // catalogue rafraîchi → retour automatique à l'identité réelle, bandeau retiré (règles 6/18/19, D2).
+    [Fact]
+    public void Should_RevenirAutomatiquementALIdentiteReelle_When_LActeurIncarneDisparaitDuReferentiel()
+    {
+        var session = AvecCatalogue();
+        session.Incarner("nounou");
+        Assert.True(session.IncarnationActive);
+
+        // Le référentiel est rafraîchi SANS « nounou » (supprimée concurremment depuis un autre écran).
+        session.ActeursIncarnables = new List<IdentiteActeur>
+        {
+            new("parent-b", "Bruno", TypeActeur.Parent),
+            new("parent-c", "Carla", TypeActeur.Admin),
+        };
+
+        var aReplie = session.ReplierSiActeurIncarneAbsent();
+
+        Assert.True(aReplie);
+        Assert.False(session.IncarnationActive);
+        Assert.Null(session.LibelleBandeau);
+        Assert.Equal(session.IdentiteReelle, session.IdentiteEffective);
+        Assert.True(session.EstParent);
+    }
+
+    // Garde-fou : le repli ne se déclenche PAS si l'acteur incarné est toujours présent (no-op).
+    [Fact]
+    public void Should_NePasReplier_When_LActeurIncarneEstToujoursPresentAuReferentiel()
+    {
+        var session = AvecCatalogue();
+        session.Incarner("nounou");
+
+        var aReplie = session.ReplierSiActeurIncarneAbsent();
+
+        Assert.False(aReplie);
+        Assert.True(session.IncarnationActive);
+        Assert.Equal("nounou", session.IdentiteEffective.Id);
+    }
 }

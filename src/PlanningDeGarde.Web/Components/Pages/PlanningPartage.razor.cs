@@ -111,6 +111,11 @@ public partial class PlanningPartage
             _hub.On(PlanningHubEvenement.MiseAJour, async () =>
             {
                 await ChargerAsync();
+                // Une mise à jour diffusée peut être une SUPPRESSION concurrente de l'acteur incarné (Sc.5,
+                // D2) : on rafraîchit le catalogue d'incarnables depuis le référentiel réel, puis on replie
+                // automatiquement sur l'identité réelle si l'acteur incarné n'y figure plus (sans nom fantôme).
+                await ChargerActeursIncarnablesAsync();
+                Session.ReplierSiActeurIncarneAbsent();
                 await InvokeAsync(StateHasChanged);
             });
 
