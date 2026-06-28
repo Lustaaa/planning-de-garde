@@ -35,6 +35,18 @@ $ErrorActionPreference = 'Stop'
 $OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
 Set-Location -LiteralPath (git rev-parse --show-toplevel).Trim()
 
+# Arrête les hôtes Api/Web résiduels d'un run précédent (lancement de l'app, gate visuel) avant
+# `dotnet test` : un hôte zombie verrouille les DLL de sortie et fait échouer le build de la suite
+# (MSB3027). Même ciblage que run.ps1 (§65-74) — on ne tue que les dotnet pointant l'un des projets,
+# pas tous les dotnet. (Rétro s12 A3 : le VERIFY de ihm-builder/tdd-auto passe par ce script, qui
+# buildait sans nettoyer → kill manuel à chaque fois.)
+$zombies = Get-CimInstance Win32_Process -Filter "Name = 'PlanningDeGarde.Api.exe' OR Name = 'PlanningDeGarde.Web.exe' OR Name = 'dotnet.exe'" -ErrorAction SilentlyContinue |
+    Where-Object { $_.CommandLine -match 'PlanningDeGarde\.(Api|Web)' }
+foreach ($z in $zombies) {
+    Stop-Process -Id $z.ProcessId -Force -ErrorAction SilentlyContinue
+}
+if ($zombies) { Start-Sleep -Milliseconds 500 }  # laisse l'OS relâcher les verrous DLL
+
 $dotnetArgs = @('test', $Solution, '--nologo')
 if ($Filter) { $dotnetArgs += @('--filter', $Filter) }
 

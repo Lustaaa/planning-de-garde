@@ -62,6 +62,17 @@ Argument (optionnel) : $ARGUMENTS — dossier de scénarios ou chemin du `99-spr
    (dette/perf/archi/issues). Le CP peut, s'il le juge utile lors du challenge, proposer une
    revue de code (escalade G1).
 
+> **Fast-path « pilotage au catalogue » (retours produit vides = régime nominal).** Quand la
+> section `# Retours produit (PO)` ne contient que des placeholders (aucune puce IHM/Tech,
+> `hasIHM=false` et `hasTech=false` — le PO a validé la livraison au gate G3 sans déposer de
+> retour, cas devenu **récurrent**), ce **n'est pas une anomalie** : c'est le chemin nominal.
+> `/4-retours` se réduit alors à **désigner le prochain sujet depuis le backlog consolidé** : le
+> CP dérive sujet + séquence du backlog **sans rouvrir de porte** (hors le **G2** de choix du cap,
+> étape 5), et `retours-challenge` écrit le backlog sur cette base (classification vide).
+> **Borne** : ce fast-path **n'altère pas** l'arbitrage **G2** du PO (le choix du prochain sujet
+> reste tranché par le PO via le CP). Cesser de traiter le retours-vide comme une friction.
+> (Rétro s12 A1 ; vécu s11→s12.)
+
 3. **Dispatch (agent `retours-challenge`).** Lance-le avec : `retoursPath`, le chemin
    cible `nextBesoins`, le résultat du bypass Tech (étape 2), et les chemins de contexte
    (`<dossier>/00-sprint<NN>-suivi.md`, `docs/01-specification.md`). Garde son `agentId`.
