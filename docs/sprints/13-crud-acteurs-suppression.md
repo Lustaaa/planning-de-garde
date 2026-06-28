@@ -145,7 +145,7 @@ Scenario: Supprimer un acteur mappé au cycle de fond rend son index non mappé 
   Et la case du mardi 23 juin 2026 n'affiche aucun nom fantôme
 ```
 
-### Scenario 5 — Supprimer un acteur absent ou déjà supprimé est un no-op qui réussit `@erreur` `@driver`
+### Scenario 5 — Supprimer un acteur absent ou déjà supprimé est un no-op qui réussit `@erreur` `@driver` `@vert`
 
 ```gherkin
 Scenario: Supprimer un acteur inexistant ne change rien et ne lève aucune erreur
