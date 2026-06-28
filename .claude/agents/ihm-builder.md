@@ -157,6 +157,16 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   `dotnet test --no-build`). **Outil (économie de tokens)** :
   `pwsh -NoProfile -File .claude/skills/tdd-implement/scripts/test-count.ps1` → JSON compact
   `{green,total,passed,failed}` au lieu de la sortie brute.
+- **Flake CONNU `*TempsReel*` au 1er run complet ≠ régression.** Un échec isolé de la famille
+  runtime `*TempsReel*` (diffusion SignalR sous exécution parallèle) au **premier** run complet,
+  **vert en isolation / au re-run**, est une **dette de test connue** (P2, retrofit codifié
+  ci-dessus § conventions anti-flake), **pas** une régression produit. Avant de déclarer rouge ou
+  de bloquer le commit : **re-lance la famille `*TempsReel*` en isolation** ; ne bascule au rouge
+  que si l'échec **persiste sous isolation**. Le correctif réel reste le **retrofit P2** au backlog
+  — ne le tire pas en cours de scénario. **Borne (rempart anti vert-qui-ment)** : cette tolérance
+  vaut **uniquement** pour ce flake nommé ; elle **ne lève pas** l'exigence d'acceptation runtime
+  ni l'obligation que la suite complète soit verte (re-run isolé vert inclus) avant commit.
+  (Rétro s12 A2 ; vécu s10→s12.)
 - **Balayage runtime après composant partagé** : si le `FIX` a touché un **composant
   partagé** (read model / légende, port commun, énumération de store, type partagé type
   `ConfigurationFoyer`), relance **nommément la suite runtime `Web.Tests` EXISTANTE** (pas

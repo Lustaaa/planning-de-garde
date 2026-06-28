@@ -34,12 +34,20 @@
     </div>
 }
 
-@* Palier 7 : la pose de slot et l'affectation de période se font désormais EN CONTEXTE (clic sur une
-   case → menu d'actions → dialog). Les liens-barre dédiés sont retirés ; seul « Définir un transfert »
-   subsiste (3e dialog transfert déférée au backlog). *@
-<div class="mb-3 d-flex gap-2">
-    <a class="btn btn-primary @Desactive" href="planning/definir-transfert">Définir un transfert</a>
-</div>
+@* Accusé « Transfert défini » à part (Sc.1) : feedback transitoire NON bloquant, levé sur le simple
+   succès HTTP du canal (aucun rendu en case ni read model neuf — règle 27, panneau cloche hors scope).
+   Refermable, mécanisme du bandeau d'avertissement réutilisé. *@
+@if (_accuseTransfertDefini)
+{
+    <div class="alert alert-success alert-dismissible py-2" data-testid="accuse-transfert-defini" role="status">
+        Transfert défini.
+        <button type="button" class="btn-close" aria-label="Fermer" @onclick="FermerAccuseTransfert"></button>
+    </div>
+}
+
+@* Palier 7 (referme É12) : toute saisie se fait désormais EN CONTEXTE (clic sur une case → menu
+   d'actions → dialog). Plus AUCUN lien-barre ni écran de saisie dédié ne subsiste — y compris pour
+   le transfert, désormais 3ᵉ entrée du menu clic-case (Sc.1) et seul chemin de saisie (Sc.5). *@
 
 <section class="grille-agenda" data-testid="grille-agenda">
     <div class="grille-entete">
@@ -94,8 +102,10 @@
             <h2 class="h6 mb-3">@dateMenu.ToString("dd/MM/yyyy")</h2>
             <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-poser-slot"
                     @onclick="@(() => OuvrirPoserSlot(dateMenu))">Poser un slot</button>
-            <button type="button" class="btn btn-outline-primary w-100" data-testid="action-affecter-periode"
+            <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-affecter-periode"
                     @onclick="@(() => OuvrirAffecterPeriode(dateMenu))">Affecter une période</button>
+            <button type="button" class="btn btn-outline-primary w-100" data-testid="action-definir-transfert"
+                    @onclick="@(() => OuvrirDefinirTransfert(dateMenu))">Définir un transfert</button>
         </div>
     </div>
 }
@@ -112,6 +122,13 @@
     <AffecterPeriodeDialog DateContexte="dateAffecter"
                            OnValide="FermerDialogEtRecharger"
                            OnAnnule="FermerDialog" />
+}
+
+@if (_dateDialogDefinirTransfert is { } dateTransfert)
+{
+    <DefinirTransfertDialog DateContexte="dateTransfert"
+                            OnValide="FermerTransfertEtAccuser"
+                            OnAnnule="FermerDialog" />
 }
 
 <style>

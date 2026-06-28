@@ -32,11 +32,13 @@ public partial class PlanningPartage
     // Date de contexte de chaque dialog ouverte depuis le menu (null = dialog fermée) :
     private DateOnly? _dateDialogPoserSlot;
     private DateOnly? _dateDialogAffecterPeriode;
+    private DateOnly? _dateDialogDefinirTransfert;
     // Avertissement de chevauchement « à part » (Sc.7, règle 16) : pose acceptée mais signalée, bandeau
     // NON bloquant et refermable. Drapeau porté par l'outcome de la commande (jamais recalculé ici).
     private bool _avertissementChevauchement;
-
-    private string Desactive => Session.EstParent ? string.Empty : "disabled";
+    // Accusé « Transfert défini » à part (Sc.1) : feedback transitoire NON bloquant levé sur le simple
+    // succès HTTP du canal (aucun read model neuf, aucun rendu en case — règle 27). Refermable.
+    private bool _accuseTransfertDefini;
 
     private RoleAuteur RoleSelectionne
     {
@@ -128,6 +130,15 @@ public partial class PlanningPartage
         _dateDialogAffecterPeriode = date;
     }
 
+    /// <summary>Depuis le menu (3ᵉ entrée), ouvre la dialog « Définir un transfert » pré-remplie sur la
+    /// date de la case (Sc.1). Un accusé précédent ne survit pas à une nouvelle saisie.</summary>
+    private void OuvrirDefinirTransfert(DateOnly date)
+    {
+        _dateMenu = null;
+        _accuseTransfertDefini = false;
+        _dateDialogDefinirTransfert = date;
+    }
+
     /// <summary>Ferme la dialog ouverte sur succès et <b>relit</b> la grille depuis l'API distante :
     /// l'écriture aboutie réapparaît, positionnée à la date de la case (relecture, jamais une mutation
     /// locale de la grille).</summary>
@@ -149,11 +160,24 @@ public partial class PlanningPartage
     /// <summary>Referme le bandeau d'avertissement de chevauchement (non bloquant).</summary>
     private void FermerAvertissement() => _avertissementChevauchement = false;
 
+    /// <summary>Issue succès du transfert (Sc.1) : ferme la dialog SANS relire la grille (le transfert
+    /// n'est pas projeté en case — règle 27, panneau cloche hors scope) et lève l'accusé « Transfert
+    /// défini » à part, non bloquant. L'accusé se déclenche sur le simple succès HTTP du canal.</summary>
+    private void FermerTransfertEtAccuser()
+    {
+        FermerDialog();
+        _accuseTransfertDefini = true;
+    }
+
+    /// <summary>Referme l'accusé « Transfert défini » (non bloquant).</summary>
+    private void FermerAccuseTransfert() => _accuseTransfertDefini = false;
+
     /// <summary>Ferme toute dialog sans aucune écriture (annulation / succès) : la grille reste intacte.</summary>
     private void FermerDialog()
     {
         _dateDialogPoserSlot = null;
         _dateDialogAffecterPeriode = null;
+        _dateDialogDefinirTransfert = null;
     }
 
     /// <summary>Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible

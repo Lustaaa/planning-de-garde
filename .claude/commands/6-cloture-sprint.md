@@ -87,6 +87,14 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
    suivant s'appuie sur un backlog à jour, pas seulement sur des lignes cochées. (Retour PO
    sprint 04.)
 
+   > **Check obligatoire — numérotation (spec vivante = référence unique).** La **spec vivante**
+   > (`docs/NN-specification.md`, la plus récente) est la **référence unique de numérotation des
+   > paliers** : **réconcilie ici** la numérotation de `docs/BACKLOG.md` avec celle de la spec
+   > courante (le CP la renvoie systématiquement à `/6` lors de `/5-consolidation`). **Résorbe
+   > l'écart maintenant, ne le re-diffère pas** : aligne les n° de palier du backlog sur la spec,
+   > répercute tout swap acté en `/5` (ex. palier tiré devant un autre). Coche ce point comme
+   > fait avant le handoff. (Rétro s12 A4 ; écart récurrent.)
+
 5. **Amorce l'itération suivante — porte G2 (choix du sprint goal).** C'est l'**une des
    deux seules portes PO** du pipeline (avec G3). Dispatche `chef-de-projet` : il propose
    **2 sprint goals candidats** (~2h IA, tirés du backlog consolidé) ; appelle
