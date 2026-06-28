@@ -66,13 +66,13 @@
 
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
-| 1 | [Poser un slot depuis une case ouvre la dialog et le slot réapparaît](01-poser-slot-depuis-case.md) | `@nominal 🖥️ IHM` | ✅ GREEN | 0/2 | ✅ GREEN |
-| 2 | [Affecter une période depuis une case colore et nomme la case](02-affecter-periode-depuis-case.md) | `@nominal 🖥️ IHM` | ✅ GREEN | 0/2 | ✅ GREEN |
-| 3 | [La dialog se pré-remplit sur la date de la case cliquée](03-pre-remplir-date-de-la-case.md) | `@limite 🖥️ IHM` | ✅ GREEN (caractérisation) | 0/2 | ✅ GREEN |
-| 4 | [Échec clair : la dialog reste ouverte et conserve la saisie](04-echec-clair-dialog-reste-ouverte.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation) | 2/3 | ✅ GREEN |
-| 5 | [Annuler la dialog ne modifie pas le planning](05-annuler-dialog-sans-ecrire.md) | `@limite 🖥️ IHM` | ✅ GREEN (caractérisation) | 1/2 | ✅ GREEN |
-| 6 | [Un Invité ne peut pas ouvrir la dialog depuis une case](06-invite-ne-peut-pas-ouvrir-dialog.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation) | 1/2 | ✅ GREEN |
-| 7 | [Slot chevauchant accepté avec avertissement non bloquant](07-chevauchement-accepte-averti.md) | `@limite 🖥️ IHM` | ✅ GREEN (RED→GREEN) | 2/2 | ✅ GREEN |
+| 1 | [Poser un slot depuis une case ouvre la dialog et le slot réapparaît](archive/01-poser-slot-depuis-case.md) | `@nominal 🖥️ IHM` | ✅ GREEN | 0/2 | ✅ GREEN |
+| 2 | [Affecter une période depuis une case colore et nomme la case](archive/02-affecter-periode-depuis-case.md) | `@nominal 🖥️ IHM` | ✅ GREEN | 0/2 | ✅ GREEN |
+| 3 | [La dialog se pré-remplit sur la date de la case cliquée](archive/03-pre-remplir-date-de-la-case.md) | `@limite 🖥️ IHM` | ✅ GREEN (caractérisation) | 0/2 | ✅ GREEN |
+| 4 | [Échec clair : la dialog reste ouverte et conserve la saisie](archive/04-echec-clair-dialog-reste-ouverte.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation) | 2/3 | ✅ GREEN |
+| 5 | [Annuler la dialog ne modifie pas le planning](archive/05-annuler-dialog-sans-ecrire.md) | `@limite 🖥️ IHM` | ✅ GREEN (caractérisation) | 1/2 | ✅ GREEN |
+| 6 | [Un Invité ne peut pas ouvrir la dialog depuis une case](archive/06-invite-ne-peut-pas-ouvrir-dialog.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation) | 1/2 | ✅ GREEN |
+| 7 | [Slot chevauchant accepté avec avertissement non bloquant](archive/07-chevauchement-accepte-averti.md) | `@limite 🖥️ IHM` | ✅ GREEN (RED→GREEN) | 2/2 | ✅ GREEN |
 
 **Avancement** : **7/7** scénarios au vert — Sc.1 (poser un slot) + Sc.2 (affecter une période)
 livrés depuis une case ; Sc.3 (ancrage date, règle 17), Sc.4 (échec clair, règle 28), Sc.5
