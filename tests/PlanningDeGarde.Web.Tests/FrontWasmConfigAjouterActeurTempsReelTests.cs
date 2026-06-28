@@ -44,7 +44,7 @@ public sealed class FrontWasmConfigAjouterActeurTempsReelTests : TestContext
             TimeSpan.FromSeconds(10));
         Assert.DoesNotContain(
             config.FindAll("[data-testid='acteur-foyer']"),
-            li => li.TextContent.Trim() == "Carla");
+            li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
         // When — un parent ajoute « Carla » en rose et valide (émission via le canal d'écriture HTTP réel).
         config.Find("[data-testid='champ-nom-ajout']").Change("Carla");
@@ -56,7 +56,7 @@ public sealed class FrontWasmConfigAjouterActeurTempsReelTests : TestContext
         config.WaitForAssertion(
             () => Assert.Contains(
                 config.FindAll("[data-testid='acteur-foyer']"),
-                li => li.TextContent.Trim() == "Carla"),
+                li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla"),
             TimeSpan.FromSeconds(10));
     }
 }

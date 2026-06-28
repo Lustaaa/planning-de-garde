@@ -42,7 +42,7 @@ public sealed class FrontWasmConfigAjouterSansNomRefuseTempsReelTests : TestCont
         var nombreInitial = config.FindAll("[data-testid='acteur-foyer']").Count;
         Assert.DoesNotContain(
             config.FindAll("[data-testid='acteur-foyer']"),
-            li => string.IsNullOrWhiteSpace(li.TextContent));
+            li => string.IsNullOrWhiteSpace(li.QuerySelector(".acteur-nom")?.TextContent));
 
         // When — un parent valide l'ajout en laissant le nom vide (émission via le canal d'écriture HTTP réel).
         config.Find("#form-ajout").Submit();
@@ -58,6 +58,6 @@ public sealed class FrontWasmConfigAjouterSansNomRefuseTempsReelTests : TestCont
         Assert.Equal(nombreInitial, config.FindAll("[data-testid='acteur-foyer']").Count);
         Assert.DoesNotContain(
             config.FindAll("[data-testid='acteur-foyer']"),
-            li => string.IsNullOrWhiteSpace(li.TextContent));
+            li => string.IsNullOrWhiteSpace(li.QuerySelector(".acteur-nom")?.TextContent));
     }
 }

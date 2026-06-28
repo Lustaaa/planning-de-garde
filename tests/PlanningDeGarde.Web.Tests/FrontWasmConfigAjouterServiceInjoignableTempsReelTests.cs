@@ -49,7 +49,7 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
         var nombreInitial = config.FindAll("[data-testid='acteur-foyer']").Count;
         Assert.DoesNotContain(
             config.FindAll("[data-testid='acteur-foyer']"),
-            li => li.TextContent.Trim() == "Carla");
+            li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
         // … un parent a saisi « Carla » (rose) dans le formulaire d'ajout.
         config.Find("[data-testid='champ-nom-ajout']").Change("Carla");
@@ -71,6 +71,6 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
         Assert.Equal(nombreInitial, config.FindAll("[data-testid='acteur-foyer']").Count);
         Assert.DoesNotContain(
             config.FindAll("[data-testid='acteur-foyer']"),
-            li => li.TextContent.Trim() == "Carla");
+            li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
     }
 }

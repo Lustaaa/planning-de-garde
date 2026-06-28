@@ -133,7 +133,20 @@
 
 <h2 class="h5 mt-4 mb-3">Acteurs du foyer</h2>
 <p class="text-muted">Chaque acteur est listé avec sa pastille de couleur — la même teinte que sur la
-    grille et la légende. Un acteur sans couleur retombe sur le gris neutre.</p>
+    grille et la légende. Un acteur sans couleur retombe sur le gris neutre. Le bouton supprimer retire
+    l'acteur du foyer ; ses cases orphelines retombent sur le fond (ou le neutre), sans nom fantôme, et
+    la grille partagée suit sans recharger la page.</p>
+
+@if (_accuseSuppression is not null)
+{
+    <div class="alert alert-warning" role="status" data-testid="accuse-suppression">@_accuseSuppression</div>
+}
+
+@if (_motifEchecSuppression is not null)
+{
+    <div class="alert alert-danger" data-testid="motif-echec-suppression">@_motifEchecSuppression</div>
+}
+
 <ul class="list-group" data-testid="liste-acteurs">
     @foreach (var a in _acteurs)
     {
@@ -141,6 +154,9 @@
             data-acteur-id="@a.Id" data-couleur="@a.Couleur">
             <span class="acteur-pastille" style="background-color:@CouleursTheme.Pleine(a.Couleur);"
                   aria-hidden="true"></span><span class="acteur-nom">@a.Nom</span>
+            <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
+                    data-testid="bouton-supprimer" data-acteur-id="@a.Id"
+                    @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer</button>
         </li>
     }
 </ul>
@@ -150,4 +166,5 @@
     .acteur-pastille { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none;
         border: 1px solid rgba(0, 0, 0, .15); }
     .acteur-nom { color: #333; }
+    .acteur-supprimer { margin-left: auto; }
 </style>

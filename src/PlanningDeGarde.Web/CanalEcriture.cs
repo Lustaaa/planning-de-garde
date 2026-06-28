@@ -33,6 +33,11 @@ public static class CanalEcriture
     /// côté handler, jamais dérivé du libellé.</summary>
     public sealed record AjouterActeurRequete(string Nom, string? Couleur = null);
 
+    /// <summary>Corps de la requête de suppression d'un acteur du foyer émise via le canal d'écriture.
+    /// La clé est l'<b>identifiant stable opaque</b> (jamais le libellé, règle 19) ; la suppression est
+    /// idempotente côté handler (id absent / déjà supprimé = no-op qui réussit).</summary>
+    public sealed record SupprimerActeurRequete(string ActeurId);
+
     /// <summary>Corps de la requête de définition / ré-édition du cycle de fond (palier 6) émise via le
     /// canal d'écriture : le nombre de semaines + le mapping index→responsable (identifiant stable bindé
     /// par le sélecteur, jamais le libellé). Une nouvelle définition remplace le cycle courant.</summary>
