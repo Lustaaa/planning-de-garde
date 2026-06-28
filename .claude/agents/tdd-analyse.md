@@ -145,6 +145,15 @@ ne fusionnes pas des cas métier après coup et tu n'inventes pas un faux cycle 
   (avertissement) était flaggé driver ; Sc.4/5/6 (échec, annulation, gating Invité) sont
   tombés early-green inattendus une fois les dialogs Sc.1/Sc.2 bâties, déclenchant
   3 escalades CP qu'une prédiction de cascade aurait absorbées.
+  - **Contrôle préalable obligatoire avant d'étiqueter `⚠️ early green (câblage IHM
+    partagé)`** : **VÉRIFIE par exploration code** que le câblage prérequis (garde de rôle
+    `EstParent`/`SessionPlanning`, issue par dialog, ancrage…) existe bien **SUR L'ÉCRAN
+    CIBLÉ** par le scénario. Un garde présent sur **un autre écran** (ex. la grille
+    `PlanningPartage`) **n'implique pas** sa présence sur l'écran ciblé (ex. `ConfigurationFoyer`)
+    → étiquette alors `@driver` (vrai RED), **pas** caractérisation. *Exemple vécu sprint 13* —
+    Sc.7 (gating Invité) prédit early-green « câblage partagé » alors que `ConfigurationFoyer`
+    n'avait **aucun** garde de rôle (`EstParent` n'existait que sur la grille) → vrai driver
+    RED→GREEN, 5 tests config rétrofités. (Rétro s13 A2.)
 
 Ne supprime pas un cas métier important ; ne le fusionne pas — déclare-le caractérisation
 explicite et ordonne la liste pour que le vrai driver mène. **Au sprint 03, 2 scénarios sur

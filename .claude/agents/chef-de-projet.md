@@ -42,6 +42,16 @@ au PO).
    (chef de projet)` du `99-sprint<NN>-retours.md` du sprint courant. Sans journal, le PO ne peut
    pas piloter a posteriori.
 
+5. **Gating de rôle partiel = angle mort à tracer (pas de G1 si l'intention est actée).**
+   Quand un scénario ne garde qu'**UN** déclencheur sur un écran qui porte **d'autres
+   écritures non gardées** (ex. seul le bouton supprimer est gaté Invité, alors qu'ajout /
+   édition / cycle de l'écran config restent ouverts), **consigne systématiquement l'angle
+   mort** en `# Risques` du backlog `99-sprint<NN>-besoins-fin-itération.md` et **séquence-le
+   en candidat d'un sprint adjacent** (même écran / même notion de rôle). **N'escalade PAS en
+   G1** si l'intention métier est déjà actée (la règle de rôle existe, c'est sa **couverture
+   d'écran** qui est partielle = écart d'implémentation, pas trou de valeur). (Rétro s13 A4 ;
+   vécu s13 Sc.7 / D8.)
+
 ## Sortie
 
 **Uniquement** le JSON défini dans le skill : `{ "type":"decision", resume, decision, rationale,

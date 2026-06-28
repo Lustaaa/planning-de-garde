@@ -308,3 +308,51 @@ l'écriture révélait un vrai conflit de valeur, ce qui n'est pas le cas.
 anti-cliquet) ; `99-sprint13-besoins-fin-itération.md` (§Décision G2, §Prochain
 sujet, §Séquence, §Risques) ; spec v13 (marqueurs PROCHAIN SUJET, règles 9/30) ;
 **D8** (Option 1 gating config) ; CLAUDE.md (consolidation reflète le livré).
+
+### D10 — Rétro méthode sprint 13 : 6 actions bas risque auto-appliquées, aucune escalade G1
+
+**Contexte.** Priorisation des actions de la rétrospective méthode du sprint 13.
+Palier d'autonomie 0 (conservateur) : appliquer les amendements de pipeline à
+faible risque, n'escalader en G1 que les changements structurels/risqués (refonte
+d'agent, suppression d'un gate). 6 actions proposées, toutes des amendements
+ciblés de fichiers du pipeline.
+
+**Décision (tranchée, pas d'escalade G1).** Les **6 actions sont retenues et
+auto-appliquées** (sélection complète `[1,2,3,4,5,6]`). Aucune n'est structurelle :
+zéro suppression de gate, zéro refonte d'agent. Toutes sont soit des **garde-fous
+additifs** (1, 2, 3, 6), soit des **restrictions réductrices de risque** (4, 5).
+
+1. **`ihm-builder.md`** — amender la puce « Balayage runtime après composant
+   partagé » : relancer les tests *TempsReel* **en isolation** (pas seulement la
+   suite complète) après modif d'un Razor partagé ; nommer le symptôme
+   `UnknownEventHandlerId` (course masquée par warmup de suite). Trace directe :
+   §IA L16.
+2. **`tdd-implement/SKILL.md`** — codifier l'extraction du garde
+   `WaitForState(acteur-foyer)` en helper bUnit partagé + audit que tout test
+   *TempsReel* config/grille le porte. Trace : §IA L16-17.
+3. **`tdd-analyse.md`** — avant d'étiqueter « early-green câblage partagé »,
+   vérifier par exploration code que le câblage prérequis (garde de rôle) existe
+   **sur l'écran ciblé** ; sinon `@driver`. Garde-fou anti vert-qui-ment.
+4. **`validation-visuelle.md`** — ajouter `Edit` au frontmatter + édits
+   ciblés/append, **jamais de full Write** sur `99-sprint<NN>-retours.md` existant.
+   **Réduit** le risque actuel (l'agent a `Write` seul → peut écraser les sections
+   Méthode/IA/Décisions CP).
+5. **`spec-consolidation.md`** — interdiction nommée de Write/Edit sur
+   `99-sprint<NN>-retours.md` (seule sortie = nextSpec). Restriction, plus sûre.
+6. **`chef-de-projet.md`** — codifier : gating de rôle partiel (un seul déclencheur
+   gardé sur un écran à écritures multiples) → consigner l'angle mort en Risques du
+   backlog + séquencer en candidat adjacent, **sans G1** si l'intention métier est
+   déjà actée. Codifie le précédent **D8**.
+
+**Rationale.** Palier 0 réserve l'escalade aux changements structurels/risqués
+(suppression de gate, refonte d'agent) — aucune des 6 n'en est. Les actions 4 et
+5 **diminuent** la surface de risque (un agent à `Write` large pouvant détruire le
+journal de retours est le vrai danger ; les borner est conforme au conservatisme).
+Les actions 1-3 et 6 ajoutent des garde-fous sans modifier de contrat de gate ni de
+routage de pipeline. Toutes adossées à des observations terrain du sprint 13 (§IA
+L16-18) ou à une décision déjà tranchée (D8).
+
+**Fondements.** §IA L16-18 (course `UnknownEventHandlerId`, garde TempsReel, gating
+config partiel) ; **D8** (séquençage de l'angle mort gating en candidat adjacent) ;
+frontmatter `validation-visuelle.md` (`tools: …, Write`) et `spec-consolidation.md`
+(`tools: …, Write, Edit`) ; CLAUDE.md (2 portes PO G2/G3, reste tranché par le CP).

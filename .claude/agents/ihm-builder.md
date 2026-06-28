@@ -172,6 +172,13 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   `ConfigurationFoyer`), relance **nommément la suite runtime `Web.Tests` EXISTANTE** (pas
   seulement le test du scénario courant) **avant** le commit — une régression runtime doit être
   attrapée au commit du scénario coupable, **pas** au RED du suivant (cf. s09 Sc.1→Sc.2).
+  **Relance la famille `*TempsReel*` EN ISOLATION** (pas seulement dans la suite complète) :
+  le **warmup de la suite complète MASQUE** les courses select-sans-garde d'énumération async
+  (`UnknownEventHandlerId`) — un `*TempsReel*` **vert en suite complète mais rouge en
+  isolation** est une **course à garder** (garde `WaitForState` sur l'énumération avant
+  interaction), **pas** un faux flake tolérable. (Rétro s13 A1 ; vécu s13 : la touche d'un
+  composant partagé a rendu déterministe une course latente sur 7 `*TempsReel*` préexistants,
+  invisible en suite complète.)
 - Pour un **scénario IHM**, l'acceptation **runtime/E2E** doit être verte (c'est la
   preuve). Tu **peux** ajouter des **tests de composant bUnit** en complément, **jamais**
   comme preuve d'acceptation d'un bug runtime ; ne double que les ports, jamais le domaine.
