@@ -59,6 +59,11 @@ nouvelle spec.
   **uniquement** le fichier `nextSpec`.
 - **Ne PAS créer/modifier d'autre fichier** que `nextSpec`. Ne touche ni le backlog, ni
   le dossier de sprint, ni les versions de spec antérieures.
+- ⚠️ **Ne JAMAIS `Write` ni `Edit` `99-sprint<NN>-retours.md`** (interdiction explicite
+  nommée) : ce fichier porte les **décisions CP** (D1→Dn) et le **journal IA** — strictement
+  hors périmètre consolidation. Ta **seule** sortie fichier autorisée est `nextSpec`. (Rétro
+  s13 A3 ; vécu s13 : un `Write` a écrasé `99-sprint13-retours.md` malgré l'anti-règle
+  « ne touche pas le dossier de sprint » — l'interdiction doit nommer le fichier pour tenir.)
 - **Ne PAS juxtaposer** les besoins en annexe — fonds-les dans les bonnes sections ;
   réécris les règles invalidées, conserve celles encore valides.
 - **Ne PAS** produire de section « changelog » — la spec vivante décrit l'**état

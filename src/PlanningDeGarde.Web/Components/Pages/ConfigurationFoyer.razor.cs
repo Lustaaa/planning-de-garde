@@ -41,6 +41,15 @@ public partial class ConfigurationFoyer
     private readonly FormulaireAjout _ajout = new();
     private string? _motifEchecAjout;
 
+    /// <summary>Accusé non bloquant de suppression (registre avertissement-à-part, aligné « Transfert
+    /// défini » — D5) : affiché à côté de la liste sans interrompre la consultation, effacé à la
+    /// suppression suivante.</summary>
+    private string? _accuseSuppression;
+
+    /// <summary>Motif d'échec de suppression (service injoignable, règle 28) — surface distincte de
+    /// l'accusé : la liste/grille/légende restent inchangées, aucune mise en file (Sc.8).</summary>
+    private string? _motifEchecSuppression;
+
     private sealed class FormulaireCycle
     {
         public int NombreSemaines { get; set; } = 2;
@@ -169,6 +178,50 @@ public partial class ConfigurationFoyer
         await RechargerActeurs();
         _ajout.Nom = "";
         _ajout.Couleur = "";
+    }
+
+    /// <summary>
+    /// Supprime un acteur du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/supprimer-acteur</c>, règle 27 — aucune vue n'écrit le domaine en direct),
+    /// puis ré-énumère le store pour que l'acteur supprimé <b>quitte la liste sans rechargement</b> (Sc.6).
+    /// Sur succès, un accusé <b>« Acteur supprimé »</b> non bloquant s'affiche à part (D5) et le handler a
+    /// muté le store ET déclenché la diffusion temps réel (grilles et légende dédoublonnée suivent — le
+    /// filtre d'existence côté projection neutralise l'acteur orphelin). Sur <b>service injoignable</b>
+    /// (échec de transport <see cref="HttpRequestException"/>, règle 28), un message dédié s'affiche, la
+    /// liste/grille/légende restent inchangées, rien n'est mis en file (Sc.8). La clé est l'identifiant
+    /// stable opaque (jamais le libellé, règle 19) ; aucune règle métier dans l'UI (idempotence côté handler).
+    /// </summary>
+    private async Task Supprimer(string acteurId)
+    {
+        _accuseSuppression = null;
+        _motifEchecSuppression = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/supprimer-acteur",
+                new SupprimerActeurRequete(acteurId));
+        }
+        catch (HttpRequestException)
+        {
+            // Service de configuration injoignable (échec de transport, pas un refus métier) : le handler
+            // SupprimerActeur ne s'exécute jamais. Message dédié, liste/grille/légende inchangées, aucune
+            // suppression ni mise en file (règle 28). Cf. Sc.8.
+            _motifEchecSuppression = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            // Refus métier éventuel : on surface le motif renvoyé par le canal sans muter la liste.
+            _motifEchecSuppression = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        // La liste reflète la suppression sans recharger la page : on relit l'énumération du store durable.
+        await RechargerActeurs();
+        _accuseSuppression = "Acteur supprimé.";
     }
 
     /// <summary>

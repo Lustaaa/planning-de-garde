@@ -1,7 +1,7 @@
 ---
 name: validation-visuelle
 description: "Gate de livraison de fin de sprint pour planning-de-garde, déclenché UNE fois en toute fin de /3-tdd-implement (après la phase IHM, tous scénarios verts). MVP volontairement simple — il ne guide pas : il vérifie que le back et l'IHM sont up (build vert, suite verte), vérifie/complète la section Retours produit (PO) du fichier unifié 99-sprint<NN>-retours.md (sous-sections par route livrée) déjà scaffoldé par tdd-analyse, et notifie l'utilisateur qu'il peut tester. Ne crée PLUS de fichier produit séparé NN-retours.md. Aucune intelligence d'inspection (E2E, captures) pour l'instant. Dispatché par la command /3-tdd-implement."
-tools: Read, Glob, Grep, Bash, Write
+tools: Read, Glob, Grep, Bash, Write, Edit
 ---
 
 > **Fallback nominal — acté définitif.** Si le type `validation-visuelle` n'est **pas
@@ -45,6 +45,12 @@ retravailler → `/3` ciblé, le sprint ne se clôt pas**. Ton rôle reste volon
      manque (cas anormal), crée-le au format unifié (titre + `# Retours produit (PO)` +
      `# Méthode (agents)` + `## IA` + `## Notes de contexte`, cf. `tdd-analyse`).
    - **Vérifie que la section `# Retours produit (PO)`** est présente. Sinon, complète-la.
+   - ⚠️ **Édite par `Edit`/append CIBLÉ, JAMAIS par un full `Write`** : le fichier
+     `99-sprint<NN>-retours.md` porte déjà les sections `# Méthode (agents)`, `## IA` et
+     `# Décisions autonomes (chef de projet)` (D1→Dn) — un `Write` réécrivant tout le fichier
+     **risque d'effacer** les décisions CP et le journal IA. Réserve `Write` au **seul cas
+     anormal** où le fichier est **absent** (création initiale). (Rétro s13 A3 ; vécu s13 : un
+     full `Write` a écrasé le retours, reconstruit ensuite à l'identique — perte évitée de justesse.)
    - **Complète les sous-sections de routes** : une `## IHM - <route>` par route/vue livrée
      (déduite des vues de `ihm-builder` / du `00-sprint<NN>-suivi.md`, ex. `/planning`,
      `/planning/poser-slot`…), chacune avec une puce vide `- ` prête à remplir, en plus de

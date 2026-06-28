@@ -47,4 +47,10 @@ public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEdi
 
     public void Recolorier(string acteurId, string nouvelleCouleur)
         => _couleurs[acteurId] = nouvelleCouleur; // dernière écriture gagne (surface distincte du nom)
+
+    public void Supprimer(string acteurId)
+    {
+        _noms.Remove(acteurId);     // l'acteur cesse d'être énuméré et résolu (NomDe retombe sur l'id brut)
+        _couleurs.Remove(acteurId); // ... ET sa couleur retombe sur le neutre — miroir d'Ajouter
+    }
 }

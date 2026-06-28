@@ -3,6 +3,7 @@ using System.Linq;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.State;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
@@ -38,6 +39,7 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(
             GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "ajouter-acteur"));
+        Services.AddSingleton(new SessionPlanning()); // contexte rôle réel (Parent par défaut) requis par l'écran (gating Sc.7)
 
         var config = RenderComponent<ConfigurationFoyer>();
 
@@ -49,7 +51,7 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
         var nombreInitial = config.FindAll("[data-testid='acteur-foyer']").Count;
         Assert.DoesNotContain(
             config.FindAll("[data-testid='acteur-foyer']"),
-            li => li.TextContent.Trim() == "Carla");
+            li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
         // … un parent a saisi « Carla » (rose) dans le formulaire d'ajout.
         config.Find("[data-testid='champ-nom-ajout']").Change("Carla");
@@ -71,6 +73,6 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
         Assert.Equal(nombreInitial, config.FindAll("[data-testid='acteur-foyer']").Count);
         Assert.DoesNotContain(
             config.FindAll("[data-testid='acteur-foyer']"),
-            li => li.TextContent.Trim() == "Carla");
+            li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
     }
 }

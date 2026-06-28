@@ -22,4 +22,10 @@ public interface IEditeurConfigurationFoyer
     /// <summary>Affecte une nouvelle couleur à l'acteur identifié de façon stable (surface
     /// distincte du nom — recolorier ne touche jamais le nom).</summary>
     void Recolorier(string acteurId, string nouvelleCouleur);
+
+    /// <summary>Retire l'acteur identifié de façon stable de la configuration : son <b>nom</b>
+    /// ET sa <b>couleur</b> (miroir d'<see cref="Ajouter"/>). Après retrait, l'acteur n'est plus
+    /// énuméré ni résolu — <see cref="IReferentielResponsables.NomDe"/> retombe sur l'id brut et la
+    /// couleur sur le neutre par contrat. La clé est l'identifiant stable opaque, jamais le libellé.</summary>
+    void Supprimer(string acteurId);
 }

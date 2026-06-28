@@ -43,6 +43,14 @@ public sealed class FrontWasmConfigNomVideRefuseTempsReelTests : TestContext
         // When — depuis l'écran de configuration réellement câblé, je tente d'enregistrer parent-b avec un
         // nom tout-espaces (vide utile), sans recoloriage (émission via le canal d'écriture HTTP réel).
         var config = RenderComponent<ConfigurationFoyer>();
+
+        // … garde déterministe : attendre la fin de l'énumération asynchrone des acteurs (GET HTTP réel)
+        // avant d'interagir avec le select, sinon un re-render intercalé invalide le handler d'événement
+        // (UnknownEventHandlerId) — standard anti-flake *TempsReel* déjà appliqué par les tests config frères.
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+
         config.Find("select.form-select").Change("parent-b");
         config.Find("[data-testid='champ-nom']").Change("   ");
         config.Find("form").Submit();

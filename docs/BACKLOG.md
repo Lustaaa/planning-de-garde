@@ -4,7 +4,7 @@
 > une vue **par épic (fonctionnalité)** pour regrouper ce qui est lié et préparer le
 > découpage des sprints, et une vue **par palier (séquence de livraison)** pour le
 > calendrier d'un coup d'œil. Source de vérité du *quoi/quand* ; le *pourquoi* vit dans
-> la spec vivante [`docs/12-specification.md`](12-specification.md).
+> la spec vivante [`docs/13-specification.md`](13-specification.md).
 >
 > **Tenue à jour par le pipeline** : `/4-retours` y **ajoute** les besoins issus du
 > challenge ; `/6-cloture-sprint` y passe à **✅ fait** ce qui a été livré (gate visuel
@@ -25,8 +25,9 @@
 | 07 | `lisibilite-theme` — **nom du responsable** + **légende** couleur dans la grille + **thème métier** (garde d'enfants) ; port nom miroir de la palette | ✅ fait | Port `IReferentielResponsables` (miroir `IPaletteCouleurs`) + composant `Legende` + troncature/survol nom long + repli gris assumé + suivi temps réel + thème CSS (6 scénarios @vert runtime, 120 verts) — **palier 3 (lisibilité & thème) refermé** |
 | 08 | `config-foyer-acteurs` — écran de config pour **éditer les acteurs** (renommer + recolorier) en **VOLATILE** (mémoire/session), grille (case + légende) relue immédiatement, convergence temps réel | ✅ fait | Store mutable `ConfigurationFoyerEnMemoire` (singleton derrière `IReferentielResponsables`/`IPaletteCouleurs`/`IEditeurConfigurationFoyer`) + commande/handler `EditerActeur` + écran `ConfigurationFoyer` (4 acteurs, nom pré-rempli) + diffusion SignalR (10 scénarios @vert runtime, 143 verts) — **palier 4 (édition volatile) refermé** |
 | 09 | `config-foyer-persistante` — **ajout d'acteurs** (id stable neuf opaque) + **persistance Mongo BORNÉE à la config foyer** (adaptateur de droite `ConfigurationFoyerMongo`, ports inchangés, seed-once) ; survit au redémarrage. Reste du domaine InMemory | ✅ fait | `AjouterActeurHandler` + ports `IEnumerationActeursFoyer`/`IEditeurConfigurationFoyer` + adaptateur durable `ConfigurationFoyerMongo` (Docker) + écran config (ajout + liste + pastille couleur + messages refus/transport) (9 scénarios @vert, 161 verts, pivot Mongo réel) — **palier 5 (config foyer persistante) refermé** |
-| 10 | `recurrence-des-periodes` — **cycle de fond** définissable/éditable (N semaines, alternance par parité ISO 8601, mapping index→responsable sur id stable) ; la grille résout le responsable de fond (case + légende) sans saisie de période ; surcharge > fond > neutre ; **EN MÉMOIRE** (durabilité = palier 9) | ✅ fait | `CycleDeFond` (Domain, parité ISO + invariant N≥1) + port `IReferentielCycleDeFond` + `DefinirCycleHandler` + extension `GrilleAgendaQuery` + adaptateur `CycleDeFondEnMemoire` (singleton) + endpoint `POST /definir-cycle` + section « Cycle de fond » de l'écran config (mapping sur acteurs persistés) (8 scénarios @vert end-to-end, 183 verts) — **palier 6 (récurrence des périodes) refermé** |
+| 10 | `recurrence-des-periodes` — **cycle de fond** définissable/éditable (N semaines, alternance par parité ISO 8601, mapping index→responsable sur id stable) ; la grille résout le responsable de fond (case + légende) sans saisie de période ; surcharge > fond > neutre ; **EN MÉMOIRE** (durabilité = palier 10) | ✅ fait | `CycleDeFond` (Domain, parité ISO + invariant N≥1) + port `IReferentielCycleDeFond` + `DefinirCycleHandler` + extension `GrilleAgendaQuery` + adaptateur `CycleDeFondEnMemoire` (singleton) + endpoint `POST /definir-cycle` + section « Cycle de fond » de l'écran config (mapping sur acteurs persistés) (8 scénarios @vert end-to-end, 183 verts) — **palier 6 (récurrence des périodes) refermé** |
 | 11 | `ecriture-en-contexte` — **écriture en contexte par dialogs** : menu au clic sur une case du planning → dialogs « Poser un slot » / « Affecter une période » pré-remplies sur la **date de la case** ; échec → dialog reste ouverte (message dans la dialog) ; annulation sans écriture ; gating Invité sur le menu ; chevauchement accepté + **bandeau d'avertissement non bloquant** ; **écrans dédiés slot/période retirés** (un seul chemin d'écriture) | ✅ fait | `PoserSlotDialog` + `AffecterPeriodeDialog` + menu clic-case dans `PlanningPartage` + ancrage `DateContexte` (prime sur `IDateTimeProvider`) + avertissement surfacé par le contrat de réponse du canal poser-slot (`PoserSlotReponse`) + suppression des pages/routes/liens poser-slot/affecter-periode (page `definir-transfert` conservée) (7 scénarios @vert runtime, 179 verts) — **palier 7 (écriture en contexte, dialogs) refermé** |
+| 12 | `transfert-en-contexte` — **3e dialog « Définir un transfert » en contexte** (menu clic-case, pré-remplie sur la date de la case ; échec → dialog reste ouverte ; annulation sans écriture ; gating Invité) **+ retrait du dernier écran de saisie dédié** (page/route/lien `definir-transfert` supprimés) | ✅ fait | `DefinirTransfertDialog` + 3e entrée menu clic-case + accusé « Transfert défini » à part + ancrage `DateContexte` + réutilise commande/handler `DefinirTransfert` + canal HTTP + SignalR (aucun handler neuf, transfert reste InMemory) + suppression page/route/lien dédiés (6 scénarios @vert runtime, 182 verts) — **palier 7 (écriture en contexte) refermé COMPLET, épic É12 fermé** |
 
 > **Refacto technique HORS pipeline (PR #21, avant s10) : faite** — adaptateurs de droite par techno, `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, outil `test-count.ps1`. Critère de sortie 161/161 tenu.
 
@@ -34,23 +35,20 @@
 
 | Sprint | Sujet | Palier (spec v12) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : 3e dialog « Définir un transfert » en contexte, cf. ci-dessous)* | 7 (reliquat écriture en contexte) | ⬜ |
+| — | *(aucun sprint en cours — prochain : CRUD acteurs, tranche suppression, cf. ci-dessous)* | 8 (CRUD acteurs suppression, spec v13) | ⬜ |
 
 ## Prochains sprints envisagés
 
-> **Décision PO (clôture s11, porte G2)** : prochain sujet **make-gherkin** = **achever
-> l'écriture en contexte — 3e dialog « Définir un transfert » depuis une case + retrait de la
-> dernière page de saisie dédiée** (referme l'épic É12). Aucun retours d'usage frais ce sprint
-> (goal 7/7 atteint) ; séquencement piloté par la découpe + la dette tech. Indicatif —
-> confirmé/affiné au démarrage de chaque sprint.
+> **Décision PO (clôture s12, porte G2)** : prochain sujet **make-gherkin** = **CRUD acteurs — tranche suppression (Delete)** : suppression d'un acteur (règle 6) + cadrage des cases orphelines (neutralisation par repli : surcharge orpheline → fond → neutre, message non bloquant, pas de réaffectation auto) + acceptation runtime sur store Mongo réel. Impersonation bornée = tranche suivante (make-gherkin séparé, É10), HORS périmètre immédiat. Retours produit s12 VIDE (goal 6/6 atteint) → pilotage au catalogue. **Fix /3 ciblé** dropdown « Acteur du foyer » embarqué en tête de sprint, HORS make-gherkin. Indicatif — confirmé/affiné au démarrage de chaque sprint.
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 (P1) | **3e dialog « Définir un transfert » en contexte** (reliquat palier 7) : ajouter une 3e entrée au menu clic-case réutilisant `DefinirTransfert` + canal HTTP + SignalR (aucun handler/règle neuf, transfert reste InMemory) **puis retirer la page/route/lien `definir-transfert`** — plus aucun écran de saisie hors-contexte. Pattern menu déjà prouvé (Sc.1/Sc.2 s11), risque faible | É12, É8 | Ferme l'épic écriture en contexte (G2 PO clôture s11) ; plus petit incrément cohérent |
-| +2 (P2) | **Stabilisation des flakes temps-réel SignalR** (`FrontWasmConfigCycle*TempsReel*`, flaky sous charge parallèle ; verts en isolation) — **action de méthode/dette de test** (vit dans les tests, pas `src/`), convention codifiée (rétro s11) ; **prérequis de fait de P3** | É3 | Déverrouille l'édition concurrente (P3) sans driver une fondation temps-réel instable |
-| +3 (P3) | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — **DIFFÉRÉE** jusqu'à stabilisation SignalR (P2) | É7 | Cas limite runtime ; dépend de P2 |
-| +4 | **CRUD acteurs complet + impersonation bornée** : **suppression** d'acteur (cadrage des cases orphelines, règle 6) + amorce d'impersonation (utilisateur principal incarne un acteur, convenance admin, **pas** l'auth réelle du palier 12) | É2, É10 | Termine l'appropriation des acteurs ; consigne PO s10 |
-| +5 | **Cycle de fond riche** : choisir le **début/ancre** + config fine (frontière de jour vendredi→vendredi, plage début/fin, sur-cycle vacances, 1 WE sur 2). Sujet plein à découper — **rouvre la décision CP « ancrage ISO sans ancre »** à son make-gherkin ; chevauche la durabilité du cycle (palier 9) | É7, É1 | Retour PO /configuration s10 ; l'usage réclame un cycle réellement configurable |
+| +1 (P1) | **CRUD acteurs — tranche suppression** : suppression d'un acteur (règle 6) + cadrage des cases orphelines (neutralisation par repli, message non bloquant, pas de réaffectation auto) ; acceptation runtime store Mongo réel | É2, É1 | Sujet d'usage élu G2 PO clôture s12 ; complète le cycle de vie acteurs (C/R/U livrés) |
+| +2 (P2) | **Impersonation bornée** (admin incarne un acteur, convenance — pas l'auth réelle du palier 13) — tranche suivante du CRUD acteurs, make-gherkin séparé | É10, É2 | Suite directe de la suppression (rang +4 s12 scindé) |
+| +3 (P3) | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) + **sélection de plage de cases** pour définir une période | É4, É7 | Prochain palier d'usage après le CRUD acteurs ; besoin ancien (retours s02/s03) |
+| +4 | **Stabilisation des flakes temps-réel SignalR** (`FrontWasmConfigCycle*TempsReel*`, flaky sous charge ; verts en isolation) — **action de méthode/dette de test**, prérequis de l'édition concurrente | É3 | Déverrouille l'édition concurrente sans driver une fondation temps-réel instable |
+| +5 | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — DIFFÉRÉE jusqu'à stabilisation SignalR | É7 | Cas limite runtime ; dépend du +4 |
+| +6 | **Cycle de fond riche** : choisir le début/ancre + config fine (frontière de jour, plage début/fin, sur-cycle vacances, WE-only). Sujet plein — rouvre la décision CP « ancrage ISO sans ancre » | É7, É1 | Retour PO /configuration s10 |
 
 ---
 
@@ -73,7 +71,7 @@
 | Deux parents (toujours exactement 2 ; le 1er saisit l'autre) | ⬜ | Palier 5 | retours s01 · spec règle 3 |
 | Acteurs « autres » éditables (nounou, grands-parents…) | ⬜ | Palier 5 | spec règle 4 · retours s01 |
 | Lieux éditables et persistés (référentiel des sélecteurs) | 🟡 | Palier 4 | spec règle 11 |
-| Cycle récurrent multi-semaines **éditable** (EN MÉMOIRE ; persistance durable = palier 9) | 🟡 | s10 (éditable) / Palier 9 (durable) | spec règle 11 · besoins s10 |
+| Cycle récurrent multi-semaines **éditable** (EN MÉMOIRE ; persistance durable = palier 10) | 🟡 | s10 (éditable) / Palier 10 (durable) | spec règle 11 · besoins s10 |
 | Set de couleurs par défaut persisté (acteur → couleur) | 🟡 | s03 statique + Palier 4 | spec règle 15 |
 
 ### Épic 2 — Modèle & configuration d'acteurs
@@ -84,8 +82,8 @@
 | Trois types d'acteurs avec rôles distincts (Admin / Parent / Autre) | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
 | Écran de config foyer — **édition des acteurs (noms + couleurs) en VOLATILE** (mémoire/session, grille relue immédiatement, sans persistance durable) | ✅ | s08 / Palier 4 | retours s07 · spec v08 règle 5 |
 | **Ajout d'acteurs (parent/autre/nounou, id stable neuf) + persistance Mongo BORNÉE à la config foyer** (survit au redémarrage) | ✅ | s09 / Palier 5 | retours s08 · spec v09 règle 6 |
-| Écran de configuration du foyer complet (acteurs + cycle de fond + couleurs, persisté) | ⬜ | Palier 9 | retours s01 (#7) · spec p5 |
-| Édition des acteurs « autres » (ajout/édition/suppression) | 🟡 | Palier 5 (ajout) / suppression derrière | spec règle 4 · retours s08 |
+| Écran de configuration du foyer complet (acteurs + cycle de fond + couleurs, persisté) | ⬜ | Palier 10 | retours s01 (#7) · spec p5 |
+| Édition des acteurs « autres » (ajout/édition/suppression) | 🟡 | Palier 5 (ajout) / s13 Palier 8 (suppression) | spec règle 4 · retours s08 |
 | Affichage/actions adaptés au type d'acteur | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
 | **Création d'acteurs par le parent configurateur** (nounou / grand-parent / nouveau parent en couple / autre), **email obligatoire** à la création → crée le compte utilisateur (inactif, cf. É10) | ⬜ | Palier 5-6 | retours s08 (idée) · spec règles 4/6-7 |
 
@@ -125,7 +123,7 @@
 | Thème visuel en accord avec le domaine (garde d'enfants) | ✅ | s07 / Palier 3 | retours s01/s02/s03 (« j'aime pas le thème ») · spec règle 20 |
 | Nom long lisible (troncature + nom complet au survol) | ✅ | s07 / Palier 3 | spec règle 16 (dérivé) |
 | Thème sombre + toggle (avec persistance de la préférence) | ⬜ | backlog (additif) | retours s07 (idée) · spec v08 règle 21 |
-| Personnalisation des couleurs par utilisateur authentifié | ⬜ | Palier 9 (auth) | spec règle 16 |
+| Personnalisation des couleurs par utilisateur authentifié | ⬜ | Palier 13 (auth) | spec règle 16 |
 
 ### Épic 6 — Créneaux & slots de localisation
 *Poser et gérer les slots (où est l'enfant) : création, validation, affichage.*
@@ -164,7 +162,7 @@
 | Rejet : transfert incomplet | ✅ | s01 | scénario 12 s01 |
 | Transfert dérivé automatiquement par défaut (saisie réservée au ponctuel) | ⬜ | Palier 5-6 | spec règle 17 · retours s02 (#14) |
 | Transfert ponctuel & modifiable | 🟡 | s01 (modèle) + Palier 5+ | spec règle 18 |
-| Transfert en contexte via dialog (3e entrée du menu clic-case + retrait page dédiée) | ⬜ | Palier 7 (reliquat, P1 prochain) | retours s02 (#8) · spec p3 · G2 PO s11 |
+| Transfert en contexte via dialog (3e entrée du menu clic-case + retrait page dédiée) | ✅ | s12 / Palier 7 | retours s02 (#8) · spec p3 · G2 PO s11 |
 | Transferts exposés dans le panneau cloche | ⬜ | Palier 4 item 6 | spec règle 20 · retours s02 (#8)/s03 (#4) |
 
 ### Épic 9 — Notifications & événements à venir
@@ -183,14 +181,14 @@
 
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
-| Landing page (identifie le foyer, invite à s'authentifier) | ⬜ | Palier 8 | retours s01 (#2) · spec p8 |
-| Authentification OAuth (Gmail / Apple / Microsoft) | ⬜ | Palier 8 | retours s01 (#2) · spec p8 |
-| Gestion des sessions utilisateur (persistance, logout) | ⬜ | Palier 8 | spec p8 |
-| Droits d'accès par utilisateur identifié (selon rôle) | ⬜ | Palier 5 + 8 | spec règles 6-7 |
-| Personnalisation des couleurs par utilisateur authentifié | ⬜ | Palier 8 | spec règle 16 |
-| **Compte utilisateur créé inactif** (à la création d'un acteur avec email, cf. É2) ; le créateur a **tous les droits en modification + impersonation** tant que le compte est inactif | ⬜ | Palier 8 | retours s08 (idée) |
-| **Prise en main de son compte** par l'utilisateur réel à sa 1ʳᵉ connexion (via une **demande**) ; après prise en main, il édite ses caractéristiques selon son rôle | ⬜ | Palier 8 | retours s08 (idée) |
-| **Droits par rôle après prise en main** : Nounou / Grand-parent = éditer son profil + faire des demandes aux parents ; Second parent = éditer son profil + administrer le planning de l'enfant **sur sa période** + demandes d'adaptation de période / d'ajout de slot | ⬜ | Palier 8 | retours s08 (idée) · spec règles 6-7 |
+| Landing page (identifie le foyer, invite à s'authentifier) | ⬜ | Palier 13 | retours s01 (#2) · spec p8 |
+| Authentification OAuth (Gmail / Apple / Microsoft) | ⬜ | Palier 13 | retours s01 (#2) · spec p8 |
+| Gestion des sessions utilisateur (persistance, logout) | ⬜ | Palier 13 | spec p8 |
+| Droits d'accès par utilisateur identifié (selon rôle) | ⬜ | Palier 5 + 13 | spec règles 6-7 |
+| Personnalisation des couleurs par utilisateur authentifié | ⬜ | Palier 13 | spec règle 16 |
+| **Compte utilisateur créé inactif** (à la création d'un acteur avec email, cf. É2) ; le créateur a **tous les droits en modification + impersonation** tant que le compte est inactif | ⬜ | Palier 13 | retours s08 (idée) |
+| **Prise en main de son compte** par l'utilisateur réel à sa 1ʳᵉ connexion (via une **demande**) ; après prise en main, il édite ses caractéristiques selon son rôle | ⬜ | Palier 13 | retours s08 (idée) |
+| **Droits par rôle après prise en main** : Nounou / Grand-parent = éditer son profil + faire des demandes aux parents ; Second parent = éditer son profil + administrer le planning de l'enfant **sur sa période** + demandes d'adaptation de période / d'ajout de slot | ⬜ | Palier 13 | retours s08 (idée) · spec règles 6-7 |
 
 ### Épic 11 — Imprévu & échange
 *Gérer les exceptions : malade, retard, échange de dernière minute avec accord.*
@@ -207,18 +205,20 @@
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
 | Dialogs d'écriture (poser slot + affecter période) depuis les cases (menu clic-case, pré-rempli date case, échec/annulation/chevauchement/gating Invité) | ✅ | s11 / Palier 7 | retours s02 (#7/8/10)/s03 |
-| Dialog « Définir un transfert » en contexte + retrait page dédiée (referme l'épic) | ⬜ | Palier 7 (reliquat, P1 prochain) | retours s02 (#8) · G2 PO s11 |
+| Dialog « Définir un transfert » en contexte + retrait page dédiée (referme l'épic) | ✅ | s12 / Palier 7 | retours s02 (#8) · G2 PO s11 |
 | Suppression de période depuis dialog | ⬜ | à séquencer | retours s02 (#6) · retours s03 (trou) |
 | Recâblage de l'écriture via API HTTP (au lieu du DI direct) | ✅ | s05 (poser/affecter/transfert via API distante WASM) | retours s03 (#5) · spec p1 |
 | Rafraîchissement immédiat : la saisie réapparaît dans la grille | ✅ | s06 / Palier 2 | retours s03 (#5, bug runtime) |
 
 ---
 
-## À faire (paliers de la spec vivante v12)
+## À faire (paliers de la spec vivante v13)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
-> Numérotation alignée sur la **séquence de livraison de v12** (palier 7 scindé :
-> écriture-en-contexte livrée vs calendrier navigable à faire). Les sujets techniques
+> Numérotation alignée sur la **séquence de livraison de v13** : palier 7
+> (écriture-en-contexte) **livré complet** ; **palier 8 = CRUD acteurs suppression**
+> (tiré DEVANT le calendrier par priorité d'usage, ex-9) ; **palier 9 = Calendrier
+> navigable** (ex-8) ; paliers suivants décalés d'un cran. Les sujets techniques
 > (persistance réelle du reste du domaine, PWA) sont séquencés **derrière l'usage**
 > (arbitre : l'usage tranche), Docker en garde-fou d'outillage.
 
@@ -230,21 +230,22 @@
 | 4 | **Config foyer · édition des acteurs (VOLATILE)** — écran éditant noms + couleurs en mémoire/session, grille relue immédiatement | É2, É1 | spec v08 règle 5 · besoins s07 (G2 PO) | ✅ s08 |
 | 5 | **Config foyer PERSISTANTE** — **ajout/édition d'acteurs** (parent/autre/nounou, id stable neuf) **+ persistance Mongo BORNÉE à la config foyer** (adaptateur de droite, ports inchangés) ; survit au redémarrage. Reste du domaine InMemory | É2, É1, É3 | spec v09 règle 6 · besoins s08 (G2 PO, révision d'arbitre bornée) | ✅ s09 |
 | 6 | **Récurrence des périodes** (cycle de fond définissable/éditable, alternance parité ISO, EN MÉMOIRE) | É7, É1 | spec v09 règle 10 · besoins s07/s08 (IMPORTANT) | ✅ s10 |
-| 7 | **Écriture en contexte (dialogs)** — menu au clic sur une case → « Poser un slot » / « Affecter une période » pré-remplies sur la date de la case (échec/annulation/chevauchement/gating Invité), écrans dédiés retirés. **Reliquat (P1) : 3e dialog « Définir un transfert » + retrait page dédiée** | É6, É7, É8, É12 | spec v12 p7 · besoins s10/s11 | ✅ s11 (reliquat transfert ⬜) |
-| 8 | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) **+ sélection de plage de cases** pour définir une période | É4, É7 | spec v12 p8 · retours s02/s03 | ⬜ |
-| 8bis | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 | ⬜ |
-| 9 | Alimentation & saisie — **config foyer durable restante** (lieux, set couleurs, cycle de fond) + Admin/Parent/Autre, écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 | ⬜ |
-| 10 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
-| 11 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
-| 12 | Ouverture de l'accès (auth OAuth, landing, comptes inactifs + impersonation + prise en main par rôle, personnalisation des couleurs, thème sombre persisté) | É10, É2, É5 | spec v05 p9 · retours s01/s07/s08 | ⬜ |
-| 13 | **Adaptateurs de droite — persistance réelle du RESTE du domaine** (slots/périodes/transferts ; la config foyer en a été le premier client, amorcé au palier 5). **Borne anti-cliquet : ne remonte pas devant l'usage** | É1, É3 | spec v09 règle 30 · besoins s05/s08 (séquencé derrière l'usage) | ⬜ |
-| 14 | **PWA — saisie hors-ligne** (cache + file d'écritures rejouée au retour de connexion, au-delà de l'échec clair livré au s05) | É12, É3 | spec v06 · besoins s05 (séquencé derrière l'usage) | ⬜ |
+| 7 | **Écriture en contexte (dialogs)** — menu au clic sur une case → « Poser un slot » / « Affecter une période » / « Définir un transfert » pré-remplies sur la date de la case (échec/annulation/chevauchement/gating Invité), tous les écrans dédiés retirés | É6, É7, É8, É12 | spec v12 p7 · besoins s10/s11 | ✅ s11+s12 (refermé complet) |
+| 8 | **CRUD acteurs — suppression** (Delete d'un acteur, règle 6 + cadrage des cases orphelines par neutralisation/repli) sur store Mongo réel ; **impersonation bornée** = tranche suivante (make-gherkin séparé) | É2, É1, É10 | spec v13 p8 · besoins s12 (G2 PO) | ⬜ |
+| 9 | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) **+ sélection de plage de cases** pour définir une période | É4, É7 | spec v13 p9 · retours s02/s03 | ⬜ |
+| 9bis | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 | ⬜ |
+| 10 | Alimentation & saisie — **config foyer durable restante** (lieux, set couleurs, cycle de fond) + Admin/Parent/Autre, écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 | ⬜ |
+| 11 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
+| 12 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
+| 13 | Ouverture de l'accès (auth OAuth, landing, comptes inactifs + impersonation + prise en main par rôle, personnalisation des couleurs, thème sombre persisté) | É10, É2, É5 | spec v05 p9 · retours s01/s07/s08 | ⬜ |
+| 14 | **Adaptateurs de droite — persistance réelle du RESTE du domaine** (slots/périodes/transferts ; la config foyer en a été le premier client, amorcé au palier 5). **Borne anti-cliquet : ne remonte pas devant l'usage** | É1, É3 | spec v09 règle 30 · besoins s05/s08 (séquencé derrière l'usage) | ⬜ |
+| 15 | **PWA — saisie hors-ligne** (cache + file d'écritures rejouée au retour de connexion, au-delà de l'échec clair livré au s05) | É12, É3 | spec v06 · besoins s05 (séquencé derrière l'usage) | ⬜ |
 
 > **Séquencement acté (v09, `/5-consolidation` s08) :** la **config foyer persistante** (ajout
 > d'acteurs + Mongo borné) passe **devant** la récurrence. **Révision d'arbitre bornée** (G2 PO) :
 > Mongo (persistance réelle) est tiré **devant l'usage mais BORNÉ à la config foyer** (premier
 > client de la config durable). **Borne anti-cliquet** : la persistance du **reste** du domaine
-> (slots/périodes/transferts) reste en queue (palier 13). Corollaire reformulé **« durable ICI
+> (slots/périodes/transferts) reste en queue (palier 14). Corollaire reformulé **« durable ICI
 > (config foyer), volatile encore ailleurs »**. **Docker** reste un **garde-fou d'outillage**.
 
 > **Piste technique (PWA)** — *Event sourcing + outbox pattern* comme socle d'une file
@@ -273,21 +274,21 @@
 - Convention code-behind systématique (`.razor` + `.razor.cs`, pas de `@code` inline) — sprint 04+.
 - API explorable (Scalar/OpenAPI) — livrée au palier 1 (s05).
 - Séparation des canaux : écriture = requête/réponse ; diffusion temps réel = lecture seule (jamais d'écriture par la diffusion).
-- **Conteneurisation Docker** (hôte API + front WASM + base, montables ensemble via compose) — garde-fou d'outillage hors-incrément, sans observable métier (comme l'API explorable). Débloqué par le palier 1 + la persistance réelle (palier 10). Origine : PO post-s05.
+- **Conteneurisation Docker** (hôte API + front WASM + base, montables ensemble via compose) — garde-fou d'outillage hors-incrément, sans observable métier (comme l'API explorable). Débloqué par le palier 1 + la persistance réelle (palier 14). Origine : PO post-s05.
 
 ## Dettes explicitement signalées
 
 - Données en dur dans `Foyer.cs` (É1) — persister en base — retours s03 (#11).
 - Aucune édition/suppression de période depuis l'IHM (É7) — « trou fonctionnel assumé » — retours s03.
 - ~~Saisies invisibles à l'écran (É12)~~ — **éteint au s06 (palier 2)** : faux bug (date par défaut → `IDateTimeProvider`) ET vrai défaut couleur (mapping libellé→identifiant stable + seed) corrigés, 8/8 vert — retours s03 (#5) · consolidation s05 · livré s06.
-- Risque d'adoption du second parent (É10) — repoussé au palier 9 (auth), « ne pas laisser glisser ».
+- Risque d'adoption du second parent (É10) — repoussé au palier 13 (auth), « ne pas laisser glisser ».
 - Faux sentiment de progrès — 2 sprints structurels d'affilée (s04, s05) sans besoin produit observable ; **résorbé au s06** : le palier 2 (Saisie visible) a rendu la main à l'usage (8/8 vert). Vigilance maintenue : ne pas remonter les paliers techniques 10/11 devant l'usage.
 - `@code` inline restant (`Legende.razor`, `Pages/Home.razor`) + frontières hexagonales à homogénéiser + séparation des projets (É3) — **cible de la refacto technique HORS pipeline décidée à la clôture s09** (iso-comportement, invariant 161/161). Retours s03 (#7).
-- ~~Cycle multi-semaines non affiché/éditable (É1)~~ — **éteint au s10 (palier 6)** : cycle de fond affiché (grille + légende) et éditable (section config), EN MÉMOIRE ; durabilité séquencée au palier 9.
+- ~~Cycle multi-semaines non affiché/éditable (É1)~~ — **éteint au s10 (palier 6)** : cycle de fond affiché (grille + légende) et éditable (section config), EN MÉMOIRE ; durabilité séquencée au palier 10.
 - **Dropdown « Acteur du foyer » périmée au renommage** (É2, /configuration) — défaut signalé au gate s10 : la dropdown + l'aide « Nom actuel » lisent une liste statique au lieu du store vivant `_acteurs`. **Fix /3 ciblé léger** (hors make-gherkin), en tête de file.
 - **Cycle de fond riche réclamé** (É7) — l'usage (gate s10) demande ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only : au-delà du plus petit incrément livré, sujet plein séquencé (+5).
 - **Flakes temps-réel SignalR** (É3, `FrontWasmConfigCycle*TempsReel*`) — verts en isolation, flaky sous charge parallèle (timing SignalR/Docker) ; **dette de test** (pas un bug `src/`). Convention anti-flake codifiée (rétro s11, `ihm-builder`) ; **rétrofit effectif = P2**, prérequis de l'édition concurrente (P3). Constaté s11.
-- **Dernière saisie hors-contexte restante** (É8/É12) — la page `/planning/definir-transfert` subsiste (seul écran de saisie dédié non encore migré) ; à déplacer en dialog puis retirer (P1, prochain sujet). Constaté s11.
+- ~~Dernière saisie hors-contexte restante~~ — **éteinte au s12 (palier 7)** : page/route/lien `/planning/definir-transfert` supprimés, 3e dialog transfert livrée, épic É12 refermé. Constaté s11, résolu s12.
 
 > **Idées PO consolidées (retours s07)** — les 3 idées de la section « Idée pour la suite »
 > ont été replacées dans leurs épics : *slot imbriqué* → **É6** ; *parents liés via leurs
@@ -298,5 +299,5 @@
 > (créer les acteurs avec email → compte inactif, impersonation par le créateur, prise en
 > main par demande, droits par rôle) a été replacée dans ses épics : *création d'acteurs avec
 > email* → **É2** ; *compte inactif / impersonation / prise en main / droits par rôle (nounou,
-> grand-parent, second parent)* → **É10** (Palier 8). Le couplage É2↔É10 (création d'acteur =
-> amorce du compte) est à expliciter quand le palier 8 sera pris. 
+> grand-parent, second parent)* → **É10** (Palier 13). Le couplage É2↔É10 (création d'acteur =
+> amorce du compte) est à expliciter quand le palier 13 sera pris. 

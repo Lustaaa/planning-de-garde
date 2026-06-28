@@ -49,6 +49,14 @@ public sealed class FrontWasmConfigHorsSetNeutreTempsReelTests : TestContext
         // When — depuis l'écran de configuration réellement câblé, je renomme grand-pere en « Papy Jo »
         // SANS lui attribuer de couleur (couleur laissée vide → non appliquée) et j'enregistre.
         var config = RenderComponent<ConfigurationFoyer>();
+
+        // … garde déterministe : attendre la fin de l'énumération asynchrone des acteurs (GET HTTP réel)
+        // avant d'interagir avec le select, sinon un re-render intercalé invalide le handler d'événement
+        // (UnknownEventHandlerId) — standard anti-flake *TempsReel* déjà appliqué par les tests config frères.
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+
         config.Find("select.form-select").Change("grand-pere");
         config.Find("[data-testid='champ-nom']").Change(NomEdite);
         config.Find("form").Submit();

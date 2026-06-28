@@ -36,6 +36,11 @@ public static class CanalEcriture
     /// optionnelle (absente → repli neutre par contrat de palette, Sc.5).</summary>
     public sealed record AjouterActeurRequete(string Nom, string? Couleur = null);
 
+    /// <summary>Corps de la requête de suppression d'un acteur du foyer émise via le canal d'écriture.
+    /// L'identifiant stable opaque est la clé (jamais le libellé). La suppression est autorisée sans
+    /// condition de références et idempotente (id absent / déjà supprimé = succès sans effet, Sc.5).</summary>
+    public sealed record SupprimerActeurRequete(string ActeurId);
+
     /// <summary>Corps de la requête de définition / ré-édition du cycle de fond (palier 6) émise via le
     /// canal d'écriture : le nombre de semaines + le mapping index→responsable (identifiant stable, jamais
     /// le libellé). Une nouvelle définition remplace intégralement le cycle courant (dernière écriture gagne).</summary>
@@ -98,6 +103,18 @@ public static class CanalEcriture
 
             // Même convention que les autres écritures : succès acquitté (l'acteur ajouté est désormais
             // énuméré depuis le store, Sc.1), refus métier renvoyé avec son motif (nom vide, Sc.8).
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/supprimer-acteur", (SupprimerActeurRequete requete, SupprimerActeurHandler handler) =>
+        {
+            var resultat = handler.Handle(new SupprimerActeurCommand(requete.ActeurId));
+
+            // Même convention que les autres écritures : succès acquitté (l'acteur ne sera plus énuméré
+            // depuis le store, Sc.1), refus métier renvoyé avec son motif. Sur succès, le handler a muté
+            // le store ET déclenché la diffusion temps réel (grilles et légende suivent).
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);

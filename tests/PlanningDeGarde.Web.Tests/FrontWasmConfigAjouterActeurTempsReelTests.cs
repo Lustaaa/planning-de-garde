@@ -3,6 +3,7 @@ using System.Linq;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.State;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
@@ -35,6 +36,7 @@ public sealed class FrontWasmConfigAjouterActeurTempsReelTests : TestContext
         // énumération réelle). Le client HTTP du front pointe le transport réel de l'API in-test.
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton(new SessionPlanning()); // contexte rôle réel (Parent par défaut) requis par l'écran (gating Sc.7)
 
         var config = RenderComponent<ConfigurationFoyer>();
 
@@ -44,7 +46,7 @@ public sealed class FrontWasmConfigAjouterActeurTempsReelTests : TestContext
             TimeSpan.FromSeconds(10));
         Assert.DoesNotContain(
             config.FindAll("[data-testid='acteur-foyer']"),
-            li => li.TextContent.Trim() == "Carla");
+            li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
         // When — un parent ajoute « Carla » en rose et valide (émission via le canal d'écriture HTTP réel).
         config.Find("[data-testid='champ-nom-ajout']").Change("Carla");
@@ -56,7 +58,7 @@ public sealed class FrontWasmConfigAjouterActeurTempsReelTests : TestContext
         config.WaitForAssertion(
             () => Assert.Contains(
                 config.FindAll("[data-testid='acteur-foyer']"),
-                li => li.TextContent.Trim() == "Carla"),
+                li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla"),
             TimeSpan.FromSeconds(10));
     }
 }

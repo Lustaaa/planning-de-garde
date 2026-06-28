@@ -18,19 +18,22 @@ public sealed class GrilleAgendaQuery
     private readonly IPaletteCouleurs _palette;
     private readonly IReferentielResponsables _referentiel;
     private readonly IReferentielCycleDeFond? _cycle;
+    private readonly IEnumerationActeursFoyer? _acteurs;
 
     public GrilleAgendaQuery(
         ISlotRepository slots,
         IPeriodeRepository periodes,
         IPaletteCouleurs palette,
         IReferentielResponsables referentiel,
-        IReferentielCycleDeFond? cycle = null)
+        IReferentielCycleDeFond? cycle = null,
+        IEnumerationActeursFoyer? acteurs = null)
     {
         _slots = slots;
         _periodes = periodes;
         _palette = palette;
         _referentiel = referentiel;
         _cycle = cycle;
+        _acteurs = acteurs;
     }
 
     /// <summary>
@@ -64,9 +67,15 @@ public sealed class GrilleAgendaQuery
     private JourCase CaseJourAu(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots)
     {
         var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
-        // Priorité de résolution : surcharge (période saisie) > fond (cycle) > neutre. La période
-        // prime structurellement (branche else intacte) ; le fond ne s'applique que sans période.
-        var responsableId = periode?.ResponsableId ?? _cycle?.CycleCourant()?.ResponsableDeFond(date);
+        // Filtre d'existence appliqué INDÉPENDAMMENT à chaque source AVANT le repli, jamais au
+        // responsableId combiné (un faux raccourci ferait retomber une surcharge orpheline sur le neutre
+        // au lieu du fond) : une surcharge orpheline (Sc.2) retombe sur le fond ; un fond orphelin (Sc.4)
+        // est traité comme un index non mappé → null → neutre, sans nom fantôme.
+        var surcharge = Resolvable(periode?.ResponsableId);
+        var fond = Resolvable(_cycle?.CycleCourant()?.ResponsableDeFond(date));
+        // Priorité de résolution : surcharge (période saisie) > fond (cycle) > neutre. La surcharge
+        // prime structurellement ; le fond ne s'applique que sans surcharge résolvable.
+        var responsableId = surcharge ?? fond;
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
         return new JourCase(date, couleur, nom, SlotsCasePour(slots));
@@ -74,6 +83,17 @@ public sealed class GrilleAgendaQuery
 
     private static bool CouvreLeJour(PeriodeSnapshot periode, DateOnly date)
         => date >= DateOnly.FromDateTime(periode.Debut) && date <= DateOnly.FromDateTime(periode.Fin);
+
+    /// <summary>
+    /// Contrat d'existence : restitue l'identifiant s'il désigne un acteur <b>existant</b> du foyer,
+    /// sinon <c>null</c> (acteur supprimé = orphelin → neutralisé à la résolution). Contrat porté par
+    /// le port de lecture EXISTANT <see cref="IEnumerationActeursFoyer"/> (décision CP) ; absent
+    /// (<c>_acteurs is null</c>) → pas de filtrage (comportement antérieur préservé).
+    /// </summary>
+    private string? Resolvable(string? acteurId)
+        => acteurId is not null && _acteurs is not null && !_acteurs.EnumererActeurs().Contains(acteurId)
+            ? null
+            : acteurId;
 
     /// <summary>
     /// Légende = responsables présents dans la fenêtre, dédoublonnés par identifiant stable (jamais
@@ -96,7 +116,11 @@ public sealed class GrilleAgendaQuery
                 .Where(id => id is not null)
                 .Select(id => id!);
 
+        // « En case comme en légende » : un acteur supprimé (orphelin, en surcharge OU en fond) est
+        // neutralisé en case (Resolvable) ET ne laisse aucune entrée fantôme en légende — même contrat
+        // d'existence appliqué au flux des présents.
         return idsPeriodes.Concat(idsFond)
+            .Where(id => Resolvable(id) is not null)
             .Distinct()
             .Select(id => new EntreeLegende(id, _referentiel.NomDe(id), _palette.CouleurDe(id)))
             .ToList();

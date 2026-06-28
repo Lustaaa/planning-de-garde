@@ -62,6 +62,15 @@ public sealed class FrontWasmConfigNomLongEditeTempsReelTests : TestContext
         // When — depuis l'écran de configuration réellement câblé, je renomme parent-c en le nom long
         // de 25 caractères et j'enregistre (émission via le canal d'écriture HTTP réel).
         var config = RenderComponent<ConfigurationFoyer>();
+
+        // … l'écran énumère ses acteurs depuis le store (GET HTTP réel asynchrone) : on attend que ce
+        // chargement ait fini de re-rendre l'écran avant d'interagir avec le select, sinon un re-render
+        // intercalé invaliderait le handler d'événement du select (UnknownEventHandlerId) — garde
+        // déterministe déjà appliqué par les tests config frères (renommage grille, convergence).
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+
         config.Find("select.form-select").Change("parent-c");
         config.Find("[data-testid='champ-nom']").Change(NomLong);
         config.Find("form").Submit();

@@ -36,6 +36,12 @@ public sealed class FakeConfigurationFoyer : IEditeurConfigurationFoyer, IRefere
 
     public void Recolorier(string acteurId, string nouvelleCouleur) => _couleurs[acteurId] = nouvelleCouleur;
 
+    public void Supprimer(string acteurId)
+    {
+        _noms.Remove(acteurId);     // retire le nom (NomDe retombe ensuite sur l'id brut)
+        _couleurs.Remove(acteurId); // ... ET la couleur (CouleurDe retombe sur le neutre) — miroir d'Ajouter
+    }
+
     public string NomDe(string responsableId)
         => _noms.TryGetValue(responsableId, out var nom) ? nom : responsableId;
 

@@ -286,6 +286,17 @@ qui le mène en **vrai cycle RED→GREEN** :
 > (read model / légende, port commun, énumération de store, type partagé), relance
 > **nommément la suite runtime `Web.Tests` existante** avant le commit : une régression
 > runtime doit être attrapée au commit du scénario coupable, pas au RED du suivant (s09 Sc.1→Sc.2).
+> **Relance la famille `*TempsReel*` EN ISOLATION** (le warmup de la suite complète masque les
+> courses `UnknownEventHandlerId` ; un `*TempsReel*` vert en suite mais rouge en isolation = course
+> à garder, pas un flake — rétro s13 A1).
+>
+> **Garde d'énumération `*TempsReel*` = helper bUnit partagé.** Le garde
+> `WaitForState(() => …FindAll("[data-testid='acteur-foyer']").Count > 0)` posé **avant** toute
+> interaction sur le `select` (attente de la fin de l'énumération async / GET HTTP réel, sinon
+> re-render intercalé → `UnknownEventHandlerId`) doit être **extrait en helper bUnit partagé**,
+> **pas** recopié à la main test par test. **Audit** : tout test `*TempsReel*` config/grille qui
+> manipule le `select` **doit** porter ce garde via le helper. (Rétro s13 A1 ; vécu s13 : garde
+> ajouté à 7 `*TempsReel*` un par un, risque que les frères restent exposés.)
 
 `tdd-auto` reste **backend/Application uniquement** : s'il reçoit un scénario IHM, il le
 **refuse** (round-trip) au lieu de produire un test bUnit composant qui passe à vide.

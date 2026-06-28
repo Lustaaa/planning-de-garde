@@ -3,6 +3,7 @@ using System.Net.Http;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.State;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
@@ -61,6 +62,7 @@ public sealed class FrontWasmConfigApiInjoignableTempsReelTests : TestContext
         using var ecranConfig = new TestContext();
         ecranConfig.Services.AddSingleton(
             GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "editer-acteur"));
+        ecranConfig.Services.AddSingleton(new SessionPlanning()); // contexte rôle réel requis par l'écran (gating Sc.7)
         var config = ecranConfig.RenderComponent<ConfigurationFoyer>();
 
         // … l'énumération en lecture (GET HTTP réel vers l'API live) déclenche un re-render asynchrone : on
