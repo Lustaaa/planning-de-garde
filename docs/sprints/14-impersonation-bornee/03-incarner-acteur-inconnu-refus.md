@@ -23,7 +23,17 @@ Prouvé sur l'app réellement câblée avec un référentiel réel (pas d'acteur
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_ResterSousLIdentitéRéelleSansBandeau_When_OnTenteDIncarnerUnIdentifiantAbsentDuRéférentiel` | garde **conditionnelle** (existence) | driver — Sc.1 « pose réussie » est déjà vert : un `Incarner` **inconditionnel** poserait l'identité effective (et un bandeau pointant un acteur inexistant) → contradiction. La garde est **conditionnelle dès ce 1er `@erreur`** (un refus inconditionnel régresserait Sc.1) : vérifier l'existence au référentiel (READ) **avant** de poser l'identité effective | ⏳ Pending |
+| 1 | `Should_ResterSousLIdentitéRéelleSansBandeau_When_OnTenteDIncarnerUnIdentifiantAbsentDuRéférentiel` | garde **conditionnelle** (existence) | driver — Sc.1 « pose réussie » est déjà vert : un `Incarner` **inconditionnel** poserait l'identité effective (et un bandeau pointant un acteur inexistant) → contradiction. La garde est **conditionnelle dès ce 1er `@erreur`** (un refus inconditionnel régresserait Sc.1) : vérifier l'existence au référentiel (READ) **avant** de poser l'identité effective | ✅ Green |
+
+> **Réalisé — acceptation runtime EARLY-GREEN (caractérisation).** La garde conditionnelle de
+> `SessionPlanning.Incarner` (no-op si l'id est absent du catalogue résolu sur l'identifiant stable) a été
+> posée avec le **socle Sc.1** ; l'inner-loop driver est couvert par
+> `SessionPlanningIncarnationTests.Should_ConserverLIdentiteReelle_When_OnIncarneUnIdentifiantInconnu`.
+> L'**acceptation runtime** `FrontWasmIncarnerInconnuRefusTempsReelTests` (valeur `acteur-inexistant`
+> portée au binding réel du sélecteur → aucun bandeau + identité réelle conservée, menu visible) passe
+> **d'emblée** sur l'app câblée avec référentiel réel. Pas de rouge propre à produire (garde déjà en place
+> dès Sc.1) → caractérisé honnêtement comme early-green. Contrôle de non-vacuité : sélecteur prouvé peuplé
+> d'acteurs réels avant la tentative.
 
 ## Fichiers à créer
 
