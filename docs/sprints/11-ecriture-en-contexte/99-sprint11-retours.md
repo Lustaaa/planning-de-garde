@@ -86,6 +86,8 @@
 | 2026-06-28 | Phase IHM finale : faire le nettoyage scaffolding (a) ? engager ou clore la tranche de secours (b) ? | (a) **OUI, nettoyer** : retirer routes/pages/liens poser-slot + affecter-periode, **GARDER definir-transfert** ; (b) **CLORE à 7/7**, re-séquencer la secours au backlog (transfert + concurrence, jamais en bloc) | (a) ménage attendu du palier 7 (complète « écriture en contexte ») ; (b) goal atteint, ~2h consommées, secours = overflow CP-tranchable, palier 0 conservateur |
 | 2026-06-28 | /4-retours G2 prochain sujet : séquencement de l'overflow et des flakes SignalR | **Décidé seul (séquencement)** : (ii) édition concurrente **DIFFÉRÉE** derrière la stabilisation des flakes SignalR ; flakes SignalR = **action MÉTHODE retro-sprint** (tests, pas src/), **pas** un goal produit. **Escaladé au PO (G2)** : 2 goals candidats (A = achever écriture en contexte/transfert ; B = CRUD acteurs + amorce impersonation) | dépendance cachée (ii)↔SignalR (driver flaky par construction) ; choix de cap sans douleur d'usage = porte PO |
 | 2026-06-28 | /4-retours : autoriser l'écriture du backlog (G2 PO = Option A acté) ? | **AUTORISÉE** — P1 transfert (ferme É12) / P2 flakes SignalR (méthode) / P3 édition concurrente différée ; garde-fou conso DateContexte | priorisation **dérivable** du G2 acté + de mes décisions journalisées (séquencement, garde-fous) ; aucun nouveau point PO |
+| 2026-06-28 | /5-consolidation : le palier 7 fond « écriture en contexte » (livrée) + « calendrier navigable » (non livré) — restructurer la Séquence ? | **SCINDER (Option 1)** : palier « Écriture en contexte (dialogs) » = ✅ LIVRÉ + reliquat P1 (3e dialog Transfert) ; palier distinct « Calendrier navigable » = ⬜ séquencé, re-numéroté ; numérotation spec↔backlog réalignée | restructuration déterministe = refléter l'état réel du code + le séquencement acté ; ne perdre aucun besoin (calendrier navigable + sélection de plage restent ⬜) ; pas un conflit de valeur (pas G1) |
+| 2026-06-28 | /5-consolidation : autoriser l'écriture de la spec v12 (docs/12-specification.md) ? | **AUTORISÉE** — v12 remplace v11 figée ; split palier 7, règles révisées 9/11/14/16/17/28/30, aucune neuve/supprimée, garde-fous reportés | consolidation **dérivable** : reflète l'état livré + tous mes arbitrages journalisés (split, DateContexte, ajustement Sc.7, borne règle 30, P1/P2/P3) ; aucun besoin perdu ; pas de conflit de valeur (pas G1) |
 
 ## Détail des décisions (prose)
 
@@ -251,3 +253,27 @@
 - **Différer (ii) + flakes en rétro** : évite des scénarios flaky par construction ; la dette temps-réel est purgée d'abord (méthode), déverrouillant (ii) ensuite.
 
 **Sources** : `docs/BACKLOG.md` (Prochains sprints +1/+2/+3 l.44-48 ; À faire paliers 7-8 l.225-226 ; É2/É10/É12 ; dette « suppression de période » l.272 / « cycle de fond riche » l.279) ; `docs/11-specification.md` (règle 6 acteurs/orphelins, palier 7) ; décisions supra (sort de la tranche de secours, gating Invité réutilisant `SessionPlanning`) ; alerte méthode flakes SignalR (ihm-builder) ; `CLAUDE.md` / `README-claude.md` (portes PO G2, goals ~2h tirés du backlog, palier 0 conservateur).
+
+### /5-consolidation (spec v11 → v12) : scinder le palier 7 « calendrier navigable & écriture en contexte »
+
+**Décision** : **SCINDER EN DEUX (Option 1)**. Restructuration **documentaire déterministe** : refléter l'**état réel du code** + le **séquencement déjà acté**, sans rien perdre.
+- **Palier « Écriture en contexte (dialogs) » = ✅ LIVRÉ ce sprint** (2 dialogs Poser slot / Affecter période, **menu clic-case**, écrans dédiés slot/période retirés, avertissement de chevauchement surfacé, gating Invité mutualisé). **Reliquat = PROCHAIN SUJET (P1, G2 acté Option A)** : **3ᵉ dialog « Définir un transfert » en contexte + retrait `definir-transfert`** → **referme l'épic É12**.
+- **Palier distinct « Calendrier navigable » = ⬜ NON LIVRÉ, séquencé, re-numéroté** : navigation passé/futur, vues prédéfinies (semaine / mois / 4-sem), **+ sélection de plage de cases** (pour définir une période). Vérifié dans le code : `PlanningPartage.razor` = grille 5×7 **statique**, **aucune** navigation/vue/plage → c'est bien une **cible**, pas un acquis.
+- **Numérotation spec↔backlog RÉALIGNÉE** : résorber l'écart « palier 7 (spec) vs palier 8 (table backlog) » relevé dès `/2-make-gherkin`. La table *À faire* du BACKLOG et la *Séquence de livraison* de la spec doivent porter la **même** numérotation après split.
+
+**Options 2 et 3 écartées** :
+- **Option 2** (un seul palier « partiellement livré ») : **trompeuse** — fond deux capacités sans lien (saisie en contexte vs navigation calendrier) et masque ce qui est réellement acquis ; viole « refléter l'état courant réel ».
+- **Option 3** (calendrier navigable rétrogradé en simple question ouverte/Risques) : **perte de traçabilité** d'un besoin **réel** de l'épic É4 (calendrier navigable + sélection de plage) ; un besoin séquencé ne doit pas être dégradé en note.
+
+**Garde-fous d'écriture** (déterministes, à appliquer par `spec-consolidation`) :
+- **Ne perdre aucun besoin** : « calendrier navigable », « vues prédéfinies », « **sélection de plage de cases pour définir une période** » restent **⬜ séquencés** (ne pas les fondre dans le palier livré).
+- **Mécaniques nuancées** : ce qui décrit le calendrier navigable passe au **futur/cible** ; ce qui décrit l'écriture en contexte passe à l'**acquis/présent** (dialogs, menu clic-case, issue par dialog, ancrage `DateContexte`).
+- **Reporter le garde-fou DateContexte** (déjà journalisé) : pré-remplissage **DateContexte-exclusif** (repli horloge = **code mort** tant qu'aucun point d'entrée hors-contexte) — **ne pas supprimer le port `IDateTimeProvider`** (la grille s'en sert) ; **réintroduire le repli** si un point d'entrée hors-contexte réapparaît.
+- **Reporter l'ajustement de cadrage Sc.7** : « couche unique = Web » → « **Web + contrat de réponse du canal poser-slot** » (surfaçage de l'avertissement acquis).
+- **Borne anti-cliquet préservée** (règle 30) : transfert/slots/périodes restent **InMemory** ; la persistance du reste du domaine reste en queue.
+
+**Rationale** :
+- **Résolution déterministe, pas un choix de valeur (pas de G1)** : il s'agit d'**aligner la doc sur la réalité** (code constaté + G2 déjà tranché par le PO). Aucun arbitrage métier ni de cap n'est rouvert — le PO a déjà choisi le prochain sujet (transfert) ; le split **acte** cette réalité, il ne la décide pas.
+- **Fidélité + traçabilité** : l'option 1 est la seule qui dise **vrai** (écriture-en-contexte livrée, calendrier navigable à faire) **et** conserve le besoin calendrier comme palier à part entière, prêt à être priorisé après l'épic écriture-en-contexte.
+
+**Sources** : `docs/11-specification.md` (palier 7 « calendrier navigable & écriture en contexte », Séquence de livraison) ; `docs/BACKLOG.md` (À faire paliers 7-8 l.225-226 : « Survol → résumé » vs « Calendrier navigable + écriture en contexte + sélection de plage » ; É4 calendrier, É12 écriture-en-contexte) ; `src/.../PlanningPartage.razor` (grille 5×7 statique, constat agent) ; décisions supra (G2 Option A acté, garde-fou DateContexte, ajustement cadrage Sc.7, borne anti-cliquet règle 30) ; note de numérotation `/2-make-gherkin` (décision « autorisation d'écriture des scénarios », écart palier 7/8).
