@@ -79,6 +79,14 @@ public sealed class ConfigurationFoyerMongo : IReferentielResponsables, IEditeur
     public void Recolorier(string acteurId, string nouvelleCouleur)
         => Persister(acteurId, doc => doc.Couleur = nouvelleCouleur); // surface distincte du nom
 
+    public void Supprimer(string acteurId)
+    {
+        // Retrait write-through : le cache de session ET le store durable (l'acteur ne réapparaît pas
+        // au redémarrage). Tolérant à l'absence (no-op sur clé/document absent) — idempotence Sc.5.
+        _cache.Remove(acteurId);
+        _acteurs.DeleteOne(Builders<ActeurDocument>.Filter.Eq(d => d.Id, acteurId));
+    }
+
     /// <summary>Mute le document de l'acteur (créé si absent) puis le répercute sur Mongo (write-through)
     /// — l'écriture survit au redémarrage (une instance fraîche relira l'état persisté).</summary>
     private void Persister(string acteurId, System.Action<ActeurDocument> mutation)

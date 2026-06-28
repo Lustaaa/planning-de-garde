@@ -87,7 +87,7 @@ fond, son index devient non mappé → neutre. La suppression opère sur la conf
 (store Mongo réel) et s'accompagne d'un accusé non bloquant, sans réaffectation automatique. La
 grille reste en lecture seule ; la rétroaction passe par le store relu et la diffusion temps réel.
 
-### Scenario 1 — Supprimer un acteur du foyer le retire du store relu `@nominal` `@driver`
+### Scenario 1 — Supprimer un acteur du foyer le retire du store relu `@nominal` `@driver` `@vert`
 
 ```gherkin
 Scenario: Supprimer un acteur autorisé le retire de la configuration persistée du foyer

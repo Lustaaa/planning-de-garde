@@ -64,6 +64,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DefinirTransfertHandler>();
         services.AddScoped<EditerActeurHandler>();
         services.AddScoped<AjouterActeurHandler>();
+        services.AddScoped<SupprimerActeurHandler>();
         services.AddScoped<DefinirCycleHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
