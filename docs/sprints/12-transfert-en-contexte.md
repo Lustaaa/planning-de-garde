@@ -109,7 +109,7 @@ Scenario: Définir un transfert depuis une case ferme la dialog et affiche l'acc
   Et le transfert "Parent A" → "Parent B" au lieu "École" le mardi 16 juin 2026 à 08:30 est relu depuis le store
 ```
 
-### Scenario 2 — La dialog se pré-remplit sur la date de la case cliquée `@limite`
+### Scenario 2 — La dialog se pré-remplit sur la date de la case cliquée `@limite` `@vert`
 
 ```gherkin
 Scenario: Ouvrir la dialog de transfert depuis une case future pré-remplit la saisie sur la date de cette case
@@ -123,7 +123,7 @@ Scenario: Ouvrir la dialog de transfert depuis une case future pré-remplit la s
   Et la date du transfert n'est pas le lundi 15 juin 2026
 ```
 
-### Scenario 3 — Échec : la dialog reste ouverte et conserve la saisie `@erreur`
+### Scenario 3 — Échec : la dialog reste ouverte et conserve la saisie `@erreur` `@vert`
 
 ```gherkin
 Scenario Outline: Un transfert qui n'aboutit pas laisse la dialog ouverte et la grille inchangée
@@ -145,7 +145,7 @@ Scenario Outline: Un transfert qui n'aboutit pas laisse la dialog ouverte et la 
     | API injoignable  | "Parent A" → "Parent B" au lieu "École" à 08:30                  | Service indisponible : à resoumettre              |
 ```
 
-### Scenario 4 — Un Invité ne peut pas ouvrir le menu depuis une case `@erreur`
+### Scenario 4 — Un Invité ne peut pas ouvrir le menu depuis une case `@erreur` `@vert`
 
 ```gherkin
 Scenario: En consultation seule, cliquer une case n'ouvre aucun menu ni dialog de transfert

@@ -96,9 +96,9 @@
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
 | 1 | [Définir un transfert depuis une case via le menu clic-case](01-definir-transfert-depuis-case.md) | `@nominal 🖥️ IHM` | ✅ GREEN (RED→GREEN) | 0/2 | ✅ GREEN |
-| 2 | [La dialog se pré-remplit sur la date de la case cliquée](02-pre-remplir-date-de-la-case.md) | `@limite 🖥️ IHM` | ⏳ Pending | 0/1 | ⏳ Pending |
-| 3 | [Échec : la dialog reste ouverte et conserve la saisie](03-echec-dialog-reste-ouverte.md) | `@erreur 🖥️ IHM` | ⏳ Pending | 0/2 | ⏳ Pending |
-| 4 | [Un Invité ne peut pas ouvrir le menu depuis une case](04-invite-ne-peut-pas-ouvrir-menu.md) | `@erreur 🖥️ IHM` | ⏳ Pending | 0/1 | ⏳ Pending |
+| 2 | [La dialog se pré-remplit sur la date de la case cliquée](02-pre-remplir-date-de-la-case.md) | `@limite 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
+| 3 | [Échec : la dialog reste ouverte et conserve la saisie](03-echec-dialog-reste-ouverte.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 2/2 | ✅ GREEN |
+| 4 | [Un Invité ne peut pas ouvrir le menu depuis une case](04-invite-ne-peut-pas-ouvrir-menu.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
 | 5 | [La page de saisie dédiée n'existe plus](05-page-dediee-n-existe-plus.md) | `@limite 🖥️ IHM` | ⏳ Pending | 0/2 | ⏳ Pending |
 | 6 | [Annuler la dialog n'émet aucune écriture](06-annuler-dialog-sans-ecrire.md) | `@limite 🖥️ IHM 🏷️ caractérisation` | ⏳ Pending | 0/1 | ⏳ Pending |
 
@@ -110,8 +110,12 @@ seuls). **Drivers réels** = Sc.1 (3ᵉ dialog + accusé succès) et Sc.5 (retra
 dédié) ; **Sc.2 / Sc.3 / Sc.4 / Sc.6** prédits **early-green** (câblage IHM partagé +
 invariants déjà verts s01/s11) → **batchables** en lot de caractérisations.
 
-**Acceptation runtime IHM** : **1/6** (Sc.1 ✅ RED→GREEN — 3ᵉ dialog transfert + accusé « Transfert
-défini » à part ; suite complète **180/180** verte, Docker actif). Reste : Sc.2–Sc.6.
+**Acceptation runtime IHM** : **4/6** (Sc.1 ✅ RED→GREEN — 3ᵉ dialog transfert + accusé « Transfert
+défini » à part ; **Sc.2 / Sc.3 / Sc.4 ✅ caractérisations early-green confirmées en lot** — ancrage
+date de contexte, issue d'échec règle 28 (2 Facts : refus domaine / API injoignable), gating Invité
+règle 9 ; tous prouvés au **runtime** sur front WASM réel + API distante + store réel, témoins réels
+assertés (pas de faux-vert) ; suite complète **184/184** verte, Docker actif). Reste : Sc.5 (driver
+réel — retrait du dernier écran dédié), Sc.6 (caractérisation annulation).
 
 > **Scaffolding requis (à créer par `ihm-builder`, hors périmètre de l'analyse)** :
 > - **`DefinirTransfertDialog.razor` (+ code-behind)** — composant dialog (modal) réutilisable
