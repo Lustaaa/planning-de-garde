@@ -15,8 +15,10 @@ public static class CanalLecture
     /// <summary>Vue d'un acteur du foyer énumérée pour l'écran de configuration : identifiant stable
     /// (clé de résolution) + nom d'affichage courant + couleur courante, tous deux résolus sur cet
     /// identifiant (couleur neutre par contrat si l'acteur n'en a pas) — pour que la liste de
-    /// configuration affiche le nom ET sa pastille de couleur, cohérente avec la grille.</summary>
-    public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur);
+    /// configuration affiche le nom ET sa pastille de couleur, cohérente avec la grille. Le
+    /// <see cref="Type"/> (Admin / Parent / Autre) est surfacé en LECTURE SEULE depuis le seed (D3,
+    /// sprint 14) pour piloter le rôle de l'identité effective lors d'une impersonation bornée.</summary>
+    public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur, TypeActeur Type);
 
     public static IEndpointRouteBuilder MapperCanalLecture(this IEndpointRouteBuilder routes)
     {
@@ -27,7 +29,7 @@ public static class CanalLecture
             (IEnumerationActeursFoyer enumeration, IReferentielResponsables referentiel, IPaletteCouleurs palette) =>
             {
                 var acteurs = enumeration.EnumererActeurs()
-                    .Select(id => new ActeurFoyerVue(id, referentiel.NomDe(id), palette.CouleurDe(id)))
+                    .Select(id => new ActeurFoyerVue(id, referentiel.NomDe(id), palette.CouleurDe(id), enumeration.TypeDe(id)))
                     .ToList();
                 return Results.Ok(acteurs);
             });

@@ -70,6 +70,12 @@ public sealed class ConfigurationFoyerMongo : IReferentielResponsables, IEditeur
         // Acteurs porteurs d'un nom (seeds + ajoutés) — parité avec le store mémoire (_noms.Keys).
         => _cache.Values.Where(d => d.Nom is not null).Select(d => d.Id).ToList();
 
+    public TypeActeur TypeDe(string acteurId)
+        // Type surfacé en lecture seule depuis la déclaration seed (D3) — JAMAIS persisté (borne
+        // anti-cliquet règle 30) : aucun champ type au document Mongo. Un acteur ajouté en session
+        // (absent du seed de types) retombe sur le défaut Parent.
+        => Foyer.TypesParActeur.TryGetValue(acteurId, out var type) ? type : Foyer.TypeParDefaut;
+
     public void Ajouter(string acteurId, string nom, string? couleur)
         => Persister(acteurId, doc => { doc.Nom = nom; if (couleur is not null) doc.Couleur = couleur; });
 
