@@ -4,7 +4,7 @@
 > une vue **par épic (fonctionnalité)** pour regrouper ce qui est lié et préparer le
 > découpage des sprints, et une vue **par palier (séquence de livraison)** pour le
 > calendrier d'un coup d'œil. Source de vérité du *quoi/quand* ; le *pourquoi* vit dans
-> la spec vivante [`docs/11-specification.md`](11-specification.md).
+> la spec vivante [`docs/12-specification.md`](12-specification.md).
 >
 > **Tenue à jour par le pipeline** : `/4-retours` y **ajoute** les besoins issus du
 > challenge ; `/6-cloture-sprint` y passe à **✅ fait** ce qui a été livré (gate visuel
@@ -26,26 +26,31 @@
 | 08 | `config-foyer-acteurs` — écran de config pour **éditer les acteurs** (renommer + recolorier) en **VOLATILE** (mémoire/session), grille (case + légende) relue immédiatement, convergence temps réel | ✅ fait | Store mutable `ConfigurationFoyerEnMemoire` (singleton derrière `IReferentielResponsables`/`IPaletteCouleurs`/`IEditeurConfigurationFoyer`) + commande/handler `EditerActeur` + écran `ConfigurationFoyer` (4 acteurs, nom pré-rempli) + diffusion SignalR (10 scénarios @vert runtime, 143 verts) — **palier 4 (édition volatile) refermé** |
 | 09 | `config-foyer-persistante` — **ajout d'acteurs** (id stable neuf opaque) + **persistance Mongo BORNÉE à la config foyer** (adaptateur de droite `ConfigurationFoyerMongo`, ports inchangés, seed-once) ; survit au redémarrage. Reste du domaine InMemory | ✅ fait | `AjouterActeurHandler` + ports `IEnumerationActeursFoyer`/`IEditeurConfigurationFoyer` + adaptateur durable `ConfigurationFoyerMongo` (Docker) + écran config (ajout + liste + pastille couleur + messages refus/transport) (9 scénarios @vert, 161 verts, pivot Mongo réel) — **palier 5 (config foyer persistante) refermé** |
 | 10 | `recurrence-des-periodes` — **cycle de fond** définissable/éditable (N semaines, alternance par parité ISO 8601, mapping index→responsable sur id stable) ; la grille résout le responsable de fond (case + légende) sans saisie de période ; surcharge > fond > neutre ; **EN MÉMOIRE** (durabilité = palier 9) | ✅ fait | `CycleDeFond` (Domain, parité ISO + invariant N≥1) + port `IReferentielCycleDeFond` + `DefinirCycleHandler` + extension `GrilleAgendaQuery` + adaptateur `CycleDeFondEnMemoire` (singleton) + endpoint `POST /definir-cycle` + section « Cycle de fond » de l'écran config (mapping sur acteurs persistés) (8 scénarios @vert end-to-end, 183 verts) — **palier 6 (récurrence des périodes) refermé** |
+| 11 | `ecriture-en-contexte` — **écriture en contexte par dialogs** : menu au clic sur une case du planning → dialogs « Poser un slot » / « Affecter une période » pré-remplies sur la **date de la case** ; échec → dialog reste ouverte (message dans la dialog) ; annulation sans écriture ; gating Invité sur le menu ; chevauchement accepté + **bandeau d'avertissement non bloquant** ; **écrans dédiés slot/période retirés** (un seul chemin d'écriture) | ✅ fait | `PoserSlotDialog` + `AffecterPeriodeDialog` + menu clic-case dans `PlanningPartage` + ancrage `DateContexte` (prime sur `IDateTimeProvider`) + avertissement surfacé par le contrat de réponse du canal poser-slot (`PoserSlotReponse`) + suppression des pages/routes/liens poser-slot/affecter-periode (page `definir-transfert` conservée) (7 scénarios @vert runtime, 179 verts) — **palier 7 (écriture en contexte, dialogs) refermé** |
 
 > **Refacto technique HORS pipeline (PR #21, avant s10) : faite** — adaptateurs de droite par techno, `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, outil `test-count.ps1`. Critère de sortie 161/161 tenu.
 
 ## En cours
 
-| Sprint | Sujet | Palier (spec v11) | Statut |
+| Sprint | Sujet | Palier (spec v12) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : dialogs d'écriture en contexte, cf. ci-dessous)* | 8 (écriture en contexte) | ⬜ |
+| — | *(aucun sprint en cours — prochain : 3e dialog « Définir un transfert » en contexte, cf. ci-dessous)* | 7 (reliquat écriture en contexte) | ⬜ |
 
 ## Prochains sprints envisagés
 
-> **Décision PO (clôture s10, porte G2)** : prochain sujet **make-gherkin** = **écriture en
-> contexte — dialogs depuis le planning** (palier 8). Les autres besoins du backlog s10 sont
-> séquencés derrière, aucun abandonné. Indicatif — confirmé/affiné au démarrage de chaque sprint.
+> **Décision PO (clôture s11, porte G2)** : prochain sujet **make-gherkin** = **achever
+> l'écriture en contexte — 3e dialog « Définir un transfert » depuis une case + retrait de la
+> dernière page de saisie dédiée** (referme l'épic É12). Aucun retours d'usage frais ce sprint
+> (goal 7/7 atteint) ; séquencement piloté par la découpe + la dette tech. Indicatif —
+> confirmé/affiné au démarrage de chaque sprint.
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 | **Écriture en contexte — dialogs depuis le planning** (palier 8) : supprimer les écrans dédiés Poser slot / Affecter période / Définir transfert et les rouvrir comme **dialogs** ouvertes depuis le planning. Scope ~2h : 2 dialogs (Poser slot + Affecter période), transfert en tranche de secours. Réutilise commandes/handlers + canal HTTP + SignalR existants | É12, É6, É7, É8 | Consigne PO la plus détaillée (clôture s10) ; rend la main à l'usage sur la surface centrale |
-| +2 | **CRUD acteurs complet + impersonation bornée** : ajouter la **suppression** d'acteur (cadrage des cases orphelines, règle 6) + amorce d'impersonation (utilisateur principal incarne un acteur, convenance admin, **pas** l'auth réelle du palier 12) | É2, É10 | Termine l'appropriation des acteurs ; consigne PO s10 |
-| +3 | **Cycle de fond riche** : choisir le **début/ancre** + config fine (frontière de jour vendredi→vendredi, plage début/fin, sur-cycle vacances, 1 WE sur 2). Sujet plein à découper — **rouvre la décision CP « ancrage ISO sans ancre »** à son make-gherkin ; chevauche la durabilité du cycle (palier 9) | É7, É1 | Retour PO /configuration s10 ; l'usage réclame un cycle réellement configurable |
+| +1 (P1) | **3e dialog « Définir un transfert » en contexte** (reliquat palier 7) : ajouter une 3e entrée au menu clic-case réutilisant `DefinirTransfert` + canal HTTP + SignalR (aucun handler/règle neuf, transfert reste InMemory) **puis retirer la page/route/lien `definir-transfert`** — plus aucun écran de saisie hors-contexte. Pattern menu déjà prouvé (Sc.1/Sc.2 s11), risque faible | É12, É8 | Ferme l'épic écriture en contexte (G2 PO clôture s11) ; plus petit incrément cohérent |
+| +2 (P2) | **Stabilisation des flakes temps-réel SignalR** (`FrontWasmConfigCycle*TempsReel*`, flaky sous charge parallèle ; verts en isolation) — **action de méthode/dette de test** (vit dans les tests, pas `src/`), convention codifiée (rétro s11) ; **prérequis de fait de P3** | É3 | Déverrouille l'édition concurrente (P3) sans driver une fondation temps-réel instable |
+| +3 (P3) | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — **DIFFÉRÉE** jusqu'à stabilisation SignalR (P2) | É7 | Cas limite runtime ; dépend de P2 |
+| +4 | **CRUD acteurs complet + impersonation bornée** : **suppression** d'acteur (cadrage des cases orphelines, règle 6) + amorce d'impersonation (utilisateur principal incarne un acteur, convenance admin, **pas** l'auth réelle du palier 12) | É2, É10 | Termine l'appropriation des acteurs ; consigne PO s10 |
+| +5 | **Cycle de fond riche** : choisir le **début/ancre** + config fine (frontière de jour vendredi→vendredi, plage début/fin, sur-cycle vacances, 1 WE sur 2). Sujet plein à découper — **rouvre la décision CP « ancrage ISO sans ancre »** à son make-gherkin ; chevauche la durabilité du cycle (palier 9) | É7, É1 | Retour PO /configuration s10 ; l'usage réclame un cycle réellement configurable |
 
 ---
 
@@ -133,7 +138,7 @@
 | Rejet : lieu inexistant | ✅ | s01 + s02 + s04 (API) | scénario 4 s01 |
 | Signalement de chevauchement (création acceptée + avertissement) | ✅ | s01 | scénario 5 s01 |
 | Droits : seul Parent crée/édite les slots | ✅ | s01 | spec règle 7 |
-| Poser un slot en contexte via dialog (depuis une case) | ⬜ | Palier 7 item 3 | retours s02 (#10) · spec p3 |
+| Poser un slot en contexte via dialog (depuis une case) | ✅ | s11 / Palier 7 | retours s02 (#10) · spec p3 |
 | **Slot imbriqué** — un slot peut en contenir un autre (ex. enfant chez mamie **et** doit aller à son cours de natation) | ⬜ | à séquencer | retours s07 (idée) |
 
 ### Épic 7 — Périodes de garde & responsabilité récurrente
@@ -146,7 +151,7 @@
 | Bornes de période paramétrables | ✅ | s01 | scénario 9 s01 |
 | Édition concurrente — rejet sur état périmé | ✅ | s01 | scénario 10 s01 |
 | Suppression de période (depuis dialog) | ⬜ | Palier 3 item 3 | retours s02 (#6) · retours s03 (trou) |
-| Affecter période en contexte via dialog | ⬜ | Palier 3 item 3 | retours s02 (#7) · spec p3 |
+| Affecter période en contexte via dialog | ✅ | s11 / Palier 7 | retours s02 (#7) · spec p3 |
 | Responsabilité de fond déclarée en config foyer (le cycle, alternance parité ISO, EN MÉMOIRE) | ✅ | s10 / Palier 6 | spec règles 5/11 · besoins s07/s08 |
 | Cycle de fond **riche** (ancre/début explicite, frontière de jour, plage début/fin, sur-cycle vacances, WE-only) | ⬜ | à séquencer (rouvre l'ancrage ISO) | retours s10 (R3/R4) |
 
@@ -159,7 +164,7 @@
 | Rejet : transfert incomplet | ✅ | s01 | scénario 12 s01 |
 | Transfert dérivé automatiquement par défaut (saisie réservée au ponctuel) | ⬜ | Palier 5-6 | spec règle 17 · retours s02 (#14) |
 | Transfert ponctuel & modifiable | 🟡 | s01 (modèle) + Palier 5+ | spec règle 18 |
-| Transfert en contexte via dialog | ⬜ | Palier 3 item 3 | retours s02 (#8) · spec p3 |
+| Transfert en contexte via dialog (3e entrée du menu clic-case + retrait page dédiée) | ⬜ | Palier 7 (reliquat, P1 prochain) | retours s02 (#8) · spec p3 · G2 PO s11 |
 | Transferts exposés dans le panneau cloche | ⬜ | Palier 4 item 6 | spec règle 20 · retours s02 (#8)/s03 (#4) |
 
 ### Épic 9 — Notifications & événements à venir
@@ -201,16 +206,19 @@
 
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
-| Dialogs d'écriture (poser/affecter/supprimer) depuis les cases | ⬜ | Palier 3 item 3 | retours s02 (#7/8/10)/s03 |
+| Dialogs d'écriture (poser slot + affecter période) depuis les cases (menu clic-case, pré-rempli date case, échec/annulation/chevauchement/gating Invité) | ✅ | s11 / Palier 7 | retours s02 (#7/8/10)/s03 |
+| Dialog « Définir un transfert » en contexte + retrait page dédiée (referme l'épic) | ⬜ | Palier 7 (reliquat, P1 prochain) | retours s02 (#8) · G2 PO s11 |
+| Suppression de période depuis dialog | ⬜ | à séquencer | retours s02 (#6) · retours s03 (trou) |
 | Recâblage de l'écriture via API HTTP (au lieu du DI direct) | ✅ | s05 (poser/affecter/transfert via API distante WASM) | retours s03 (#5) · spec p1 |
 | Rafraîchissement immédiat : la saisie réapparaît dans la grille | ✅ | s06 / Palier 2 | retours s03 (#5, bug runtime) |
 
 ---
 
-## À faire (paliers de la spec vivante v11)
+## À faire (paliers de la spec vivante v12)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
-> Numérotation alignée sur la **séquence de livraison de v09**. Les sujets techniques
+> Numérotation alignée sur la **séquence de livraison de v12** (palier 7 scindé :
+> écriture-en-contexte livrée vs calendrier navigable à faire). Les sujets techniques
 > (persistance réelle du reste du domaine, PWA) sont séquencés **derrière l'usage**
 > (arbitre : l'usage tranche), Docker en garde-fou d'outillage.
 
@@ -222,8 +230,9 @@
 | 4 | **Config foyer · édition des acteurs (VOLATILE)** — écran éditant noms + couleurs en mémoire/session, grille relue immédiatement | É2, É1 | spec v08 règle 5 · besoins s07 (G2 PO) | ✅ s08 |
 | 5 | **Config foyer PERSISTANTE** — **ajout/édition d'acteurs** (parent/autre/nounou, id stable neuf) **+ persistance Mongo BORNÉE à la config foyer** (adaptateur de droite, ports inchangés) ; survit au redémarrage. Reste du domaine InMemory | É2, É1, É3 | spec v09 règle 6 · besoins s08 (G2 PO, révision d'arbitre bornée) | ✅ s09 |
 | 6 | **Récurrence des périodes** (cycle de fond définissable/éditable, alternance parité ISO, EN MÉMOIRE) | É7, É1 | spec v09 règle 10 · besoins s07/s08 (IMPORTANT) | ✅ s10 |
-| 7 | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 | ⬜ |
-| 8 | Calendrier navigable (passé/futur, vues prédéfinies) **+** écriture en contexte (dialogs depuis les cases + **sélection de plage de cases** pour définir une période) | É4, É6, É7, É8, É12 | spec v05 p4 · retours s02/s03/s08 | ⬜ |
+| 7 | **Écriture en contexte (dialogs)** — menu au clic sur une case → « Poser un slot » / « Affecter une période » pré-remplies sur la date de la case (échec/annulation/chevauchement/gating Invité), écrans dédiés retirés. **Reliquat (P1) : 3e dialog « Définir un transfert » + retrait page dédiée** | É6, É7, É8, É12 | spec v12 p7 · besoins s10/s11 | ✅ s11 (reliquat transfert ⬜) |
+| 8 | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) **+ sélection de plage de cases** pour définir une période | É4, É7 | spec v12 p8 · retours s02/s03 | ⬜ |
+| 8bis | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 | ⬜ |
 | 9 | Alimentation & saisie — **config foyer durable restante** (lieux, set couleurs, cycle de fond) + Admin/Parent/Autre, écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 | ⬜ |
 | 10 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
 | 11 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
@@ -276,7 +285,9 @@
 - `@code` inline restant (`Legende.razor`, `Pages/Home.razor`) + frontières hexagonales à homogénéiser + séparation des projets (É3) — **cible de la refacto technique HORS pipeline décidée à la clôture s09** (iso-comportement, invariant 161/161). Retours s03 (#7).
 - ~~Cycle multi-semaines non affiché/éditable (É1)~~ — **éteint au s10 (palier 6)** : cycle de fond affiché (grille + légende) et éditable (section config), EN MÉMOIRE ; durabilité séquencée au palier 9.
 - **Dropdown « Acteur du foyer » périmée au renommage** (É2, /configuration) — défaut signalé au gate s10 : la dropdown + l'aide « Nom actuel » lisent une liste statique au lieu du store vivant `_acteurs`. **Fix /3 ciblé léger** (hors make-gherkin), en tête de file.
-- **Cycle de fond riche réclamé** (É7) — l'usage (gate s10) demande ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only : au-delà du plus petit incrément livré, sujet plein séquencé (+3).
+- **Cycle de fond riche réclamé** (É7) — l'usage (gate s10) demande ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only : au-delà du plus petit incrément livré, sujet plein séquencé (+5).
+- **Flakes temps-réel SignalR** (É3, `FrontWasmConfigCycle*TempsReel*`) — verts en isolation, flaky sous charge parallèle (timing SignalR/Docker) ; **dette de test** (pas un bug `src/`). Convention anti-flake codifiée (rétro s11, `ihm-builder`) ; **rétrofit effectif = P2**, prérequis de l'édition concurrente (P3). Constaté s11.
+- **Dernière saisie hors-contexte restante** (É8/É12) — la page `/planning/definir-transfert` subsiste (seul écran de saisie dédié non encore migré) ; à déplacer en dialog puis retirer (P1, prochain sujet). Constaté s11.
 
 > **Idées PO consolidées (retours s07)** — les 3 idées de la section « Idée pour la suite »
 > ont été replacées dans leurs épics : *slot imbriqué* → **É6** ; *parents liés via leurs
