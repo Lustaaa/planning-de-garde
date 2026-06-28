@@ -91,7 +91,7 @@ store réel au runtime. La grille reste en lecture seule et le transfert n'y est
 (panneau cloche séquencé) : la rétroaction passe par la dialog ou un accusé à part, jamais
 par une écriture de la grille. À la livraison, plus aucun écran de saisie dédié ne subsiste.
 
-### Scenario 1 — Définir un transfert depuis une case via le menu clic-case `@nominal`
+### Scenario 1 — Définir un transfert depuis une case via le menu clic-case `@nominal` `@vert`
 
 ```gherkin
 Scenario: Définir un transfert depuis une case ferme la dialog et affiche l'accusé "Transfert défini"
