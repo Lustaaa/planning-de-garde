@@ -60,6 +60,19 @@ symptôme (cf. étape 4bis, choix du niveau de test). Un scénario backend reste
 `tdd-auto` (frontière Application). En cas d'ambiguïté sur l'axe → **renvoie une
 question**, ne devine pas.
 
+**Contrôle de cohérence du scope (obligatoire avant de figer le Cadrage scaffolding).**
+Avant d'écrire « **couche unique touchée = Web** » (ou tout scope mono-couche) dans le
+Cadrage scaffolding du `00-sprint<NN>-suivi.md`, **vérifie qu'AUCUN slug du sprint n'exige
+un contrat de réponse d'API** : un `Then` / une design note qui surface un outcome
+« **renvoyé par le retour de commande** », expose un read model **acquis** via le DTO de
+réponse d'un canal, ou lit un avertissement post-écriture. Si **un seul** slug le requiert,
+**ne déclare pas « Web only »** : déclare « **Web + contrat de réponse du canal `<…>`**
+(surfaçage d'un acquis — ni règle, ni handler, ni recalcul métier neuf) ». **Le scope
+déclaré ne doit jamais être contredit par un de ses propres slugs.** *Exemple vécu
+sprint 11* — Cadrage « couche unique = Web » contredit par le slug Sc.7
+(« avertissement renvoyé par le retour de commande »), d'où une exception de scope tranchée
+en cours de route par le CP : la réconcilier **dès l'analyse** évite ce round-trip.
+
 ### 3. ANALYZE
 Pour **chaque scénario Gherkin**, décompose en **règles métier atomiques** (1 règle
 = 1 test unitaire). Ordre de décomposition : happy path le plus simple → validations
@@ -120,6 +133,18 @@ ne fusionnes pas des cas métier après coup et tu n'inventes pas un faux cycle 
   prédit driver, mais l'intersection partielle était déjà acquise par Sc.1 (fenêtre bornée)
   **+** Sc.3 (mapping responsable par-jour). Annonce-le `⚠️ probablement early green` et,
   si **tous** ses tests sont ainsi couverts, ne le compte pas comme scénario codant.
+- **Early-greens IHM en cascade (câblage partagé).** Quand **plusieurs** scénarios
+  `🖥️ scénario IHM` partagent un **câblage UNIQUE** posé par les **premiers** (issue par
+  dialog succès/échec/avertissement, plomberie d'ouverture/fermeture, gating mutualisé sur
+  `EstParent`/`SessionPlanning`, ancrage `DateContexte`), les scénarios **dépendants**
+  passeront early-green **par construction** une fois ces premiers verts. **Ne flagge pas
+  seulement le driver** : prédis chaque dépendant
+  `⚠️ probablement early green (câblage IHM partagé)` dans sa colonne `Contradiction` pour
+  qu'il soit **batchable** (lot de caractérisations chez `tdd-auto`) au lieu de surgir en
+  early-green INATTENDU → round-trip CP évitable. *Exemple vécu sprint 11* — seul Sc.7
+  (avertissement) était flaggé driver ; Sc.4/5/6 (échec, annulation, gating Invité) sont
+  tombés early-green inattendus une fois les dialogs Sc.1/Sc.2 bâties, déclenchant
+  3 escalades CP qu'une prédiction de cascade aurait absorbées.
 
 Ne supprime pas un cas métier important ; ne le fusionne pas — déclare-le caractérisation
 explicite et ordonne la liste pour que le vrai driver mène. **Au sprint 03, 2 scénarios sur
@@ -173,6 +198,15 @@ extension : `NN-<sujet>.md` → `NN-<sujet>/`) et écris-y, au **format du skill
   `00-sprint<NN>-suivi.md`, la ligne **Acceptation (BDD)** (test FLFI de la boucle externe), la
   **table ordonnée** des tests unitaires (`# | Test unitaire (FLFI) | TPP |
   Contradiction | Status`), les **Fichiers à créer** et les **Design notes**.
+  - **Annotation d'escalade dans les Design notes (obligatoire).** Toute design note
+    portant un **choix d'ergonomie ou de convention NON tranché** par la spec ou l'analyse
+    technique (regroupement d'écrans, geste d'interaction, déclencheur, libellé porteur de
+    règle…) doit se terminer par la mention explicite **« → remonter au CP si ambigu »** —
+    pour que l'agent aval (`tdd-auto` / `ihm-builder`) **escalade** au lieu de **deviner**.
+    *Exemple vécu sprint 11* — la design note du Sc.2 (routage clic-case : menu vs
+    déclencheurs persistants vs heuristique sur l'état de la case) portait cette mention :
+    l'ambiguïté est remontée au CP, qui a tranché « menu d'actions », au lieu d'un choix
+    deviné en silence.
   - **Pour un `🖥️ scénario IHM`** : marque l'étiquette dans le titre et dans la colonne
     `Tag` du `00-sprint<NN>-suivi.md` (`@nominal 🖥️ IHM`), note **Routé vers
     `ihm-builder`** + **niveau d'acceptation E2E/runtime** ; la ligne **Acceptation
