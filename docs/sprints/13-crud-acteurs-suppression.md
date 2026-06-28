@@ -130,7 +130,7 @@ Scenario: Supprimer l'acteur d'une période saisie sur un index non mappé fait 
   Et la case du mardi 23 juin 2026 n'affiche aucun nom de responsable
 ```
 
-### Scenario 4 — Acteur mappé au cycle de fond : son index devient non mappé → neutre `@limite` `@driver`
+### Scenario 4 — Acteur mappé au cycle de fond : son index devient non mappé → neutre `@limite` `@driver` `@vert`
 
 ```gherkin
 Scenario: Supprimer un acteur mappé au cycle de fond rend son index non mappé et la case neutre
