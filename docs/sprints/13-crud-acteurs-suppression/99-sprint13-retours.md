@@ -216,3 +216,95 @@ matérialise un `HashSet` côté query — détail laissé à `tdd-auto`.
 
 **Fondements.** `GrilleAgendaQuery.cs` (L69/L71) ; `IEnumerationActeursFoyer.cs` ;
 CLAUDE.md (CQRS lecture seule, ports) ; spec v13 règles 6/11/15/19 ; D1/D6.
+
+### D8 — Consolidation v14 : angle mort gating config (Sc.7) — règle 9 conservée, durcissement séquencé en candidat impersonation
+
+**Contexte.** `spec-consolidation` (v13 → v14) signale une collision avec la
+règle 9 (gating écriture) : le sprint 13 (Sc.7) a révélé que l'écran
+`ConfigurationFoyer` ne gate l'Invité **que** sur le bouton supprimer ; l'ajout,
+l'édition d'acteur et l'édition du cycle de fond y restent ouverts à un Invité.
+Trois options : (1) conserver règle 9, signaler l'angle mort en Risques, séquencer
+le durcissement complet comme candidat du make-gherkin impersonation ; (2) étendre
+règle 9 dès v14 ; (3) neutre v14, trancher en porte.
+
+**Décision (tranchée, pas d'escalade G1) — Option 1.** La v14 **ne révise pas la
+règle 9** : elle (a) **signale l'angle mort en Risques** (gating config partiel :
+seul le bouton supprimer est gaté Invité ; ajout / édition / cycle restent
+ouverts), et (b) **séquence le durcissement complet comme candidat du
+make-gherkin `impersonation-bornee`** (même écran, même notion de rôle/identité).
+Révision de règle **hors boucle**, décision CP/métier confirmée au make-gherkin.
+
+**Rationale (résolution déterministe, pas de conflit de valeur).**
+- Le **backlog l'a déjà séquencé ainsi** : `99-sprint13-besoins-fin-itération.md`
+  §Séquence pt 2 — « Durcissement du gating config (règle 9) — cadrage adjacent /
+  candidat de l'impersonation… à confirmer au make-gherkin. **Décision CP/métier,
+  pas un retour produit PO** ». Aucun re-arbitrage requis : j'exécute la séquence.
+- **La spec reflète le livré (anti vert-qui-ment).** La consolidation /5 inscrit
+  ce qui est **livré** + les besoins ; le gating config complet n'a **pas** été
+  livré (Sc.7 ne gate que supprimer). Écrire en règle « toute écriture config est
+  gatée Parent/Admin » (Option 2) ferait **mentir la spec** (règle satisfaite alors
+  que l'IHM ne l'est pas), sans scénario ni acceptation runtime — pré-arbitrage
+  d'un sujet sans drivers. Rejeté.
+- **Convention « Révisions de règle hors boucle »** (spec règle 179-187 / Risques) :
+  une demande qui contredit/étend une règle actée attend le palier qui la porte —
+  ici le make-gherkin impersonation, naturellement adjacent (même `ConfigurationFoyer`,
+  même contexte rôle).
+- **Pas d'Option 3 (neutre muet) :** taire l'angle mort perdrait le signal Sc.7 ; le
+  backlog demande explicitement de le **porter en Risques** pour pilotage a posteriori.
+- **Pas de porte G1 :** aucun trou métier. L'intention métier est **déjà actée** —
+  règle 8 (« Autre = consultation et édition limitée à ses propres infos ») et
+  règle 9 (Parent/Admin seuls écrivent). Le manque est un **écart d'implémentation /
+  de couverture de scénarios** sur l'écran config, pas un conflit de valeur. G1 ne
+  s'ouvrirait que si le make-gherkin impersonation révélait un vrai trou métier neuf.
+
+**Fondements.** `99-sprint13-besoins-fin-itération.md` (§Séquence pt 2, §Risques
+frontière impersonation) ; spec v13 règles 8/9, convention « Révisions de règle
+hors boucle », Risques (impersonation bornée vs auth réelle) ; CLAUDE.md
+(consolidation reflète le livré, acceptation runtime anti vert-qui-ment) ; D2/D6
+(porte G1 réservée au vrai trou métier).
+
+### D9 — Synthèse de consolidation v13 → v14 validée : cohérente pour ordonner l'écriture, aucun conflit de valeur résiduel
+
+**Contexte.** `spec-consolidation` soumet la synthèse v14 (verbatim) avant
+écriture de `docs/14-specification.md`. Vérifier sa cohérence pour ordonner
+l'écriture sans déranger le PO, et qu'aucun conflit de valeur (porte G1) ne
+subsiste — la seule collision (gating config règle 9) ayant déjà été tranchée en
+D8 (Option 1).
+
+**Décision (tranchée, pas d'escalade G1).** Synthèse **validée**, écriture vers
+`docs/14-specification.md` **autorisée telle quelle**. Aucune porte PO.
+
+**Vérification de cohérence (chaque assertion adossée à une source livrée).**
+- **Suppression LIVRÉE 9/9 · 196/196** — `00-sprint13-suivi.md` (tableau 9/9 ✅,
+  « Suite complète : 196/196 verte, stable ≥3× », acceptation runtime IHM 4/4 +
+  intégration Mongo réel Sc.1). Repli surcharge→fond→neutre sans nom fantôme,
+  acteur mappé cycle→index non mappé→neutre, idempotence, accusé « Acteur
+  supprimé » non bloquant, gating Invité bouton supprimer, échec API, temps réel
+  SignalR = conformes aux scénarios livrés. ✓
+- **Marqueurs « PROCHAIN SUJET » suppression → « LIVRÉ »** — passage cohérent :
+  spec v13 portait la suppression en « prochain sujet » (L93/189/315/422/466) ;
+  la v14 doit les passer au passé. Reflète le livré (anti vert-qui-ment). ✓
+- **PROCHAIN SUJET = impersonation bornée (palier 8 tranche 2, É10+É2, G2 PO)** —
+  `99-sprint13-besoins-fin-itération.md` §Décision G2 + §Prochain sujet ; spec v13
+  L315-332. Borne dure (pas d'OAuth/comptes/sessions/prise en main, aucune
+  persistance neuve) = besoins L32-35/L48-50 + §Risques. Périmètre cadré au
+  make-gherkin = besoins L45-50. ✓
+- **Collision gating règle 9 → Option 1** — strictement conforme à **D8** : v14 ne
+  révise pas règle 9 ; angle mort Sc.7 en Risques ; durcissement séquencé candidat
+  make-gherkin impersonation. ✓
+- **Séquencés sans règle neuve** — rétrofit garde TempsReel SignalR (P2),
+  calendrier navigable (palier 9 rang +3), édition concurrente (P3 différée) =
+  besoins §Séquence pt 3/4 + §Risques. ✓
+- **Borne anti-cliquet : seule config foyer durable (Mongo)** — règle 30 ;
+  `00-sprint13-suivi.md` L101-102. ✓
+
+**Rationale (pas de conflit de valeur).** Toute assertion de la synthèse dérive
+d'une source livrée ou d'une décision déjà tranchée (D8) ; aucune n'invente de
+règle métier ni ne fait mentir la spec. L'unique collision est résolue de façon
+déterministe (D8). Aucun trou métier neuf → G1 fermée : G1 ne s'ouvrirait que si
+l'écriture révélait un vrai conflit de valeur, ce qui n'est pas le cas.
+
+**Fondements.** `00-sprint13-suivi.md` (9/9, 196/196, Sc.7 driver réel, borne
+anti-cliquet) ; `99-sprint13-besoins-fin-itération.md` (§Décision G2, §Prochain
+sujet, §Séquence, §Risques) ; spec v13 (marqueurs PROCHAIN SUJET, règles 9/30) ;
+**D8** (Option 1 gating config) ; CLAUDE.md (consolidation reflète le livré).
