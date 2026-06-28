@@ -24,7 +24,17 @@ vert). Prouvé sur l'app réellement câblée (gating règle 9 sur l'identité *
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_MasquerToutesLesÉcrituresDeLaConfiguration_When_OnIncarneUnActeurDeTypeAutre` | inconditionnel → conditionnel (étendre le garde) | driver — aujourd'hui **seul le bouton supprimer** est gaté `@if EstParent` (s13) ; **ajout / édition d'acteur / édition du cycle** restent ouverts → un « Autre » incarné les verrait encore. Le bouton supprimer, lui, **suit l'effective** automatiquement (⚠️ early-green partiel). Le rouge propre force l'extension du garde à **toutes** les écritures config | ⏳ Pending |
+| 1 | `Should_MasquerToutesLesÉcrituresDeLaConfiguration_When_OnIncarneUnActeurDeTypeAutre` | inconditionnel → conditionnel (étendre le garde) | driver — aujourd'hui **seul le bouton supprimer** est gaté `@if EstParent` (s13) ; **ajout / édition d'acteur / édition du cycle** restent ouverts → un « Autre » incarné les verrait encore. Le bouton supprimer, lui, **suit l'effective** automatiquement (⚠️ early-green partiel). Le rouge propre force l'extension du garde à **toutes** les écritures config | ✅ Green |
+
+> **Réalisé — driver RED→GREEN runtime (embarqué, tenu sous budget ~2h).** Code de prod : `ConfigurationFoyer.razor`
+> enveloppe sous `@if (Session.EstParent)` (identité **effective**) les formulaires d'**édition d'acteur**,
+> d'**ajout** et d'**édition du cycle de fond** ; le bouton supprimer l'était déjà (s13). La **lecture**
+> (liste des acteurs) reste visible (consultation seule préservée). Acceptation runtime / G3
+> `FrontWasmConfigGatingAutreIncarneTempsReelTests` : sous identité réelle Parent, les 4 écritures
+> (champ-nom, champ-nom-ajout, champ-nombre-semaines, bouton-supprimer) sont proposées (contrôle positif
+> anti faux-vert) ; en incarnant Nina la nounou (Autre), **aucune** ne l'est. **RED d'abord constaté**
+> (écritures non gatées encore visibles sous incarnation Autre) → vert. Suite complète 213/213 ;
+> `*TempsReel*` 31/31 vert 3× en isolation.
 
 ## Fichiers à créer
 
