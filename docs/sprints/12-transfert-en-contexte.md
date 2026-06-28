@@ -173,7 +173,7 @@ Scenario: Le transfert ne se saisit plus que depuis une case, aucun écran dédi
   Et le seul chemin pour définir un transfert est la dialog ouverte depuis une case
 ```
 
-### Scenario 6 — Annuler la dialog n'émet aucune écriture `@limite` `@caractérisation`
+### Scenario 6 — Annuler la dialog n'émet aucune écriture `@limite` `@caractérisation` `@vert`
 
 > Caractérisation (filet) : le pattern « annuler une dialog » est acquis au s11 ; il est ici
 > transposé au transfert. Probablement early-green ; **groupable** avec les filets du même

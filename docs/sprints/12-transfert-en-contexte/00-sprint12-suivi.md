@@ -100,7 +100,7 @@
 | 3 | [Échec : la dialog reste ouverte et conserve la saisie](03-echec-dialog-reste-ouverte.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 2/2 | ✅ GREEN |
 | 4 | [Un Invité ne peut pas ouvrir le menu depuis une case](04-invite-ne-peut-pas-ouvrir-menu.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
 | 5 | [La page de saisie dédiée n'existe plus](05-page-dediee-n-existe-plus.md) | `@limite 🖥️ IHM` | ✅ GREEN (RED→GREEN) | runtime (3 assertions) | ✅ GREEN |
-| 6 | [Annuler la dialog n'émet aucune écriture](06-annuler-dialog-sans-ecrire.md) | `@limite 🖥️ IHM 🏷️ caractérisation` | ⏳ Pending | 0/1 | ⏳ Pending |
+| 6 | [Annuler la dialog n'émet aucune écriture](06-annuler-dialog-sans-ecrire.md) | `@limite 🖥️ IHM 🏷️ caractérisation` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
 
 **Total** : 6 scénarios — **6 IHM/runtime** (`ihm-builder`, acceptation **E2E/runtime** sur
 front WASM réel + API distante + store réel + SignalR), **0 backend** (aucun handler ni règle
@@ -110,16 +110,19 @@ seuls). **Drivers réels** = Sc.1 (3ᵉ dialog + accusé succès) et Sc.5 (retra
 dédié) ; **Sc.2 / Sc.3 / Sc.4 / Sc.6** prédits **early-green** (câblage IHM partagé +
 invariants déjà verts s01/s11) → **batchables** en lot de caractérisations.
 
-**Acceptation runtime IHM** : **5/6** (Sc.1 ✅ RED→GREEN — 3ᵉ dialog transfert + accusé « Transfert
+**Acceptation runtime IHM** : **6/6** (Sc.1 ✅ RED→GREEN — 3ᵉ dialog transfert + accusé « Transfert
 défini » à part ; **Sc.2 / Sc.3 / Sc.4 ✅ caractérisations early-green confirmées en lot** — ancrage
 date de contexte, issue d'échec règle 28 (2 Facts : refus domaine / API injoignable), gating Invité
 règle 9 ; **Sc.5 ✅ RED→GREEN — retrait du dernier écran de saisie dédié (referme É12)** : page/route
 `@page "/planning/definir-transfert"` + lien-barre `PlanningPartage` + entrée `NavMenu` retirés, seul
 chemin restant = la dialog clic-case ; preuve runtime sur app câblée (absence de lien barre + NavMenu,
 aucun `RouteAttribute` `/planning/definir-transfert` dans l'assembly Web) ; tests caducs des écrans
-supprimés retirés (`DefinirTransfertTests`, `FrontWasmTransfertDateAujourdhuiTests`) ; tous prouvés au
-**runtime** sur front WASM réel + API distante + store réel, témoins réels assertés (pas de faux-vert) ;
-suite complète **181/181** verte, Docker actif). Reste : Sc.6 (caractérisation annulation).
+supprimés retirés (`DefinirTransfertTests`, `FrontWasmTransfertDateAujourdhuiTests`) ;
+**Sc.6 ✅ caractérisation early-green confirmée (anticipée)** — annulation sans écriture (règle 14, grille
+lecture seule) : `FrontWasmDefinirTransfertAnnulationTests`, store réel vérifié vide AVANT (témoin/baseline)
+ET après l'annulation, dialog refermée, aucun accusé ; vert d'emblée via le câblage de l'issue `OnAnnule`
+posé au Sc.1 ; tous prouvés au **runtime** sur front WASM réel + API distante + store réel, témoins réels
+assertés (pas de faux-vert) ; suite complète **182/182** verte, Docker actif). **Tous scénarios ✅ GREEN.**
 
 > **Scaffolding requis (à créer par `ihm-builder`, hors périmètre de l'analyse)** :
 > - **`DefinirTransfertDialog.razor` (+ code-behind)** — composant dialog (modal) réutilisable
