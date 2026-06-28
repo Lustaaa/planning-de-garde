@@ -100,7 +100,7 @@ Scenario: Supprimer un acteur autorisé le retire de la configuration persistée
   Et la configuration relue après redémarrage ne comporte toujours pas "Nounou"
 ```
 
-### Scenario 2 — Surcharge orpheline : la case retombe sur le fond (le cycle reprend) `@limite` `@driver`
+### Scenario 2 — Surcharge orpheline : la case retombe sur le fond (le cycle reprend) `@limite` `@driver` `@vert`
 
 ```gherkin
 Scenario: Supprimer l'acteur d'une période saisie fait retomber sa case sur le responsable de fond

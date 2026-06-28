@@ -18,19 +18,22 @@ public sealed class GrilleAgendaQuery
     private readonly IPaletteCouleurs _palette;
     private readonly IReferentielResponsables _referentiel;
     private readonly IReferentielCycleDeFond? _cycle;
+    private readonly IEnumerationActeursFoyer? _acteurs;
 
     public GrilleAgendaQuery(
         ISlotRepository slots,
         IPeriodeRepository periodes,
         IPaletteCouleurs palette,
         IReferentielResponsables referentiel,
-        IReferentielCycleDeFond? cycle = null)
+        IReferentielCycleDeFond? cycle = null,
+        IEnumerationActeursFoyer? acteurs = null)
     {
         _slots = slots;
         _periodes = periodes;
         _palette = palette;
         _referentiel = referentiel;
         _cycle = cycle;
+        _acteurs = acteurs;
     }
 
     /// <summary>
@@ -64,9 +67,18 @@ public sealed class GrilleAgendaQuery
     private JourCase CaseJourAu(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots)
     {
         var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
+        // Filtre d'existence sur la SURCHARGE (avant le repli sur le fond) : une période pointant un
+        // acteur supprimé (orphelin = absent de l'énumération du store) cesse de primer — sa surcharge
+        // est neutralisée pour que la case retombe sur le fond, jamais sur un nom fantôme (id brut).
+        // Contrat d'existence = port de lecture EXISTANT IEnumerationActeursFoyer (null → pas de filtrage,
+        // comportement antérieur préservé). Appliqué AVANT le `?? fond` : une surcharge orpheline retombe
+        // sur le fond, et non sur le neutre (filtrer le responsableId combiné serait un faux raccourci).
+        var surcharge = periode?.ResponsableId;
+        if (surcharge is not null && _acteurs is not null && !_acteurs.EnumererActeurs().Contains(surcharge))
+            surcharge = null;
         // Priorité de résolution : surcharge (période saisie) > fond (cycle) > neutre. La période
-        // prime structurellement (branche else intacte) ; le fond ne s'applique que sans période.
-        var responsableId = periode?.ResponsableId ?? _cycle?.CycleCourant()?.ResponsableDeFond(date);
+        // prime structurellement ; le fond ne s'applique que sans surcharge (résolvable).
+        var responsableId = surcharge ?? _cycle?.CycleCourant()?.ResponsableDeFond(date);
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
         return new JourCase(date, couleur, nom, SlotsCasePour(slots));
