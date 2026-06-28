@@ -115,7 +115,7 @@ Scenario: Supprimer l'acteur d'une période saisie fait retomber sa case sur le 
   Et la case du mardi 16 juin 2026 affiche "Parent A" et sa couleur
 ```
 
-### Scenario 3 — Surcharge orpheline sur un index non résolu : la case retombe sur le neutre sans nom fantôme `@limite` `@driver`
+### Scenario 3 — Surcharge orpheline sur un index non résolu : la case retombe sur le neutre sans nom fantôme `@limite` `@driver` `@vert`
 
 ```gherkin
 Scenario: Supprimer l'acteur d'une période saisie sur un index non mappé fait retomber sa case sur le neutre
