@@ -72,19 +72,23 @@
 | 6 | [Depuis l'écran de config : bouton supprimer → liste, légende, accusé](06-ihm-bouton-supprimer-liste-legende.md) | `@nominal` 🖥️ IHM `@caractérisation` · runtime `ihm-builder` | ✅ GREEN (runtime : front WASM + API distante réelle + diffusion SignalR réelle — grand-père quitte la liste relue + légende dédoublonnée sans nom fantôme + accusé « Acteur supprimé » non bloquant ; RED bouton introuvable → GREEN) | 1/1 | ✅ GREEN |
 | 7 | [Un Invité ne peut pas supprimer d'acteur](07-ihm-invite-ne-supprime-pas.md) | `@erreur` 🖥️ IHM `@driver` · runtime `ihm-builder` (driver réel : aucun garde de rôle préexistant sur l'écran config) | ✅ GREEN (runtime : Invité → aucun bouton supprimer, aucune commande émissible, liste inchangée ; contrôle positif Parent ; gating règle 9 `@if EstParent` posé — RED bouton visible → GREEN) | 1/1 | ✅ GREEN |
 | 8 | [API injoignable : suppression non appliquée](08-ihm-api-injoignable.md) | `@erreur` 🖥️ IHM `@caractérisation` · runtime `ihm-builder` (early green câblage IHM partagé Sc.6) | ✅ GREEN (caractérisation, early-green confirmé : vert au 1er coup, aucun code de prod neuf — message d'échec clair, grand-père toujours listé, aucune fausse confirmation, store réel inchangé, aucune mise en file règle 28) | 1/1 | ✅ GREEN |
-| 9 | [Temps réel : la suppression propage grille et légende sans rechargement](09-ihm-temps-reel-propagation.md) | `@limite` 🖥️ IHM `@caractérisation` · runtime/intégration SignalR `ihm-builder` (⚠️ early green câblage IHM partagé) | ⏳ Pending (runtime : second écran voit la case retomber sur Parent A + légende dédoublonnée sans rechargement ; convention anti-flake *TempsReel*) | 0/0 | ⏳ Pending |
+| 9 | [Temps réel : la suppression propage grille et légende sans rechargement](09-ihm-temps-reel-propagation.md) | `@limite` 🖥️ IHM `@caractérisation` · runtime/intégration SignalR `ihm-builder` (early green câblage IHM partagé Sc.6) | ✅ GREEN (caractérisation, early-green confirmé : vert au 1er coup, aucun code de prod neuf — second écran voit la case du 16/06 retomber sur Parent A + légende dédoublonnée sans grand-père, sans rechargement ; convention anti-flake *TempsReel* appliquée, stable ≥3×) | 1/1 | ✅ GREEN |
 
 **Total** : 9 scénarios · **5 tests unitaires backend** (3 drivers réels : Sc.1, Sc.2, Sc.4 ;
 2 caractérisations early-green : Sc.3, Sc.5). **Acceptation Sc.1 = intégration Mongo réel (Docker)**,
 hors compte unit (anti vert-qui-ment). **Lot IHM final** (Sc.6→Sc.9) = caractérisations runtime
 groupables portées par `ihm-builder` (cascade de câblage partagé), hors compte unit backend.
 
-**Acceptation runtime IHM : 3/4** (Sc.6 ✅, Sc.7 ✅, Sc.8 ✅ ; Sc.9 ⏳ — temps réel SignalR).
+**Acceptation runtime IHM : 4/4 — TOUS les scénarios IHM ✅** (Sc.6 ✅, Sc.7 ✅, Sc.8 ✅, Sc.9 ✅).
+**Tranche suppression complète : 9/9 ✅.**
 **Note Sc.7 : driver réel, pas l'early-green planifié** — l'écran config n'avait aucun garde de rôle
 (le gating n'existait que sur la grille `PlanningPartage`) ; `@if EstParent` posé sur le bouton supprimer,
-5 tests config rétrofités avec un `SessionPlanning` réel. **Sc.8 : early-green confirmé** (issue d'échec
-transport posée au Sc.6, aucun code de prod neuf). **Suite complète : 195/195 verte** (Docker actif, sans
-`--no-build` ni filtre).
+5 tests config rétrofités avec un `SessionPlanning` réel. **Sc.8/Sc.9 : early-green confirmés** (issue
+d'échec transport + diffusion sur succès posées au Sc.6, aucun code de prod neuf). **Balayage Sc.9** : la
+touche du composant partagé `ConfigurationFoyer` (boutons + gating) a exposé une course latente
+`UnknownEventHandlerId` dans 7 tests `*TempsReel*` préexistants interagissant avec le `select` sans garde
+d'énumération → garde déterministe `WaitForState` ajouté (standard des tests frères). **Suite complète :
+196/196 verte, stable ≥3×** (Docker actif, sans `--no-build` ni filtre).
 
 **Statuts** : ⏳ Pending · 🔴 Red · ✅ Green.
 

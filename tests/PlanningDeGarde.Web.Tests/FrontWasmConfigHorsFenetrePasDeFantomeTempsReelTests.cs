@@ -45,6 +45,14 @@ public sealed class FrontWasmConfigHorsFenetrePasDeFantomeTempsReelTests : TestC
         // When — depuis l'écran de configuration réellement câblé, je renomme parent-c en « Mathilde »
         // (acteur sans période dans la fenêtre) et j'enregistre (émission via le canal d'écriture réel).
         var config = RenderComponent<ConfigurationFoyer>();
+
+        // … garde déterministe : attendre la fin de l'énumération asynchrone des acteurs (GET HTTP réel)
+        // avant d'interagir avec le select, sinon un re-render intercalé invalide le handler d'événement
+        // (UnknownEventHandlerId) — standard anti-flake *TempsReel* déjà appliqué par les tests config frères.
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+
         config.Find("select.form-select").Change("parent-c");
         config.Find("[data-testid='champ-nom']").Change("Mathilde");
         config.Find("form").Submit();

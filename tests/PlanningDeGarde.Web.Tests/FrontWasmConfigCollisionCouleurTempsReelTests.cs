@@ -51,6 +51,14 @@ public sealed class FrontWasmConfigCollisionCouleurTempsReelTests : TestContext
         // When — depuis l'écran de configuration réellement câblé, je recolorie parent-b en « bleu » (la
         // même couleur qu'Alice) et j'enregistre (émission via le canal d'écriture HTTP réel).
         var config = RenderComponent<ConfigurationFoyer>();
+
+        // … garde déterministe : attendre la fin de l'énumération asynchrone des acteurs (GET HTTP réel)
+        // avant d'interagir avec le select, sinon un re-render intercalé invalide le handler d'événement
+        // (UnknownEventHandlerId) — standard anti-flake *TempsReel* déjà appliqué par les tests config frères.
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+
         config.Find("select.form-select").Change("parent-b");
         config.Find("[data-testid='champ-couleur']").Change("bleu");
         config.Find("form").Submit();
