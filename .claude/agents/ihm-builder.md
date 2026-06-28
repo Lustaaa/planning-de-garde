@@ -103,6 +103,19 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   (store/hub propres par test) pour éviter le flake sous exécution parallèle. (Vécu s10 : un
   test runtime SignalR Web.Tests a flaké 1×/2 au gate sous charge parallèle — vert en isolation ;
   cause = timing au lieu d'une attente d'établissement.)
+  - **La convention vaut aussi pour les tests `*TempsReel*` PRÉEXISTANTS, pas seulement les
+    neufs.** Avant de driver **tout nouveau scénario temps-réel** (ex. édition concurrente du
+    même jour sous dialog ouverte, différée au backlog), **rétrofite d'abord** la famille
+    existante (`FrontWasmConfigCycle*TempsReel*` et apparentés) sur le même standard : attente
+    déterministe d'établissement de connexion + isolation d'état store/hub par test, **jamais**
+    de délai fixe ; vise une stabilité **reproductible ≥3× sous charge parallèle**. Ne bâtis
+    pas un nouveau scénario temps-réel sur une fondation de test flaky (il produirait des
+    scénarios flaky par construction). (Vécu s11 : `FrontWasmConfigCycle*TempsReel*` verts en
+    isolation mais flaky sous charge parallèle, cause timing SignalR/Docker — dette de test,
+    pas un bug produit.)
+    > **Portée.** Tu **codifies** ici la convention ; l'**exécution du rétrofit** (édition
+    > effective des fichiers de test existants) reste une **passe dev séquencée (P2)**, non
+    > tirée en avant — à mener avant le scénario temps-réel différé, pas pendant cette rétro.
 
 ### FIX (.razor / câblage / render mode)
 - Corrige l'**IHM** : `.razor` / code-behind, **render mode** (`@rendermode

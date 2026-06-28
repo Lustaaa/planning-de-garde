@@ -25,6 +25,17 @@ public partial class PlanningPartage
 
     private HubConnection? _hub;
 
+    // Écriture en contexte (palier 7) — la grille reste en LECTURE SEULE (règle 14) : la case ouvre un
+    // menu d'actions, jamais une écriture. Un seul déclencheur par case (mutualise le gating Invité, Sc.6).
+    // null = fermé. Date de la case dont le menu d'actions est ouvert :
+    private DateOnly? _dateMenu;
+    // Date de contexte de chaque dialog ouverte depuis le menu (null = dialog fermée) :
+    private DateOnly? _dateDialogPoserSlot;
+    private DateOnly? _dateDialogAffecterPeriode;
+    // Avertissement de chevauchement « à part » (Sc.7, règle 16) : pose acceptée mais signalée, bandeau
+    // NON bloquant et refermable. Drapeau porté par l'outcome de la commande (jamais recalculé ici).
+    private bool _avertissementChevauchement;
+
     private string Desactive => Session.EstParent ? string.Empty : "disabled";
 
     private RoleAuteur RoleSelectionne
@@ -83,6 +94,66 @@ public partial class PlanningPartage
         {
             // API distante injoignable : la grille reste vide plutôt que de planter la vue.
         }
+    }
+
+    /// <summary>
+    /// Ouvre le <b>menu d'actions</b> de la case cliquée (décision CP, palier 7) : un seul déclencheur
+    /// d'écriture par case, deux entrées (poser un slot / affecter une période). Gating Invité (règle 9)
+    /// mutualisé ici : en consultation seule, le clic n'ouvre rien — le déclencheur est gardé à l'entrée.
+    /// Aucune écriture : le menu et les dialogs portent la commande, la grille reste en lecture seule.
+    /// </summary>
+    private void OuvrirMenu(DateOnly date)
+    {
+        if (!Session.EstParent)
+            return;
+
+        _dateMenu = date;
+    }
+
+    /// <summary>Ferme le menu d'actions sans rien ouvrir (clic hors panneau).</summary>
+    private void FermerMenu() => _dateMenu = null;
+
+    /// <summary>Depuis le menu, ouvre la dialog « Poser un slot » pré-remplie sur la date de la case.</summary>
+    private void OuvrirPoserSlot(DateOnly date)
+    {
+        _dateMenu = null;
+        _avertissementChevauchement = false; // un avertissement précédent ne survit pas à une nouvelle saisie
+        _dateDialogPoserSlot = date;
+    }
+
+    /// <summary>Depuis le menu, ouvre la dialog « Affecter une période » pré-remplie sur la date de la case.</summary>
+    private void OuvrirAffecterPeriode(DateOnly date)
+    {
+        _dateMenu = null;
+        _dateDialogAffecterPeriode = date;
+    }
+
+    /// <summary>Ferme la dialog ouverte sur succès et <b>relit</b> la grille depuis l'API distante :
+    /// l'écriture aboutie réapparaît, positionnée à la date de la case (relecture, jamais une mutation
+    /// locale de la grille).</summary>
+    private async Task FermerDialogEtRecharger()
+    {
+        FermerDialog();
+        await ChargerAsync();
+    }
+
+    /// <summary>Issue succès de la pose (Sc.7) : ferme la dialog, relit la grille, et lève le bandeau
+    /// d'avertissement « à part » <b>si</b> l'outcome de la commande a signalé un chevauchement (règle 16,
+    /// accepté + averti). Le drapeau vient de l'API (read model existant) — jamais recalculé ici.</summary>
+    private async Task FermerPoserSlotEtRecharger(bool chevauchement)
+    {
+        await FermerDialogEtRecharger();
+        _avertissementChevauchement = chevauchement;
+    }
+
+    /// <summary>Referme le bandeau d'avertissement de chevauchement (non bloquant).</summary>
+    private void FermerAvertissement() => _avertissementChevauchement = false;
+
+    /// <summary>Ferme toute dialog sans aucune écriture (annulation / succès) : la grille reste intacte.</summary>
+    private void FermerDialog()
+    {
+        _dateDialogPoserSlot = null;
+        _dateDialogAffecterPeriode = null;
     }
 
     /// <summary>Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible

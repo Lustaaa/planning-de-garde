@@ -58,7 +58,7 @@ public partial class DefinirTransfert
         }
         catch (HttpRequestException)
         {
-            _motifEchec = PoserSlot.MessageServiceInjoignable;
+            _motifEchec = MessagesEcriture.ServiceInjoignable;
             return;
         }
 

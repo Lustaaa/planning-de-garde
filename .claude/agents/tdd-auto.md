@@ -144,7 +144,11 @@ cf. s09 Sc.4–7). Conditions cumulatives :
    chef de projet — **jamais** de batch silencieux qui avalerait le signal ;
 3. le **suivi reste tenu scénario par scénario** (`NN-slug.md` + compte `X/N` du
    `00-sprint<NN>-suivi.md`), même en lot ;
-4. **un seul commit de lot** listant explicitement les scénarios couverts.
+4. **un seul commit de lot** listant explicitement les scénarios couverts ;
+5. toute caractérisation du lot touchant l'**accès / la sécurité** (gating de rôle, Invité,
+   droit d'écriture) **DOIT** porter un **contrôle positif** en regard du négatif (ex. un
+   Parent ouvre bien le menu vs l'Invité n'ouvre rien) — sinon elle peut passer **vacuously**
+   si le déclencheur est cassé pour tous (réf. Sc.6 s11).
 
 ## Garde-fous (cf. skill — Signaux d'alarme)
 

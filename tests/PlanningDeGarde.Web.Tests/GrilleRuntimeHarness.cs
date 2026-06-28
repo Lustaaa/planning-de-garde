@@ -92,9 +92,12 @@ internal static class GrilleRuntimeHarness
     /// proprement sans interférer.
     /// </summary>
     public static IRenderedComponent<PlanningPartage> RendreGrille(
-        Bunit.TestContext ctx, ApiDistanteFactory api, DateTime aujourdhui)
+        Bunit.TestContext ctx, ApiDistanteFactory api, DateTime aujourdhui, HttpClient? client = null)
     {
-        ctx.Services.AddSingleton(ClientVers(api));
+        // Client par défaut = transport réel complet ; un appelant peut injecter un client dont une
+        // écriture précise est coupée (ClientVersAvecEcritureInjoignable) tout en laissant passer la
+        // lecture initiale de la grille (Sc.4 « API injoignable » via le contexte grille).
+        ctx.Services.AddSingleton(client ?? ClientVers(api));
         ctx.Services.AddSingleton(new SessionPlanning());
         ctx.Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(aujourdhui));
         ctx.Services.AddSingleton(new OptionsConnexionHub
