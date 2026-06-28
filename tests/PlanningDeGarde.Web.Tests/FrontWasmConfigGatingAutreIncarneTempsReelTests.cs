@@ -74,4 +74,44 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
         // ÉCRITURES, pas la lecture.
         Assert.NotEmpty(config.FindAll("[data-testid='acteur-foyer']"));
     }
+
+    /// <summary>
+    /// Phase IHM finale (cohérence inter-écrans) — sous incarnation, l'écran de configuration affiche le
+    /// <b>bandeau « Vous incarnez X »</b> (en miroir de la grille) et l'<b>affordance de retour</b> permet de
+    /// revenir à l'identité réelle <b>depuis cet écran</b> : les écritures config redeviennent alors visibles.
+    /// Prouvé sur l'écran réellement câblé (DI réelle, état d'incarnation partagé de session).
+    /// </summary>
+    [Fact]
+    public void Should_AfficherLeBandeauEtRestaurerLesEcritures_When_OnIncarneUnAutrePuisRevientDepuisLaConfiguration()
+    {
+        using var api = new ApiDistanteFactory();
+        Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        var session = new SessionPlanning
+        {
+            ActeursIncarnables = new List<IdentiteActeur> { new("nounou", "Nina la nounou", TypeActeur.Autre) },
+        };
+        Services.AddSingleton(session);
+
+        var config = RenderComponent<ConfigurationFoyer>();
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+
+        // Sous identité réelle : aucun bandeau.
+        Assert.Empty(config.FindAll("[data-testid='bandeau-incarnation']"));
+
+        // En incarnant Nina (Autre) : le bandeau « Vous incarnez Nina la nounou » s'affiche, écritures masquées.
+        session.Incarner("nounou");
+        config.Render();
+        Assert.Contains("Vous incarnez Nina la nounou",
+            config.Find("[data-testid='bandeau-incarnation']").TextContent);
+        Assert.Empty(config.FindAll("[data-testid='champ-nom']"));
+
+        // En revenant à l'identité réelle DEPUIS la configuration : bandeau retiré, écritures restaurées.
+        config.Find("[data-testid='revenir-identite-reelle']").Click();
+        Assert.Empty(config.FindAll("[data-testid='bandeau-incarnation']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='champ-nom']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='champ-nom-ajout']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
+    }
 }
