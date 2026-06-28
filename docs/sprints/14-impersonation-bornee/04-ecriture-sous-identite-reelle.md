@@ -24,7 +24,17 @@ côté frontière (jamais doublé).
 
 | # | Test unitaire (FLFI) | TPP | Contradiction | Status |
 |---|----------------------|-----|---------------|--------|
-| 1 | `Should_EnregistrerLeSlotSousLIdentitéRéelleDuConfigurateur_When_OnPoseUnSlotEnIncarnantUnParent` | (aucune — caractérisation) | ⚠️ probablement early green — couvert **par construction** : le canal d'écriture ne lit **jamais** l'identité effective ; l'auteur des commandes reste l'identité réelle (l'impersonation ne touche pas le canal requête/réponse). Filet anti-régression « pas d'écriture au nom de », **pas** un driver | ⏳ Pending |
+| 1 | `Should_EnregistrerLeSlotSousLIdentitéRéelleDuConfigurateur_When_OnPoseUnSlotEnIncarnantUnParent` | (aucune — caractérisation) | ⚠️ probablement early green — couvert **par construction** : le canal d'écriture ne lit **jamais** l'identité effective ; l'auteur des commandes reste l'identité réelle (l'impersonation ne touche pas le canal requête/réponse). Filet anti-régression « pas d'écriture au nom de », **pas** un driver | ✅ Green |
+
+> **Réalisé — caractérisation EARLY-GREEN confirmée, borne intacte.** `FrontWasmEcritureSousIdentiteReelleTempsReelTests`
+> : en incarnant Bruno (menu visible — non-vacuité), la pose d'un slot le 16/06 aboutit (transite jusqu'au
+> store réel) et le **corps HTTP réellement émis** (capté à la frontière, relayé vers l'API live) porte
+> `EnfantId = « Léa »` (contexte de l'identité réelle, inchangé par l'incarnation) et **aucune référence**
+> à l'incarné (`parent-b` / « Bruno »). **Premier passage vert par construction** : `PoserSlotDialog` ne
+> lit que `Session.EnfantId`, jamais l'identité effective — l'impersonation n'a PAS fui dans le canal
+> d'écriture. (NB : un faux rouge transitoire d'assertion sur l'échappement Unicode JSON de « Léa » →
+> « Léa » a été corrigé par désérialisation du corps ; ce n'était PAS une fuite de la borne, donc
+> pas d'escalade CP.)
 
 ## Fichiers à créer
 
