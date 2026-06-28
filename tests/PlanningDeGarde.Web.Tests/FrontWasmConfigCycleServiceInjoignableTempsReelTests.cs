@@ -3,6 +3,7 @@ using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.State;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
@@ -39,6 +40,7 @@ public sealed class FrontWasmConfigCycleServiceInjoignableTempsReelTests : TestC
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(
             GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "definir-cycle"));
+        Services.AddSingleton(new SessionPlanning()); // contexte rôle réel (Parent par défaut) requis par l'écran (gating Sc.7)
 
         var config = RenderComponent<ConfigurationFoyer>();
 

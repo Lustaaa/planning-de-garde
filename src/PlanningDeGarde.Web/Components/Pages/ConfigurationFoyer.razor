@@ -1,5 +1,6 @@
 @page "/configuration"
 @inject HttpClient Canal
+@inject PlanningDeGarde.Web.State.SessionPlanning Session
 @using static PlanningDeGarde.Web.CanalEcriture
 
 <PageTitle>Configuration du foyer</PageTitle>
@@ -154,9 +155,14 @@
             data-acteur-id="@a.Id" data-couleur="@a.Couleur">
             <span class="acteur-pastille" style="background-color:@CouleursTheme.Pleine(a.Couleur);"
                   aria-hidden="true"></span><span class="acteur-nom">@a.Nom</span>
-            <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
-                    data-testid="bouton-supprimer" data-acteur-id="@a.Id"
-                    @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer</button>
+            @* Gating règle 9 : le bouton supprimer (action d'écriture) n'est rendu que pour un Parent —
+               un Invité en consultation seule ne peut émettre aucune commande de suppression (Sc.7). *@
+            @if (Session.EstParent)
+            {
+                <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
+                        data-testid="bouton-supprimer" data-acteur-id="@a.Id"
+                        @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer</button>
+            }
         </li>
     }
 </ul>

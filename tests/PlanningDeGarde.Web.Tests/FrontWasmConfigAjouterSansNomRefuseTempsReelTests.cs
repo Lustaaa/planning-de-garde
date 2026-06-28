@@ -3,6 +3,7 @@ using System.Linq;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.State;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
@@ -31,6 +32,7 @@ public sealed class FrontWasmConfigAjouterSansNomRefuseTempsReelTests : TestCont
         // énumération réelle). L'écran énumère les acteurs DEPUIS LE STORE (GET HTTP réel) : la liste se peuple.
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton(new SessionPlanning()); // contexte rôle réel (Parent par défaut) requis par l'écran (gating Sc.7)
 
         var config = RenderComponent<ConfigurationFoyer>();
 

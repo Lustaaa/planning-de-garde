@@ -70,7 +70,7 @@
 | 4 | [Acteur mappé au cycle de fond : index non mappé → neutre](04-acteur-mappe-fond-index-non-mappe.md) | `@limite` `@driver` · backend `tdd-auto` | ✅ GREEN (frontière Application : fond orphelin → index non mappé → neutre, sans nom fantôme) | 1/1 | ✅ GREEN |
 | 5 | [Supprimer un acteur absent ou déjà supprimé : no-op qui réussit](05-suppression-idempotente.md) | `@erreur` `@caractérisation` · backend `tdd-auto` (⚠️ early green) | ✅ GREEN (caractérisation) (frontière Application : DELETE idempotent — succès sans effet, aucune erreur) | 1/1 | ✅ GREEN |
 | 6 | [Depuis l'écran de config : bouton supprimer → liste, légende, accusé](06-ihm-bouton-supprimer-liste-legende.md) | `@nominal` 🖥️ IHM `@caractérisation` · runtime `ihm-builder` | ✅ GREEN (runtime : front WASM + API distante réelle + diffusion SignalR réelle — grand-père quitte la liste relue + légende dédoublonnée sans nom fantôme + accusé « Acteur supprimé » non bloquant ; RED bouton introuvable → GREEN) | 1/1 | ✅ GREEN |
-| 7 | [Un Invité ne peut pas supprimer d'acteur](07-ihm-invite-ne-supprime-pas.md) | `@erreur` 🖥️ IHM `@caractérisation` · runtime `ihm-builder` (⚠️ early green câblage IHM partagé) | ⏳ Pending (runtime : aucun bouton supprimer en consultation seule, aucune commande émise, liste inchangée — gating règle 9 mutualisé) | 0/0 | ⏳ Pending |
+| 7 | [Un Invité ne peut pas supprimer d'acteur](07-ihm-invite-ne-supprime-pas.md) | `@erreur` 🖥️ IHM `@driver` · runtime `ihm-builder` (driver réel : aucun garde de rôle préexistant sur l'écran config) | ✅ GREEN (runtime : Invité → aucun bouton supprimer, aucune commande émissible, liste inchangée ; contrôle positif Parent ; gating règle 9 `@if EstParent` posé — RED bouton visible → GREEN) | 1/1 | ✅ GREEN |
 | 8 | [API injoignable : suppression non appliquée](08-ihm-api-injoignable.md) | `@erreur` 🖥️ IHM `@caractérisation` · runtime `ihm-builder` (⚠️ early green câblage IHM partagé) | ⏳ Pending (runtime : message d'échec clair, liste/grille/légende inchangées, aucune mise en file — règle 28) | 0/0 | ⏳ Pending |
 | 9 | [Temps réel : la suppression propage grille et légende sans rechargement](09-ihm-temps-reel-propagation.md) | `@limite` 🖥️ IHM `@caractérisation` · runtime/intégration SignalR `ihm-builder` (⚠️ early green câblage IHM partagé) | ⏳ Pending (runtime : second écran voit la case retomber sur Parent A + légende dédoublonnée sans rechargement ; convention anti-flake *TempsReel*) | 0/0 | ⏳ Pending |
 
@@ -79,8 +79,11 @@
 hors compte unit (anti vert-qui-ment). **Lot IHM final** (Sc.6→Sc.9) = caractérisations runtime
 groupables portées par `ihm-builder` (cascade de câblage partagé), hors compte unit backend.
 
-**Acceptation runtime IHM : 1/4** (Sc.6 ✅ ; Sc.7/8/9 ⏳ — câblage partagé posé par Sc.6, early-green
-attendu). **Suite complète : 193/193 verte** (Docker actif, sans `--no-build` ni filtre).
+**Acceptation runtime IHM : 2/4** (Sc.6 ✅, Sc.7 ✅ ; Sc.8/9 ⏳ — câblage partagé posé par Sc.6).
+**Note Sc.7 : driver réel, pas l'early-green planifié** — l'écran config n'avait aucun garde de rôle
+(le gating n'existait que sur la grille `PlanningPartage`) ; `@if EstParent` posé sur le bouton supprimer,
+5 tests config rétrofités avec un `SessionPlanning` réel. **Suite complète : 194/194 verte** (Docker
+actif, sans `--no-build` ni filtre).
 
 **Statuts** : ⏳ Pending · 🔴 Red · ✅ Green.
 
