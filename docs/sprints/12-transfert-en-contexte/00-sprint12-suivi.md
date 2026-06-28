@@ -95,12 +95,12 @@
 
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
-| 1 | [Définir un transfert depuis une case via le menu clic-case](01-definir-transfert-depuis-case.md) | `@nominal 🖥️ IHM` | ✅ GREEN (RED→GREEN) | 0/2 | ✅ GREEN |
-| 2 | [La dialog se pré-remplit sur la date de la case cliquée](02-pre-remplir-date-de-la-case.md) | `@limite 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
-| 3 | [Échec : la dialog reste ouverte et conserve la saisie](03-echec-dialog-reste-ouverte.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 2/2 | ✅ GREEN |
-| 4 | [Un Invité ne peut pas ouvrir le menu depuis une case](04-invite-ne-peut-pas-ouvrir-menu.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
-| 5 | [La page de saisie dédiée n'existe plus](05-page-dediee-n-existe-plus.md) | `@limite 🖥️ IHM` | ✅ GREEN (RED→GREEN) | runtime (3 assertions) | ✅ GREEN |
-| 6 | [Annuler la dialog n'émet aucune écriture](06-annuler-dialog-sans-ecrire.md) | `@limite 🖥️ IHM 🏷️ caractérisation` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
+| 1 | [Définir un transfert depuis une case via le menu clic-case](archive/01-definir-transfert-depuis-case.md) | `@nominal 🖥️ IHM` | ✅ GREEN (RED→GREEN) | 0/2 | ✅ GREEN |
+| 2 | [La dialog se pré-remplit sur la date de la case cliquée](archive/02-pre-remplir-date-de-la-case.md) | `@limite 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
+| 3 | [Échec : la dialog reste ouverte et conserve la saisie](archive/03-echec-dialog-reste-ouverte.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 2/2 | ✅ GREEN |
+| 4 | [Un Invité ne peut pas ouvrir le menu depuis une case](archive/04-invite-ne-peut-pas-ouvrir-menu.md) | `@erreur 🖥️ IHM` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
+| 5 | [La page de saisie dédiée n'existe plus](archive/05-page-dediee-n-existe-plus.md) | `@limite 🖥️ IHM` | ✅ GREEN (RED→GREEN) | runtime (3 assertions) | ✅ GREEN |
+| 6 | [Annuler la dialog n'émet aucune écriture](archive/06-annuler-dialog-sans-ecrire.md) | `@limite 🖥️ IHM 🏷️ caractérisation` | ✅ GREEN (caractérisation early-green) | 1/1 | ✅ GREEN |
 
 **Total** : 6 scénarios — **6 IHM/runtime** (`ihm-builder`, acceptation **E2E/runtime** sur
 front WASM réel + API distante + store réel + SignalR), **0 backend** (aucun handler ni règle
