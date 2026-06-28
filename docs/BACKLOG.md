@@ -4,7 +4,7 @@
 > une vue **par épic (fonctionnalité)** pour regrouper ce qui est lié et préparer le
 > découpage des sprints, et une vue **par palier (séquence de livraison)** pour le
 > calendrier d'un coup d'œil. Source de vérité du *quoi/quand* ; le *pourquoi* vit dans
-> la spec vivante [`docs/13-specification.md`](13-specification.md).
+> la spec vivante [`docs/14-specification.md`](14-specification.md).
 >
 > **Tenue à jour par le pipeline** : `/4-retours` y **ajoute** les besoins issus du
 > challenge ; `/6-cloture-sprint` y passe à **✅ fait** ce qui a été livré (gate visuel
@@ -28,27 +28,27 @@
 | 10 | `recurrence-des-periodes` — **cycle de fond** définissable/éditable (N semaines, alternance par parité ISO 8601, mapping index→responsable sur id stable) ; la grille résout le responsable de fond (case + légende) sans saisie de période ; surcharge > fond > neutre ; **EN MÉMOIRE** (durabilité = palier 10) | ✅ fait | `CycleDeFond` (Domain, parité ISO + invariant N≥1) + port `IReferentielCycleDeFond` + `DefinirCycleHandler` + extension `GrilleAgendaQuery` + adaptateur `CycleDeFondEnMemoire` (singleton) + endpoint `POST /definir-cycle` + section « Cycle de fond » de l'écran config (mapping sur acteurs persistés) (8 scénarios @vert end-to-end, 183 verts) — **palier 6 (récurrence des périodes) refermé** |
 | 11 | `ecriture-en-contexte` — **écriture en contexte par dialogs** : menu au clic sur une case du planning → dialogs « Poser un slot » / « Affecter une période » pré-remplies sur la **date de la case** ; échec → dialog reste ouverte (message dans la dialog) ; annulation sans écriture ; gating Invité sur le menu ; chevauchement accepté + **bandeau d'avertissement non bloquant** ; **écrans dédiés slot/période retirés** (un seul chemin d'écriture) | ✅ fait | `PoserSlotDialog` + `AffecterPeriodeDialog` + menu clic-case dans `PlanningPartage` + ancrage `DateContexte` (prime sur `IDateTimeProvider`) + avertissement surfacé par le contrat de réponse du canal poser-slot (`PoserSlotReponse`) + suppression des pages/routes/liens poser-slot/affecter-periode (page `definir-transfert` conservée) (7 scénarios @vert runtime, 179 verts) — **palier 7 (écriture en contexte, dialogs) refermé** |
 | 12 | `transfert-en-contexte` — **3e dialog « Définir un transfert » en contexte** (menu clic-case, pré-remplie sur la date de la case ; échec → dialog reste ouverte ; annulation sans écriture ; gating Invité) **+ retrait du dernier écran de saisie dédié** (page/route/lien `definir-transfert` supprimés) | ✅ fait | `DefinirTransfertDialog` + 3e entrée menu clic-case + accusé « Transfert défini » à part + ancrage `DateContexte` + réutilise commande/handler `DefinirTransfert` + canal HTTP + SignalR (aucun handler neuf, transfert reste InMemory) + suppression page/route/lien dédiés (6 scénarios @vert runtime, 182 verts) — **palier 7 (écriture en contexte) refermé COMPLET, épic É12 fermé** |
+| 13 | `crud-acteurs-suppression` — **suppression d'un acteur** (Delete) sur store Mongo réel + **neutralisation par repli** des cases orphelines (surcharge orpheline → fond → neutre, sans nom fantôme), idempotence, accusé non bloquant « Acteur supprimé » ; IHM bouton supprimer + gating Invité + échec API + temps réel SignalR | ✅ fait | `SupprimerActeurHandler` + port `IEditeurConfigurationFoyer.Supprimer` (InMemory + Mongo) + endpoint `POST /api/canal/supprimer-acteur` + filtre d'existence `Resolvable()` dans `GrilleAgendaQuery` (case + légende, réutilise `IEnumerationActeursFoyer`) + bouton/gating/échec/temps réel dans `ConfigurationFoyer` (9 scénarios @vert, 196 verts, intégration Mongo réel) — **palier 8 tranche 1 (suppression) refermé, cycle de vie acteurs C/R/U/D complet** |
 
 > **Refacto technique HORS pipeline (PR #21, avant s10) : faite** — adaptateurs de droite par techno, `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, outil `test-count.ps1`. Critère de sortie 161/161 tenu.
 
 ## En cours
 
-| Sprint | Sujet | Palier (spec v12) | Statut |
+| Sprint | Sujet | Palier (spec v14) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : CRUD acteurs, tranche suppression, cf. ci-dessous)* | 8 (CRUD acteurs suppression, spec v13) | ⬜ |
+| — | *(aucun sprint en cours — prochain : impersonation bornée, cf. ci-dessous)* | 8 tranche 2 (impersonation bornée, spec v14) | ⬜ |
 
 ## Prochains sprints envisagés
 
-> **Décision PO (clôture s12, porte G2)** : prochain sujet **make-gherkin** = **CRUD acteurs — tranche suppression (Delete)** : suppression d'un acteur (règle 6) + cadrage des cases orphelines (neutralisation par repli : surcharge orpheline → fond → neutre, message non bloquant, pas de réaffectation auto) + acceptation runtime sur store Mongo réel. Impersonation bornée = tranche suivante (make-gherkin séparé, É10), HORS périmètre immédiat. Retours produit s12 VIDE (goal 6/6 atteint) → pilotage au catalogue. **Fix /3 ciblé** dropdown « Acteur du foyer » embarqué en tête de sprint, HORS make-gherkin. Indicatif — confirmé/affiné au démarrage de chaque sprint.
+> **Décision PO (clôture s13, porte G2)** : prochain sujet **make-gherkin** = **impersonation bornée** (É10+É2) : l'admin/parent configurateur **incarne un acteur déjà déclaré** (convenance d'admin), **borne dure** = PAS l'auth réelle (palier 13 : pas d'OAuth/comptes/sessions/prise en main, aucune persistance neuve tirée) ; périmètre exact (lecture seule vs écriture « au nom de », sortie/retour identité) cadré au make-gherkin. Ferme la boucle cycle de vie acteurs (C/R/U/D livrés au s13). **Candidat adjacent** : durcissement du gating config (règle 9 — angle mort Sc.7 s13 : l'écran config ne gate l'Invité que sur le bouton supprimer ; ajout/édition/cycle restent ouverts), à confirmer au make-gherkin. Retours produit s13 VIDE (goal 9/9 atteint) → pilotage au catalogue. Indicatif — confirmé/affiné au démarrage de chaque sprint.
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 (P1) | **CRUD acteurs — tranche suppression** : suppression d'un acteur (règle 6) + cadrage des cases orphelines (neutralisation par repli, message non bloquant, pas de réaffectation auto) ; acceptation runtime store Mongo réel | É2, É1 | Sujet d'usage élu G2 PO clôture s12 ; complète le cycle de vie acteurs (C/R/U livrés) |
-| +2 (P2) | **Impersonation bornée** (admin incarne un acteur, convenance — pas l'auth réelle du palier 13) — tranche suivante du CRUD acteurs, make-gherkin séparé | É10, É2 | Suite directe de la suppression (rang +4 s12 scindé) |
-| +3 (P3) | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) + **sélection de plage de cases** pour définir une période | É4, É7 | Prochain palier d'usage après le CRUD acteurs ; besoin ancien (retours s02/s03) |
-| +4 | **Stabilisation des flakes temps-réel SignalR** (`FrontWasmConfigCycle*TempsReel*`, flaky sous charge ; verts en isolation) — **action de méthode/dette de test**, prérequis de l'édition concurrente | É3 | Déverrouille l'édition concurrente sans driver une fondation temps-réel instable |
-| +5 | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — DIFFÉRÉE jusqu'à stabilisation SignalR | É7 | Cas limite runtime ; dépend du +4 |
-| +6 | **Cycle de fond riche** : choisir le début/ancre + config fine (frontière de jour, plage début/fin, sur-cycle vacances, WE-only). Sujet plein — rouvre la décision CP « ancrage ISO sans ancre » | É7, É1 | Retour PO /configuration s10 |
+| +1 (P1) | **Impersonation bornée** (admin incarne un acteur déjà déclaré, convenance — pas l'auth réelle du palier 13) ; candidat adjacent = durcissement gating config (règle 9) | É10, É2 | Sujet d'usage élu G2 PO clôture s13 ; dernier maillon du cycle de vie acteurs (C/R/U/D livrés s13), contexte chaud (écran config) |
+| +2 (P2) | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) + **sélection de plage de cases** pour définir une période | É4, É7 | Prochain palier d'usage après la tranche acteurs ; besoin ancien (retours s02/s03) |
+| +3 | **Rétrofit complet du garde déterministe *TempsReel* SignalR** (helper `WaitForState` posé partiellement au s13 ; généraliser à tous les `*TempsReel*` config/grille) — **dette de test**, prérequis de l'édition concurrente | É3 | Déverrouille l'édition concurrente sans driver une fondation temps-réel instable |
+| +4 | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — DIFFÉRÉE jusqu'à stabilisation SignalR | É7 | Cas limite runtime ; dépend du +3 |
+| +5 | **Cycle de fond riche** : choisir le début/ancre + config fine (frontière de jour, plage début/fin, sur-cycle vacances, WE-only). Sujet plein — rouvre la décision CP « ancrage ISO sans ancre » | É7, É1 | Retour PO /configuration s10 |
 
 ---
 
@@ -69,7 +69,7 @@
 | Familles recomposées (enfants de parents différents, même planning ; parents en couple gérant **leurs enfants respectifs**) | ⬜ | Palier 5-6 | spec règle 2 · retours s07 (idée) |
 | **Parents liés entre eux à travers leur(s) enfant(s)** (graphe foyer : un parent ↔ ses enfants ↔ l'autre parent) | ⬜ | Palier 5-6 | retours s07 (idée) · spec règles 2-3 |
 | Deux parents (toujours exactement 2 ; le 1er saisit l'autre) | ⬜ | Palier 5 | retours s01 · spec règle 3 |
-| Acteurs « autres » éditables (nounou, grands-parents…) | ⬜ | Palier 5 | spec règle 4 · retours s01 |
+| Acteurs « autres » éditables (nounou, grands-parents…) | ✅ | s08-s09-s13 (CRUD complet) | spec règle 4 · retours s01 |
 | Lieux éditables et persistés (référentiel des sélecteurs) | 🟡 | Palier 4 | spec règle 11 |
 | Cycle récurrent multi-semaines **éditable** (EN MÉMOIRE ; persistance durable = palier 10) | 🟡 | s10 (éditable) / Palier 10 (durable) | spec règle 11 · besoins s10 |
 | Set de couleurs par défaut persisté (acteur → couleur) | 🟡 | s03 statique + Palier 4 | spec règle 15 |
@@ -83,7 +83,7 @@
 | Écran de config foyer — **édition des acteurs (noms + couleurs) en VOLATILE** (mémoire/session, grille relue immédiatement, sans persistance durable) | ✅ | s08 / Palier 4 | retours s07 · spec v08 règle 5 |
 | **Ajout d'acteurs (parent/autre/nounou, id stable neuf) + persistance Mongo BORNÉE à la config foyer** (survit au redémarrage) | ✅ | s09 / Palier 5 | retours s08 · spec v09 règle 6 |
 | Écran de configuration du foyer complet (acteurs + cycle de fond + couleurs, persisté) | ⬜ | Palier 10 | retours s01 (#7) · spec p5 |
-| Édition des acteurs « autres » (ajout/édition/suppression) | 🟡 | Palier 5 (ajout) / s13 Palier 8 (suppression) | spec règle 4 · retours s08 |
+| Édition des acteurs « autres » (ajout/édition/suppression) | ✅ | s08 (édition) + s09 (ajout) + s13 (suppression) / Paliers 4-5-8 | spec règle 4 · retours s08 |
 | Affichage/actions adaptés au type d'acteur | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
 | **Création d'acteurs par le parent configurateur** (nounou / grand-parent / nouveau parent en couple / autre), **email obligatoire** à la création → crée le compte utilisateur (inactif, cf. É10) | ⬜ | Palier 5-6 | retours s08 (idée) · spec règles 4/6-7 |
 
@@ -212,15 +212,15 @@
 
 ---
 
-## À faire (paliers de la spec vivante v13)
+## À faire (paliers de la spec vivante v14)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
-> Numérotation alignée sur la **séquence de livraison de v13** : palier 7
-> (écriture-en-contexte) **livré complet** ; **palier 8 = CRUD acteurs suppression**
-> (tiré DEVANT le calendrier par priorité d'usage, ex-9) ; **palier 9 = Calendrier
-> navigable** (ex-8) ; paliers suivants décalés d'un cran. Les sujets techniques
-> (persistance réelle du reste du domaine, PWA) sont séquencés **derrière l'usage**
-> (arbitre : l'usage tranche), Docker en garde-fou d'outillage.
+> Numérotation alignée sur la **séquence de livraison de v14** : palier 7
+> (écriture-en-contexte) **livré complet** ; **palier 8 = CRUD acteurs** — tranche 1
+> **suppression livrée (s13)**, tranche 2 **impersonation bornée = prochain sujet** ;
+> **palier 9 = Calendrier navigable** ; paliers suivants décalés d'un cran. Les sujets
+> techniques (persistance réelle du reste du domaine, PWA) sont séquencés **derrière
+> l'usage** (arbitre : l'usage tranche), Docker en garde-fou d'outillage.
 
 | Palier | Besoin | Épics concernés | Origine | Statut |
 |-------:|--------|-----------------|---------|:------:|
@@ -231,7 +231,7 @@
 | 5 | **Config foyer PERSISTANTE** — **ajout/édition d'acteurs** (parent/autre/nounou, id stable neuf) **+ persistance Mongo BORNÉE à la config foyer** (adaptateur de droite, ports inchangés) ; survit au redémarrage. Reste du domaine InMemory | É2, É1, É3 | spec v09 règle 6 · besoins s08 (G2 PO, révision d'arbitre bornée) | ✅ s09 |
 | 6 | **Récurrence des périodes** (cycle de fond définissable/éditable, alternance parité ISO, EN MÉMOIRE) | É7, É1 | spec v09 règle 10 · besoins s07/s08 (IMPORTANT) | ✅ s10 |
 | 7 | **Écriture en contexte (dialogs)** — menu au clic sur une case → « Poser un slot » / « Affecter une période » / « Définir un transfert » pré-remplies sur la date de la case (échec/annulation/chevauchement/gating Invité), tous les écrans dédiés retirés | É6, É7, É8, É12 | spec v12 p7 · besoins s10/s11 | ✅ s11+s12 (refermé complet) |
-| 8 | **CRUD acteurs — suppression** (Delete d'un acteur, règle 6 + cadrage des cases orphelines par neutralisation/repli) sur store Mongo réel ; **impersonation bornée** = tranche suivante (make-gherkin séparé) | É2, É1, É10 | spec v13 p8 · besoins s12 (G2 PO) | ⬜ |
+| 8 | **CRUD acteurs** — tranche 1 **suppression** (Delete d'un acteur, règle 6 + neutralisation par repli des cases orphelines) sur store Mongo réel **✅ s13** ; tranche 2 **impersonation bornée** = prochain make-gherkin (⬜) | É2, É1, É10 | spec v14 p8 · besoins s12/s13 (G2 PO) | 🟡 |
 | 9 | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) **+ sélection de plage de cases** pour définir une période | É4, É7 | spec v13 p9 · retours s02/s03 | ⬜ |
 | 9bis | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 | ⬜ |
 | 10 | Alimentation & saisie — **config foyer durable restante** (lieux, set couleurs, cycle de fond) + Admin/Parent/Autre, écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 | ⬜ |
@@ -285,9 +285,9 @@
 - Faux sentiment de progrès — 2 sprints structurels d'affilée (s04, s05) sans besoin produit observable ; **résorbé au s06** : le palier 2 (Saisie visible) a rendu la main à l'usage (8/8 vert). Vigilance maintenue : ne pas remonter les paliers techniques 10/11 devant l'usage.
 - `@code` inline restant (`Legende.razor`, `Pages/Home.razor`) + frontières hexagonales à homogénéiser + séparation des projets (É3) — **cible de la refacto technique HORS pipeline décidée à la clôture s09** (iso-comportement, invariant 161/161). Retours s03 (#7).
 - ~~Cycle multi-semaines non affiché/éditable (É1)~~ — **éteint au s10 (palier 6)** : cycle de fond affiché (grille + légende) et éditable (section config), EN MÉMOIRE ; durabilité séquencée au palier 10.
-- **Dropdown « Acteur du foyer » périmée au renommage** (É2, /configuration) — défaut signalé au gate s10 : la dropdown + l'aide « Nom actuel » lisent une liste statique au lieu du store vivant `_acteurs`. **Fix /3 ciblé léger** (hors make-gherkin), en tête de file.
+- ~~**Dropdown « Acteur du foyer » périmée au renommage** (É2, /configuration)~~ — **résorbée au s13** : le sélecteur lit désormais le store vivant `Foyer.ActeursEditables` (cohérence règle 5 tenue partout, y compris après suppression). Signalée au gate s10, fix embarqué tête de sprint s13.
 - **Cycle de fond riche réclamé** (É7) — l'usage (gate s10) demande ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only : au-delà du plus petit incrément livré, sujet plein séquencé (+5).
-- **Flakes temps-réel SignalR** (É3, `FrontWasmConfigCycle*TempsReel*`) — verts en isolation, flaky sous charge parallèle (timing SignalR/Docker) ; **dette de test** (pas un bug `src/`). Convention anti-flake codifiée (rétro s11, `ihm-builder`) ; **rétrofit effectif = P2**, prérequis de l'édition concurrente (P3). Constaté s11.
+- **Flakes temps-réel SignalR** (É3, `FrontWasmConfig*TempsReel*`) — verts en isolation, flaky sous charge parallèle (timing SignalR/Docker) ; **dette de test** (pas un bug `src/`). Convention anti-flake codifiée (rétro s11, `ihm-builder`) ; **garde déterministe `WaitForState(acteur-foyer)` posé sur 7 `*TempsReel*` au s13** (course `UnknownEventHandlerId` rendue déterministe par la touche d'un composant partagé) ; **rétrofit complet = P2** (helper bUnit partagé + audit, rétro s13), prérequis de l'édition concurrente (P3). Constaté s11, partiellement traité s13.
 - ~~Dernière saisie hors-contexte restante~~ — **éteinte au s12 (palier 7)** : page/route/lien `/planning/definir-transfert` supprimés, 3e dialog transfert livrée, épic É12 refermé. Constaté s11, résolu s12.
 
 > **Idées PO consolidées (retours s07)** — les 3 idées de la section « Idée pour la suite »
