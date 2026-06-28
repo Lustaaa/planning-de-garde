@@ -161,7 +161,7 @@ Scenario: En consultation seule, cliquer une case n'ouvre aucun menu ni dialog d
 > Contrôle positif Parent **en regard** : l'ouverture du menu par un Parent (et la présence
 > de la 3ᵉ entrée « Définir un transfert ») est portée par le Scenario 1.
 
-### Scenario 5 — La page de saisie dédiée « Définir un transfert » n'existe plus `@limite`
+### Scenario 5 — La page de saisie dédiée « Définir un transfert » n'existe plus `@limite` `@vert`
 
 ```gherkin
 Scenario: Le transfert ne se saisit plus que depuis une case, aucun écran dédié ne subsiste

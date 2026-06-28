@@ -40,8 +40,6 @@ public partial class PlanningPartage
     // succès HTTP du canal (aucun read model neuf, aucun rendu en case — règle 27). Refermable.
     private bool _accuseTransfertDefini;
 
-    private string Desactive => Session.EstParent ? string.Empty : "disabled";
-
     private RoleAuteur RoleSelectionne
     {
         get => Session.Role;
