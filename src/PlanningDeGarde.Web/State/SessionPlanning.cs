@@ -52,6 +52,11 @@ public sealed class SessionPlanning
     /// lundi. Re-projection pure (lecture seule).</summary>
     public void SemainePrecedente() => _ancre = Ancre.AddDays(-7);
 
+    /// <summary>Restaure l'ancre à une valeur antérieurement capturée (Sc.6) : après une navigation dont la
+    /// re-requête de l'API distante a échoué, l'ancre est ramenée à celle de la fenêtre affichée — l'état de
+    /// navigation et l'affichage ne divergent pas, et la navigation échouée n'est ni mise en file ni rejouée.</summary>
+    public void RestaurerAncre(DateOnly ancre) => _ancre = ancre;
+
     /// <summary>Réinitialise l'ancre à la <b>semaine en cours</b> (Sc.4, « Aujourd'hui ») : l'ancre
     /// re-cale sur le lundi de <paramref name="aujourdHui"/> (date du jour via le port d'horloge,
     /// jamais <c>DateTime.Now</c>), quel que soit le décalage de navigation accumulé. Re-projection

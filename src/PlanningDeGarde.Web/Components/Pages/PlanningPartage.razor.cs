@@ -49,6 +49,10 @@ public partial class PlanningPartage
     // Accusé « Transfert défini » à part (Sc.1) : feedback transitoire NON bloquant levé sur le simple
     // succès HTTP du canal (aucun read model neuf, aucun rendu en case — règle 27). Refermable.
     private bool _accuseTransfertDefini;
+    // Échec de navigation (Sc.6) : la re-requête de la date naviguée a échoué (API distante injoignable).
+    // Bandeau d'échec clair, NON bloquant et refermable. La fenêtre affichée est conservée (l'ancre est
+    // restaurée), et la navigation échouée n'est NI mise en file NI rejouée (règle 28). Levé à part.
+    private bool _echecNavigation;
 
     private RoleAuteur RoleSelectionne
     {
@@ -142,7 +146,7 @@ public partial class PlanningPartage
     // préc./suiv. (Sc.1) — initialisée sur la semaine en cours via le port d'horloge. Le canal de
     // lecture distant prend cette ancre en segments yyyy/MM/dd, plus le paramètre de VUE (span). La
     // navigation ne fait que re-projeter à la date naviguée : lecture seule, aucune écriture.
-    private async Task ChargerAsync()
+    private async Task<bool> ChargerAsync()
     {
         var ancre = Session.Ancre;
         try
@@ -151,10 +155,13 @@ public partial class PlanningPartage
                 $"api/grille/{ancre.Year}/{ancre.Month}/{ancre.Day}?vue={CodeVue(Session.Vue)}");
             if (grille is not null)
                 _grille = grille;
+            return true;
         }
         catch (HttpRequestException)
         {
-            // API distante injoignable : la grille reste vide plutôt que de planter la vue.
+            // API distante injoignable : à l'ouverture, la grille reste vide plutôt que de planter la vue
+            // (vue consultable). L'appelant (navigation) décide quoi faire de l'échec — voir NaviguerAsync.
+            return false;
         }
     }
 
@@ -170,27 +177,41 @@ public partial class PlanningPartage
 
     /// <summary>« Semaine suivante » (Sc.1) : décale l'ancre de +7 jours puis re-projette en
     /// re-requêtant l'API distante à la date naviguée. Aucune écriture (lecture seule).</summary>
-    private async Task DemanderSemaineSuivante()
-    {
-        Session.SemaineSuivante();
-        await ChargerAsync();
-    }
+    private Task DemanderSemaineSuivante() => NaviguerAsync(Session.SemaineSuivante);
 
     /// <summary>« Semaine précédente » (Sc.1) : décale l'ancre de −7 jours puis re-projette.</summary>
-    private async Task DemanderSemainePrecedente()
-    {
-        Session.SemainePrecedente();
-        await ChargerAsync();
-    }
+    private Task DemanderSemainePrecedente() => NaviguerAsync(Session.SemainePrecedente);
 
     /// <summary>« Aujourd'hui » (Sc.4) : réinitialise l'ancre à la semaine en cours (lundi de la date du
     /// jour, via le port d'horloge injecté), quel que soit le décalage de navigation accumulé, puis
     /// re-projette en re-requêtant l'API distante à l'ancre réinitialisée. Aucune écriture (lecture seule).</summary>
-    private async Task DemanderRetourAujourdhui()
+    private Task DemanderRetourAujourdhui() => NaviguerAsync(() => Session.RevenirAujourdhui(Horloge.Aujourdhui));
+
+    /// <summary>
+    /// Pivot commun de navigation (Sc.1/Sc.4/Sc.6) : décale l'ancre via <paramref name="decalerAncre"/>
+    /// puis re-projette en re-requêtant l'API distante à la date naviguée. <b>Gestion d'échec (Sc.6)</b> :
+    /// si la re-requête échoue (API distante injoignable), l'ancre est <b>restaurée</b> à celle de la
+    /// fenêtre affichée — l'affichage et l'état de navigation ne divergent pas — et un <b>bandeau d'échec
+    /// clair</b> est levé. La navigation échouée n'est <b>ni mise en file ni rejouée</b> (règle 28). Un
+    /// succès efface tout échec antérieur. Aucune écriture : la navigation ne fait que re-projeter.
+    /// </summary>
+    private async Task NaviguerAsync(Action decalerAncre)
     {
-        Session.RevenirAujourdhui(Horloge.Aujourdhui);
-        await ChargerAsync();
+        var ancreAvant = Session.Ancre;
+        decalerAncre();
+        if (await ChargerAsync())
+        {
+            _echecNavigation = false;
+        }
+        else
+        {
+            Session.RestaurerAncre(ancreAvant); // fenêtre conservée, aucun rejeu ni mise en file
+            _echecNavigation = true;
+        }
     }
+
+    /// <summary>Referme le bandeau d'échec de navigation (Sc.6, non bloquant).</summary>
+    private void FermerEchecNavigation() => _echecNavigation = false;
 
     /// <summary>Revient à l'identité réelle (bouton du bandeau d'incarnation, Sc.2) : l'incarnation est
     /// levée, la vue restaurée à l'identité réelle de l'utilisateur principal. Aucune écriture.</summary>

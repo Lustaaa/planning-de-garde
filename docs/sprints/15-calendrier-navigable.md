@@ -153,7 +153,7 @@ Scenario: Sélectionner deux cases contiguës affecte une période sur l'interva
 
 ### Scenario 6 — API distante injoignable pendant la navigation
 
-`@erreur`
+`@erreur` `@vert`
 
 ```gherkin
 Scenario: Une navigation qui échoue laisse la fenêtre courante inchangée

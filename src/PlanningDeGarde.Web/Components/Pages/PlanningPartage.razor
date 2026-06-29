@@ -75,6 +75,17 @@
     </div>
 }
 
+@* Échec de navigation (Sc.6) : la re-requête de la date naviguée a échoué (API distante injoignable).
+   La fenêtre affichée est conservée (l'ancre a été restaurée) ; le bandeau signale l'échec de façon
+   claire, NON bloquante (refermable). Aucune navigation n'est mise en file ni rejouée (règle 28). *@
+@if (_echecNavigation)
+{
+    <div class="alert alert-danger alert-dismissible py-2" data-testid="echec-navigation" role="alert">
+        @MessagesEcriture.NavigationInjoignable
+        <button type="button" class="btn-close" aria-label="Fermer" @onclick="FermerEchecNavigation"></button>
+    </div>
+}
+
 @* Palier 7 (referme É12) : toute saisie se fait désormais EN CONTEXTE (clic sur une case → menu
    d'actions → dialog). Plus AUCUN lien-barre ni écran de saisie dédié ne subsiste — y compris pour
    le transfert, désormais 3ᵉ entrée du menu clic-case (Sc.1) et seul chemin de saisie (Sc.5). *@
