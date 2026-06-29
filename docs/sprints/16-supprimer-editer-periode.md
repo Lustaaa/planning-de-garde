@@ -1,6 +1,6 @@
 # Sprint 16 — Supprimer une période depuis le menu clic-case (`supprimer-editer-periode`)
 
-> **Avancement : 5/10 ⏳**
+> **Avancement : 6/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -9,7 +9,7 @@
 | 3 | Repli neutre sans nom fantôme (index non résolu) | @back | ✅ |
 | 4 | Lister les périodes couvrant une date (alimente la dialog) | @back | ✅ |
 | 5 | Idempotence : supprimer une période absente / déjà supprimée = no-op qui réussit | @back | ✅ |
-| 6 | Menu clic-case → dialog liste les périodes → supprimer → grille relue + accusé | 🖥️ @ihm | ⏳ |
+| 6 | Menu clic-case → dialog liste les périodes → supprimer → grille relue + accusé | 🖥️ @ihm | ✅ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ⏳ |
 | 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ⏳ |
 | 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
@@ -158,7 +158,7 @@ Scenario: Supprimer une période inexistante ne change rien et ne lève aucune e
   Et aucune erreur n'est levée
 ```
 
-### Scenario 6 — Depuis le menu clic-case, la dialog liste les périodes et la suppression relit la grille `@ihm` `@pending`
+### Scenario 6 — Depuis le menu clic-case, la dialog liste les périodes et la suppression relit la grille `@ihm` `@vert`
 
 > Lot IHM final (`ihm-builder`), mené en RED→GREEN runtime ; groupable avec Sc.7–Sc.10.
 > Acceptation runtime : front WASM + API distante + Mongo réel.

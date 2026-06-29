@@ -36,6 +36,7 @@ public partial class PlanningPartage
     private DateOnly? _dateDialogPoserSlot;
     private DateOnly? _dateDialogAffecterPeriode;
     private DateOnly? _dateDialogDefinirTransfert;
+    private DateOnly? _dateDialogSupprimerPeriode;
     // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
     // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
     // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
@@ -49,6 +50,10 @@ public partial class PlanningPartage
     // Accusé « Transfert défini » à part (Sc.1) : feedback transitoire NON bloquant levé sur le simple
     // succès HTTP du canal (aucun read model neuf, aucun rendu en case — règle 27). Refermable.
     private bool _accuseTransfertDefini;
+    // Accusé « Période supprimée » à part (Sc.6) : feedback transitoire NON bloquant levé sur le succès du
+    // canal d'écriture de suppression. La re-résolution de la case vient de la relecture de la grille
+    // distante (repli surcharge > fond > neutre), jamais d'une mutation locale. Refermable.
+    private bool _accusePeriodeSupprimee;
     // Échec de navigation (Sc.6) : la re-requête de la date naviguée a échoué (API distante injoignable).
     // Bandeau d'échec clair, NON bloquant et refermable. La fenêtre affichée est conservée (l'ancre est
     // restaurée), et la navigation échouée n'est NI mise en file NI rejouée (règle 28). Levé à part.
@@ -354,6 +359,28 @@ public partial class PlanningPartage
         _dateDialogDefinirTransfert = date;
     }
 
+    /// <summary>Depuis le menu (4ᵉ entrée, Sc.6), ouvre la dialog « Supprimer une période » sur la date de
+    /// la case : elle listera les périodes couvrant ce jour. Un accusé précédent ne survit pas à l'ouverture.</summary>
+    private void OuvrirSupprimerPeriode(DateOnly date)
+    {
+        _dateMenu = null;
+        _accusePeriodeSupprimee = false;
+        _dateDialogSupprimerPeriode = date;
+    }
+
+    /// <summary>Issue succès de la suppression (Sc.6) : ferme la dialog, <b>relit</b> la grille distante
+    /// (la case re-résolue retombe sur le fond ou le neutre, sans nom fantôme) et lève l'accusé « Période
+    /// supprimée » à part, non bloquant. La re-résolution provient de la relecture, jamais d'une mutation
+    /// locale de la grille.</summary>
+    private async Task FermerSuppressionEtAccuser()
+    {
+        await FermerDialogEtRecharger();
+        _accusePeriodeSupprimee = true;
+    }
+
+    /// <summary>Referme l'accusé « Période supprimée » (non bloquant).</summary>
+    private void FermerAccusePeriodeSupprimee() => _accusePeriodeSupprimee = false;
+
     /// <summary>Ferme la dialog ouverte sur succès et <b>relit</b> la grille depuis l'API distante :
     /// l'écriture aboutie réapparaît, positionnée à la date de la case (relecture, jamais une mutation
     /// locale de la grille).</summary>
@@ -393,6 +420,7 @@ public partial class PlanningPartage
         _dateDialogPoserSlot = null;
         _dateDialogAffecterPeriode = null;
         _dateDialogDefinirTransfert = null;
+        _dateDialogSupprimerPeriode = null;
         // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
         _plageDebut = null;
         _plageFin = null;

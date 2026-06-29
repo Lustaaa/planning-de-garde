@@ -75,6 +75,17 @@
     </div>
 }
 
+@* Accusé « Période supprimée » à part (Sc.6) : feedback transitoire NON bloquant, levé sur le succès
+   du canal d'écriture. La case re-résolue (repli surcharge > fond > neutre) provient de la relecture de
+   la grille distante, jamais d'une mutation locale. Refermable. *@
+@if (_accusePeriodeSupprimee)
+{
+    <div class="alert alert-success alert-dismissible py-2" data-testid="accuse-periode-supprimee" role="status">
+        Période supprimée
+        <button type="button" class="btn-close" aria-label="Fermer" @onclick="FermerAccusePeriodeSupprimee"></button>
+    </div>
+}
+
 @* Échec de navigation (Sc.6) : la re-requête de la date naviguée a échoué (API distante injoignable).
    La fenêtre affichée est conservée (l'ancre a été restaurée) ; le bandeau signale l'échec de façon
    claire, NON bloquante (refermable). Aucune navigation n'est mise en file ni rejouée (règle 28). *@
@@ -195,8 +206,10 @@
                     @onclick="@(() => OuvrirPoserSlot(dateMenu))">Poser un slot</button>
             <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-affecter-periode"
                     @onclick="@(() => OuvrirAffecterPeriode(dateMenu))">Affecter une période</button>
-            <button type="button" class="btn btn-outline-primary w-100" data-testid="action-definir-transfert"
+            <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-definir-transfert"
                     @onclick="@(() => OuvrirDefinirTransfert(dateMenu))">Définir un transfert</button>
+            <button type="button" class="btn btn-outline-danger w-100" data-testid="action-supprimer-periode"
+                    @onclick="@(() => OuvrirSupprimerPeriode(dateMenu))">Supprimer une période</button>
         </div>
     </div>
 }
@@ -220,6 +233,13 @@
 {
     <DefinirTransfertDialog DateContexte="dateTransfert"
                             OnValide="FermerTransfertEtAccuser"
+                            OnAnnule="FermerDialog" />
+}
+
+@if (_dateDialogSupprimerPeriode is { } dateSupprimer)
+{
+    <SupprimerPeriodeDialog DateContexte="dateSupprimer"
+                            OnValide="FermerSuppressionEtAccuser"
                             OnAnnule="FermerDialog" />
 }
 
