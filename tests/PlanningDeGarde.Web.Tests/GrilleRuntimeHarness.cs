@@ -87,6 +87,15 @@ internal static class GrilleRuntimeHarness
             .Enregistrer(PeriodeDeGarde.Affecter(responsableId, debut, fin).Valeur!);
 
     /// <summary>
+    /// Sème un cycle de fond dans le store réel de l'API distante (Given d'un scénario de navigation) —
+    /// la projection réelle résout le responsable de fond par parité ISO de chaque semaine, le
+    /// référentiel réel résolvant nom et couleur. Permet d'observer la re-résolution du fond à la date
+    /// naviguée sans aucune saisie de période (Sc.1).
+    /// </summary>
+    public static void SemerCycle(ApiDistanteFactory api, CycleDeFond cycle)
+        => api.Services.GetRequiredService<IReferentielCycleDeFond>().DefinirCycle(cycle);
+
+    /// <summary>
     /// Rend la grille réelle câblée à l'API distante, à la date de référence injectée. Le hub SignalR
     /// est redirigé vers le TestServer de l'API (long polling) pour que la diffusion temps réel soit
     /// réellement observable au runtime (Sc.4) — pour les scénarios de lecture pure, il se connecte

@@ -63,7 +63,7 @@ impaire → **Bruno**). « Mois » de juin 2026 = **lundi 01/06 → dimanche 05/
 
 ### Scenario 1 — Naviguer d'une semaine vers le futur ou le passé
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario Outline: Se déplacer d'une semaine décale la fenêtre et re-résout le fond

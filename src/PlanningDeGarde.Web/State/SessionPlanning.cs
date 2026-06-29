@@ -24,6 +24,43 @@ public sealed class SessionPlanning
 
     public string EnfantId { get; set; } = "Léa";
 
+    // --- État de navigation du calendrier (Sc.1) : ancre + vue en SESSION/MÉMOIRE, NE PERSISTE PAS au
+    //     redémarrage (distinct de la persistance domaine du bloc C). La navigation ne fait que
+    //     re-projeter — lecture seule, aucune écriture. ---
+
+    private DateOnly? _ancre;
+
+    /// <summary>Vue prédéfinie courante de la fenêtre projetée (défaut = 4 semaines glissantes, Sc.3).
+    /// En session/mémoire — ne persiste pas. Base réutilisable du sélecteur de vue.</summary>
+    public VuePlanning Vue { get; set; } = VuePlanning.QuatreSemaines;
+
+    /// <summary>Initialise l'ancre courante au <b>lundi de la semaine</b> de <paramref name="aujourdHui"/>
+    /// si elle ne l'est pas encore (première lecture via l'horloge). Idempotent : une ancre déjà décalée
+    /// par la navigation est conservée (l'état de navigation survit aux re-rendus dans la session).</summary>
+    public void InitialiserAncre(DateOnly aujourdHui) => _ancre ??= LundiDeLaSemaine(aujourdHui);
+
+    /// <summary>Ancre courante de la fenêtre (lundi de semaine). Non nulle après
+    /// <see cref="InitialiserAncre"/>.</summary>
+    public DateOnly Ancre => _ancre
+        ?? throw new InvalidOperationException("Ancre de navigation non initialisée : appeler InitialiserAncre d'abord.");
+
+    /// <summary>Avance l'ancre d'une semaine (Sc.1, « Semaine suivante ») : +7 jours, l'ancre reste un
+    /// lundi. Re-projection pure : la grille se re-résout à la date naviguée, aucune écriture émise.</summary>
+    public void SemaineSuivante() => _ancre = Ancre.AddDays(7);
+
+    /// <summary>Recule l'ancre d'une semaine (Sc.1, « Semaine précédente ») : −7 jours, l'ancre reste un
+    /// lundi. Re-projection pure (lecture seule).</summary>
+    public void SemainePrecedente() => _ancre = Ancre.AddDays(-7);
+
+    /// <summary>Lundi (ISO) de la semaine de la date donnée — l'ancre de navigation est toujours un début
+    /// de semaine, comme la fenêtre projetée. Logique de présentation (quelle semaine afficher), pas une
+    /// règle métier.</summary>
+    private static DateOnly LundiDeLaSemaine(DateOnly date)
+    {
+        var deltaDepuisLundi = ((int)date.DayOfWeek + 6) % 7; // lundi = 0
+        return date.AddDays(-deltaDepuisLundi);
+    }
+
     /// <summary>Identité réelle = l'utilisateur principal (le configurateur), fixe et de type Parent.
     /// C'est l'état de repli quand aucune incarnation n'est active.</summary>
     public IdentiteActeur IdentiteReelle { get; } =

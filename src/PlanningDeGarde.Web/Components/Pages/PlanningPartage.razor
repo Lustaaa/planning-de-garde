@@ -79,6 +79,16 @@
    d'actions → dialog). Plus AUCUN lien-barre ni écran de saisie dédié ne subsiste — y compris pour
    le transfert, désormais 3ᵉ entrée du menu clic-case (Sc.1) et seul chemin de saisie (Sc.5). *@
 
+@* Navigation du calendrier (Sc.1) : décale la fenêtre d'une semaine vers le passé / le futur et
+   re-projette (re-requête de l'API distante à la date naviguée). L'état de navigation (ancre + vue)
+   vit en session/mémoire ; la grille reste en LECTURE SEULE — la navigation ne fait que re-projeter. *@
+<div class="d-flex align-items-center gap-2 mb-3" data-testid="barre-navigation">
+    <button type="button" class="btn btn-outline-secondary" data-testid="nav-semaine-precedente"
+            @onclick="DemanderSemainePrecedente">&lsaquo; Semaine précédente</button>
+    <button type="button" class="btn btn-outline-secondary" data-testid="nav-semaine-suivante"
+            @onclick="DemanderSemaineSuivante">Semaine suivante &rsaquo;</button>
+</div>
+
 <section class="grille-agenda" data-testid="grille-agenda">
     <div class="grille-entete">
         @foreach (var jour in JoursDeLaSemaine)

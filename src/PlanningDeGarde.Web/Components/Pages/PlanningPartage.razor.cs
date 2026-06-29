@@ -68,6 +68,9 @@ public partial class PlanningPartage
 
     protected override async Task OnInitializedAsync()
     {
+        // L'ancre de navigation démarre sur la semaine en cours (lundi de la date d'aujourd'hui), via
+        // le port d'horloge injecté. Idempotent : une ancre déjà décalée par la navigation est conservée.
+        Session.InitialiserAncre(Horloge.Aujourdhui);
         await ChargerAsync();
         await ChargerActeursIncarnablesAsync();
     }
@@ -128,16 +131,17 @@ public partial class PlanningPartage
         }
     }
 
-    // Date de référence = aujourd'hui, lue via le port d'horloge injecté (jamais DateTime.Now en dur :
-    // déterminisme en test, symétrie avec Projeter(dateReference) côté lecture). Le canal de lecture
-    // distant prend cette date en segments yyyy/MM/dd.
+    // Date de référence = l'ANCRE DE NAVIGATION (en session/mémoire), décalée par les contrôles
+    // préc./suiv. (Sc.1) — initialisée sur la semaine en cours via le port d'horloge. Le canal de
+    // lecture distant prend cette ancre en segments yyyy/MM/dd, plus le paramètre de VUE (span). La
+    // navigation ne fait que re-projeter à la date naviguée : lecture seule, aucune écriture.
     private async Task ChargerAsync()
     {
-        var aujourdHui = Horloge.Aujourdhui;
+        var ancre = Session.Ancre;
         try
         {
             var grille = await Canal.GetFromJsonAsync<GrilleAgenda>(
-                $"api/grille/{aujourdHui.Year}/{aujourdHui.Month}/{aujourdHui.Day}");
+                $"api/grille/{ancre.Year}/{ancre.Month}/{ancre.Day}?vue={CodeVue(Session.Vue)}");
             if (grille is not null)
                 _grille = grille;
         }
@@ -145,6 +149,31 @@ public partial class PlanningPartage
         {
             // API distante injoignable : la grille reste vide plutôt que de planter la vue.
         }
+    }
+
+    /// <summary>Code de la vue prédéfinie passé en paramètre de lecture (CQRS) : <c>semaine</c> /
+    /// <c>4semaines</c> (défaut) / <c>mois</c>. Le défaut couvre la compatibilité ascendante de
+    /// l'endpoint (sans vue → 4 semaines glissantes, Sc.3).</summary>
+    private static string CodeVue(VuePlanning vue) => vue switch
+    {
+        VuePlanning.Semaine => "semaine",
+        VuePlanning.Mois => "mois",
+        _ => "4semaines",
+    };
+
+    /// <summary>« Semaine suivante » (Sc.1) : décale l'ancre de +7 jours puis re-projette en
+    /// re-requêtant l'API distante à la date naviguée. Aucune écriture (lecture seule).</summary>
+    private async Task DemanderSemaineSuivante()
+    {
+        Session.SemaineSuivante();
+        await ChargerAsync();
+    }
+
+    /// <summary>« Semaine précédente » (Sc.1) : décale l'ancre de −7 jours puis re-projette.</summary>
+    private async Task DemanderSemainePrecedente()
+    {
+        Session.SemainePrecedente();
+        await ChargerAsync();
     }
 
     /// <summary>Revient à l'identité réelle (bouton du bandeau d'incarnation, Sc.2) : l'incarnation est
