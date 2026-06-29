@@ -1,6 +1,6 @@
 # Sprint 16 — Supprimer une période depuis le menu clic-case (`supprimer-editer-periode`)
 
-> **Avancement : 7/10 ⏳**
+> **Avancement : 8/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -11,7 +11,7 @@
 | 5 | Idempotence : supprimer une période absente / déjà supprimée = no-op qui réussit | @back | ✅ |
 | 6 | Menu clic-case → dialog liste les périodes → supprimer → grille relue + accusé | 🖥️ @ihm | ✅ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ✅ |
-| 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ⏳ |
+| 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ✅ |
 | 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
 | 10 | Temps réel : la suppression propage grille + légende sans rechargement | 🖥️ @ihm | ⏳ |
 
@@ -189,7 +189,7 @@ Scenario: Fermer la dialog sans confirmer de suppression laisse périodes et gri
   Et la case du mardi 16 juin 2026 affiche toujours "Nounou"
 ```
 
-### Scenario 8 — Gating Invité : aucun bouton ni commande de suppression `@ihm` `@pending`
+### Scenario 8 — Gating Invité : aucun bouton ni commande de suppression `@ihm` `@vert`
 
 > Gating règle 9, déclencheur rôle mutualisé sur le contexte existant.
 
