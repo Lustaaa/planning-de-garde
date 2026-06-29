@@ -2,6 +2,7 @@
 name: retours-challenge
 description: Exécute la passe de challenge des retours utilisateur (skill retours-challenge) en mode orchestré pour planning-de-garde. Lit la section `# Retours produit (PO)` du fichier unifié 99-sprint<NN>-retours.md (retours IHM et/ou Tech), classe chaque item (bug / évolution / nouveau besoin / question ouverte), nomme les angles morts, et renvoie au thread principal la PROCHAINE question en JSON prêt pour AskUserQuestion — il ne pose jamais les questions lui-même. Une fois le cadrage tranché, écrit le backlog 99-sprint<NN>-besoins-fin-itération.md qui désigne le prochain sujet à passer à make-gherkin. Relancé via SendMessage avec les réponses du PO. Dispatché par la command /4-retours.
 tools: Read, Grep, Glob, Write, Edit
+model: sonnet
 ---
 
 > **Ne lis JAMAIS les fichiers sous un répertoire `archive/`** (scénarios et artefacts de

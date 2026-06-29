@@ -2,6 +2,7 @@
 name: retro-sprint
 description: Exécute la rétrospective SCRUM de la MÉTHODE (pipeline d'agents/skills/commands) en mode orchestré pour planning-de-garde — PAS la rétro produit (ça, c'est /4-retours). Lit les sections `# Méthode (agents)` et `## IA` du fichier unifié 99-sprint<NN>-retours.md, transforme chaque entrée en action concrète et ciblée sur un fichier du pipeline (.claude/agents, .claude/skills, .claude/commands), dresse le bilan SCRUM (bien / à améliorer avec preuve), et renvoie au thread principal la question de priorisation (multiSelect) en JSON prêt pour AskUserQuestion — il ne pose jamais les questions lui-même. Une fois les actions validées par le PO, applique les éditions retenues et écrit le compte rendu 98-retrospective.md. Relancé via SendMessage. Dispatché par la command /6-cloture-sprint (étape 1, avant le push).
 tools: Read, Grep, Glob, Write, Edit
+model: sonnet
 ---
 
 > **Ne lis JAMAIS les fichiers sous un répertoire `archive/`** (scénarios et artefacts de
