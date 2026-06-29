@@ -30,6 +30,7 @@
 | 12 | `transfert-en-contexte` — **3e dialog « Définir un transfert » en contexte** (menu clic-case, pré-remplie sur la date de la case ; échec → dialog reste ouverte ; annulation sans écriture ; gating Invité) **+ retrait du dernier écran de saisie dédié** (page/route/lien `definir-transfert` supprimés) | ✅ fait | `DefinirTransfertDialog` + 3e entrée menu clic-case + accusé « Transfert défini » à part + ancrage `DateContexte` + réutilise commande/handler `DefinirTransfert` + canal HTTP + SignalR (aucun handler neuf, transfert reste InMemory) + suppression page/route/lien dédiés (6 scénarios @vert runtime, 182 verts) — **palier 7 (écriture en contexte) refermé COMPLET, épic É12 fermé** |
 | 13 | `crud-acteurs-suppression` — **suppression d'un acteur** (Delete) sur store Mongo réel + **neutralisation par repli** des cases orphelines (surcharge orpheline → fond → neutre, sans nom fantôme), idempotence, accusé non bloquant « Acteur supprimé » ; IHM bouton supprimer + gating Invité + échec API + temps réel SignalR | ✅ fait | `SupprimerActeurHandler` + port `IEditeurConfigurationFoyer.Supprimer` (InMemory + Mongo) + endpoint `POST /api/canal/supprimer-acteur` + filtre d'existence `Resolvable()` dans `GrilleAgendaQuery` (case + légende, réutilise `IEnumerationActeursFoyer`) + bouton/gating/échec/temps réel dans `ConfigurationFoyer` (9 scénarios @vert, 196 verts, intégration Mongo réel) — **palier 8 tranche 1 (suppression) refermé, cycle de vie acteurs C/R/U/D complet** |
 | 14 | `impersonation-bornee` — **impersonation bornée lecture seule** : incarner un acteur déjà déclaré (bandeau « Vous incarnez X »), vue selon le rôle de l'**identité effective** (gating règle 9 piloté par l'incarné), retour identité réelle, retour AUTO sur suppression concurrente (repli règle 6 + SignalR), pas d'écriture « au nom de », **durcissement complet du gating config** ; type d'acteur read-only depuis le seed, zéro persistance neuve | ✅ fait | `SessionPlanning` identité réelle/effective (`Incarner`/`RevenirIdentiteReelle`, `EstParent` dérivé de l'effective) + `TypeActeur` surfacé read-only via `IEnumerationActeursFoyer.TypeDe` + bandeau/sélecteur dans `PlanningPartage` + gating effectif grille & config (6 scénarios @vert runtime, 214 verts) — **palier 8 tranche 2 (impersonation lecture) refermé, palier 8 clos côté usage** |
+| 15 | `calendrier-navigable` — **calendrier navigable** (navigation ±semaine, sélecteur de vues **Semaine / 4 semaines glissantes (défaut) / Mois**, retour « Aujourd'hui », **affectation par plage de cases** clic début+fin gardée Parent, échec navigation → fenêtre préservée + message clair, gating Invité) **+ absorption du palier 14 : persistance Mongo de TOUT le domaine** (slots/périodes/transferts/cycle) **+ démarrage runtime SANS seed** (app vide au 1er lancement, durable ensuite) | ✅ fait | `SessionPlanning` ancre+vue (session, non persistée) + nav préc./suiv./Aujourd'hui + `GrilleAgendaQuery.Projeter(ancre, vue)` (défaut 28 j) + endpoint lecture `?vue=` + sélection de plage → `AffecterPeriode` réutilisé (aucun handler neuf) + 4 adaptateurs `AdapterDroite.Mongo` (slots/périodes/transferts/cycle) derrière ports existants + DI commutant **tout** le domaine droite via `Foyer:Persistance` (Mongo runtime / InMemory test) + retrait seed runtime (`AmorcerDonneesDemo` + seed-once acteurs) (9 scénarios @vert runtime, 234 verts, pivot Mongo réel) — **paliers 9 (calendrier navigable) ET 14 (persistance réelle du domaine) refermés. Révision PO hors process : borne anti-cliquet règle 30 levée ; asymétrie seed assumée (Mongo jamais seedé / InMemory gardé)** |
 
 > **Refacto technique HORS pipeline (PR #21, avant s10) : faite** — adaptateurs de droite par techno, `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, outil `test-count.ps1`. Critère de sortie 161/161 tenu.
 
@@ -37,7 +38,7 @@
 
 | Sprint | Sujet | Palier (spec v15) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : calendrier navigable, cf. ci-dessous)* | 9 (calendrier navigable, spec v15) | ⬜ |
+| — | *(aucun sprint en cours ; s15 livré HORS PROCESS — pas de sprint suivant désigné, `/4-retours` + `/5-consolidation` + rétro non joués sur cette itération, par décision PO)* | 9 + 14 livrés (s15) | — |
 
 ## Prochains sprints envisagés
 
@@ -45,7 +46,7 @@
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 (P1) | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) + amorce **sélection de plage de cases** pour définir une période | É4, É7 | Sujet d'usage élu G2 PO clôture s14 ; besoin ancien (retours s02/s03), referme l'usage calendrier après la tranche acteurs |
+| ~~+1 (P1)~~ ✅ | ~~**Calendrier navigable** + amorce sélection de plage~~ — **LIVRÉ s15** (avec le palier 14 absorbé : persistance Mongo du domaine + démarrage vide). Variantes plage (drag riche, plage vide/chevauchement, à cheval vue/mois) **reportées tranche 2** | É4, É7 | livré |
 | +2 | **Rétrofit complet du garde déterministe *TempsReel* SignalR** — cibler la **convergence SignalR multi-clients** (distincte de la course d'énumération déjà gardée s13) ; flake 1/30 persistant — **dette de test**, prérequis de l'édition concurrente | É3 | Déverrouille l'édition concurrente sans driver une fondation temps-réel instable |
 | +4 | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — DIFFÉRÉE jusqu'à stabilisation SignalR | É7 | Cas limite runtime ; dépend du +3 |
 | +5 | **Cycle de fond riche** : choisir le début/ancre + config fine (frontière de jour, plage début/fin, sur-cycle vacances, WE-only). Sujet plein — rouvre la décision CP « ancrage ISO sans ancre » | É7, É1 | Retour PO /configuration s10 |
@@ -71,7 +72,7 @@
 | Deux parents (toujours exactement 2 ; le 1er saisit l'autre) | ⬜ | Palier 5 | retours s01 · spec règle 3 |
 | Acteurs « autres » éditables (nounou, grands-parents…) | ✅ | s08-s09-s13 (CRUD complet) | spec règle 4 · retours s01 |
 | Lieux éditables et persistés (référentiel des sélecteurs) | 🟡 | Palier 4 | spec règle 11 |
-| Cycle récurrent multi-semaines **éditable** (EN MÉMOIRE ; persistance durable = palier 10) | 🟡 | s10 (éditable) / Palier 10 (durable) | spec règle 11 · besoins s10 |
+| Cycle récurrent multi-semaines **éditable** + **durable Mongo** (s15) | ✅ | s10 (éditable) + s15 (durable) / Paliers 6+14 | spec règle 11 · besoins s10 |
 | Set de couleurs par défaut persisté (acteur → couleur) | 🟡 | s03 statique + Palier 4 | spec règle 15 |
 
 ### Épic 2 — Modèle & configuration d'acteurs
@@ -99,7 +100,7 @@
 | Convention code-behind systématique (`.razor.cs`, pas de `@code` inline) | 🟡 | s04 partiel (transfert en retrait) | retours s03 (#7, dette) |
 | API explorable : document OpenAPI **+** UI interactive (Scalar) | ✅ | s05 (Scalar sur OpenAPI natif .NET) | retours s03 (#8) · spec v05 p1 |
 | CORS : origine du front autorisée à appeler l'API distante | ✅ | s05 | spec v06 règle 25 |
-| Ports & adaptateurs visibles (hexagonal : gauche/droite/domaine) | 🟡 | s04 (gauche matérialisé) · droite **config foyer durable Mongo** (s09), reste du domaine encore InMemory | retours s03 (#10) · refacto à venir (homogénéiser les frontières) |
+| Ports & adaptateurs visibles (hexagonal : gauche/droite/domaine) | ✅ | s04 (gauche) · droite **tout le domaine durable Mongo** (config foyer s09, puis slots/périodes/transferts/cycle s15), DI commutant Mongo/InMemory via `Foyer:Persistance` | retours s03 (#10) · s15 |
 
 ### Épic 4 — Calendrier & grille de lecture
 *Calendrier navigable (semaine + 4 semaines) lisible d'un coup d'œil.*
@@ -111,7 +112,8 @@
 | Code couleur par personne sur les cases-jour | ✅ | s03 | spec règles 14/158 |
 | Slots empilés dans l'ordre horaire | ✅ | s03 | scénario 5 s03 |
 | Fenêtre stricte 35 jours (bornes inf./sup.) | ✅ | s03 | scénarios 1/7 s03 |
-| Navigation dans le mois (semaines précédente/suivante) | ⬜ | Palier 3 item 2 | spec p3 · retours s02 (#3) |
+| Navigation dans le mois (semaines précédente/suivante) + vues prédéfinies Semaine/4-sem/Mois + retour « Aujourd'hui » | ✅ | s15 / Palier 9 | spec p3 · retours s02 (#3) |
+| Sélection de plage de cases pour affecter une période (clic début+fin ; drag riche tranche 2) | ✅ | s15 / Palier 9 | retours s02/s03 |
 
 ### Épic 5 — Lisibilité & identité visuelle
 *Rendre la responsabilité explicite (pas seulement une teinte) et habiller l'app.*
@@ -150,7 +152,7 @@
 | Édition concurrente — rejet sur état périmé | ✅ | s01 | scénario 10 s01 |
 | Suppression de période (depuis dialog) | ⬜ | Palier 3 item 3 | retours s02 (#6) · retours s03 (trou) |
 | Affecter période en contexte via dialog | ✅ | s11 / Palier 7 | retours s02 (#7) · spec p3 |
-| Responsabilité de fond déclarée en config foyer (le cycle, alternance parité ISO, EN MÉMOIRE) | ✅ | s10 / Palier 6 | spec règles 5/11 · besoins s07/s08 |
+| Responsabilité de fond déclarée en config foyer (le cycle, alternance parité ISO) — **durable Mongo depuis s15** | ✅ | s10 (mémoire) + s15 (durable) / Paliers 6+14 | spec règles 5/11 · besoins s07/s08 |
 | Cycle de fond **riche** (ancre/début explicite, frontière de jour, plage début/fin, sur-cycle vacances, WE-only) | ⬜ | à séquencer (rouvre l'ancrage ISO) | retours s10 (R3/R4) |
 
 ### Épic 8 — Transferts & bascule de responsabilité
@@ -233,13 +235,13 @@
 | 6 | **Récurrence des périodes** (cycle de fond définissable/éditable, alternance parité ISO, EN MÉMOIRE) | É7, É1 | spec v09 règle 10 · besoins s07/s08 (IMPORTANT) | ✅ s10 |
 | 7 | **Écriture en contexte (dialogs)** — menu au clic sur une case → « Poser un slot » / « Affecter une période » / « Définir un transfert » pré-remplies sur la date de la case (échec/annulation/chevauchement/gating Invité), tous les écrans dédiés retirés | É6, É7, É8, É12 | spec v12 p7 · besoins s10/s11 | ✅ s11+s12 (refermé complet) |
 | 8 | **CRUD acteurs** — suppression (Delete, repli orphelins) **✅ s13** + **impersonation bornée lecture** (incarner, vue selon rôle effectif, retour auto, gating config durci) **✅ s14** | É2, É1, É10 | spec v15 p8 · besoins s12/s13/s14 (G2 PO) | ✅ |
-| 9 | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) **+ amorce sélection de plage de cases** pour définir une période — PROCHAIN SUJET (steer : navigation seule = plus petit incrément, plage cuttable tranche 2) | É4, É7 | spec v15 p9 · retours s02/s03 | ⬜ |
+| 9 | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) **+ sélection de plage de cases** pour définir une période (clic début+fin ; drag riche reporté tranche 2) | É4, É7 | spec v15 p9 · retours s02/s03 | ✅ s15 |
 | 9bis | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 | ⬜ |
 | 10 | Alimentation & saisie — **config foyer durable restante** (lieux, set couleurs, cycle de fond) + Admin/Parent/Autre, écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 | ⬜ |
 | 11 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
 | 12 | Imprévu & échange — malade/retard/échange + transferts dérivés automatiquement par défaut | É8, É11 | spec v05 p8 · spec règles 19-20 | ⬜ |
 | 13 | Ouverture de l'accès (auth OAuth, landing, comptes inactifs + impersonation + prise en main par rôle, personnalisation des couleurs, thème sombre persisté) | É10, É2, É5 | spec v05 p9 · retours s01/s07/s08 | ⬜ |
-| 14 | **Adaptateurs de droite — persistance réelle du RESTE du domaine** (slots/périodes/transferts ; la config foyer en a été le premier client, amorcé au palier 5). **Borne anti-cliquet : ne remonte pas devant l'usage** | É1, É3 | spec v09 règle 30 · besoins s05/s08 (séquencé derrière l'usage) | ⬜ |
+| 14 | **Adaptateurs de droite — persistance réelle du RESTE du domaine** (slots/périodes/transferts/cycle) **+ démarrage runtime sans seed** (app vide, durable ensuite ; InMemory seedé conservé pour les tests). Borne anti-cliquet règle 30 **levée par révision PO hors process** (absorbé dans s15) | É1, É3 | spec v09 règle 30 · révision PO hors process s15 | ✅ s15 |
 | 15 | **PWA — saisie hors-ligne** (cache + file d'écritures rejouée au retour de connexion, au-delà de l'échec clair livré au s05) | É12, É3 | spec v06 · besoins s05 (séquencé derrière l'usage) | ⬜ |
 
 > **Séquencement acté (v09, `/5-consolidation` s08) :** la **config foyer persistante** (ajout
@@ -275,7 +277,7 @@
 - Convention code-behind systématique (`.razor` + `.razor.cs`, pas de `@code` inline) — sprint 04+.
 - API explorable (Scalar/OpenAPI) — livrée au palier 1 (s05).
 - Séparation des canaux : écriture = requête/réponse ; diffusion temps réel = lecture seule (jamais d'écriture par la diffusion).
-- **Conteneurisation Docker** (hôte API + front WASM + base, montables ensemble via compose) — garde-fou d'outillage hors-incrément, sans observable métier (comme l'API explorable). Débloqué par le palier 1 + la persistance réelle (palier 14). Origine : PO post-s05.
+- ~~**Conteneurisation Docker**~~ — **FAITE hors process (avant s15)** : `docker-compose.yml` monte mongo + mongo-express + build + api + web (images dotnet/sdk montées, `--artifacts-path` isolant les binaires) ; docs `README-docker.md` + `LANCEMENT.md`. Origine : PO post-s05.
 
 ## Dettes explicitement signalées
 
@@ -290,6 +292,9 @@
 - **Cycle de fond riche réclamé** (É7) — l'usage (gate s10) demande ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only : au-delà du plus petit incrément livré, sujet plein séquencé (+5).
 - **Flakes temps-réel SignalR** (É3, `FrontWasmConfig*TempsReel*`) — verts en isolation, flaky sous charge parallèle (timing SignalR/Docker) ; **dette de test** (pas un bug `src/`). Convention anti-flake codifiée (rétro s11, `ihm-builder`) ; **garde déterministe `WaitForState(acteur-foyer)` posé sur 7 `*TempsReel*` au s13** (course `UnknownEventHandlerId` rendue déterministe par la touche d'un composant partagé) ; **rétrofit complet = P2** (helper bUnit partagé + audit, rétro s13), prérequis de l'édition concurrente (P3). Constaté s11, partiellement traité s13.
 - ~~Dernière saisie hors-contexte restante~~ — **éteinte au s12 (palier 7)** : page/route/lien `/planning/definir-transfert` supprimés, 3e dialog transfert livrée, épic É12 refermé. Constaté s11, résolu s12.
+- **Asymétrie seed runtime/tests (s15)** — en mode Mongo, **aucun seed** (app vide au 1er lancement, durable ensuite) ; en InMemory, seed de base **conservé** pour la non-régression. Décision PO assumée (hors process). Effet de bord : 3 tests Mongo s09 ont été re-câblés sur ajout explicite d'acteurs (durabilité toujours prouvée sur store réel).
+- **Vulnérabilités transitives du driver Mongo** (`SharpCompress` 0.30.1 NU1902 modéré, `Snappier` 1.0.0 NU1903 élevé) — warnings au build depuis le pivot Mongo généralisé (s15). À traiter par une montée de version du driver MongoDB.Driver. Non bloquant (warnings, pas erreurs).
+- **Variantes de plage reportées tranche 2 (s15)** — drag riche, plage vide, chevauchement, plage à cheval sur vue/mois : seul le geste clic-début+clic-fin sur cases contiguës est livré (É4/É7).
 
 > **Idées PO consolidées (retours s07)** — les 3 idées de la section « Idée pour la suite »
 > ont été replacées dans leurs épics : *slot imbriqué* → **É6** ; *parents liés via leurs
