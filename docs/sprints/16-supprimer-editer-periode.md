@@ -1,11 +1,11 @@
 # Sprint 16 — Supprimer une période depuis le menu clic-case (`supprimer-editer-periode`)
 
-> **Avancement : 1/10 ⏳**
+> **Avancement : 2/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Supprimer une période la retire du store durable relu (+ redémarrage) | @back | ✅ |
-| 2 | Repli fond : la case retombe sur le responsable de fond (le cycle reprend) | @back | ⏳ |
+| 2 | Repli fond : la case retombe sur le responsable de fond (le cycle reprend) | @back | ✅ |
 | 3 | Repli neutre sans nom fantôme (index non résolu) | @back | ⏳ |
 | 4 | Lister les périodes couvrant une date (alimente la dialog) | @back | ⏳ |
 | 5 | Idempotence : supprimer une période absente / déjà supprimée = no-op qui réussit | @back | ⏳ |
@@ -102,7 +102,7 @@ Scenario: Supprimer une période la retire de la configuration persistée du dom
   Et le store relu après redémarrage ne comporte toujours pas cette période
 ```
 
-### Scenario 2 — Repli fond : la case retombe sur le responsable de fond (le cycle reprend) `@back` `@pending`
+### Scenario 2 — Repli fond : la case retombe sur le responsable de fond (le cycle reprend) `@back` `@vert`
 
 ```gherkin
 Scenario: Supprimer une période saisie fait retomber sa case sur le responsable de fond
