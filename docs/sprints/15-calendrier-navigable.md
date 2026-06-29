@@ -185,7 +185,7 @@ Scenario: Un Invité navigue librement mais ne peut affecter aucune période par
 
 ### Scenario 8 — Premier lancement sur store Mongo vierge : application vide
 
-`@limite`
+`@limite` `@vert`
 
 ```gherkin
 Scenario: Au tout premier lancement sur une base vierge, rien n'est seedé
