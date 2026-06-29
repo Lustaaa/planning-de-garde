@@ -175,6 +175,26 @@ public partial class PlanningPartage
         _ => "4semaines",
     };
 
+    /// <summary>Vue prédéfinie correspondant au code du sélecteur (inverse de <see cref="CodeVue"/>) :
+    /// <c>semaine</c> / <c>mois</c> / défaut <c>4 semaines glissantes</c> (compatibilité ascendante).</summary>
+    private static VuePlanning VueDepuisCode(string? code) => code switch
+    {
+        "semaine" => VuePlanning.Semaine,
+        "mois" => VuePlanning.Mois,
+        _ => VuePlanning.QuatreSemaines,
+    };
+
+    /// <summary>« Changer de vue » (Sc.2/Sc.3, sélecteur de vue) : fixe la vue choisie puis re-projette en
+    /// re-requêtant l'API distante avec le paramètre de vue. L'ancre lundi est conservée (seul le span
+    /// change). Sur échec de la re-requête, la vue est <b>restaurée</b> (la fenêtre affichée ne diverge
+    /// pas de l'état) et le bandeau d'échec levé — même pivot que la navigation (Sc.6). Aucune écriture.</summary>
+    private async Task ChangerVueAsync(ChangeEventArgs e)
+    {
+        var vueAvant = Session.Vue;
+        Session.Vue = VueDepuisCode(e.Value?.ToString());
+        await ReprojeterAsync(() => Session.Vue = vueAvant);
+    }
+
     /// <summary>« Semaine suivante » (Sc.1) : décale l'ancre de +7 jours puis re-projette en
     /// re-requêtant l'API distante à la date naviguée. Aucune écriture (lecture seule).</summary>
     private Task DemanderSemaineSuivante() => NaviguerAsync(Session.SemaineSuivante);
@@ -199,13 +219,26 @@ public partial class PlanningPartage
     {
         var ancreAvant = Session.Ancre;
         decalerAncre();
+        await ReprojeterAsync(() => Session.RestaurerAncre(ancreAvant)); // fenêtre conservée, aucun rejeu
+    }
+
+    /// <summary>
+    /// Pivot de re-projection partagé entre la navigation (décalage d'ancre, Sc.1/Sc.4) et le changement
+    /// de vue (Sc.2/Sc.3) : re-requête l'API distante à l'état courant (ancre + vue). Sur <b>échec</b> de
+    /// la re-requête (API distante injoignable), exécute <paramref name="restaurerSiEchec"/> pour ramener
+    /// l'état (ancre ou vue) à celui de la fenêtre affichée — affichage et état ne divergent pas — et lève
+    /// le bandeau d'échec clair (Sc.6) ; l'opération échouée n'est <b>ni mise en file ni rejouée</b>
+    /// (règle 28). Un succès efface tout échec antérieur. Aucune écriture : pure re-projection en lecture.
+    /// </summary>
+    private async Task ReprojeterAsync(Action restaurerSiEchec)
+    {
         if (await ChargerAsync())
         {
             _echecNavigation = false;
         }
         else
         {
-            Session.RestaurerAncre(ancreAvant); // fenêtre conservée, aucun rejeu ni mise en file
+            restaurerSiEchec();
             _echecNavigation = true;
         }
     }

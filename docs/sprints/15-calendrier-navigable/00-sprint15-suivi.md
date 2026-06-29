@@ -86,6 +86,15 @@ d'acceptation à lui seul.
 
 **Statuts** : ⏳ Pending · 🔴 Red · ✅ Green.
 
+**Phase IHM finale (construction, `ihm-builder`).** Cohérence visuelle pour le gate : ajout du **sélecteur
+de vue** (Semaine / 4 semaines glissantes — défaut / Mois) dans la barre de navigation de `PlanningPartage`,
+câblé sur `SessionPlanning.Vue` et la re-requête `GET /api/grille/…?vue=` (read model Sc.2 + endpoint Sc.1
+déjà livrés). Le changement de vue **re-projette** (lecture seule, ancre lundi conservée) ; sur échec de
+re-requête la vue est **restaurée** et le bandeau d'échec levé via le **pivot mutualisé** `ReprojeterAsync`
+(partagé avec la navigation Sc.6). Aucune règle métier dans l'UI. Acceptation runtime complémentaire :
+`FrontWasmSelecteurVueTempsReelTests` (app réellement câblée, 28 → 7 → 35 cases, aucune écriture). Build
+vert · suite complète **234/234** · famille `*TempsReel*` **38/38 en isolation**.
+
 **Légende routage** : `ihm-builder` = acceptation runtime / E2E sur l'app **réellement câblée** (front WASM
 + API distante + SignalR, DI réelle ; render mode interactif). Un scénario `🖥️` n'est **jamais** prouvé par
 bUnit seul (render mode, DI réelle, transport HTTP). Sc.8 / Sc.9 = **intégration sur Mongo RÉEL** (Docker) —

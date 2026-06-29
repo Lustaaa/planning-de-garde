@@ -102,6 +102,21 @@
     <button type="button" class="btn btn-outline-primary" data-testid="nav-aujourdhui"
             @onclick="DemanderRetourAujourdhui">Aujourd'hui</button>
 
+    @* Sélecteur de vue (Sc.2/Sc.3) : choisit la vue prédéfinie de la fenêtre projetée (Semaine /
+       4 semaines glissantes — défaut / Mois). Le changement re-projette en re-requêtant l'API distante
+       avec le paramètre de vue (read model `GrilleAgendaQuery` vue/span, backend déjà livré). L'ancre
+       lundi est conservée ; la grille reste LECTURE SEULE. Sur échec de la re-requête, la vue est
+       restaurée et le bandeau d'échec levé (même pivot que la navigation, Sc.6). *@
+    <div class="d-flex align-items-center gap-2">
+        <span class="text-muted">Vue :</span>
+        <select class="form-select form-select-sm w-auto" data-testid="selecteur-vue"
+                value="@CodeVue(Session.Vue)" @onchange="ChangerVueAsync">
+            <option value="semaine">Semaine</option>
+            <option value="4semaines">4 semaines glissantes</option>
+            <option value="mois">Mois</option>
+        </select>
+    </div>
+
     @* Sélection de plage (Sc.5) : déclencheur d'écriture par INTERVALLE, gardé EstParent (gating règle 9
        mutualisé avec le menu clic-case — c'est ce gate partagé que Sc.7 caractérise : l'Invité ne voit même
        pas ce bouton). Une fois actif, cliquer la case de début puis la case de fin ouvre l'affectation
