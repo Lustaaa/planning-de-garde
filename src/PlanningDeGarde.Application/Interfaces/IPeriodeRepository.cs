@@ -15,4 +15,11 @@ public interface IPeriodeRepository
     /// snapshot affiché par l'auteur). Renvoie false si l'écriture est périmée (état devancé).
     /// </summary>
     bool Modifier(PeriodeSnapshot baseObservee, PeriodeSnapshot modification);
+
+    /// <summary>
+    /// Retire du store la période d'identifiant stable <paramref name="periodeId"/>. Idempotent :
+    /// un identifiant absent / déjà supprimé est un no-op (jamais une erreur). Clé = l'identifiant
+    /// stable, jamais un libellé.
+    /// </summary>
+    void Supprimer(string periodeId);
 }

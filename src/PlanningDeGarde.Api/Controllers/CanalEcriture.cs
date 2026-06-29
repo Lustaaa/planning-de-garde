@@ -46,6 +46,11 @@ public static class CanalEcriture
     /// le libellé). Une nouvelle définition remplace intégralement le cycle courant (dernière écriture gagne).</summary>
     public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations);
 
+    /// <summary>Corps de la requête de suppression d'une période émise via le canal d'écriture. La clé est
+    /// l'<b>identifiant stable</b> de la période (jamais un libellé) ; la suppression est idempotente côté
+    /// handler (id absent / déjà supprimé = no-op qui réussit).</summary>
+    public sealed record SupprimerPeriodeRequete(string PeriodeId);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
@@ -118,6 +123,23 @@ public static class CanalEcriture
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/supprimer-periode",
+            (SupprimerPeriodeRequete requete, SupprimerPeriodeHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new SupprimerPeriodeCommand(requete.PeriodeId));
+
+            // Même convention que les autres écritures : succès acquitté (la période ne sera plus relue
+            // depuis le store, la case se re-résout), refus métier renvoyé avec son motif. Idempotent :
+            // un identifiant absent / déjà supprimé réussit sans effet (Sc.5). Sur succès, l'adaptateur de
+            // gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres écrans re-projettent la
+            // grille et la légende sans rechargement (Sc.10). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
         });
 
         routes.MapPost("/api/canal/definir-cycle", (DefinirCycleRequete requete, DefinirCycleHandler handler) =>

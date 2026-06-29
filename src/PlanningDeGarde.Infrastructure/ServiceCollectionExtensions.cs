@@ -76,6 +76,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DeplacerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();
         services.AddScoped<ModifierPeriodeHandler>();
+        services.AddScoped<SupprimerPeriodeHandler>();
         services.AddScoped<DefinirTransfertHandler>();
         services.AddScoped<EditerActeurHandler>();
         services.AddScoped<AjouterActeurHandler>();
@@ -84,6 +85,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();
+        services.AddScoped<PeriodesDuJourQuery>();
 
         return services;
     }

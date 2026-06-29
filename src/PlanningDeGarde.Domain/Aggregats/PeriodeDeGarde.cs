@@ -4,8 +4,10 @@ namespace PlanningDeGarde.Domain;
 
 /// <summary>
 /// Snapshot immuable d'une période de garde — frontière publique pour assertions / persistance.
+/// <paramref name="Id"/> est l'<b>identifiant stable</b> attribué par le store à l'enregistrement
+/// (clé de suppression / d'édition, jamais un libellé) ; vide tant que la période n'a pas été persistée.
 /// </summary>
-public sealed record PeriodeSnapshot(string ResponsableId, DateTime Debut, DateTime Fin);
+public sealed record PeriodeSnapshot(string ResponsableId, DateTime Debut, DateTime Fin, string Id = "");
 
 /// <summary>
 /// Agrégat « qui est responsable » (axe responsabilité, orthogonal à la localisation).

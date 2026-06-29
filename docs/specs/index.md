@@ -12,7 +12,8 @@ qui faisait enfler la spec ×10 de `01` à `15`).
 
 | Sujet | Fichier | État |
 |---|---|---|
-| _(à découper depuis `15-specification.md` au fil des sprints)_ | — | ⏳ |
+| Périodes de garde & cycle de fond (résolution surcharge > fond > neutre, affecter/supprimer) | [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md) | ✅ carvé s16 |
+| _(reste à découper depuis `15-specification.md` au fil des sprints)_ | — | ⏳ |
 
 ## Convention
 

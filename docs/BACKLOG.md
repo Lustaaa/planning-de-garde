@@ -31,6 +31,7 @@
 | 13 | `crud-acteurs-suppression` — **suppression d'un acteur** (Delete) sur store Mongo réel + **neutralisation par repli** des cases orphelines (surcharge orpheline → fond → neutre, sans nom fantôme), idempotence, accusé non bloquant « Acteur supprimé » ; IHM bouton supprimer + gating Invité + échec API + temps réel SignalR | ✅ fait | `SupprimerActeurHandler` + port `IEditeurConfigurationFoyer.Supprimer` (InMemory + Mongo) + endpoint `POST /api/canal/supprimer-acteur` + filtre d'existence `Resolvable()` dans `GrilleAgendaQuery` (case + légende, réutilise `IEnumerationActeursFoyer`) + bouton/gating/échec/temps réel dans `ConfigurationFoyer` (9 scénarios @vert, 196 verts, intégration Mongo réel) — **palier 8 tranche 1 (suppression) refermé, cycle de vie acteurs C/R/U/D complet** |
 | 14 | `impersonation-bornee` — **impersonation bornée lecture seule** : incarner un acteur déjà déclaré (bandeau « Vous incarnez X »), vue selon le rôle de l'**identité effective** (gating règle 9 piloté par l'incarné), retour identité réelle, retour AUTO sur suppression concurrente (repli règle 6 + SignalR), pas d'écriture « au nom de », **durcissement complet du gating config** ; type d'acteur read-only depuis le seed, zéro persistance neuve | ✅ fait | `SessionPlanning` identité réelle/effective (`Incarner`/`RevenirIdentiteReelle`, `EstParent` dérivé de l'effective) + `TypeActeur` surfacé read-only via `IEnumerationActeursFoyer.TypeDe` + bandeau/sélecteur dans `PlanningPartage` + gating effectif grille & config (6 scénarios @vert runtime, 214 verts) — **palier 8 tranche 2 (impersonation lecture) refermé, palier 8 clos côté usage** |
 | 15 | `calendrier-navigable` — **calendrier navigable** (navigation ±semaine, sélecteur de vues **Semaine / 4 semaines glissantes (défaut) / Mois**, retour « Aujourd'hui », **affectation par plage de cases** clic début+fin gardée Parent, échec navigation → fenêtre préservée + message clair, gating Invité) **+ absorption du palier 14 : persistance Mongo de TOUT le domaine** (slots/périodes/transferts/cycle) **+ démarrage runtime SANS seed** (app vide au 1er lancement, durable ensuite) | ✅ fait | `SessionPlanning` ancre+vue (session, non persistée) + nav préc./suiv./Aujourd'hui + `GrilleAgendaQuery.Projeter(ancre, vue)` (défaut 28 j) + endpoint lecture `?vue=` + sélection de plage → `AffecterPeriode` réutilisé (aucun handler neuf) + 4 adaptateurs `AdapterDroite.Mongo` (slots/périodes/transferts/cycle) derrière ports existants + DI commutant **tout** le domaine droite via `Foyer:Persistance` (Mongo runtime / InMemory test) + retrait seed runtime (`AmorcerDonneesDemo` + seed-once acteurs) (9 scénarios @vert runtime, 234 verts, pivot Mongo réel) — **paliers 9 (calendrier navigable) ET 14 (persistance réelle du domaine) refermés. Révision PO hors process : borne anti-cliquet règle 30 levée ; asymétrie seed assumée (Mongo jamais seedé / InMemory gardé)** |
+| 16 | `supprimer-editer-periode` — **suppression de période depuis l'IHM** (4ᵉ usage du menu clic-case → dialog listant les périodes couvrant la date → supprimer) sur **store Mongo réel** ; **repli surcharge > fond > neutre sans nom fantôme** à la re-résolution, **idempotence** (absent/déjà supprimé = no-op qui réussit), accusé non bloquant « Période supprimée », gating Invité, échec API (dialog reste ouverte), temps réel SignalR. Comble la dette « trou fonctionnel » (retours s02 #6 · s03). **Édition de période (re-borner/réaffecter) hors scope (tranche suivante)** | ✅ fait | `SupprimerPeriodeHandler` (idempotent) + `PeriodesDuJourQuery` (lecture pour la dialog) + port `Supprimer(periodeId)` sur le dépôt de périodes (InMemory + `AdapterDroite.Mongo`) + endpoint `POST /api/canal/supprimer-periode` (diffusion sur succès) + `SupprimerPeriodeDialog` (4ᵉ usage menu clic-case, accusé à part, gating/échec/temps réel) ; repli réutilise la priorité surcharge>fond>neutre acquise au palier 6 (10 scénarios @vert runtime, 246 verts, pivot Mongo réel) — **dette « édition/suppression de période depuis l'IHM » à demi refermée (suppression livrée)** |
 
 > **Refacto technique HORS pipeline (PR #21, avant s10) : faite** — adaptateurs de droite par techno, `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, outil `test-count.ps1`. Critère de sortie 161/161 tenu.
 
@@ -38,7 +39,7 @@
 
 | Sprint | Sujet | Palier (spec v15) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours ; s15 livré HORS PROCESS — pas de sprint suivant désigné, `/4-retours` + `/5-consolidation` + rétro non joués sur cette itération, par décision PO)* | 9 + 14 livrés (s15) | — |
+| — | *(aucun sprint en cours ; s16 `supprimer-editer-periode` livré et clôturé — gate G3 validé PO, retours produit VIDE)* | 9 + 14 livrés (s15) ; suppression période (s16) | — |
 
 ## Prochains sprints envisagés
 
@@ -47,6 +48,7 @@
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
 | ~~+1 (P1)~~ ✅ | ~~**Calendrier navigable** + amorce sélection de plage~~ — **LIVRÉ s15** (avec le palier 14 absorbé : persistance Mongo du domaine + démarrage vide). Variantes plage (drag riche, plage vide/chevauchement, à cheval vue/mois) **reportées tranche 2** | É4, É7 | livré |
+| +1 (P1) | **Édition de période depuis la dialog** (re-borner les dates / réaffecter le responsable d'une période existante) — tranche suivante directe de s16, qui n'a livré que le Delete ; réutilise le menu clic-case + la dialog liste par date déjà posés | É7, É12 | Referme la dette « édition/suppression de période depuis l'IHM » (moitié restante après s16) |
 | +2 | **Rétrofit complet du garde déterministe *TempsReel* SignalR** — cibler la **convergence SignalR multi-clients** (distincte de la course d'énumération déjà gardée s13) ; flake 1/30 persistant — **dette de test**, prérequis de l'édition concurrente | É3 | Déverrouille l'édition concurrente sans driver une fondation temps-réel instable |
 | +4 | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — DIFFÉRÉE jusqu'à stabilisation SignalR | É7 | Cas limite runtime ; dépend du +3 |
 | +5 | **Cycle de fond riche** : choisir le début/ancre + config fine (frontière de jour, plage début/fin, sur-cycle vacances, WE-only). Sujet plein — rouvre la décision CP « ancrage ISO sans ancre » | É7, É1 | Retour PO /configuration s10 |
@@ -150,7 +152,8 @@
 | Rejet : responsable requis | ✅ | s01 | scénario 8 s01 |
 | Bornes de période paramétrables | ✅ | s01 | scénario 9 s01 |
 | Édition concurrente — rejet sur état périmé | ✅ | s01 | scénario 10 s01 |
-| Suppression de période (depuis dialog) | ⬜ | Palier 3 item 3 | retours s02 (#6) · retours s03 (trou) |
+| Suppression de période (depuis dialog) | ✅ | s16 / Palier 7 | retours s02 (#6) · retours s03 (trou) |
+| **Édition de période (re-borner / réaffecter le responsable depuis la dialog)** | ⬜ | à séquencer (tranche suivante après s16) | retours s02 (#6) · titre goal s16 (hors scope G2) |
 | Affecter période en contexte via dialog | ✅ | s11 / Palier 7 | retours s02 (#7) · spec p3 |
 | Responsabilité de fond déclarée en config foyer (le cycle, alternance parité ISO) — **durable Mongo depuis s15** | ✅ | s10 (mémoire) + s15 (durable) / Paliers 6+14 | spec règles 5/11 · besoins s07/s08 |
 | Cycle de fond **riche** (ancre/début explicite, frontière de jour, plage début/fin, sur-cycle vacances, WE-only) | ⬜ | à séquencer (rouvre l'ancrage ISO) | retours s10 (R3/R4) |
@@ -209,7 +212,8 @@
 |--------|:------:|---------------|---------|
 | Dialogs d'écriture (poser slot + affecter période) depuis les cases (menu clic-case, pré-rempli date case, échec/annulation/chevauchement/gating Invité) | ✅ | s11 / Palier 7 | retours s02 (#7/8/10)/s03 |
 | Dialog « Définir un transfert » en contexte + retrait page dédiée (referme l'épic) | ✅ | s12 / Palier 7 | retours s02 (#8) · G2 PO s11 |
-| Suppression de période depuis dialog | ⬜ | à séquencer | retours s02 (#6) · retours s03 (trou) |
+| Suppression de période depuis dialog | ✅ | s16 / Palier 7 | retours s02 (#6) · retours s03 (trou) |
+| Édition de période depuis dialog (re-borner / réaffecter) | ⬜ | à séquencer (tranche suivante après s16) | retours s02 (#6) · titre goal s16 (hors scope) |
 | Recâblage de l'écriture via API HTTP (au lieu du DI direct) | ✅ | s05 (poser/affecter/transfert via API distante WASM) | retours s03 (#5) · spec p1 |
 | Rafraîchissement immédiat : la saisie réapparaît dans la grille | ✅ | s06 / Palier 2 | retours s03 (#5, bug runtime) |
 
@@ -282,7 +286,7 @@
 ## Dettes explicitement signalées
 
 - Données en dur dans `Foyer.cs` (É1) — persister en base — retours s03 (#11).
-- Aucune édition/suppression de période depuis l'IHM (É7) — « trou fonctionnel assumé » — retours s03.
+- ~~Aucune édition/suppression de période depuis l'IHM (É7)~~ — **suppression éteinte au s16** : 4ᵉ usage du menu clic-case → dialog listant les périodes d'une date → supprimer (store Mongo réel, repli surcharge>fond>neutre sans nom fantôme, idempotence, accusé/gating/échec/temps réel, 10/10 vert). **Reste l'édition** (re-borner / réaffecter) — séquencée tranche suivante. « trou fonctionnel assumé » — retours s03.
 - ~~Saisies invisibles à l'écran (É12)~~ — **éteint au s06 (palier 2)** : faux bug (date par défaut → `IDateTimeProvider`) ET vrai défaut couleur (mapping libellé→identifiant stable + seed) corrigés, 8/8 vert — retours s03 (#5) · consolidation s05 · livré s06.
 - Risque d'adoption du second parent (É10) — repoussé au palier 13 (auth), « ne pas laisser glisser ».
 - Faux sentiment de progrès — 2 sprints structurels d'affilée (s04, s05) sans besoin produit observable ; **résorbé au s06** : le palier 2 (Saisie visible) a rendu la main à l'usage (8/8 vert). Vigilance maintenue : ne pas remonter les paliers techniques 10/11 devant l'usage.

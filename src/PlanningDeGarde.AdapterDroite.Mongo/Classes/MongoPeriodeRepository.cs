@@ -30,6 +30,14 @@ public sealed class MongoPeriodeRepository : IPeriodeRepository
     public IReadOnlyList<PeriodeSnapshot> AllSnapshots()
         => _periodes.Find(Builders<PeriodeDocument>.Filter.Empty).ToList().Select(d => d.VersSnapshot()).ToList();
 
+    public void Supprimer(string periodeId)
+    {
+        // Idempotent : un identifiant absent / malformé ne retire rien et ne lève pas (DeleteOne no-op).
+        if (!ObjectId.TryParse(periodeId, out var id))
+            return;
+        _periodes.DeleteOne(Builders<PeriodeDocument>.Filter.Eq(d => d.Id, id));
+    }
+
     public bool Modifier(PeriodeSnapshot baseObservee, PeriodeSnapshot modification)
     {
         // Concurrence optimiste : on remplace UN document correspondant exactement à la base observée
@@ -59,6 +67,6 @@ public sealed class MongoPeriodeRepository : IPeriodeRepository
             // Bornes en wall-clock STABLE (Kind=Utc) : évite le décalage de date BSON (cf. DateTimeMongo).
             => new() { Id = id ?? ObjectId.GenerateNewId(), ResponsableId = p.ResponsableId, Debut = DateTimeMongo.WallClock(p.Debut), Fin = DateTimeMongo.WallClock(p.Fin) };
 
-        public PeriodeSnapshot VersSnapshot() => new(ResponsableId, Debut, Fin);
+        public PeriodeSnapshot VersSnapshot() => new(ResponsableId, Debut, Fin, Id.ToString());
     }
 }
