@@ -28,6 +28,13 @@ Tu portes **trois chapeaux** selon ce qu'on te dispatche. Un seul à la fois.
      `# | Scénario | Type (back/🖥️ IHM) | Statut (⏳/🔴/✅)`. Compte `X/N` au-dessus.
    - **Scénarios Gherkin structurés** (cas nominal / limite / erreur, résultat observable),
      numérotés, taggés `@back` ou `@ihm` et `@pending`.
+   - **GARDE de cohérence date ↔ index/parité de cycle (obligatoire).** Dès qu'un scénario nomme
+     **à la fois une date ET un index/une parité de cycle** (ex. « le mardi 23/06 2026, index 1 »),
+     **vérifier `index = ISOWeek(date) % N` AVANT d'écrire** le scénario. Si l'attendu suppose un
+     index précis (ex. « repli neutre car index non mappé »), **choisir une date qui le produit
+     réellement** (ou recalculer l'index annoncé). Ne jamais poser une date et un index
+     incohérents : la dev-team s'arrête et escalade (friction réelle s16, Sc.3). En cas de doute,
+     ancrer l'attendu sur la **règle de résolution**, pas sur un numéro d'index codé en dur.
    - **Section `# Retours produit (PO)`** vide en bas (remplie après le gate G3).
    - **Pas de dossier de suivi, pas de fichier-par-scénario.** Un seul fichier.
    → renvoie `{ "type":"sprint", … }`.
