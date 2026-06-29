@@ -36,6 +36,13 @@ public partial class PlanningPartage
     private DateOnly? _dateDialogPoserSlot;
     private DateOnly? _dateDialogAffecterPeriode;
     private DateOnly? _dateDialogDefinirTransfert;
+    // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
+    // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
+    // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
+    // _modePlage = mode actif ; _plageDebut / _plageFin = bornes [min, max] de l'intervalle sélectionné.
+    private bool _modePlage;
+    private DateOnly? _plageDebut;
+    private DateOnly? _plageFin;
     // Avertissement de chevauchement « à part » (Sc.7, règle 16) : pose acceptée mais signalée, bandeau
     // NON bloquant et refermable. Drapeau porté par l'outcome de la commande (jamais recalculé ici).
     private bool _avertissementChevauchement;
@@ -204,7 +211,65 @@ public partial class PlanningPartage
         if (!Session.EstParent)
             return;
 
+        // En mode plage (Sc.5), le clic-case ne déclenche PAS le menu single-jour : il alimente la
+        // sélection d'intervalle. Hors mode plage, comportement palier 7 inchangé (menu d'actions).
+        if (_modePlage)
+        {
+            SelectionnerCasePlage(date);
+            return;
+        }
+
         _dateMenu = date;
+    }
+
+    /// <summary>
+    /// Bascule le <b>mode sélection de plage</b> (Sc.5). Gardé <see cref="SessionPlanning.EstParent"/> :
+    /// le déclencheur de plage est réservé Parent/Admin (règle 9), mutualisant le gating Invité du menu
+    /// clic-case — c'est ce gate partagé que Sc.7 caractérise (en consultation, le bouton n'est même pas
+    /// rendu). Toute (dé)activation repart d'une sélection vierge. État de présentation, aucune écriture.
+    /// </summary>
+    private void BasculerModePlage()
+    {
+        if (!Session.EstParent)
+            return;
+
+        _modePlage = !_modePlage;
+        _plageDebut = null;
+        _plageFin = null;
+        _dateMenu = null;
+    }
+
+    /// <summary>
+    /// Alimente la sélection de plage (Sc.5) : le 1ᵉʳ clic-case fixe le début ; le 2ᵉ borne l'intervalle
+    /// <c>[min, max]</c> des deux dates contiguës puis ouvre l'affectation <b>pré-remplie sur l'intervalle</b>
+    /// (une seule commande <c>AffecterPeriode</c> couvrant la plage — backend inchangé). Re-cliquer la
+    /// même case avant la 2ᵉ borne ne fait rien (intervalle dégénéré ignoré, variantes riches → tranche 2).
+    /// </summary>
+    private void SelectionnerCasePlage(DateOnly date)
+    {
+        if (_plageDebut is null)
+        {
+            _plageDebut = date;
+            return;
+        }
+
+        if (date == _plageDebut)
+            return; // 2ᵉ clic sur la même case : intervalle dégénéré, on attend une case distincte
+
+        var debut = _plageDebut.Value;
+        _plageDebut = date < debut ? date : debut;
+        _plageFin = date < debut ? debut : date;
+        _modePlage = false; // l'intervalle est complet : on sort du mode et on ouvre l'affectation
+        _dateDialogAffecterPeriode = _plageDebut; // borne de début ; la fin passe par _plageFin
+    }
+
+    /// <summary>Vrai si la case <paramref name="date"/> appartient à la sélection de plage en cours (borne
+    /// de début déjà posée, ou intervalle complet) — sert au surlignage visuel des cases sélectionnées.</summary>
+    private bool EstDansSelectionPlage(DateOnly date)
+    {
+        if (_plageFin is { } fin && _plageDebut is { } debutComplet)
+            return date >= debutComplet && date <= fin;
+        return _plageDebut == date;
     }
 
     /// <summary>Ferme le menu d'actions sans rien ouvrir (clic hors panneau).</summary>
@@ -222,6 +287,7 @@ public partial class PlanningPartage
     private void OuvrirAffecterPeriode(DateOnly date)
     {
         _dateMenu = null;
+        _plageFin = null; // ouverture single-jour : pas d'intervalle (Début = Fin = date dans la dialog)
         _dateDialogAffecterPeriode = date;
     }
 
@@ -273,6 +339,9 @@ public partial class PlanningPartage
         _dateDialogPoserSlot = null;
         _dateDialogAffecterPeriode = null;
         _dateDialogDefinirTransfert = null;
+        // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
+        _plageDebut = null;
+        _plageFin = null;
     }
 
     /// <summary>Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible

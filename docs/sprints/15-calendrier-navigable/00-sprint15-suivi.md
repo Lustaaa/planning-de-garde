@@ -72,7 +72,7 @@
 | 2 | [Basculer entre les vues prédéfinies](02-basculer-vues.md) | `@nominal` · backend (read model vue/span) | ✅ GREEN | 4/4 | ✅ GREEN |
 | 3 | [Fenêtre par défaut à l'ouverture = 4 semaines glissantes](03-defaut-quatre-semaines.md) | `@limite` · backend (défaut 4 sem.) | ✅ GREEN | 3/3 | ✅ GREEN |
 | 4 | [Retour à la semaine en cours après navigation](04-retour-aujourdhui.md) | `@limite` 🖥️ IHM · ⚠️ early green (câblage nav Sc.1) · runtime `ihm-builder` | ✅ GREEN | 1/1 | ✅ GREEN |
-| 5 | [Affecter une période sur une plage de 2 cases contiguës](05-affecter-periode-plage.md) | `@nominal` 🖥️ IHM · driver front (write = `AffecterPeriode` early green) · runtime `ihm-builder` | ⏳ Pending | 0/2 | ⏳ Pending |
+| 5 | [Affecter une période sur une plage de 2 cases contiguës](05-affecter-periode-plage.md) | `@nominal` 🖥️ IHM · driver front (write = `AffecterPeriode` early green) · runtime `ihm-builder` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 6 | [API distante injoignable pendant la navigation](06-api-injoignable-navigation.md) | `@erreur` 🖥️ IHM · driver front · runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 7 | [Sélection de plage indisponible en consultation seule](07-invite-plage-indisponible.md) | `@erreur` 🖥️ IHM · ⚠️ early green (gate `EstParent` + trigger Sc.5) · runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 8 | [Premier lancement sur store Mongo vierge : application vide](08-premier-lancement-mongo-vide.md) | `@limite` · backend **intégration Mongo réel** (`MongoRequisFact`) | ✅ GREEN | 1/1 | ✅ GREEN |

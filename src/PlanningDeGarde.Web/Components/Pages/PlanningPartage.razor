@@ -82,14 +82,36 @@
 @* Navigation du calendrier (Sc.1) : décale la fenêtre d'une semaine vers le passé / le futur et
    re-projette (re-requête de l'API distante à la date naviguée). L'état de navigation (ancre + vue)
    vit en session/mémoire ; la grille reste en LECTURE SEULE — la navigation ne fait que re-projeter. *@
-<div class="d-flex align-items-center gap-2 mb-3" data-testid="barre-navigation">
+<div class="d-flex align-items-center gap-2 mb-3" data-testid="barre-navigation"
+     data-mode-plage="@(_modePlage ? "1" : "0")">
     <button type="button" class="btn btn-outline-secondary" data-testid="nav-semaine-precedente"
             @onclick="DemanderSemainePrecedente">&lsaquo; Semaine précédente</button>
     <button type="button" class="btn btn-outline-secondary" data-testid="nav-semaine-suivante"
             @onclick="DemanderSemaineSuivante">Semaine suivante &rsaquo;</button>
     <button type="button" class="btn btn-outline-primary" data-testid="nav-aujourdhui"
             @onclick="DemanderRetourAujourdhui">Aujourd'hui</button>
+
+    @* Sélection de plage (Sc.5) : déclencheur d'écriture par INTERVALLE, gardé EstParent (gating règle 9
+       mutualisé avec le menu clic-case — c'est ce gate partagé que Sc.7 caractérise : l'Invité ne voit même
+       pas ce bouton). Une fois actif, cliquer la case de début puis la case de fin ouvre l'affectation
+       pré-remplie sur l'intervalle. La grille reste lecture seule : le mode ne fait que sélectionner. *@
+    @if (Session.EstParent)
+    {
+        <button type="button" class="btn @(_modePlage ? "btn-primary" : "btn-outline-primary") ms-auto"
+                data-testid="mode-plage" @onclick="BasculerModePlage">
+            @(_modePlage ? "Annuler la sélection de plage" : "Sélectionner une plage")
+        </button>
+    }
 </div>
+
+@if (_modePlage)
+{
+    <div class="alert alert-info py-2" data-testid="indice-mode-plage" role="status">
+        @(_plageDebut is null
+            ? "Sélection de plage : cliquez la première case, puis la dernière."
+            : "Sélection de plage : cliquez la dernière case de l'intervalle.")
+    </div>
+}
 
 <section class="grille-agenda" data-testid="grille-agenda">
     <div class="grille-entete">
@@ -104,7 +126,8 @@
         <div class="grille-semaine">
             @foreach (var jourCase in semaine.Jours)
             {
-                <div class="grille-jour @(Session.EstParent ? "grille-jour-cliquable" : null)" data-testid="jour-case"
+                <div class="grille-jour @(Session.EstParent ? "grille-jour-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-jour-selectionnee" : null)"
+                     data-testid="jour-case"
                      data-couleur="@jourCase.CouleurResponsable"
                      style="background-color:@Teinte(jourCase.CouleurResponsable);"
                      @onclick="@(() => OuvrirMenu(jourCase.Date))">
@@ -162,6 +185,7 @@
 @if (_dateDialogAffecterPeriode is { } dateAffecter)
 {
     <AffecterPeriodeDialog DateContexte="dateAffecter"
+                           DateFinContexte="_plageFin"
                            OnValide="FermerDialogEtRecharger"
                            OnAnnule="FermerDialog" />
 }
@@ -179,6 +203,7 @@
     .grille-entete-jour { font-weight: 600; text-align: center; color: #555; padding: 2px 0; }
     .grille-jour { min-height: 90px; border: 1px solid #dee2e6; border-radius: 4px; padding: 4px; display: flex; flex-direction: column; gap: 4px; }
     .grille-jour-cliquable { cursor: pointer; }
+    .grille-jour-selectionnee { outline: 3px solid #0d6efd; outline-offset: -3px; }
     .menu-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.3); display: flex;
                      align-items: center; justify-content: center; z-index: 1040; }
     .menu-panneau { background: #fff; border-radius: 6px; padding: 16px; width: min(320px, 90vw);
