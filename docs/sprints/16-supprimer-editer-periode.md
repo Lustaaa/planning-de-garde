@@ -1,6 +1,6 @@
 # Sprint 16 — Supprimer une période depuis le menu clic-case (`supprimer-editer-periode`)
 
-> **Avancement : 8/10 ⏳**
+> **Avancement : 9/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -12,7 +12,7 @@
 | 6 | Menu clic-case → dialog liste les périodes → supprimer → grille relue + accusé | 🖥️ @ihm | ✅ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ✅ |
 | 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ✅ |
-| 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
+| 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ✅ |
 | 10 | Temps réel : la suppression propage grille + légende sans rechargement | 🖥️ @ihm | ⏳ |
 
 ---
@@ -203,7 +203,7 @@ Scenario: En consultation seule, aucune suppression de période n'est proposée
   Et la période de "Nounou" reste inchangée
 ```
 
-### Scenario 9 — API injoignable : la dialog reste ouverte, rien n'est appliqué `@ihm` `@pending`
+### Scenario 9 — API injoignable : la dialog reste ouverte, rien n'est appliqué `@ihm` `@vert`
 
 > Échec clair règle 28, registre acquis ; aucune mise en file ni rejeu (PWA = palier ultérieur).
 
