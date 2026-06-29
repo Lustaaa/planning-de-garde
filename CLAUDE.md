@@ -4,8 +4,8 @@ App de planning de garde d'enfants partagé entre parents/intervenants. Pilotée
 
 ## Source de vérité
 
-- **Produit** : `README.md` (pitch) · spec vivante versionnée `docs/NN-specification.md` (courante = la plus haute, **v10**). Les versions antérieures restent figées en historique.
-- **Backlog** : `docs/BACKLOG.md` (fait / à faire, séquence des paliers).
+- **Produit** : `README.md` (pitch) · spec vivante **éclatée par sujet** sous `docs/specs/` (index navigable `docs/specs/index.md`), éditée **en diff**. Migration en cours : tant qu'un sujet n'y est pas découpé, la source figée reste `docs/15-specification.md` (dernière monolithique). Les `docs/NN-specification.md` restent figées en historique.
+- **Backlog** : `docs/BACKLOG.md` (backlog produit **vivant** : retours persistants fait / à faire, source des goals candidats).
 - **Pipeline / méthode** : `README-claude.md` (cycle de sprint, étages, conventions de relais).
 
 ## Architecture (Clean / hexagonale, DDD + CQRS)
@@ -24,7 +24,7 @@ Règles d'or : le front n'appelle jamais le domaine en direct (tout passe par l'
 
 ## Tests
 
-3 projets : `PlanningDeGarde.Tests` (domaine/app), `Api.Tests`, `Web.Tests`. Non-régression = **suite COMPLÈTE verte (161/161)** via `dotnet test` **sans `--no-build` ni filtre, Docker actif** (pivot Mongo). Outil compact : `.claude/.../test-count.ps1`.
+3 projets : `PlanningDeGarde.Tests` (domaine/app), `Api.Tests`, `Web.Tests`. Non-régression = **suite COMPLÈTE verte (161/161)** via `dotnet test` **sans `--no-build` ni filtre, Docker actif** (pivot Mongo). Skill `dotnet` (JSON compact) : `pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1` (aussi `build.ps1`, `restore.ps1`).
 
 ## Lancer l'app
 
@@ -32,11 +32,13 @@ Skill `run` (script `run.ps1`) : démarre `Api` détaché puis le front `Web` WA
 
 ## Pipeline de sprint (relais pur)
 
-Le thread principal **ne raisonne pas** : il dispatche des subagents et relaie via `AskUserQuestion`. Boucle : `/1-spec` → `/2-make-gherkin` → `/3-tdd-implement` (+ gate visuel) → `/4-retours` → `/5-consolidation` → `/6-cloture-sprint` → reboucle `/2`.
+Le thread principal **ne raisonne pas** : il dispatche des subagents et relaie via `AskUserQuestion`. Boucle : **`/planning` → `/sprint` → `/cloture` → reboucle `/planning`**.
 
-- **Backend d'abord, IHM en fin** : scénarios s'arrêtent à la frontière Application ; IHM Blazor + SignalR réel = phase finale (`ihm-builder`).
-- **Portes PO (2 seules)** : **G2** sprint goal, **G3** gate visuel. + git sortant confirmé. Tout le reste tranché par le **chef de projet (CP)**, décisions journalisées dans `99-sprint<NN>-retours.md`.
-- Suivi : `docs/sprints/<sujet>/00-sprint<NN>-suivi.md` + un `NN-slug.md` par scénario (⏳/🔴/✅).
+- **3 agents** : `scrum-master` (décision + orchestration méthode, ex-CP ; chapeaux planning / décision / clôture), `dev-team` (seul à coder : TDD/DDD/BDD/CQRS/hexa, backend puis IHM), `architecte` (**hors-sprint**, bypass méthodo, fait exactement la consigne technique du PO puis resynchronise la doc ; exclusif avec `dev-team`).
+- **Backend d'abord, IHM en fin** : scénarios `@back` s'arrêtent à la frontière Application ; scénarios `@ihm` menés RED→GREEN runtime ; IHM restante en phase finale.
+- **Portes PO (2 seules)** : **G2** sprint goal (3-4 goals candidats proposés par le SM depuis le backlog), **G3** gate visuel. + git sortant confirmé. Tout le reste tranché par le **`scrum-master`**.
+- **1 fichier par sprint** `docs/sprints/NN-<slug>.md` : **tableau d'avancement en tête** (X/N, ⏳/🔴/✅) + scénarios Gherkin + section retours. Plus de dossier de suivi ni de fichier-par-scénario.
+- **Rétro méthode conditionnelle** : seulement si friction réelle → un edit pipeline + 1 ligne dans `docs/sprints/JOURNAL-METHODE.md` (« amélioration ou rien »).
 - **Acceptation runtime obligatoire** (rempart anti vert-qui-ment) : prouver sur câblage réel / store réel, pas par doublures.
 
 ## Conventions
@@ -47,4 +49,4 @@ Le thread principal **ne raisonne pas** : il dispatche des subagents et relaie v
 
 ## État courant
 
-Spec **v10** livrée jusqu'au **palier 5** (config foyer persistante : ajout d'acteurs + Mongo). Refacto technique hors-pipeline **faite** (PR #21 mergée : adaptateurs droite par techno, SignalR adaptateur gauche, rangement par type, pipeline allégé). **Prochain sujet = palier 6, récurrence des périodes**, via `/2-make-gherkin` sur `docs/10-specification.md`.
+Pipeline **refondu** (branche `ia-refactor/refonte-pipeline-agile`) : 6 commands → 3 (`/planning`, `/sprint`, `/cloture`), ~10 agents → 3 (`scrum-master`, `dev-team`, `architecte`), skill `dotnet` ajouté, ancien pipeline archivé sous `.claude/_archive/`. Design : `docs/superpowers/specs/2026-06-29-refonte-pipeline-agile-design.md`. **Reste à faire** : migrer `docs/15-specification.md` vers `docs/specs/` par sujet (au fil des sprints), puis reprendre la boucle via `/planning`. Dernier produit livré = palier 14 (calendrier navigable + persistance Mongo).
