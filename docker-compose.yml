@@ -1,7 +1,36 @@
-# Mongo pour la config foyer persistante (sprint 09, pivot durabilité Sc.3).
-# SEULE la configuration du foyer (référentiel acteurs : noms, couleurs, acteurs ajoutés)
-# est persistée ici ; slots / périodes / transferts restent InMemory (borne anti-cliquet,
-# règle 30). Démarré via Docker (contrainte PO) : `docker compose up -d mongo`.
+# Orchestration complète de planning-de-garde en conteneurs (hors pipeline de sprint).
+#
+# Trois services, images dotnet officielles, SOURCE MONTÉE (pas de Dockerfile — choix assumé :
+# itération rapide, moins reproductible qu'une image figée) :
+#   - mongo : store de la config foyer durable (acteurs : noms, couleurs, ajouts). SEULE donnée
+#             persistée (borne anti-cliquet règle 30 ; slots/périodes/transferts restent InMemory).
+#   - mongo-express : IHM web d'inspection des collections Mongo (http://localhost:8081).
+#   - build : étape one-shot. Restaure puis builde Api PUIS Web SÉQUENTIELLEMENT (une seule passe,
+#             aucune concurrence) → évite la race CS2012 (« used by another process ») observée
+#             quand deux hôtes recompilent en parallèle Domain.dll/Application.dll partagés.
+#   - api   : hôte d'API détaché (Kestrel :5180). Démarre APRÈS build (--no-build) et mongo.
+#   - web   : front Blazor WASM via le dev server (:5292). Démarre APRÈS build (--no-build).
+#
+# ISOLATION des binaires : tout passe par `--artifacts-path /artifacts` (volume nommé) → les bin/obj
+# du conteneur Linux NE polluent PAS les bin/obj de l'hôte Windows (et réciproquement). La source est
+# montée en LECTURE SEULE : aucune écriture conteneur ne fuit dans l'arbre de travail.
+#
+# Ports host = ports du run local (skill `run`) → `Api:BaseUrl` (http://localhost:5180/, figé dans
+# wwwroot/appsettings.json) et l'origine CORS (http://localhost:5292) restent alignés, zéro dérive.
+# Le front s'exécute dans le navigateur de l'HÔTE : il joint l'API via localhost:5180 (port publié).
+#
+# Lancement :  docker compose up           (build une fois, puis api + web)
+# Mongo seul:  docker compose up -d mongo   (pour un run local via le skill `run`)
+# Arrêt     :  docker compose down          (ajouter -v pour vider mongo + caches)
+
+x-dotnet-common: &dotnet-common
+  image: mcr.microsoft.com/dotnet/sdk:10.0
+  working_dir: /src
+  volumes:
+    - ./:/src:ro                    # source en LECTURE SEULE (sorties redirigées vers /artifacts)
+    - build-artifacts:/artifacts    # bin/obj isolés de l'hôte (clés par projet via --artifacts-path)
+    - nuget-cache:/nuget
+
 services:
   mongo:
     image: mongo:7
@@ -11,5 +40,79 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  # IHM d'inspection des collections Mongo (config foyer durable). Web UI sur http://localhost:8081.
+  # Auth basique désactivée (usage local). Atlas n'est PAS conteneurisable (service cloud) → mongo-express.
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: planning-de-garde-mongo-express
+    depends_on:
+      mongo:
+        condition: service_started
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_BASICAUTH: "false"
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
+
+  # Étape de build SÉQUENTIELLE (Api puis Web) — restaure depuis nuget.org seul (nuget.docker.config,
+  # sans la source offline Windows de nuget.config qui n'existe pas en Linux). Se termine puis libère
+  # api/web (depends_on: service_completed_successfully).
+  build:
+    <<: *dotnet-common
+    environment:
+      NUGET_PACKAGES: /nuget          # cache paquets NuGet partagé (volume) → restauration rapide
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        cfg="--configfile nuget.docker.config --artifacts-path /artifacts"
+        dotnet restore src/PlanningDeGarde.Api/PlanningDeGarde.Api.csproj $$cfg
+        dotnet build   src/PlanningDeGarde.Api/PlanningDeGarde.Api.csproj --no-restore --artifacts-path /artifacts
+        dotnet restore src/PlanningDeGarde.Web/PlanningDeGarde.Web.csproj $$cfg
+        dotnet build   src/PlanningDeGarde.Web/PlanningDeGarde.Web.csproj --no-restore --artifacts-path /artifacts
+
+  api:
+    <<: *dotnet-common
+    depends_on:
+      build:
+        condition: service_completed_successfully
+      mongo:
+        condition: service_started
+    environment:
+      NUGET_PACKAGES: /nuget
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5180          # bind 0.0.0.0 (sinon localhost interne au conteneur, injoignable)
+      Foyer__Persistance: Mongo               # config foyer DURABLE
+      Foyer__Mongo__ConnectionString: mongodb://mongo:27017
+      Front__Origine: http://localhost:5292   # origine CORS du front (navigateur hôte)
+    ports:
+      - "5180:5180"
+    command: >-
+      dotnet run --project src/PlanningDeGarde.Api/PlanningDeGarde.Api.csproj
+      --no-build --no-restore --no-launch-profile --artifacts-path /artifacts
+
+  web:
+    <<: *dotnet-common
+    depends_on:
+      build:
+        condition: service_completed_successfully
+    environment:
+      NUGET_PACKAGES: /nuget
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:5292          # dev server WASM, bind 0.0.0.0
+    ports:
+      - "5292:5292"
+    command: >-
+      dotnet run --project src/PlanningDeGarde.Web/PlanningDeGarde.Web.csproj
+      --no-build --no-restore --no-launch-profile --artifacts-path /artifacts
+
 volumes:
   mongo-data:
+  build-artifacts:
+  nuget-cache:
