@@ -169,7 +169,7 @@ Scenario: Une navigation qui échoue laisse la fenêtre courante inchangée
 
 ### Scenario 7 — Sélection de plage indisponible en consultation seule
 
-`@erreur`
+`@erreur` `@vert`
 
 ```gherkin
 Scenario: Un Invité navigue librement mais ne peut affecter aucune période par plage

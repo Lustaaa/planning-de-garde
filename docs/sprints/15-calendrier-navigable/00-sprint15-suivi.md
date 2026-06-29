@@ -74,7 +74,7 @@
 | 4 | [Retour à la semaine en cours après navigation](04-retour-aujourdhui.md) | `@limite` 🖥️ IHM · ⚠️ early green (câblage nav Sc.1) · runtime `ihm-builder` | ✅ GREEN | 1/1 | ✅ GREEN |
 | 5 | [Affecter une période sur une plage de 2 cases contiguës](05-affecter-periode-plage.md) | `@nominal` 🖥️ IHM · driver front (write = `AffecterPeriode` early green) · runtime `ihm-builder` | ✅ GREEN | 2/2 | ✅ GREEN |
 | 6 | [API distante injoignable pendant la navigation](06-api-injoignable-navigation.md) | `@erreur` 🖥️ IHM · driver front · runtime `ihm-builder` | ✅ GREEN | 1/1 | ✅ GREEN |
-| 7 | [Sélection de plage indisponible en consultation seule](07-invite-plage-indisponible.md) | `@erreur` 🖥️ IHM · ⚠️ early green (gate `EstParent` + trigger Sc.5) · runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
+| 7 | [Sélection de plage indisponible en consultation seule](07-invite-plage-indisponible.md) | `@erreur` 🖥️ IHM · ⚠️ early green (gate `EstParent` + trigger Sc.5) · runtime `ihm-builder` | ✅ GREEN | 1/1 | ✅ GREEN |
 | 8 | [Premier lancement sur store Mongo vierge : application vide](08-premier-lancement-mongo-vide.md) | `@limite` · backend **intégration Mongo réel** (`MongoRequisFact`) | ✅ GREEN | 1/1 | ✅ GREEN |
 | 9 | [Chaque item du domaine survit au redémarrage (Mongo)](09-item-survit-redemarrage-mongo.md) | `@nominal` · backend **intégration Mongo réel** — boucle externe (4 adaptateurs) | ✅ GREEN | 4/4 | ✅ GREEN |
 
