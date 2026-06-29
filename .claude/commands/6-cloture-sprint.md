@@ -37,6 +37,13 @@ Argument (optionnel) : $ARGUMENTS — nom du sprint (sinon déduit du dernier
      d'un gate). Relaie la sélection (décision CP ou réponse PO) à l'agent via `SendMessage`,
      puis ordonne d'**appliquer** les actions retenues et d'écrire `98-retrospective.md`.
      Chaque action auto-appliquée par le CP est **journalisée** (pilotage a posteriori du PO).
+     > **⚠️ Garde Self-Modification (vécu s13 + s14).** L'**application** des éditions ciblant
+     > `.claude/` (agents/skills/commands) est **bloquée pour les subagents** même quand la
+     > priorisation vient du CP : le garde n'accepte pas la délégation CP pour l'auto-modification
+     > du pipeline. La **priorisation reste CP** (tweaks faible risque) mais l'**écriture effective
+     > sur `.claude/` exige l'autorisation PO directe** — c'est le **thread principal** qui applique
+     > les éditions une fois cet aval obtenu (le subagent `retro-sprint` ne fait que les préparer :
+     > cibles + contenu exact). Ne pas redécouvrir ce protocole à chaque rétro.
      - **Fallback** : type `retro-sprint` absent du registre → `general-purpose` avec
        « applique le skill `retro-sprint`, section *Mode agent (orchestré)* » + le dossier
        du sprint + les frictions. Pas d'inline.

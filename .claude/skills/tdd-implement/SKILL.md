@@ -282,6 +282,11 @@ qui le mène en **vrai cycle RED→GREEN** :
 > async). Documente le prérequis Docker de la suite « TempsReel ». Vise un rouge
 > **déterministe** (reproductible ≥3× Docker actif), pas dépendant du timing réseau.
 >
+> **Réentrance du renderer bUnit — n'interagis pas pendant la pompe de diffusion.** Ne déclenche
+> pas une interaction réentrante (`@onclick`, clic-menu, clic-case) PENDANT que la pompe de diffusion
+> tourne : arrête d'abord la pompe (ou attends son drain), PUIS interagis — sinon stack overflow par
+> réentrance du renderer (vécu s14 Sc.5).
+>
 > **Balayage runtime après composant partagé.** Après un fix touchant un composant partagé
 > (read model / légende, port commun, énumération de store, type partagé), relance
 > **nommément la suite runtime `Web.Tests` existante** avant le commit : une régression

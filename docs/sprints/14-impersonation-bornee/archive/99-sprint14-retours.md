@@ -218,3 +218,38 @@ cœur → concurrence → gating cuttable.
 **Sources.** `docs/sprints/14-impersonation-bornee/00-sprint14-suivi.md` (cadrage scaffolding,
 table des 6 scénarios, routage runtime, cascade early-green) ; `docs/14-specification.md` (palier 8
 tranche 2, règles 8/9/6/18/19/30, borne anti-cliquet) ; décisions D1/D2/D3 (ce fichier).
+
+## D5 — Rétro méthode s14 : retenir les 4 tweaks doc (application restant sous aval PO direct)
+
+**Contexte.** Priorisation des actions rétro méthode s14 (palier 0). Quatre tweaks doc `.claude/`,
+issus du vécu s14 (obs IA, ce fichier, lignes 50–52) : (1) `ihm-builder.md` + `tdd-implement` —
+règle « pas d'interaction réentrante pendant la pompe de diffusion » (stack overflow Sc.5) ;
+(2) `ihm-builder.md` — préciser rétrofit P2 = convergence SignalR multi-clients (distincte de la
+course d'énumération déjà gardée s13 A1) ; (3) `6-cloture-sprint.md` + skill `retro-sprint` —
+documenter que l'application des éditions `.claude/` exige l'aval PO direct (garde Self-Modification,
+pas délégable au CP) ; (4) `tdd-analyse.md` — acter le positif (cascade early-green s13 A2 confirmée
+s14).
+
+**Décision.** **Les 4 sont RETENUES** comme candidates d'application. Aucune n'est structurelle :
+ce sont des tweaks doc conservateurs, **zéro suppression de gate, zéro refonte d'agent**, chacune
+adossée à un fait s14 (bug réentrance Sc.5, flake P2 convergence, garde Self-Modification, preuve
+A2). **Réserve d'exécution :** l'**application matérielle** des éditions `.claude/` n'est **pas**
+tranchée par le CP — l'action #3 codifie elle-même que la garde **Self-Modification** réserve ces
+écritures à l'**aval PO direct**. Ma décision porte donc sur la **curation/séquencement**
+(les 4 valent l'application) ; les écritures se font **sous aval PO direct**.
+
+**Rationale.**
+- **Curation rétro = décision CP déléguée**, pas porte PO : retenir/écarter/séquencer des actions
+  rétro depuis le backlog méthode relève du CP. Aucun trou métier (G1 = valeur produit) en jeu.
+- **Palier 0 respecté** : aucune des 4 ne touche un gate ni ne refond un agent ; toutes sont des
+  précisions de convention adossées à un vécu tracé → risque minimal, valeur de mémoire élevée.
+- **Auto-cohérence avec l'action #3** : appliquer moi-même les éditions `.claude/` contredirait la
+  garde Self-Modification que #3 vient documenter. Je sépare donc explicitement *retenir* (CP) de
+  *appliquer* (PO direct) — le round-trip remonte au thread principal pour aval PO.
+- **#4 (acter le positif) n'est pas cosmétique** : tracer que A2 a payé (cascade early-green bien
+  prédite s14 vs 3 escalades parasites s11) protège l'acquis contre une régression méthode future.
+
+**Sources.** Ce fichier, § IA (lignes 50–52, obs s14 : early-green A2, réentrance renderer,
+dette P2 convergence SignalR) ; CLAUDE.md (« Portes PO (2 seules) G2/G3, reste tranché par le CP,
+décisions journalisées ») ; garde Self-Modification (aval PO direct pour éditions `.claude/`,
+objet de l'action #3).

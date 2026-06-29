@@ -53,6 +53,15 @@ nouvelle spec.
    numérotation continue) + le blockquote de version sous le titre, puis renvoie le JSON
    de confirmation.
 
+> **⚠️ Concision impérative (retour PO s14 : v15 = 665 lignes, trop).** La spec vivante décrit
+> l'**état courant** de façon **dense et scannable**, PAS un cumul historique. À chaque
+> consolidation, **élague autant que tu ajoutes** : fusionne les règles redondantes, supprime les
+> justifications/exemples/rationales devenus inutiles (l'historique vit dans les versions figées),
+> coupe les blockquotes verbeux et les redites entre sections. **Une règle = 1–3 phrases** ; pas de
+> paragraphe d'exégèse. **Cible : nettement sous ~300 lignes** ; si tu dépasses, c'est que tu
+> accumules au lieu de consolider — reprends et coupe. Garder la substance (les règles, le pourquoi
+> en une ligne), couper le reste.
+
 ## Anti-règles
 
 - **Ne PAS modifier l'ancienne version** de spec — elle reste figée. Tu écris

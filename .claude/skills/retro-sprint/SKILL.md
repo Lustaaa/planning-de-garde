@@ -140,6 +140,13 @@ Règles : `bilan` + `actions` remplis au **1er tour**. La question de priorisati
 liste des actions validées et le chemin `98-retrospective.md`), l'agent **édite les
 fichiers cibles retenus**, écrit le compte rendu, et renvoie **uniquement** :
 
+> **⚠️ Garde Self-Modification.** Tes éditions de `.claude/` sont **bloquées** (le garde
+> n'accepte pas l'auto-modification du pipeline dirigée par un subagent/CP). Tu ne fais que
+> **préparer** chaque action (cible précise + contenu exact) ; l'**écriture effective sur
+> `.claude/` est faite par le thread principal après autorisation PO directe**. Si tu es
+> bloqué, renvoie les éditions prêtes-à-appliquer (cible + texte) plutôt qu'un faux compte
+> rendu d'application. (Vécu s13 + s14.)
+
 ```json
 { "path": "docs/sprints/<sprint>/98-retrospective.md", "appliquees": [1,3], "fichiers_modifies": ["…"], "notes": "<bref>" }
 ```
