@@ -29,24 +29,24 @@
 | 11 | `ecriture-en-contexte` — **écriture en contexte par dialogs** : menu au clic sur une case du planning → dialogs « Poser un slot » / « Affecter une période » pré-remplies sur la **date de la case** ; échec → dialog reste ouverte (message dans la dialog) ; annulation sans écriture ; gating Invité sur le menu ; chevauchement accepté + **bandeau d'avertissement non bloquant** ; **écrans dédiés slot/période retirés** (un seul chemin d'écriture) | ✅ fait | `PoserSlotDialog` + `AffecterPeriodeDialog` + menu clic-case dans `PlanningPartage` + ancrage `DateContexte` (prime sur `IDateTimeProvider`) + avertissement surfacé par le contrat de réponse du canal poser-slot (`PoserSlotReponse`) + suppression des pages/routes/liens poser-slot/affecter-periode (page `definir-transfert` conservée) (7 scénarios @vert runtime, 179 verts) — **palier 7 (écriture en contexte, dialogs) refermé** |
 | 12 | `transfert-en-contexte` — **3e dialog « Définir un transfert » en contexte** (menu clic-case, pré-remplie sur la date de la case ; échec → dialog reste ouverte ; annulation sans écriture ; gating Invité) **+ retrait du dernier écran de saisie dédié** (page/route/lien `definir-transfert` supprimés) | ✅ fait | `DefinirTransfertDialog` + 3e entrée menu clic-case + accusé « Transfert défini » à part + ancrage `DateContexte` + réutilise commande/handler `DefinirTransfert` + canal HTTP + SignalR (aucun handler neuf, transfert reste InMemory) + suppression page/route/lien dédiés (6 scénarios @vert runtime, 182 verts) — **palier 7 (écriture en contexte) refermé COMPLET, épic É12 fermé** |
 | 13 | `crud-acteurs-suppression` — **suppression d'un acteur** (Delete) sur store Mongo réel + **neutralisation par repli** des cases orphelines (surcharge orpheline → fond → neutre, sans nom fantôme), idempotence, accusé non bloquant « Acteur supprimé » ; IHM bouton supprimer + gating Invité + échec API + temps réel SignalR | ✅ fait | `SupprimerActeurHandler` + port `IEditeurConfigurationFoyer.Supprimer` (InMemory + Mongo) + endpoint `POST /api/canal/supprimer-acteur` + filtre d'existence `Resolvable()` dans `GrilleAgendaQuery` (case + légende, réutilise `IEnumerationActeursFoyer`) + bouton/gating/échec/temps réel dans `ConfigurationFoyer` (9 scénarios @vert, 196 verts, intégration Mongo réel) — **palier 8 tranche 1 (suppression) refermé, cycle de vie acteurs C/R/U/D complet** |
+| 14 | `impersonation-bornee` — **impersonation bornée lecture seule** : incarner un acteur déjà déclaré (bandeau « Vous incarnez X »), vue selon le rôle de l'**identité effective** (gating règle 9 piloté par l'incarné), retour identité réelle, retour AUTO sur suppression concurrente (repli règle 6 + SignalR), pas d'écriture « au nom de », **durcissement complet du gating config** ; type d'acteur read-only depuis le seed, zéro persistance neuve | ✅ fait | `SessionPlanning` identité réelle/effective (`Incarner`/`RevenirIdentiteReelle`, `EstParent` dérivé de l'effective) + `TypeActeur` surfacé read-only via `IEnumerationActeursFoyer.TypeDe` + bandeau/sélecteur dans `PlanningPartage` + gating effectif grille & config (6 scénarios @vert runtime, 214 verts) — **palier 8 tranche 2 (impersonation lecture) refermé, palier 8 clos côté usage** |
 
 > **Refacto technique HORS pipeline (PR #21, avant s10) : faite** — adaptateurs de droite par techno, `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, outil `test-count.ps1`. Critère de sortie 161/161 tenu.
 
 ## En cours
 
-| Sprint | Sujet | Palier (spec v14) | Statut |
+| Sprint | Sujet | Palier (spec v15) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours — prochain : impersonation bornée, cf. ci-dessous)* | 8 tranche 2 (impersonation bornée, spec v14) | ⬜ |
+| — | *(aucun sprint en cours — prochain : calendrier navigable, cf. ci-dessous)* | 9 (calendrier navigable, spec v15) | ⬜ |
 
 ## Prochains sprints envisagés
 
-> **Décision PO (clôture s13, porte G2)** : prochain sujet **make-gherkin** = **impersonation bornée** (É10+É2) : l'admin/parent configurateur **incarne un acteur déjà déclaré** (convenance d'admin), **borne dure** = PAS l'auth réelle (palier 13 : pas d'OAuth/comptes/sessions/prise en main, aucune persistance neuve tirée) ; périmètre exact (lecture seule vs écriture « au nom de », sortie/retour identité) cadré au make-gherkin. Ferme la boucle cycle de vie acteurs (C/R/U/D livrés au s13). **Candidat adjacent** : durcissement du gating config (règle 9 — angle mort Sc.7 s13 : l'écran config ne gate l'Invité que sur le bouton supprimer ; ajout/édition/cycle restent ouverts), à confirmer au make-gherkin. Retours produit s13 VIDE (goal 9/9 atteint) → pilotage au catalogue. Indicatif — confirmé/affiné au démarrage de chaque sprint.
+> **Décision PO (clôture s14, porte G2)** : prochain sujet **make-gherkin** = **calendrier navigable** (É4+É7) : navigation passé/futur (semaines préc./suiv., vues prédéfinies) + amorce sélection de plage de cases pour définir une période. Suite d'usage naturelle après la tranche acteurs (palier 8 clos). **Steer** (orientation, non figé) : plus petit incrément = navigation seule ; la sélection de plage est un sujet plein cuttable en tranche 2 si ça déborde ~2h ; périmètre exact tranché au make-gherkin (CP option 1, corollaire de découpe). Retours produit s14 VIDE (goal 6/6 atteint) → pilotage au catalogue.
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +1 (P1) | **Impersonation bornée** (admin incarne un acteur déjà déclaré, convenance — pas l'auth réelle du palier 13) ; candidat adjacent = durcissement gating config (règle 9) | É10, É2 | Sujet d'usage élu G2 PO clôture s13 ; dernier maillon du cycle de vie acteurs (C/R/U/D livrés s13), contexte chaud (écran config) |
-| +2 (P2) | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) + **sélection de plage de cases** pour définir une période | É4, É7 | Prochain palier d'usage après la tranche acteurs ; besoin ancien (retours s02/s03) |
-| +3 | **Rétrofit complet du garde déterministe *TempsReel* SignalR** (helper `WaitForState` posé partiellement au s13 ; généraliser à tous les `*TempsReel*` config/grille) — **dette de test**, prérequis de l'édition concurrente | É3 | Déverrouille l'édition concurrente sans driver une fondation temps-réel instable |
+| +1 (P1) | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) + amorce **sélection de plage de cases** pour définir une période | É4, É7 | Sujet d'usage élu G2 PO clôture s14 ; besoin ancien (retours s02/s03), referme l'usage calendrier après la tranche acteurs |
+| +2 | **Rétrofit complet du garde déterministe *TempsReel* SignalR** — cibler la **convergence SignalR multi-clients** (distincte de la course d'énumération déjà gardée s13) ; flake 1/30 persistant — **dette de test**, prérequis de l'édition concurrente | É3 | Déverrouille l'édition concurrente sans driver une fondation temps-réel instable |
 | +4 | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — DIFFÉRÉE jusqu'à stabilisation SignalR | É7 | Cas limite runtime ; dépend du +3 |
 | +5 | **Cycle de fond riche** : choisir le début/ancre + config fine (frontière de jour, plage début/fin, sur-cycle vacances, WE-only). Sujet plein — rouvre la décision CP « ancrage ISO sans ancre » | É7, É1 | Retour PO /configuration s10 |
 
@@ -181,6 +181,7 @@
 
 | Besoin | Statut | Sprint/Palier | Origine |
 |--------|:------:|---------------|---------|
+| **Impersonation bornée LECTURE** (incarner un acteur déjà déclaré, convenance admin, vue selon rôle effectif, retour auto sur suppression concurrente — PAS l'auth réelle) | ✅ | s14 / Palier 8 tr.2 | spec v15 règle 8 · G2 PO s13 |
 | Landing page (identifie le foyer, invite à s'authentifier) | ⬜ | Palier 13 | retours s01 (#2) · spec p8 |
 | Authentification OAuth (Gmail / Apple / Microsoft) | ⬜ | Palier 13 | retours s01 (#2) · spec p8 |
 | Gestion des sessions utilisateur (persistance, logout) | ⬜ | Palier 13 | spec p8 |
@@ -212,13 +213,13 @@
 
 ---
 
-## À faire (paliers de la spec vivante v14)
+## À faire (paliers de la spec vivante v15)
 
 > Vue de séquencement (ordre de livraison). Chaque palier agrège des besoins des épics.
-> Numérotation alignée sur la **séquence de livraison de v14** : palier 7
-> (écriture-en-contexte) **livré complet** ; **palier 8 = CRUD acteurs** — tranche 1
-> **suppression livrée (s13)**, tranche 2 **impersonation bornée = prochain sujet** ;
-> **palier 9 = Calendrier navigable** ; paliers suivants décalés d'un cran. Les sujets
+> Numérotation alignée sur la **séquence de livraison de v15** : palier 7
+> (écriture-en-contexte) **livré complet** ; **palier 8 = CRUD acteurs** — suppression
+> (s13) **+ impersonation lecture (s14) LIVRÉS, palier clos côté usage** ;
+> **palier 9 = Calendrier navigable = PROCHAIN SUJET** ; paliers suivants décalés d'un cran. Les sujets
 > techniques (persistance réelle du reste du domaine, PWA) sont séquencés **derrière
 > l'usage** (arbitre : l'usage tranche), Docker en garde-fou d'outillage.
 
@@ -231,8 +232,8 @@
 | 5 | **Config foyer PERSISTANTE** — **ajout/édition d'acteurs** (parent/autre/nounou, id stable neuf) **+ persistance Mongo BORNÉE à la config foyer** (adaptateur de droite, ports inchangés) ; survit au redémarrage. Reste du domaine InMemory | É2, É1, É3 | spec v09 règle 6 · besoins s08 (G2 PO, révision d'arbitre bornée) | ✅ s09 |
 | 6 | **Récurrence des périodes** (cycle de fond définissable/éditable, alternance parité ISO, EN MÉMOIRE) | É7, É1 | spec v09 règle 10 · besoins s07/s08 (IMPORTANT) | ✅ s10 |
 | 7 | **Écriture en contexte (dialogs)** — menu au clic sur une case → « Poser un slot » / « Affecter une période » / « Définir un transfert » pré-remplies sur la date de la case (échec/annulation/chevauchement/gating Invité), tous les écrans dédiés retirés | É6, É7, É8, É12 | spec v12 p7 · besoins s10/s11 | ✅ s11+s12 (refermé complet) |
-| 8 | **CRUD acteurs** — tranche 1 **suppression** (Delete d'un acteur, règle 6 + neutralisation par repli des cases orphelines) sur store Mongo réel **✅ s13** ; tranche 2 **impersonation bornée** = prochain make-gherkin (⬜) | É2, É1, É10 | spec v14 p8 · besoins s12/s13 (G2 PO) | 🟡 |
-| 9 | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) **+ sélection de plage de cases** pour définir une période | É4, É7 | spec v13 p9 · retours s02/s03 | ⬜ |
+| 8 | **CRUD acteurs** — suppression (Delete, repli orphelins) **✅ s13** + **impersonation bornée lecture** (incarner, vue selon rôle effectif, retour auto, gating config durci) **✅ s14** | É2, É1, É10 | spec v15 p8 · besoins s12/s13/s14 (G2 PO) | ✅ |
+| 9 | **Calendrier navigable** (passé/futur, vues prédéfinies semaine/mois/4-sem) **+ amorce sélection de plage de cases** pour définir une période — PROCHAIN SUJET (steer : navigation seule = plus petit incrément, plage cuttable tranche 2) | É4, É7 | spec v15 p9 · retours s02/s03 | ⬜ |
 | 9bis | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 | ⬜ |
 | 10 | Alimentation & saisie — **config foyer durable restante** (lieux, set couleurs, cycle de fond) + Admin/Parent/Autre, écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 | ⬜ |
 | 11 | Immédiat & événements à venir — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 | ⬜ |
