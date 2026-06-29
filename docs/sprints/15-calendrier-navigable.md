@@ -199,7 +199,7 @@ Scenario: Au tout premier lancement sur une base vierge, rien n'est seedé
 
 ### Scenario 9 — Chaque item du domaine survit au redémarrage (Mongo)
 
-`@nominal` — acceptation runtime sur **store réel** (rempart anti vert-qui-ment).
+`@nominal` `@vert` — acceptation runtime sur **store réel** (rempart anti vert-qui-ment).
 
 ```gherkin
 Scenario Outline: Un item saisi en mode Mongo persiste après redémarrage de l'hôte d'API

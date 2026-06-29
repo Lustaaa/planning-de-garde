@@ -31,6 +31,14 @@ public static class ServiceCollectionExtensions
         {
             var connectionString = configuration?["Foyer:Mongo:ConnectionString"] ?? "mongodb://localhost:27017";
             var baseDeDonnees = configuration?["Foyer:Mongo:Database"] ?? "planning_de_garde";
+
+            // DI généralisée (Sc.9, s15) : en mode Mongo, TOUT le domaine droite devient durable —
+            // chaque adaptateur Mongo write-through SURCHARGE l'enregistrement InMemory posé plus haut
+            // (dernière inscription gagne à la résolution). Les slots survivent au redémarrage de l'hôte.
+            services.AddSingleton<ISlotRepository>(_ => new MongoSlotRepository(connectionString, baseDeDonnees));
+            services.AddSingleton<IPeriodeRepository>(_ => new MongoPeriodeRepository(connectionString, baseDeDonnees));
+            services.AddSingleton<ITransfertRepository>(_ => new MongoTransfertRepository(connectionString, baseDeDonnees));
+
             // Singleton paresseux (créé au 1er résolu, pas au build) : la connexion + le seed-once
             // n'ont lieu qu'au premier usage, jamais au démarrage si la config Mongo est inerte.
             services.AddSingleton(_ => new ConfigurationFoyerMongo(connectionString, baseDeDonnees));
@@ -48,10 +56,17 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IEnumerationActeursFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
         }
 
-        // Cycle de fond (palier 6) : adaptateur InMemory singleton = source de vérité partagée du
-        // foyer, volatile (PAS Mongo — durabilité portée par un palier ultérieur, borne anti-cliquet
-        // règle 30). Réalise le port cycle (lecture par GrilleAgendaQuery, écriture par DefinirCycleHandler).
+        // Cycle de fond : adaptateur InMemory singleton par défaut (volatile) = source de vérité partagée
+        // du foyer ; réalise le port cycle (lecture par GrilleAgendaQuery, écriture par DefinirCycleHandler).
+        // En mode Mongo (Sc.9, s15), il est SURCHARGÉ par CycleDeFondMongo durable — le fond se re-résout
+        // après redémarrage de l'hôte.
         services.AddSingleton<IReferentielCycleDeFond, CycleDeFondEnMemoire>();
+        if (string.Equals(configuration?["Foyer:Persistance"], "Mongo", System.StringComparison.OrdinalIgnoreCase))
+        {
+            var connectionString = configuration?["Foyer:Mongo:ConnectionString"] ?? "mongodb://localhost:27017";
+            var baseDeDonnees = configuration?["Foyer:Mongo:Database"] ?? "planning_de_garde";
+            services.AddSingleton<IReferentielCycleDeFond>(_ => new CycleDeFondMongo(connectionString, baseDeDonnees));
+        }
 
         // Port temps réel réel (SignalR) — remplace le fake des scénarios.
         services.AddSingleton<INotificateurPlanning, SignalRNotificateurPlanning>();

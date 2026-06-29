@@ -76,7 +76,7 @@
 | 6 | [API distante injoignable pendant la navigation](06-api-injoignable-navigation.md) | `@erreur` 🖥️ IHM · driver front · runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 7 | [Sélection de plage indisponible en consultation seule](07-invite-plage-indisponible.md) | `@erreur` 🖥️ IHM · ⚠️ early green (gate `EstParent` + trigger Sc.5) · runtime `ihm-builder` | ⏳ Pending | 0/1 | ⏳ Pending |
 | 8 | [Premier lancement sur store Mongo vierge : application vide](08-premier-lancement-mongo-vide.md) | `@limite` · backend **intégration Mongo réel** (`MongoRequisFact`) | ✅ GREEN | 1/1 | ✅ GREEN |
-| 9 | [Chaque item du domaine survit au redémarrage (Mongo)](09-item-survit-redemarrage-mongo.md) | `@nominal` · backend **intégration Mongo réel** — boucle externe (4 adaptateurs) | ⏳ Pending | 0/4 | ⏳ Pending |
+| 9 | [Chaque item du domaine survit au redémarrage (Mongo)](09-item-survit-redemarrage-mongo.md) | `@nominal` · backend **intégration Mongo réel** — boucle externe (4 adaptateurs) | ✅ GREEN | 4/4 | ✅ GREEN |
 
 **Total** : 9 scénarios · **backend** : Sc.2 (4 unit `GrilleAgendaQuery`), Sc.3 (3 unit dont 1 driver + 2
 caractérisations), Sc.8 (1 intégration Mongo réel), Sc.9 (4 intégration Mongo réel, 1 par item) · **🖥️
