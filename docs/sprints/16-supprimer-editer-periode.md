@@ -1,12 +1,12 @@
 # Sprint 16 — Supprimer une période depuis le menu clic-case (`supprimer-editer-periode`)
 
-> **Avancement : 2/10 ⏳**
+> **Avancement : 3/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Supprimer une période la retire du store durable relu (+ redémarrage) | @back | ✅ |
 | 2 | Repli fond : la case retombe sur le responsable de fond (le cycle reprend) | @back | ✅ |
-| 3 | Repli neutre sans nom fantôme (index non résolu) | @back | ⏳ |
+| 3 | Repli neutre sans nom fantôme (index non résolu) | @back | ✅ |
 | 4 | Lister les périodes couvrant une date (alimente la dialog) | @back | ⏳ |
 | 5 | Idempotence : supprimer une période absente / déjà supprimée = no-op qui réussit | @back | ⏳ |
 | 6 | Menu clic-case → dialog liste les périodes → supprimer → grille relue + accusé | 🖥️ @ihm | ⏳ |
@@ -117,18 +117,18 @@ Scenario: Supprimer une période saisie fait retomber sa case sur le responsable
   Et la case du mardi 16 juin 2026 affiche "Parent A" et sa couleur
 ```
 
-### Scenario 3 — Repli neutre sans nom fantôme (index non résolu) `@back` `@pending`
+### Scenario 3 — Repli neutre sans nom fantôme (index non résolu) `@back` `@vert`
 
 ```gherkin
 Scenario: Supprimer une période sur un index de fond non mappé fait retomber sa case sur le neutre
   Étant donné un foyer dont le store durable comporte les acteurs "Parent A" et "Nounou"
   Et un cycle de fond de 2 semaines mappant l'index 0 sur "Parent A" et laissant l'index 1 non mappé
-  Et une période durable attribue le mardi 23 juin 2026 (semaine d'index 1) à "Nounou"
-  Et la case du mardi 23 juin 2026 affiche "Nounou"
-  Quand je supprime la période du mardi 23 juin 2026
+  Et une période durable attribue le mardi 16 juin 2026 (semaine ISO 25, index 1) à "Nounou"
+  Et la case du mardi 16 juin 2026 affiche "Nounou"
+  Quand je supprime la période du mardi 16 juin 2026
   Alors la suppression réussit
   Et l'index 1 du cycle n'étant ni mappé ni résolu, la case retombe sur la teinte neutre
-  Et la case du mardi 23 juin 2026 n'affiche aucun nom de responsable
+  Et la case du mardi 16 juin 2026 n'affiche aucun nom de responsable
 ```
 
 ### Scenario 4 — Lister les périodes couvrant une date alimente la dialog `@back` `@pending`
