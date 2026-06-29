@@ -125,16 +125,21 @@ public static class CanalEcriture
                 : Results.BadRequest(resultat.Motif);
         });
 
-        routes.MapPost("/api/canal/supprimer-periode", (SupprimerPeriodeRequete requete, SupprimerPeriodeHandler handler) =>
+        routes.MapPost("/api/canal/supprimer-periode",
+            (SupprimerPeriodeRequete requete, SupprimerPeriodeHandler handler, INotificateurPlanning notificateur) =>
         {
             var resultat = handler.Handle(new SupprimerPeriodeCommand(requete.PeriodeId));
 
             // Même convention que les autres écritures : succès acquitté (la période ne sera plus relue
             // depuis le store, la case se re-résout), refus métier renvoyé avec son motif. Idempotent :
-            // un identifiant absent / déjà supprimé réussit sans effet (Sc.5).
-            return resultat.EstSucces
-                ? Results.Ok()
-                : Results.BadRequest(resultat.Motif);
+            // un identifiant absent / déjà supprimé réussit sans effet (Sc.5). Sur succès, l'adaptateur de
+            // gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres écrans re-projettent la
+            // grille et la légende sans rechargement (Sc.10). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
         });
 
         routes.MapPost("/api/canal/definir-cycle", (DefinirCycleRequete requete, DefinirCycleHandler handler) =>
