@@ -15,4 +15,13 @@ public static class MessagesEcriture
     /// </summary>
     public const string ServiceInjoignable =
         "Enregistrement impossible : le service est injoignable, réessayez.";
+
+    /// <summary>
+    /// Affiché quand une <b>navigation du calendrier</b> échoue parce que l'API distante est
+    /// <b>injoignable</b> (Sc.6, règle 28) : la re-requête de la date naviguée n'a pas abouti. La fenêtre
+    /// affichée est <b>conservée</b> (l'ancre ne diverge pas) ; la navigation n'est <b>ni mise en file ni
+    /// rejouée</b> (le hors-ligne rejouable est un palier technique ultérieur, hors périmètre).
+    /// </summary>
+    public const string NavigationInjoignable =
+        "Navigation impossible : le service est injoignable, la fenêtre affichée est conservée.";
 }

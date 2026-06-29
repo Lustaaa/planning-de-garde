@@ -51,12 +51,10 @@ app.MapHub<PlanningHub>("/hubs/planning");
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-// Données de démonstration — la grille lue par le front WASM s'ouvre peuplée plutôt que vide.
-// Persistance en mémoire (aucune base réelle) : amorçage systématique au démarrage de l'hôte d'API.
-// Désactivé sous l'environnement « Testing » : les tests d'intégration observent un store vierge
-// (sinon les périodes/slots de démo polluent la projection réelle observée).
-if (!app.Environment.IsEnvironment("Testing"))
-    app.AmorcerDonneesDemo();
+// AUCUN amorçage runtime (Sc.8, s15) : l'hôte démarre sans seed. Sur un store Mongo vierge,
+// l'application ouvre totalement vide (ni acteurs, ni slots/périodes/transferts, ni cycle de fond) ;
+// dès qu'on saisit, c'est durable et rechargé aux lancements suivants. Les défauts InMemory restent
+// portés par les adaptateurs eux-mêmes (config foyer), conservés pour la non-régression.
 
 app.Run();
 

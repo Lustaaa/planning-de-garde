@@ -23,7 +23,8 @@ namespace PlanningDeGarde.Web.Tests;
 /// </summary>
 internal static class GrilleRuntimeHarness
 {
-    // Lundi 29/06/2026 : date de référence des scénarios (début de la fenêtre de 5 semaines).
+    // Lundi 29/06/2026 : date de référence des scénarios (début de la fenêtre par défaut de
+    // 4 semaines glissantes — re-pointé du 5 → 4 semaines par Sprint 15 Sc.3).
     public static readonly DateTime Lundi_29_06_2026 = new(2026, 6, 29);
 
     /// <summary>Client HTTP du front pointé sur le transport réel de l'API distante in-test.</summary>
@@ -47,6 +48,25 @@ internal static class GrilleRuntimeHarness
     /// </summary>
     public static HttpClient ClientVersAvecEcritureInjoignable(ApiDistanteFactory api, string suffixeEndpointEcriture)
         => new(new EcritureInjoignableHandler(api.Server.CreateHandler(), suffixeEndpointEcriture))
+        {
+            BaseAddress = api.Server.BaseAddress,
+        };
+
+    /// <summary>
+    /// Client HTTP du front pointé sur l'API distante réelle, MAIS dont une <b>lecture de grille précise</b>
+    /// (un <c>GET</c> dont le chemin contient <paramref name="segmentDateInjoignable"/>, p.ex.
+    /// <c>/grille/2026/6/15</c>) subit un <b>échec de transport déterministe</b>
+    /// (<see cref="HttpRequestException"/> levée par le handler) — exactement le symptôme « API distante
+    /// injoignable pendant la navigation » (Sc.6) : la re-requête de la date naviguée échoue, alors que le
+    /// chargement initial (autre date) et la navigation de retour transitent normalement.
+    ///
+    /// <para>Même robustesse anti-flake que <see cref="ClientVersAvecEcritureInjoignable"/> : on lève
+    /// l'<see cref="HttpRequestException"/> au niveau du handler (contrat exact capté par le composant),
+    /// plutôt que de dépendre d'un <c>ConnectionRefused</c> loopback dont la sémantique est altérée par le
+    /// proxy de Docker Desktop. Déterministe que Docker tourne ou non.</para>
+    /// </summary>
+    public static HttpClient ClientVersAvecLectureGrilleInjoignable(ApiDistanteFactory api, string segmentDateInjoignable)
+        => new(new LectureGrilleInjoignableHandler(api.Server.CreateHandler(), segmentDateInjoignable))
         {
             BaseAddress = api.Server.BaseAddress,
         };
@@ -78,12 +98,48 @@ internal static class GrilleRuntimeHarness
     }
 
     /// <summary>
+    /// Handler de transport qui relaie tout vers l'API distante réelle SAUF un <c>GET</c> de grille dont le
+    /// chemin contient le segment de date ciblé, pour lequel il lève une <see cref="HttpRequestException"/>
+    /// — échec de transport déterministe (anti-flake proxy loopback Docker). Reproduit l'API distante
+    /// injoignable sur la SEULE date naviguée (Sc.6), laissant passer le chargement initial et le retour.
+    /// </summary>
+    private sealed class LectureGrilleInjoignableHandler : DelegatingHandler
+    {
+        private readonly string _segmentDateInjoignable;
+
+        public LectureGrilleInjoignableHandler(HttpMessageHandler inner, string segmentDateInjoignable)
+            : base(inner) => _segmentDateInjoignable = segmentDateInjoignable;
+
+        protected override System.Threading.Tasks.Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
+        {
+            if (request.Method == HttpMethod.Get
+                && (request.RequestUri?.AbsolutePath.Contains(_segmentDateInjoignable, StringComparison.Ordinal) ?? false))
+            {
+                throw new HttpRequestException(
+                    $"service injoignable (échec de transport simulé, déterministe) — lecture {_segmentDateInjoignable}");
+            }
+
+            return base.SendAsync(request, cancellationToken);
+        }
+    }
+
+    /// <summary>
     /// Sème une période dans le store réel de l'API distante (Given d'un scénario de lecture) — la
     /// projection réelle la relira et le référentiel réel résoudra le nom du responsable.
     /// </summary>
     public static void SemerPeriode(ApiDistanteFactory api, string responsableId, DateTime debut, DateTime fin)
         => api.Services.GetRequiredService<IPeriodeRepository>()
             .Enregistrer(PeriodeDeGarde.Affecter(responsableId, debut, fin).Valeur!);
+
+    /// <summary>
+    /// Sème un cycle de fond dans le store réel de l'API distante (Given d'un scénario de navigation) —
+    /// la projection réelle résout le responsable de fond par parité ISO de chaque semaine, le
+    /// référentiel réel résolvant nom et couleur. Permet d'observer la re-résolution du fond à la date
+    /// naviguée sans aucune saisie de période (Sc.1).
+    /// </summary>
+    public static void SemerCycle(ApiDistanteFactory api, CycleDeFond cycle)
+        => api.Services.GetRequiredService<IReferentielCycleDeFond>().DefinirCycle(cycle);
 
     /// <summary>
     /// Rend la grille réelle câblée à l'API distante, à la date de référence injectée. Le hub SignalR
@@ -112,9 +168,10 @@ internal static class GrilleRuntimeHarness
         var grille = ctx.RenderComponent<PlanningPartage>();
 
         // Le chargement de la grille (GET HTTP vers l'API distante) est asynchrone : on attend que la
-        // fenêtre soit réellement projetée (35 cases-jour rendues) avant d'observer nom/légende.
+        // fenêtre par défaut soit réellement projetée (28 cases-jour rendues, 4 semaines glissantes —
+        // re-pointé du 5 → 4 semaines par Sc.3) avant d'observer nom/légende.
         grille.WaitForState(
-            () => grille.FindAll("[data-testid='jour-case']").Count == 35,
+            () => grille.FindAll("[data-testid='jour-case']").Count == 28,
             TimeSpan.FromSeconds(10));
 
         return grille;

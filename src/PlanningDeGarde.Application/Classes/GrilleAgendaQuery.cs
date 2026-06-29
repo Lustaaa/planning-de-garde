@@ -7,8 +7,9 @@ namespace PlanningDeGarde.Application;
 
 /// <summary>
 /// Projection de lecture (CQRS) de la grille agenda du hub /planning. Construit la fenêtre
-/// de 5 semaines (35 jours datés) à partir de la semaine de la date de référence injectée,
-/// en lisant les slots et périodes enregistrés. N'écrit jamais : aucune dépendance vers un
+/// par défaut de 4 semaines glissantes (28 jours datés) à partir de la semaine de la date de
+/// référence injectée — ou une fenêtre dimensionnée par la <c>VuePlanning</c> choisie — en
+/// lisant les slots et périodes enregistrés. N'écrit jamais : aucune dépendance vers un
 /// handler ou un agrégat d'écriture (invariant « lecture seule » garanti par construction).
 /// </summary>
 public sealed class GrilleAgendaQuery
@@ -40,17 +41,38 @@ public sealed class GrilleAgendaQuery
     /// Projette la grille agenda à la <paramref name="dateReference"/> donnée (« aujourd'hui »,
     /// injecté pour le déterminisme — jamais <c>DateTime.Now</c>).
     /// </summary>
-    public GrilleAgenda Projeter(DateOnly dateReference)
+    /// <summary>
+    /// Projette la grille à l'<paramref name="ancre"/> donnée selon la <paramref name="vue"/>
+    /// choisie (span : Semaine 7 j / 4 semaines 28 j / Mois = semaines ISO du mois). Re-projection
+    /// pure : chaque case se re-résout à sa propre date (surcharge &gt; fond &gt; neutre).
+    /// </summary>
+    public GrilleAgenda Projeter(DateOnly ancre, VuePlanning vue)
     {
-        var lundiDeLaSemaine = LundiDeLaSemaineDe(dateReference);
+        if (vue == VuePlanning.Mois)
+        {
+            var premierDuMois = new DateOnly(ancre.Year, ancre.Month, 1);
+            var dernierDuMois = premierDuMois.AddMonths(1).AddDays(-1);
+            var premierLundi = LundiDeLaSemaineDe(premierDuMois);
+            var dernierDimanche = LundiDeLaSemaineDe(dernierDuMois).AddDays(6);
+            return ProjeterFenetre(premierLundi, dernierDimanche.DayNumber - premierLundi.DayNumber + 1);
+        }
 
+        var nbJours = vue == VuePlanning.Semaine ? 7 : 28;
+        return ProjeterFenetre(LundiDeLaSemaineDe(ancre), nbJours);
+    }
+
+    public GrilleAgenda Projeter(DateOnly dateReference)
+        => Projeter(dateReference, VuePlanning.QuatreSemaines);
+
+    private GrilleAgenda ProjeterFenetre(DateOnly premierJour, int nbJours)
+    {
         var slotsParJour = _slots.AllSnapshots()
             .ToLookup(snapshot => DateOnly.FromDateTime(snapshot.Debut));
 
         var periodes = _periodes.AllSnapshots();
 
-        var jours = Enumerable.Range(0, 35)
-            .Select(offset => lundiDeLaSemaine.AddDays(offset))
+        var jours = Enumerable.Range(0, nbJours)
+            .Select(offset => premierJour.AddDays(offset))
             .Select(date => CaseJourAu(date, periodes, slotsParJour[date]))
             .ToList();
 
@@ -59,7 +81,7 @@ public sealed class GrilleAgendaQuery
             .Select(septJours => new SemaineLigne(septJours.ToList()))
             .ToList();
 
-        var legende = LegendeDesPresents(periodes, lundiDeLaSemaine, lundiDeLaSemaine.AddDays(34));
+        var legende = LegendeDesPresents(periodes, premierJour, premierJour.AddDays(nbJours - 1));
 
         return new GrilleAgenda(jours, semaines, legende);
     }

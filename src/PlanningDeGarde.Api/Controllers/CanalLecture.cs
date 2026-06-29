@@ -34,16 +34,28 @@ public static class CanalLecture
                 return Results.Ok(acteurs);
             });
 
-        // Grille projetée à une date de référence (« aujourd'hui »), passée en segments yyyy/MM/dd
-        // pour le déterminisme côté front (jamais DateTime.Now côté serveur). Renvoie le read model
-        // GrilleAgenda (records framework-free de l'Application), sérialisé en JSON.
+        // Grille projetée à une ANCRE (date de référence / date naviguée), passée en segments yyyy/MM/dd
+        // pour le déterminisme côté front (jamais DateTime.Now côté serveur), plus un paramètre de VUE
+        // (span : semaine / 4semaines / mois) sur le canal de LECTURE (CQRS — ne déclenche jamais la
+        // diffusion, Sc.1/Sc.2). Compatibilité ascendante : sans vue → défaut 4 semaines glissantes
+        // (Sc.3). Renvoie le read model GrilleAgenda (records framework-free de l'Application) en JSON.
         routes.MapGet("/api/grille/{annee:int}/{mois:int}/{jour:int}",
-            (int annee, int mois, int jour, GrilleAgendaQuery projection) =>
+            (int annee, int mois, int jour, string? vue, GrilleAgendaQuery projection) =>
             {
-                var grille = projection.Projeter(new DateOnly(annee, mois, jour));
+                var grille = projection.Projeter(new DateOnly(annee, mois, jour), VueDepuis(vue));
                 return Results.Ok(grille);
             });
 
         return routes;
     }
+
+    /// <summary>Résout le code de vue (paramètre de lecture) en <see cref="VuePlanning"/> : <c>semaine</c>
+    /// / <c>mois</c>, sinon <see cref="VuePlanning.QuatreSemaines"/> par défaut (et compat ascendante :
+    /// absence de vue → 4 semaines glissantes, Sc.3).</summary>
+    private static VuePlanning VueDepuis(string? code) => code switch
+    {
+        "semaine" => VuePlanning.Semaine,
+        "mois" => VuePlanning.Mois,
+        _ => VuePlanning.QuatreSemaines,
+    };
 }

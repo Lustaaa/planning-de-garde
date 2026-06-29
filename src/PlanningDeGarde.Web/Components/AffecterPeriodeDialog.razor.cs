@@ -27,10 +27,18 @@ public partial class AffecterPeriodeDialog
     private readonly Formulaire _form = new();
     private string? _motifEchec;
 
-    /// <summary>Date de la case cliquée : elle ancre l'affectation sur ce seul jour (la date de
-    /// contexte prime sur le défaut « aujourd'hui », règle 17 composée).</summary>
+    /// <summary>Date de la case cliquée : elle ancre l'affectation sur ce jour (la date de
+    /// contexte prime sur le défaut « aujourd'hui », règle 17 composée). En contexte de plage (Sc.5),
+    /// c'est la borne de DÉBUT de l'intervalle sélectionné.</summary>
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
+
+    /// <summary>Borne de FIN de l'intervalle quand l'affectation est ouverte depuis une <b>sélection de
+    /// plage</b> de cases contiguës (Sc.5) : la dialog est alors pré-remplie sur <c>[DateContexte,
+    /// DateFinContexte]</c> et émet UNE seule commande <c>AffecterPeriode</c> couvrant l'intervalle.
+    /// <c>null</c> = ouverture sur une seule case (comportement palier 7 inchangé : Début = Fin = date).</summary>
+    [Parameter]
+    public DateOnly? DateFinContexte { get; set; }
 
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et relit la grille.</summary>
     [Parameter]
@@ -42,9 +50,9 @@ public partial class AffecterPeriodeDialog
 
     protected override void OnInitialized()
     {
-        var jour = DateContexte.ToDateTime(TimeOnly.MinValue);
-        _form.Debut = jour;
-        _form.Fin = jour;
+        _form.Debut = DateContexte.ToDateTime(TimeOnly.MinValue);
+        // Sur une plage (Sc.5), Fin = borne de fin de l'intervalle ; sinon Fin = Début (une seule case).
+        _form.Fin = (DateFinContexte ?? DateContexte).ToDateTime(TimeOnly.MinValue);
     }
 
     private async Task Soumettre()

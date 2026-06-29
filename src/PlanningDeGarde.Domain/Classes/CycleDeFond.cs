@@ -25,6 +25,12 @@ public sealed class CycleDeFond
     public int NombreSemaines { get; }
 
     /// <summary>
+    /// Mapping index de semaine (0..N-1) → identifiant stable de responsable — frontière de lecture
+    /// exposée pour la <b>persistance</b> du cycle (sérialisation N + mapping, s15 Sc.9). Lecture seule.
+    /// </summary>
+    public IReadOnlyDictionary<int, string> Affectations => _affectations;
+
+    /// <summary>
     /// Responsable de fond résolu pour la date donnée, ou <c>null</c> si aucun fond ne s'applique.
     /// Fonction pure de la date : <c>index = ISOWeek(date) mod N</c> (parité ISO 8601), résolu sur
     /// le mapping index→responsableId. Index non mappé → <c>null</c> (pas de fond → neutre), contrat

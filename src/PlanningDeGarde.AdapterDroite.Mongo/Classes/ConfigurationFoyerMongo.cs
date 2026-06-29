@@ -14,15 +14,14 @@ namespace PlanningDeGarde.Infrastructure;
 /// Remplaçant <b>durable</b> de <see cref="ConfigurationFoyerEnMemoire"/> : l'ajout comme l'édition
 /// survivent au redémarrage du serveur (pivot Sc.3), prouvé contre un store Mongo réel (Docker).
 ///
-/// <para><b>Seed-once</b> (cœur du pivot, inversion exacte de la volatilité assumée) : au démarrage,
-/// le store est seedé depuis le <see cref="Foyer"/> <b>seulement si la collection est vide</b> ;
-/// sinon l'état persisté est relu tel quel, <b>sans re-seeder par-dessus les éditions</b> — un
-/// re-seed à chaque démarrage écraserait Alicia → Alice et supprimerait les acteurs ajoutés.</para>
+/// <para><b>Aucun seed</b> (Sc.8, s15 — inversion exacte du seed-once s09) : Mongo ne s'amorce
+/// <b>jamais</b>, même vide. Au tout premier lancement sur une base vierge, l'application ouvre
+/// totalement vide (aucun acteur) ; dès qu'on saisit, c'est durable et rechargé aux lancements
+/// suivants. <b>Asymétrie assumée</b> : seul l'InMemory garde son seed (pour la non-régression).</para>
 ///
-/// <para><b>Borne anti-cliquet (règle 30)</b> : SEULE la config foyer est durable ; slots / périodes
-/// / transferts restent InMemory. Les lectures servent un cache mémoire chargé à la construction
-/// (une instance fraîche = un redémarrage : elle relit l'état persisté) ; les écritures sont
-/// répercutées (write-through) sur Mongo.</para>
+/// <para><b>Lecture / écriture</b> : les lectures servent un cache mémoire chargé à la construction
+/// (une instance fraîche = un redémarrage : elle relit l'état persisté, vide au premier lancement) ;
+/// les écritures sont répercutées (write-through) sur Mongo.</para>
 /// </summary>
 public sealed class ConfigurationFoyerMongo : IReferentielResponsables, IEditeurConfigurationFoyer, IPaletteCouleurs, IEnumerationActeursFoyer
 {
@@ -35,27 +34,10 @@ public sealed class ConfigurationFoyerMongo : IReferentielResponsables, IEditeur
         var db = client.GetDatabase(baseDeDonnees);
         _acteurs = db.GetCollection<ActeurDocument>("acteurs");
 
+        // AUCUN seed (Sc.8, s15) : on ne relit que l'état persisté tel quel — vide au tout premier
+        // lancement (l'application ouvre totalement vide), peuplé ensuite par les écritures write-through.
         var tous = Builders<ActeurDocument>.Filter.Empty;
-
-        // Seed-once : amorce depuis le Foyer SEULEMENT si le store durable est vide ; sinon relit
-        // l'état persisté (jamais de re-seed par-dessus les éditions — principale surface de bug).
-        if (_acteurs.CountDocuments(tous) == 0)
-            _acteurs.InsertMany(SeedDepuisFoyer());
-
         _cache = _acteurs.Find(tous).ToList().ToDictionary(d => d.Id);
-    }
-
-    private static IEnumerable<ActeurDocument> SeedDepuisFoyer()
-    {
-        // Union des acteurs portés par un nom ET/OU une couleur (parité exacte avec le store mémoire :
-        // un nom absent retombe sur l'id, une couleur absente sur la teinte neutre par contrat).
-        var ids = Foyer.NomsParResponsable.Keys.Union(Foyer.CouleursParActeur.Keys);
-        return ids.Select(id => new ActeurDocument
-        {
-            Id = id,
-            Nom = Foyer.NomsParResponsable.TryGetValue(id, out var nom) ? nom : null,
-            Couleur = Foyer.CouleursParActeur.TryGetValue(id, out var couleur) ? couleur : null,
-        });
     }
 
     public string NomDe(string responsableId)

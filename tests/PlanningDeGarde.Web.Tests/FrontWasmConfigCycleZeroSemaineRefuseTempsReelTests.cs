@@ -94,7 +94,7 @@ public sealed class FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests : TestCo
         // … et la vraie grille câblée à la MÊME API continue d'afficher l'alternance A/B inchangée.
         var grille = RenderComponent<PlanningPartage>();
         grille.WaitForState(
-            () => grille.FindAll("[data-testid='jour-case']").Count == 35,
+            () => grille.FindAll("[data-testid='jour-case']").Count == 28,
             TimeSpan.FromSeconds(10));
 
         var caseIso27 = GrilleRuntimeHarness.CaseDuJour(grille, "29/06");

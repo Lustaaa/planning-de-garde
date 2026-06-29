@@ -2,6 +2,7 @@
 name: spec-consolidation
 description: Exécute la consolidation d'un backlog de besoins (99-sprint<NN>-besoins-fin-itération.md) avec la spec courante en une nouvelle version de spec vivante (NN-specification.md) pour planning-de-garde, en mode orchestré. Nomme les points de consolidation (besoin → section → règle créée/révisée/supprimée), renvoie au thread principal la PROCHAINE question (collisions, questions ouvertes) en JSON prêt pour AskUserQuestion — il ne pose jamais les questions lui-même. Une fois tranché, écrit la nouvelle version de spec (l'ancienne reste figée) qui réamorce /2-make-gherkin. Relancé via SendMessage. Dispatché par la command /5-consolidation.
 tools: Read, Grep, Glob, Write, Edit
+model: sonnet
 ---
 
 > **Ne lis JAMAIS les fichiers sous un répertoire `archive/`** (scénarios et artefacts de

@@ -36,12 +36,23 @@ public partial class PlanningPartage
     private DateOnly? _dateDialogPoserSlot;
     private DateOnly? _dateDialogAffecterPeriode;
     private DateOnly? _dateDialogDefinirTransfert;
+    // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
+    // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
+    // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
+    // _modePlage = mode actif ; _plageDebut / _plageFin = bornes [min, max] de l'intervalle sélectionné.
+    private bool _modePlage;
+    private DateOnly? _plageDebut;
+    private DateOnly? _plageFin;
     // Avertissement de chevauchement « à part » (Sc.7, règle 16) : pose acceptée mais signalée, bandeau
     // NON bloquant et refermable. Drapeau porté par l'outcome de la commande (jamais recalculé ici).
     private bool _avertissementChevauchement;
     // Accusé « Transfert défini » à part (Sc.1) : feedback transitoire NON bloquant levé sur le simple
     // succès HTTP du canal (aucun read model neuf, aucun rendu en case — règle 27). Refermable.
     private bool _accuseTransfertDefini;
+    // Échec de navigation (Sc.6) : la re-requête de la date naviguée a échoué (API distante injoignable).
+    // Bandeau d'échec clair, NON bloquant et refermable. La fenêtre affichée est conservée (l'ancre est
+    // restaurée), et la navigation échouée n'est NI mise en file NI rejouée (règle 28). Levé à part.
+    private bool _echecNavigation;
 
     private RoleAuteur RoleSelectionne
     {
@@ -68,6 +79,9 @@ public partial class PlanningPartage
 
     protected override async Task OnInitializedAsync()
     {
+        // L'ancre de navigation démarre sur la semaine en cours (lundi de la date d'aujourd'hui), via
+        // le port d'horloge injecté. Idempotent : une ancre déjà décalée par la navigation est conservée.
+        Session.InitialiserAncre(Horloge.Aujourdhui);
         await ChargerAsync();
         await ChargerActeursIncarnablesAsync();
     }
@@ -128,24 +142,109 @@ public partial class PlanningPartage
         }
     }
 
-    // Date de référence = aujourd'hui, lue via le port d'horloge injecté (jamais DateTime.Now en dur :
-    // déterminisme en test, symétrie avec Projeter(dateReference) côté lecture). Le canal de lecture
-    // distant prend cette date en segments yyyy/MM/dd.
-    private async Task ChargerAsync()
+    // Date de référence = l'ANCRE DE NAVIGATION (en session/mémoire), décalée par les contrôles
+    // préc./suiv. (Sc.1) — initialisée sur la semaine en cours via le port d'horloge. Le canal de
+    // lecture distant prend cette ancre en segments yyyy/MM/dd, plus le paramètre de VUE (span). La
+    // navigation ne fait que re-projeter à la date naviguée : lecture seule, aucune écriture.
+    private async Task<bool> ChargerAsync()
     {
-        var aujourdHui = Horloge.Aujourdhui;
+        var ancre = Session.Ancre;
         try
         {
             var grille = await Canal.GetFromJsonAsync<GrilleAgenda>(
-                $"api/grille/{aujourdHui.Year}/{aujourdHui.Month}/{aujourdHui.Day}");
+                $"api/grille/{ancre.Year}/{ancre.Month}/{ancre.Day}?vue={CodeVue(Session.Vue)}");
             if (grille is not null)
                 _grille = grille;
+            return true;
         }
         catch (HttpRequestException)
         {
-            // API distante injoignable : la grille reste vide plutôt que de planter la vue.
+            // API distante injoignable : à l'ouverture, la grille reste vide plutôt que de planter la vue
+            // (vue consultable). L'appelant (navigation) décide quoi faire de l'échec — voir NaviguerAsync.
+            return false;
         }
     }
+
+    /// <summary>Code de la vue prédéfinie passé en paramètre de lecture (CQRS) : <c>semaine</c> /
+    /// <c>4semaines</c> (défaut) / <c>mois</c>. Le défaut couvre la compatibilité ascendante de
+    /// l'endpoint (sans vue → 4 semaines glissantes, Sc.3).</summary>
+    private static string CodeVue(VuePlanning vue) => vue switch
+    {
+        VuePlanning.Semaine => "semaine",
+        VuePlanning.Mois => "mois",
+        _ => "4semaines",
+    };
+
+    /// <summary>Vue prédéfinie correspondant au code du sélecteur (inverse de <see cref="CodeVue"/>) :
+    /// <c>semaine</c> / <c>mois</c> / défaut <c>4 semaines glissantes</c> (compatibilité ascendante).</summary>
+    private static VuePlanning VueDepuisCode(string? code) => code switch
+    {
+        "semaine" => VuePlanning.Semaine,
+        "mois" => VuePlanning.Mois,
+        _ => VuePlanning.QuatreSemaines,
+    };
+
+    /// <summary>« Changer de vue » (Sc.2/Sc.3, sélecteur de vue) : fixe la vue choisie puis re-projette en
+    /// re-requêtant l'API distante avec le paramètre de vue. L'ancre lundi est conservée (seul le span
+    /// change). Sur échec de la re-requête, la vue est <b>restaurée</b> (la fenêtre affichée ne diverge
+    /// pas de l'état) et le bandeau d'échec levé — même pivot que la navigation (Sc.6). Aucune écriture.</summary>
+    private async Task ChangerVueAsync(ChangeEventArgs e)
+    {
+        var vueAvant = Session.Vue;
+        Session.Vue = VueDepuisCode(e.Value?.ToString());
+        await ReprojeterAsync(() => Session.Vue = vueAvant);
+    }
+
+    /// <summary>« Semaine suivante » (Sc.1) : décale l'ancre de +7 jours puis re-projette en
+    /// re-requêtant l'API distante à la date naviguée. Aucune écriture (lecture seule).</summary>
+    private Task DemanderSemaineSuivante() => NaviguerAsync(Session.SemaineSuivante);
+
+    /// <summary>« Semaine précédente » (Sc.1) : décale l'ancre de −7 jours puis re-projette.</summary>
+    private Task DemanderSemainePrecedente() => NaviguerAsync(Session.SemainePrecedente);
+
+    /// <summary>« Aujourd'hui » (Sc.4) : réinitialise l'ancre à la semaine en cours (lundi de la date du
+    /// jour, via le port d'horloge injecté), quel que soit le décalage de navigation accumulé, puis
+    /// re-projette en re-requêtant l'API distante à l'ancre réinitialisée. Aucune écriture (lecture seule).</summary>
+    private Task DemanderRetourAujourdhui() => NaviguerAsync(() => Session.RevenirAujourdhui(Horloge.Aujourdhui));
+
+    /// <summary>
+    /// Pivot commun de navigation (Sc.1/Sc.4/Sc.6) : décale l'ancre via <paramref name="decalerAncre"/>
+    /// puis re-projette en re-requêtant l'API distante à la date naviguée. <b>Gestion d'échec (Sc.6)</b> :
+    /// si la re-requête échoue (API distante injoignable), l'ancre est <b>restaurée</b> à celle de la
+    /// fenêtre affichée — l'affichage et l'état de navigation ne divergent pas — et un <b>bandeau d'échec
+    /// clair</b> est levé. La navigation échouée n'est <b>ni mise en file ni rejouée</b> (règle 28). Un
+    /// succès efface tout échec antérieur. Aucune écriture : la navigation ne fait que re-projeter.
+    /// </summary>
+    private async Task NaviguerAsync(Action decalerAncre)
+    {
+        var ancreAvant = Session.Ancre;
+        decalerAncre();
+        await ReprojeterAsync(() => Session.RestaurerAncre(ancreAvant)); // fenêtre conservée, aucun rejeu
+    }
+
+    /// <summary>
+    /// Pivot de re-projection partagé entre la navigation (décalage d'ancre, Sc.1/Sc.4) et le changement
+    /// de vue (Sc.2/Sc.3) : re-requête l'API distante à l'état courant (ancre + vue). Sur <b>échec</b> de
+    /// la re-requête (API distante injoignable), exécute <paramref name="restaurerSiEchec"/> pour ramener
+    /// l'état (ancre ou vue) à celui de la fenêtre affichée — affichage et état ne divergent pas — et lève
+    /// le bandeau d'échec clair (Sc.6) ; l'opération échouée n'est <b>ni mise en file ni rejouée</b>
+    /// (règle 28). Un succès efface tout échec antérieur. Aucune écriture : pure re-projection en lecture.
+    /// </summary>
+    private async Task ReprojeterAsync(Action restaurerSiEchec)
+    {
+        if (await ChargerAsync())
+        {
+            _echecNavigation = false;
+        }
+        else
+        {
+            restaurerSiEchec();
+            _echecNavigation = true;
+        }
+    }
+
+    /// <summary>Referme le bandeau d'échec de navigation (Sc.6, non bloquant).</summary>
+    private void FermerEchecNavigation() => _echecNavigation = false;
 
     /// <summary>Revient à l'identité réelle (bouton du bandeau d'incarnation, Sc.2) : l'incarnation est
     /// levée, la vue restaurée à l'identité réelle de l'utilisateur principal. Aucune écriture.</summary>
@@ -166,7 +265,65 @@ public partial class PlanningPartage
         if (!Session.EstParent)
             return;
 
+        // En mode plage (Sc.5), le clic-case ne déclenche PAS le menu single-jour : il alimente la
+        // sélection d'intervalle. Hors mode plage, comportement palier 7 inchangé (menu d'actions).
+        if (_modePlage)
+        {
+            SelectionnerCasePlage(date);
+            return;
+        }
+
         _dateMenu = date;
+    }
+
+    /// <summary>
+    /// Bascule le <b>mode sélection de plage</b> (Sc.5). Gardé <see cref="SessionPlanning.EstParent"/> :
+    /// le déclencheur de plage est réservé Parent/Admin (règle 9), mutualisant le gating Invité du menu
+    /// clic-case — c'est ce gate partagé que Sc.7 caractérise (en consultation, le bouton n'est même pas
+    /// rendu). Toute (dé)activation repart d'une sélection vierge. État de présentation, aucune écriture.
+    /// </summary>
+    private void BasculerModePlage()
+    {
+        if (!Session.EstParent)
+            return;
+
+        _modePlage = !_modePlage;
+        _plageDebut = null;
+        _plageFin = null;
+        _dateMenu = null;
+    }
+
+    /// <summary>
+    /// Alimente la sélection de plage (Sc.5) : le 1ᵉʳ clic-case fixe le début ; le 2ᵉ borne l'intervalle
+    /// <c>[min, max]</c> des deux dates contiguës puis ouvre l'affectation <b>pré-remplie sur l'intervalle</b>
+    /// (une seule commande <c>AffecterPeriode</c> couvrant la plage — backend inchangé). Re-cliquer la
+    /// même case avant la 2ᵉ borne ne fait rien (intervalle dégénéré ignoré, variantes riches → tranche 2).
+    /// </summary>
+    private void SelectionnerCasePlage(DateOnly date)
+    {
+        if (_plageDebut is null)
+        {
+            _plageDebut = date;
+            return;
+        }
+
+        if (date == _plageDebut)
+            return; // 2ᵉ clic sur la même case : intervalle dégénéré, on attend une case distincte
+
+        var debut = _plageDebut.Value;
+        _plageDebut = date < debut ? date : debut;
+        _plageFin = date < debut ? debut : date;
+        _modePlage = false; // l'intervalle est complet : on sort du mode et on ouvre l'affectation
+        _dateDialogAffecterPeriode = _plageDebut; // borne de début ; la fin passe par _plageFin
+    }
+
+    /// <summary>Vrai si la case <paramref name="date"/> appartient à la sélection de plage en cours (borne
+    /// de début déjà posée, ou intervalle complet) — sert au surlignage visuel des cases sélectionnées.</summary>
+    private bool EstDansSelectionPlage(DateOnly date)
+    {
+        if (_plageFin is { } fin && _plageDebut is { } debutComplet)
+            return date >= debutComplet && date <= fin;
+        return _plageDebut == date;
     }
 
     /// <summary>Ferme le menu d'actions sans rien ouvrir (clic hors panneau).</summary>
@@ -184,6 +341,7 @@ public partial class PlanningPartage
     private void OuvrirAffecterPeriode(DateOnly date)
     {
         _dateMenu = null;
+        _plageFin = null; // ouverture single-jour : pas d'intervalle (Début = Fin = date dans la dialog)
         _dateDialogAffecterPeriode = date;
     }
 
@@ -235,6 +393,9 @@ public partial class PlanningPartage
         _dateDialogPoserSlot = null;
         _dateDialogAffecterPeriode = null;
         _dateDialogDefinirTransfert = null;
+        // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
+        _plageDebut = null;
+        _plageFin = null;
     }
 
     /// <summary>Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible
