@@ -103,6 +103,12 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
   (store/hub propres par test) pour éviter le flake sous exécution parallèle. (Vécu s10 : un
   test runtime SignalR Web.Tests a flaké 1×/2 au gate sous charge parallèle — vert en isolation ;
   cause = timing au lieu d'une attente d'établissement.)
+  - **Réentrance du renderer bUnit — n'interagis JAMAIS pendant que la pompe de diffusion
+    tourne.** Ne déclenche pas une interaction réentrante (`@onclick`, clic-menu, clic-case)
+    PENDANT que la pompe de diffusion tourne : **arrête d'abord la pompe** (ou attends son drain),
+    PUIS interagis. Une interaction intercalée dans la pompe provoque un **stack overflow** par
+    réentrance du renderer. (Vécu s14 Sc.5 : clic-menu réentrant pendant la pompe → stack
+    overflow ; corrigé en déplaçant le clic après l'arrêt de la pompe.)
   - **La convention vaut aussi pour les tests `*TempsReel*` PRÉEXISTANTS, pas seulement les
     neufs.** Avant de driver **tout nouveau scénario temps-réel** (ex. édition concurrente du
     même jour sous dialog ouverte, différée au backlog), **rétrofite d'abord** la famille
@@ -116,6 +122,12 @@ PREP → MAP → BUILD (par vue/feature) → WIRE (SignalR réel) → VERIFY →
     > **Portée.** Tu **codifies** ici la convention ; l'**exécution du rétrofit** (édition
     > effective des fichiers de test existants) reste une **passe dev séquencée (P2)**, non
     > tirée en avant — à mener avant le scénario temps-réel différé, pas pendant cette rétro.
+    > **Cible du rétrofit P2 = la CONVERGENCE SignalR MULTI-CLIENTS** (diffusion d'un écran
+    > propagée vers un autre, attente déterministe d'établissement + isolation store/hub par
+    > test), **distincte** de la course d'énumération async `UnknownEventHandlerId` déjà gardée
+    > par `WaitForState` (rétro s13). Deux flakes différents : le garde d'énumération ne stabilise
+    > PAS la convergence multi-écrans. (Vécu s14 : flake 1/30 de convergence persiste sous charge
+    > bien que la course d'énumération soit gardée.)
 
 ### FIX (.razor / câblage / render mode)
 - Corrige l'**IHM** : `.razor` / code-behind, **render mode** (`@rendermode

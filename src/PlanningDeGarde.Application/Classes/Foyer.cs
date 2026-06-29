@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using PlanningDeGarde.Application;
 
 namespace PlanningDeGarde.Infrastructure;
 
@@ -57,5 +58,30 @@ public static class Foyer
             // Nom long (Sc.7) : adopte le nom du scénario pour rendre la troncature visible au runtime
             // sans altérer la donnée (le read model porte toujours le nom complet).
             ["parent-c"] = "Marie-Hélène Grand-Dubois",
+            // Acteur de type « Autre » (sprint 14, impersonation) : la nounou, déjà colorée en vert,
+            // gagne un nom d'affichage pour être énumérée et incarnable. Incarnée, elle masque les
+            // actions d'écriture (consultation seule, règle 8).
+            ["nounou"] = "Nina la nounou",
         };
+
+    /// <summary>
+    /// Type déclaré (Admin / Parent / Autre) par acteur, surfacé en <b>lecture seule</b> depuis ce seed
+    /// (D3, sprint 14) pour piloter le rôle de l'identité effective lors d'une impersonation bornée.
+    /// Un acteur absent de ce dictionnaire — typiquement un acteur ajouté en session — est traité comme
+    /// <see cref="TypeActeur.Parent"/> par défaut (aucune saisie ni persistance neuve de type, borne
+    /// anti-cliquet règle 30). Source de vérité du type : la déclaration du foyer, jamais persistée.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, TypeActeur> TypesParActeur =
+        new Dictionary<string, TypeActeur>
+        {
+            ["parent-a"] = TypeActeur.Parent,   // Alice — parent (le configurateur)
+            ["parent-b"] = TypeActeur.Parent,   // Bruno — parent
+            ["parent-c"] = TypeActeur.Admin,    // Marie-Hélène — administratrice du foyer
+            ["grand-pere"] = TypeActeur.Autre,  // grand-père — autre intervenant (consultation seule)
+            ["nounou"] = TypeActeur.Autre,      // Nina la nounou — autre intervenante (consultation seule)
+        };
+
+    /// <summary>Type par défaut d'un acteur non déclaré dans <see cref="TypesParActeur"/> (acteur ajouté
+    /// en session) : Parent (aucune saisie de type, borne anti-cliquet règle 30).</summary>
+    public const TypeActeur TypeParDefaut = TypeActeur.Parent;
 }

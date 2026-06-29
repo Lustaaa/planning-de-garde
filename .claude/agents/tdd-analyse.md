@@ -153,7 +153,10 @@ ne fusionnes pas des cas métier après coup et tu n'inventes pas un faux cycle 
     → étiquette alors `@driver` (vrai RED), **pas** caractérisation. *Exemple vécu sprint 13* —
     Sc.7 (gating Invité) prédit early-green « câblage partagé » alors que `ConfigurationFoyer`
     n'avait **aucun** garde de rôle (`EstParent` n'existait que sur la grille) → vrai driver
-    RED→GREEN, 5 tests config rétrofités. (Rétro s13 A2.)
+    RED→GREEN, 5 tests config rétrofités. (Rétro s13 A2.) **Confirmé s14** : avec ce contrôle,
+    la cascade a été correctement prédite (Sc.2/3/4 early-green ATTENDUS, le câblage prérequis
+    `EstParent` sur identité effective étant posé par Sc.1), **zéro escalade CP parasite** — la
+    discipline tient, à conserver.
 
 Ne supprime pas un cas métier important ; ne le fusionne pas — déclare-le caractérisation
 explicite et ordonne la liste pour que le vrai driver mène. **Au sprint 03, 2 scénarios sur

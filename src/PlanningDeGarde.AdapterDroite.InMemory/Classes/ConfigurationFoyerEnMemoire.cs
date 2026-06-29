@@ -37,6 +37,11 @@ public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEdi
     public IReadOnlyCollection<string> EnumererActeurs()
         => _noms.Keys.ToList(); // tous les acteurs du store : seeds + ajoutés (résolution nom/couleur sur l'id)
 
+    public TypeActeur TypeDe(string acteurId)
+        // Type surfacé en lecture seule depuis la déclaration seed (D3) ; un acteur ajouté en session
+        // (absent du seed de types) retombe sur le défaut Parent — aucune persistance neuve de type.
+        => Foyer.TypesParActeur.TryGetValue(acteurId, out var type) ? type : Foyer.TypeParDefaut;
+
     public void Renommer(string acteurId, string nouveauNom)
         => _noms[acteurId] = nouveauNom; // dernière écriture gagne (écrase, sans version)
 

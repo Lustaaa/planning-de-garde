@@ -81,6 +81,11 @@ public partial class ConfigurationFoyer
         => _acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs")
             ?? new List<ActeurFoyer>();
 
+    /// <summary>Revient à l'identité réelle depuis le bandeau d'incarnation de l'écran de configuration
+    /// (sprint 14, cohérence inter-écrans, Sc.2) : l'incarnation est levée → les écritures config
+    /// redeviennent visibles (gating sur l'identité effective). Aucune écriture domaine.</summary>
+    private void RevenirIdentiteReelle() => Session.RevenirIdentiteReelle();
+
     /// <summary>Nom d'affichage courant de l'acteur sélectionné (aide de saisie, miroir du seed) —
     /// <c>null</c> tant qu'aucun acteur n'est choisi. Sert d'indicateur « ce que vous éditez ».</summary>
     private string? NomActuel

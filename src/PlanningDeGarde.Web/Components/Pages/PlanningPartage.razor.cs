@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -6,6 +8,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
+using PlanningDeGarde.Web.State;
 
 namespace PlanningDeGarde.Web.Components.Pages;
 
@@ -46,7 +49,48 @@ public partial class PlanningPartage
         set { Session.Role = value; }
     }
 
-    protected override async Task OnInitializedAsync() => await ChargerAsync();
+    /// <summary>Identifiant stable de l'acteur incarné via le sélecteur d'incarnation (impersonation
+    /// bornée, sprint 14). Vide = identité réelle. La sélection lit le <b>référentiel réel</b> chargé
+    /// dans la session (id + type surfacé read-only) : Parent/Admin incarné garde le menu d'écriture,
+    /// Autre le masque (règle 8) ; la valeur vide revient à l'identité réelle (Sc.2). Aucune écriture,
+    /// aucune persistance : l'état d'incarnation reste en session (borne anti-cliquet règle 30).</summary>
+    private string IncarnationSelectionnee
+    {
+        get => Session.IncarnationActive ? Session.IdentiteEffective.Id : "";
+        set
+        {
+            if (string.IsNullOrEmpty(value))
+                Session.RevenirIdentiteReelle();
+            else
+                Session.Incarner(value);
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await ChargerAsync();
+        await ChargerActeursIncarnablesAsync();
+    }
+
+    /// <summary>Charge le catalogue des acteurs incarnables depuis le <b>référentiel réel</b> via le
+    /// canal de lecture HTTP (<c>GET /api/foyer/acteurs</c>, type surfacé read-only) et le dépose dans la
+    /// session. Alimente le sélecteur d'incarnation ; aucune règle métier ici (lecture seule).</summary>
+    private async Task ChargerActeursIncarnablesAsync()
+    {
+        try
+        {
+            var acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs");
+            if (acteurs is not null)
+                Session.ActeursIncarnables = acteurs
+                    .Select(a => new IdentiteActeur(a.Id, a.Nom, a.Type))
+                    .ToList();
+        }
+        catch (HttpRequestException)
+        {
+            // Référentiel distant injoignable : le sélecteur d'incarnation reste vide plutôt que de
+            // planter la vue (le planning en lecture reste consultable sous l'identité réelle).
+        }
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -67,6 +111,11 @@ public partial class PlanningPartage
             _hub.On(PlanningHubEvenement.MiseAJour, async () =>
             {
                 await ChargerAsync();
+                // Une mise à jour diffusée peut être une SUPPRESSION concurrente de l'acteur incarné (Sc.5,
+                // D2) : on rafraîchit le catalogue d'incarnables depuis le référentiel réel, puis on replie
+                // automatiquement sur l'identité réelle si l'acteur incarné n'y figure plus (sans nom fantôme).
+                await ChargerActeursIncarnablesAsync();
+                Session.ReplierSiActeurIncarneAbsent();
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -96,6 +145,14 @@ public partial class PlanningPartage
         {
             // API distante injoignable : la grille reste vide plutôt que de planter la vue.
         }
+    }
+
+    /// <summary>Revient à l'identité réelle (bouton du bandeau d'incarnation, Sc.2) : l'incarnation est
+    /// levée, la vue restaurée à l'identité réelle de l'utilisateur principal. Aucune écriture.</summary>
+    private void RevenirIdentiteReelle()
+    {
+        Session.RevenirIdentiteReelle();
+        _dateMenu = null; // un menu ouvert sous l'incarnation ne survit pas au retour
     }
 
     /// <summary>

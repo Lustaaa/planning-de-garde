@@ -20,4 +20,8 @@ public sealed class FakeEnumerationActeursFoyer : IEnumerationActeursFoyer
     }
 
     public IReadOnlyCollection<string> EnumererActeurs() => _acteurs;
+
+    /// <summary>Type read-only (sprint 14) : ces scénarios ne pilotent pas le rôle par le type — défaut
+    /// Parent, suffisant pour le contrat d'existence éprouvé ici.</summary>
+    public TypeActeur TypeDe(string acteurId) => TypeActeur.Parent;
 }

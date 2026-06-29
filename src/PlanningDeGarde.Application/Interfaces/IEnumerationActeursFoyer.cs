@@ -15,4 +15,14 @@ public interface IEnumerationActeursFoyer
 {
     /// <summary>Identifiants stables de tous les acteurs du foyer (seeds + acteurs ajoutés).</summary>
     IReadOnlyCollection<string> EnumererActeurs();
+
+    /// <summary>
+    /// Type de l'acteur (Admin / Parent / Autre) résolu sur son identifiant stable, <b>en lecture
+    /// seule</b> depuis la déclaration seed du foyer (D3, sprint 14). Un acteur absent de la
+    /// déclaration de types — typiquement un acteur ajouté en session — retombe sur
+    /// <see cref="TypeActeur.Parent"/> par défaut (aucune saisie ni persistance neuve de type, borne
+    /// anti-cliquet règle 30). Sert à piloter le rôle de l'identité effective lors d'une impersonation
+    /// bornée ; aucune écriture, aucun recalcul métier.
+    /// </summary>
+    TypeActeur TypeDe(string acteurId);
 }

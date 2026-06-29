@@ -7,6 +7,27 @@
 
 <h1 class="h3 mb-3">Configuration du foyer</h1>
 
+@* Bandeau d'incarnation (sprint 14, cohérence inter-écrans) : sous incarnation, l'écran de configuration
+   affiche « Vous incarnez X » et l'affordance de retour — en miroir de la grille — pour expliquer pourquoi
+   les écritures sont masquées (gating sur l'identité effective, Sc.6) et permettre de revenir d'ici même.
+   L'état d'incarnation est partagé (SessionPlanning scoped = toute la session WASM) : il est posé depuis le
+   sélecteur de la grille et persiste à la navigation. *@
+@if (Session.LibelleBandeau is { } libelleBandeau)
+{
+    <div class="alert alert-secondary d-flex justify-content-between align-items-center py-2"
+         data-testid="bandeau-incarnation" role="status">
+        <span>@libelleBandeau</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-testid="revenir-identite-reelle"
+                @onclick="RevenirIdentiteReelle">Revenir à mon identité</button>
+    </div>
+}
+
+@* Durcissement du gating règle 9 (Sc.6, D1) : TOUTES les écritures de configuration (édition d'acteur,
+   ajout, cycle de fond) sont gardées sur l'identité EFFECTIVE — un Invité ou un acteur « Autre » incarné
+   ne les voit pas. La LECTURE (liste des acteurs en bas) reste visible. Le bouton supprimer est déjà gaté
+   plus bas (s13). *@
+@if (Session.EstParent)
+{
 <p class="text-muted">Renommer et/ou recolorier un acteur du foyer. La grille (case datée et
     légende) suit immédiatement, sans recharger la page. L'identifiant stable de l'acteur ne change
     jamais ; choisissez un acteur — son nom courant est pré-rempli — puis ajustez le nom et/ou la couleur.</p>
@@ -130,6 +151,7 @@
 @if (_motifEchecCycle is not null)
 {
     <div class="alert alert-danger mt-3" data-testid="motif-echec-cycle">@_motifEchecCycle</div>
+}
 }
 
 <h2 class="h5 mt-4 mb-3">Acteurs du foyer</h2>
