@@ -1,6 +1,6 @@
 # Sprint 16 — Supprimer une période depuis le menu clic-case (`supprimer-editer-periode`)
 
-> **Avancement : 4/10 ⏳**
+> **Avancement : 5/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -8,7 +8,7 @@
 | 2 | Repli fond : la case retombe sur le responsable de fond (le cycle reprend) | @back | ✅ |
 | 3 | Repli neutre sans nom fantôme (index non résolu) | @back | ✅ |
 | 4 | Lister les périodes couvrant une date (alimente la dialog) | @back | ✅ |
-| 5 | Idempotence : supprimer une période absente / déjà supprimée = no-op qui réussit | @back | ⏳ |
+| 5 | Idempotence : supprimer une période absente / déjà supprimée = no-op qui réussit | @back | ✅ |
 | 6 | Menu clic-case → dialog liste les périodes → supprimer → grille relue + accusé | 🖥️ @ihm | ⏳ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ⏳ |
 | 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ⏳ |
@@ -144,7 +144,7 @@ Scenario: La lecture des périodes d'une date renvoie celles qui la couvrent, av
   Et la liste des périodes couvrant le jeudi 18 juin 2026 est vide
 ```
 
-### Scenario 5 — Idempotence : supprimer une période absente ou déjà supprimée réussit sans effet `@back` `@pending`
+### Scenario 5 — Idempotence : supprimer une période absente ou déjà supprimée réussit sans effet `@back` `@vert`
 
 ```gherkin
 Scenario: Supprimer une période inexistante ne change rien et ne lève aucune erreur
