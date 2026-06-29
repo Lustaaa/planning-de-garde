@@ -4,6 +4,7 @@
 # itération rapide, moins reproductible qu'une image figée) :
 #   - mongo : store de la config foyer durable (acteurs : noms, couleurs, ajouts). SEULE donnée
 #             persistée (borne anti-cliquet règle 30 ; slots/périodes/transferts restent InMemory).
+#   - mongo-express : IHM web d'inspection des collections Mongo (http://localhost:8081).
 #   - build : étape one-shot. Restaure puis builde Api PUIS Web SÉQUENTIELLEMENT (une seule passe,
 #             aucune concurrence) → évite la race CS2012 (« used by another process ») observée
 #             quand deux hôtes recompilent en parallèle Domain.dll/Application.dll partagés.
@@ -38,6 +39,22 @@ services:
       - "27017:27017"
     volumes:
       - mongo-data:/data/db
+
+  # IHM d'inspection des collections Mongo (config foyer durable). Web UI sur http://localhost:8081.
+  # Auth basique désactivée (usage local). Atlas n'est PAS conteneurisable (service cloud) → mongo-express.
+  mongo-express:
+    image: mongo-express:1.0.2
+    container_name: planning-de-garde-mongo-express
+    depends_on:
+      mongo:
+        condition: service_started
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
+      ME_CONFIG_BASICAUTH: "false"
+    ports:
+      - "8081:8081"
+    restart: unless-stopped
 
   # Étape de build SÉQUENTIELLE (Api puis Web) — restaure depuis nuget.org seul (nuget.docker.config,
   # sans la source offline Windows de nuget.config qui n'existe pas en Linux). Se termine puis libère

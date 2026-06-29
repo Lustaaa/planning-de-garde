@@ -9,6 +9,7 @@ la même URL pour l'utilisateur.
 | Hôte d'API | http://localhost:5180 | canal écriture + lecture + hub SignalR |
 | Exploration API (Scalar) | http://localhost:5180/scalar/v1 | UI interactive de l'API |
 | Mongo | mongodb://localhost:27017 | config foyer durable (acteurs) |
+| mongo-express | http://localhost:8081 | IHM d'inspection des collections Mongo |
 
 ---
 
