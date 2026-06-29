@@ -1,13 +1,13 @@
 # Sprint 16 — Supprimer une période depuis le menu clic-case (`supprimer-editer-periode`)
 
-> **Avancement : 3/10 ⏳**
+> **Avancement : 4/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Supprimer une période la retire du store durable relu (+ redémarrage) | @back | ✅ |
 | 2 | Repli fond : la case retombe sur le responsable de fond (le cycle reprend) | @back | ✅ |
 | 3 | Repli neutre sans nom fantôme (index non résolu) | @back | ✅ |
-| 4 | Lister les périodes couvrant une date (alimente la dialog) | @back | ⏳ |
+| 4 | Lister les périodes couvrant une date (alimente la dialog) | @back | ✅ |
 | 5 | Idempotence : supprimer une période absente / déjà supprimée = no-op qui réussit | @back | ⏳ |
 | 6 | Menu clic-case → dialog liste les périodes → supprimer → grille relue + accusé | 🖥️ @ihm | ⏳ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ⏳ |
@@ -131,7 +131,7 @@ Scenario: Supprimer une période sur un index de fond non mappé fait retomber s
   Et la case du mardi 16 juin 2026 n'affiche aucun nom de responsable
 ```
 
-### Scenario 4 — Lister les périodes couvrant une date alimente la dialog `@back` `@pending`
+### Scenario 4 — Lister les périodes couvrant une date alimente la dialog `@back` `@vert`
 
 ```gherkin
 Scenario: La lecture des périodes d'une date renvoie celles qui la couvrent, avec leur identité
