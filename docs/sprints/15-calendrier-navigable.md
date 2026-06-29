@@ -105,7 +105,7 @@ Scenario Outline: Changer de vue redimensionne la fenêtre en gardant l'ancre lu
 
 ### Scenario 3 — Fenêtre par défaut à l'ouverture = 4 semaines glissantes
 
-`@limite`
+`@limite` `@vert`
 
 ```gherkin
 Scenario: À l'ouverture, le planning montre 4 semaines glissantes depuis la semaine en cours

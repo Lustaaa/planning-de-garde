@@ -23,7 +23,8 @@ namespace PlanningDeGarde.Web.Tests;
 /// </summary>
 internal static class GrilleRuntimeHarness
 {
-    // Lundi 29/06/2026 : date de référence des scénarios (début de la fenêtre de 5 semaines).
+    // Lundi 29/06/2026 : date de référence des scénarios (début de la fenêtre par défaut de
+    // 4 semaines glissantes — re-pointé du 5 → 4 semaines par Sprint 15 Sc.3).
     public static readonly DateTime Lundi_29_06_2026 = new(2026, 6, 29);
 
     /// <summary>Client HTTP du front pointé sur le transport réel de l'API distante in-test.</summary>
@@ -112,9 +113,10 @@ internal static class GrilleRuntimeHarness
         var grille = ctx.RenderComponent<PlanningPartage>();
 
         // Le chargement de la grille (GET HTTP vers l'API distante) est asynchrone : on attend que la
-        // fenêtre soit réellement projetée (35 cases-jour rendues) avant d'observer nom/légende.
+        // fenêtre par défaut soit réellement projetée (28 cases-jour rendues, 4 semaines glissantes —
+        // re-pointé du 5 → 4 semaines par Sc.3) avant d'observer nom/légende.
         grille.WaitForState(
-            () => grille.FindAll("[data-testid='jour-case']").Count == 35,
+            () => grille.FindAll("[data-testid='jour-case']").Count == 28,
             TimeSpan.FromSeconds(10));
 
         return grille;

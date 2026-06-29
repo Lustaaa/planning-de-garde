@@ -73,7 +73,7 @@ public sealed class FrontWasmGrilleInverserMappingCycleTempsReelTests : TestCont
         // 29/06/2026 — sans aucune saisie de période. Son chargement (GET HTTP réel) est asynchrone.
         var grille = RenderComponent<PlanningPartage>();
         grille.WaitForState(
-            () => grille.FindAll("[data-testid='jour-case']").Count == 35,
+            () => grille.FindAll("[data-testid='jour-case']").Count == 28,
             TimeSpan.FromSeconds(10));
 
         // … baseline (anti faux-vert) : la semaine ISO 28 (paire, index 0) résout le fond Parent A « Alice »

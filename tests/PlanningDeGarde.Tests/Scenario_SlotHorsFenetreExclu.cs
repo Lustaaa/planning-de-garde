@@ -101,17 +101,18 @@ public class Scenario_SlotHorsFenetreExclu
         Assert.Equal(1, grille.Jours.Sum(j => j.Slots.Count));
     }
 
-    // Test #2 — absence de case hors borne couplée à la cardinalité 35 : aucune case n'est
-    // datée du 03/08 alors que la grille compte exactement 35 cases internes. Une grille qui
-    // s'étendrait jusqu'au slot le plus lointain (au lieu de 35 jours fixes) échoue.
+    // Test #2 — absence de case hors borne couplée à la cardinalité 28 (défaut 4 semaines, re-pointé
+    // Sc.3) : aucune case n'est datée du 03/08 alors que la grille compte exactement 28 cases
+    // internes. Une grille qui s'étendrait jusqu'au slot le plus lointain (au lieu de 28 jours fixes)
+    // échoue.
     [Fact]
-    public void Should_Ne_creer_aucune_case_datee_du_03_08_2026_When_la_fenetre_s_arrete_au_dimanche_26_07_2026()
+    public void Should_Ne_creer_aucune_case_datee_du_03_08_2026_When_la_fenetre_s_arrete_au_dimanche_19_07_2026()
     {
         var query = Query();
 
         var grille = query.Projeter(Date_24_06_2026);
 
-        Assert.Equal(35, grille.Jours.Count);
+        Assert.Equal(28, grille.Jours.Count);
         Assert.DoesNotContain(grille.Jours, j => j.Date == Lundi_03_08_2026);
     }
 }

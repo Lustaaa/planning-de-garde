@@ -138,12 +138,13 @@ public sealed class FrontWasmGrilleDeuxEcransCycleDerniereEcritureGagneTempsReel
     }
 
     /// <summary>Rend la grille réelle dans le contexte (services déjà enregistrés) à la date de référence et
-    /// attend que la fenêtre soit projetée (35 cases-jour) — chargement GET HTTP réel asynchrone.</summary>
+    /// attend que la fenêtre par défaut soit projetée (28 cases-jour, 4 semaines glissantes — re-pointé
+    /// du 5 → 4 semaines par Sc.3) — chargement GET HTTP réel asynchrone.</summary>
     private static IRenderedComponent<PlanningPartage> RendreGrille(Bunit.TestContext ctx)
     {
         var grille = ctx.RenderComponent<PlanningPartage>();
         grille.WaitForState(
-            () => grille.FindAll("[data-testid='jour-case']").Count == 35,
+            () => grille.FindAll("[data-testid='jour-case']").Count == 28,
             TimeSpan.FromSeconds(10));
         return grille;
     }

@@ -70,10 +70,11 @@ public sealed class FrontWasmGrilleCycleDeFondParPariteIsoTempsReelTests : TestC
 
         // … la grille réellement câblée à la MÊME API distante est affichée à la date de référence
         // lundi 29/06/2026 (ISO 27, impaire) — sans aucune saisie de période. Son chargement (GET HTTP
-        // réel vers l'API distante) est asynchrone : on attend que la fenêtre soit projetée (35 cases).
+        // réel vers l'API distante) est asynchrone : on attend que la fenêtre par défaut soit projetée
+        // (28 cases, 4 semaines glissantes — re-pointé du 5 → 4 semaines par Sc.3).
         var grille = RenderComponent<PlanningPartage>();
         grille.WaitForState(
-            () => grille.FindAll("[data-testid='jour-case']").Count == 35,
+            () => grille.FindAll("[data-testid='jour-case']").Count == 28,
             TimeSpan.FromSeconds(10));
 
         // Then — la semaine ISO 27 (impaire, index 1) résout le fond Parent B : « Bruno » en orange.

@@ -7,8 +7,9 @@ namespace PlanningDeGarde.Application;
 
 /// <summary>
 /// Projection de lecture (CQRS) de la grille agenda du hub /planning. Construit la fenêtre
-/// de 5 semaines (35 jours datés) à partir de la semaine de la date de référence injectée,
-/// en lisant les slots et périodes enregistrés. N'écrit jamais : aucune dépendance vers un
+/// par défaut de 4 semaines glissantes (28 jours datés) à partir de la semaine de la date de
+/// référence injectée — ou une fenêtre dimensionnée par la <c>VuePlanning</c> choisie — en
+/// lisant les slots et périodes enregistrés. N'écrit jamais : aucune dépendance vers un
 /// handler ou un agrégat d'écriture (invariant « lecture seule » garanti par construction).
 /// </summary>
 public sealed class GrilleAgendaQuery
@@ -61,7 +62,7 @@ public sealed class GrilleAgendaQuery
     }
 
     public GrilleAgenda Projeter(DateOnly dateReference)
-        => ProjeterFenetre(LundiDeLaSemaineDe(dateReference), 35);
+        => Projeter(dateReference, VuePlanning.QuatreSemaines);
 
     private GrilleAgenda ProjeterFenetre(DateOnly premierJour, int nbJours)
     {
