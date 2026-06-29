@@ -40,17 +40,38 @@ public sealed class GrilleAgendaQuery
     /// Projette la grille agenda à la <paramref name="dateReference"/> donnée (« aujourd'hui »,
     /// injecté pour le déterminisme — jamais <c>DateTime.Now</c>).
     /// </summary>
-    public GrilleAgenda Projeter(DateOnly dateReference)
+    /// <summary>
+    /// Projette la grille à l'<paramref name="ancre"/> donnée selon la <paramref name="vue"/>
+    /// choisie (span : Semaine 7 j / 4 semaines 28 j / Mois = semaines ISO du mois). Re-projection
+    /// pure : chaque case se re-résout à sa propre date (surcharge &gt; fond &gt; neutre).
+    /// </summary>
+    public GrilleAgenda Projeter(DateOnly ancre, VuePlanning vue)
     {
-        var lundiDeLaSemaine = LundiDeLaSemaineDe(dateReference);
+        if (vue == VuePlanning.Mois)
+        {
+            var premierDuMois = new DateOnly(ancre.Year, ancre.Month, 1);
+            var dernierDuMois = premierDuMois.AddMonths(1).AddDays(-1);
+            var premierLundi = LundiDeLaSemaineDe(premierDuMois);
+            var dernierDimanche = LundiDeLaSemaineDe(dernierDuMois).AddDays(6);
+            return ProjeterFenetre(premierLundi, dernierDimanche.DayNumber - premierLundi.DayNumber + 1);
+        }
 
+        var nbJours = vue == VuePlanning.Semaine ? 7 : 28;
+        return ProjeterFenetre(LundiDeLaSemaineDe(ancre), nbJours);
+    }
+
+    public GrilleAgenda Projeter(DateOnly dateReference)
+        => ProjeterFenetre(LundiDeLaSemaineDe(dateReference), 35);
+
+    private GrilleAgenda ProjeterFenetre(DateOnly premierJour, int nbJours)
+    {
         var slotsParJour = _slots.AllSnapshots()
             .ToLookup(snapshot => DateOnly.FromDateTime(snapshot.Debut));
 
         var periodes = _periodes.AllSnapshots();
 
-        var jours = Enumerable.Range(0, 35)
-            .Select(offset => lundiDeLaSemaine.AddDays(offset))
+        var jours = Enumerable.Range(0, nbJours)
+            .Select(offset => premierJour.AddDays(offset))
             .Select(date => CaseJourAu(date, periodes, slotsParJour[date]))
             .ToList();
 
@@ -59,7 +80,7 @@ public sealed class GrilleAgendaQuery
             .Select(septJours => new SemaineLigne(septJours.ToList()))
             .ToList();
 
-        var legende = LegendeDesPresents(periodes, lundiDeLaSemaine, lundiDeLaSemaine.AddDays(34));
+        var legende = LegendeDesPresents(periodes, premierJour, premierJour.AddDays(nbJours - 1));
 
         return new GrilleAgenda(jours, semaines, legende);
     }

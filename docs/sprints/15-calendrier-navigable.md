@@ -85,7 +85,7 @@ Scenario Outline: Se déplacer d'une semaine décale la fenêtre et re-résout l
 
 ### Scenario 2 — Basculer entre les vues prédéfinies
 
-`@nominal`
+`@nominal` `@vert`
 
 ```gherkin
 Scenario Outline: Changer de vue redimensionne la fenêtre en gardant l'ancre lundi
