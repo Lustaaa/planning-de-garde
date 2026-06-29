@@ -1,6 +1,6 @@
 # Sprint 16 — Supprimer une période depuis le menu clic-case (`supprimer-editer-periode`)
 
-> **Avancement : 6/10 ⏳**
+> **Avancement : 7/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -10,7 +10,7 @@
 | 4 | Lister les périodes couvrant une date (alimente la dialog) | @back | ✅ |
 | 5 | Idempotence : supprimer une période absente / déjà supprimée = no-op qui réussit | @back | ✅ |
 | 6 | Menu clic-case → dialog liste les périodes → supprimer → grille relue + accusé | 🖥️ @ihm | ✅ |
-| 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ⏳ |
+| 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ✅ |
 | 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ⏳ |
 | 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
 | 10 | Temps réel : la suppression propage grille + légende sans rechargement | 🖥️ @ihm | ⏳ |
@@ -176,7 +176,7 @@ Scenario: Supprimer une période depuis sa dialog la retire et fait re-résoudre
   Et la période est absente du store Mongo relu
 ```
 
-### Scenario 7 — Annulation : fermer la dialog sans supprimer ne change rien `@ihm` `@pending`
+### Scenario 7 — Annulation : fermer la dialog sans supprimer ne change rien `@ihm` `@vert`
 
 ```gherkin
 Scenario: Fermer la dialog sans confirmer de suppression laisse périodes et grille inchangées
