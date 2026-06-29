@@ -60,12 +60,12 @@
 
 | # | Scénario | Tag | Acceptation | Tests | Statut |
 |---|----------|-----|-------------|-------|--------|
-| 1 | [Incarner un acteur déclaré : bandeau + vue selon son rôle](01-incarner-reflete-role.md) | `@nominal` 🖥️ IHM · driver · runtime `ihm-builder` | ✅ GREEN | 4/4 | ✅ GREEN |
-| 2 | [Revenir à l'identité réelle : bandeau retiré, état restauré](02-revenir-identite-reelle.md) | `@nominal` 🖥️ IHM · driver · runtime `ihm-builder` | ✅ GREEN (early) | 1/1 | ✅ GREEN |
-| 3 | [Incarner un identifiant inconnu : refus, identité réelle conservée](03-incarner-acteur-inconnu-refus.md) | `@erreur` 🖥️ IHM · driver · runtime `ihm-builder` | ✅ GREEN (early) | 1/1 | ✅ GREEN |
-| 4 | [Pas d'écriture « au nom de » : l'écriture aboutit sous l'identité réelle](04-ecriture-sous-identite-reelle.md) | `@limite` 🖥️ IHM · caractérisation (⚠️ early green) · runtime `ihm-builder` | ✅ GREEN (early) | 1/1 | ✅ GREEN |
-| 5 | [Concurrence : l'acteur incarné est supprimé → retour auto à l'identité réelle](05-concurrence-suppression-retour-auto.md) | `@limite` 🖥️ IHM · driver · runtime / G3 (diffusion temps réel) `ihm-builder` | ✅ GREEN | 1/1 | ✅ GREEN |
-| 6 | [Durcissement gating config : un « Autre » incarné masque toutes les écritures](06-durcissement-gating-config.md) | `@erreur` 🖥️ IHM · driver · runtime / G3 · **CUTTABLE** `ihm-builder` | ✅ GREEN | 1/1 | ✅ GREEN |
+| 1 | [Incarner un acteur déclaré : bandeau + vue selon son rôle](archive/01-incarner-reflete-role.md) | `@nominal` 🖥️ IHM · driver · runtime `ihm-builder` | ✅ GREEN | 4/4 | ✅ GREEN |
+| 2 | [Revenir à l'identité réelle : bandeau retiré, état restauré](archive/02-revenir-identite-reelle.md) | `@nominal` 🖥️ IHM · driver · runtime `ihm-builder` | ✅ GREEN (early) | 1/1 | ✅ GREEN |
+| 3 | [Incarner un identifiant inconnu : refus, identité réelle conservée](archive/03-incarner-acteur-inconnu-refus.md) | `@erreur` 🖥️ IHM · driver · runtime `ihm-builder` | ✅ GREEN (early) | 1/1 | ✅ GREEN |
+| 4 | [Pas d'écriture « au nom de » : l'écriture aboutit sous l'identité réelle](archive/04-ecriture-sous-identite-reelle.md) | `@limite` 🖥️ IHM · caractérisation (⚠️ early green) · runtime `ihm-builder` | ✅ GREEN (early) | 1/1 | ✅ GREEN |
+| 5 | [Concurrence : l'acteur incarné est supprimé → retour auto à l'identité réelle](archive/05-concurrence-suppression-retour-auto.md) | `@limite` 🖥️ IHM · driver · runtime / G3 (diffusion temps réel) `ihm-builder` | ✅ GREEN | 1/1 | ✅ GREEN |
+| 6 | [Durcissement gating config : un « Autre » incarné masque toutes les écritures](archive/06-durcissement-gating-config.md) | `@erreur` 🖥️ IHM · driver · runtime / G3 · **CUTTABLE** `ihm-builder` | ✅ GREEN | 1/1 | ✅ GREEN |
 
 **Total** : 6 scénarios · **9 tests inner-loop `SessionPlanning`** (drivers : Sc.1 #2/#3, Sc.2, Sc.3,
 Sc.5, Sc.6 ; caractérisations / early-green : Sc.1 #1 état initial + #4 Admin, Sc.4 écriture). **Tous

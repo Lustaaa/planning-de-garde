@@ -47,6 +47,9 @@
 
 | Date | Cible (agent/skill/command) | Observation | Recommandation |
 |------|-----------------------------|-------------|----------------|
+| 2026-06-28 | tdd-analyse (prédiction early-green) | La cascade early-green IHM a été **bien prédite** ce sprint : Sc.2/3/4 sont tombés early-green ATTENDUS (socle posé par Sc.1), zéro escalade CP parasite — contraste avec s11 (3 escalades inattendues). Le correctif rétro s13 A2 (vérifier le câblage prérequis avant d'étiqueter) a payé. | Conserver. Point positif à acter au bilan rétro (preuve que A2 fonctionne). |
+| 2026-06-28 | ihm-builder (réentrance renderer bUnit) | Sc.5 (retour auto SignalR) a heurté un **stack overflow** par réentrance du renderer bUnit (clic-menu réentrant pendant la pompe de diffusion) ; corrigé en déplaçant le clic APRÈS l'arrêt de la pompe. Piège runtime non documenté dans la convention *TempsReel*. | Ajouter à la convention anti-flake *TempsReel* (`tdd-implement`/`ihm-builder`) : ne pas déclencher d'interaction réentrante (`@onclick`) pendant que la pompe de diffusion tourne — arrêter la pompe d'abord. |
+| 2026-06-28 | ihm-builder / dette P2 | Flake *TempsReel* sous charge parallèle persiste (1/30, convergence SignalR, vert en isolation). Le garde `WaitForState` (rétro s13 A1) couvre la course `UnknownEventHandlerId` mais pas la convergence SignalR multi-écrans sous charge. | Le rétrofit P2 (backlog rang +3) doit cibler la **convergence SignalR multi-clients**, distincte de la course d'énumération déjà gardée. |
 
 # Décisions autonomes (chef de projet)
 
