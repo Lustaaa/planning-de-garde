@@ -3,7 +3,18 @@
 > Plan Gherkin monolithique. Sujet `/2-make-gherkin` = `calendrier-navigable` (épics É4 + É7), spec `docs/15-specification.md`.
 > Décision CP (option 3) : **navigation complète + 1 scénario plage-preuve**. Variantes plage (plage vide,
 > chevauchement, à cheval sur vue/mois, drag riche) **reportées tranche 2** (à consigner au backlog en `/4-retours`).
-> Borne dure : **zéro persistance neuve** — la navigation est un pur paramétrage de lecture (ancre + vue en session/mémoire front).
+>
+> **Révision PO (hors process, post-conteneurisation).** Le sprint **absorbe le palier 14** : la **borne
+> « zéro persistance neuve » est LEVÉE**. Deux blocs s'ajoutent à la navigation :
+> 1. **Persistance Mongo de TOUT le domaine** (slots / périodes / transferts / cycle de fond), derrière les
+>    ports existants — pas seulement la config foyer (livrée s09).
+> 2. **Démarrage sans seed en runtime** : sur store Mongo vierge, l'app ouvre **totalement vide** (ni acteurs,
+>    ni items) ; dès qu'on saisit, c'est **durable** et rechargé aux lancements suivants.
+>
+> **Asymétrie seed (clé).** *Runtime/Mongo* = aucun seed, jamais (vide → durable). *Tests/InMemory* = on
+> **garde** le seed de base (acteurs/données). La suite de non-régression reste verte en InMemory ; la
+> durabilité se prouve sur **Mongo réel** (Docker, façon s09). L'état de **navigation** (ancre + vue) reste,
+> lui, en session/mémoire front et ne persiste pas.
 
 **Feature: Calendrier navigable du hub /planning.** Faire de `/planning` un agenda navigable :
 se déplacer dans le passé et le futur (semaine précédente / suivante), choisir une vue prédéfinie
@@ -11,7 +22,8 @@ se déplacer dans le passé et le futur (semaine précédente / suivante), chois
 — amorce bornée — sélectionner une plage de cases contiguës pour affecter une période sur l'intervalle.
 La grille reste en **lecture seule** : la navigation ne fait que **re-projeter** la fenêtre (les cases se
 re-résolvent à la date naviguée — fond par parité ISO, surcharges, slots), et l'affectation par plage
-réutilise le canal d'écriture déjà livré. Aucune donnée nouvelle n'est persistée.
+réutilise le canal d'écriture déjà livré. **Le store du domaine devient durable (Mongo)** ; la navigation,
+elle, ne persiste rien.
 
 ## Analyse technique
 
@@ -32,8 +44,15 @@ Légère, à titre d'orientation — la frontière s'arrête à l'Application (r
   `[début, fin]` — **aucun handler ni port neuf**. La sélection de 2 cases contiguës émet **une** période couvrant les
   2 jours ; réapparition par **relecture**, diffusion SignalR inchangée. Le **gating règle 9** (déclencheur d'écriture
   réservé aux Parents/Admin) est mutualisé.
-- **Persistance.** Aucune. Slots / périodes / cycle restent **InMemory** ; l'état de navigation ne survit pas au
-  redémarrage (borne anti-cliquet, règle 30).
+- **Persistance (bloc C, NOUVEAU — palier 14 absorbé).** Le **domaine entier** persiste en **Mongo** : 4
+  adaptateurs de droite neufs dans `PlanningDeGarde.AdapterDroite.Mongo` (slots, périodes, transferts, cycle de
+  fond) implémentant les **ports existants** (impls InMemory déjà présentes, conservées pour les tests). La **DI**
+  commute **tout** le domaine droite selon le mode de persistance — **Mongo** en runtime, **InMemory forcé** sous
+  l'environnement de test —, généralisant le flag `Foyer:Persistance` aujourd'hui borné à la config foyer.
+- **Démarrage sans seed (runtime).** Retrait de l'amorçage de démo (`AmorcerDonneesDemo`) **et** du seed-once des
+  acteurs côté `ConfigurationFoyerMongo` → premier lancement Mongo **vide** (ni acteurs, ni items). Les défauts
+  **InMemory** sont conservés (tests). L'état de **navigation** (ancre/vue) reste en session/mémoire front et ne
+  survit pas au redémarrage.
 
 **Ancrage concret commun aux scénarios.** Cycle de fond **N = 2** : index 0 → **Alice** (vert), index 1 → **Bruno** (bleu).
 Date du jour des scénarios = **mercredi 10/06/2026**, donc **semaine en cours = lundi 08/06/2026** (ISO **24**, paire →
@@ -163,3 +182,44 @@ Scenario: Un Invité navigue librement mais ne peut affecter aucune période par
   Then aucun déclencheur d'écriture ni dialog d'affectation ne s'ouvre
   And aucune période n'est enregistrée
 ```
+
+### Scenario 8 — Premier lancement sur store Mongo vierge : application vide
+
+`@limite`
+
+```gherkin
+Scenario: Au tout premier lancement sur une base vierge, rien n'est seedé
+  Given un store Mongo vierge (aucune session précédente)
+  And l'application démarre en persistance "Mongo"
+  When j'ouvre le hub /planning
+  Then aucun acteur n'est listé dans la configuration du foyer
+  And la grille n'affiche aucun slot, aucune période ni aucun transfert
+  And aucun cycle de fond n'est défini
+```
+
+### Scenario 9 — Chaque item du domaine survit au redémarrage (Mongo)
+
+`@nominal` — acceptation runtime sur **store réel** (rempart anti vert-qui-ment).
+
+```gherkin
+Scenario Outline: Un item saisi en mode Mongo persiste après redémarrage de l'hôte d'API
+  Given l'application démarre en persistance "Mongo" sur un store vierge
+  And j'ai créé l'acteur "Alice" et défini un cycle de fond de 2 semaines mappé "index 0 → Alice"
+  And j'ai enregistré <item>
+  When l'hôte d'API redémarre
+  Then <item> est toujours présent et projeté dans la grille
+  And l'acteur "Alice" et le cycle de fond sont toujours présents
+
+  Examples:
+    | item                                                        |
+    | un slot (enfant → lieu, date donnée)                        |
+    | une période affectée à "Alice" sur un intervalle de 2 jours |
+    | un transfert (dépositaire, récupérateur, lieu, date, heure) |
+    | le cycle de fond de 2 semaines lui-même                     |
+```
+
+> **Note d'implémentation (BDD).** Le Scénario 9 (outline) est la **boucle externe** qui pilote la création des
+> 4 adaptateurs Mongo, un type d'item par ligne. Les scénarios fonctionnels existants (slots/périodes/transferts/
+> cycle, déjà verts) ne changent **pas de comportement** — ils sont seulement re-pointés sur le store durable.
+> **Garde-fou de séparation** (sans scénario codant dédié) : la suite tourne en **InMemory seedé** ; seuls les
+> Scénarios 8-9 exercent **Mongo réel**.
