@@ -39,4 +39,21 @@ public sealed class SessionPlanningNavigationTests
         // L'ancre recule d'une semaine, sur le lundi précédent (ISO 23) : 01/06/2026.
         Assert.Equal(new DateOnly(2026, 6, 1), session.Ancre);
     }
+
+    [Fact]
+    public void Should_Reinitialiser_l_ancre_a_la_semaine_de_la_date_du_jour_When_l_utilisateur_demande_le_retour_a_aujourd_hui()
+    {
+        // Caractérisation (Sc.4, ⚠️ early green) de la plomberie de navigation : une fois l'ancre mutable
+        // de Sc.1 posée, « Aujourd'hui » est un reset à la semaine en cours. La preuve d'acceptation reste
+        // RUNTIME (FrontWasmRetourAujourdhuiTempsReelTests). Ici on fige le contrat du reset d'ancre.
+        var session = new SessionPlanning();
+        session.InitialiserAncre(Mercredi_10_06_2026); // → lundi de la semaine = 08/06
+        session.SemaineSuivante();
+        session.SemaineSuivante(); // ancre décalée au lundi 22/06
+
+        session.RevenirAujourdhui(Mercredi_10_06_2026);
+
+        // L'ancre re-cale sur le lundi de la date du jour (08/06), quel que soit le décalage accumulé.
+        Assert.Equal(new DateOnly(2026, 6, 8), session.Ancre);
+    }
 }

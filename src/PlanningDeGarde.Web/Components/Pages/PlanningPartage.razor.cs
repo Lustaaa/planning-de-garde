@@ -176,6 +176,15 @@ public partial class PlanningPartage
         await ChargerAsync();
     }
 
+    /// <summary>« Aujourd'hui » (Sc.4) : réinitialise l'ancre à la semaine en cours (lundi de la date du
+    /// jour, via le port d'horloge injecté), quel que soit le décalage de navigation accumulé, puis
+    /// re-projette en re-requêtant l'API distante à l'ancre réinitialisée. Aucune écriture (lecture seule).</summary>
+    private async Task DemanderRetourAujourdhui()
+    {
+        Session.RevenirAujourdhui(Horloge.Aujourdhui);
+        await ChargerAsync();
+    }
+
     /// <summary>Revient à l'identité réelle (bouton du bandeau d'incarnation, Sc.2) : l'incarnation est
     /// levée, la vue restaurée à l'identité réelle de l'utilisateur principal. Aucune écriture.</summary>
     private void RevenirIdentiteReelle()

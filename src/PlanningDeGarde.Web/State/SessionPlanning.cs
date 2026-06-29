@@ -52,6 +52,12 @@ public sealed class SessionPlanning
     /// lundi. Re-projection pure (lecture seule).</summary>
     public void SemainePrecedente() => _ancre = Ancre.AddDays(-7);
 
+    /// <summary>Réinitialise l'ancre à la <b>semaine en cours</b> (Sc.4, « Aujourd'hui ») : l'ancre
+    /// re-cale sur le lundi de <paramref name="aujourdHui"/> (date du jour via le port d'horloge,
+    /// jamais <c>DateTime.Now</c>), quel que soit le décalage de navigation accumulé. Re-projection
+    /// pure : la grille se re-résout à la semaine en cours, aucune écriture émise.</summary>
+    public void RevenirAujourdhui(DateOnly aujourdHui) => _ancre = LundiDeLaSemaine(aujourdHui);
+
     /// <summary>Lundi (ISO) de la semaine de la date donnée — l'ancre de navigation est toujours un début
     /// de semaine, comme la fenêtre projetée. Logique de présentation (quelle semaine afficher), pas une
     /// règle métier.</summary>

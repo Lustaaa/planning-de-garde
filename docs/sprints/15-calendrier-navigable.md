@@ -120,7 +120,7 @@ Scenario: À l'ouverture, le planning montre 4 semaines glissantes depuis la sem
 
 ### Scenario 4 — Retour à la semaine en cours après navigation
 
-`@limite`
+`@limite` `@vert`
 
 ```gherkin
 Scenario: Le bouton "Aujourd'hui" ramène la fenêtre sur la semaine en cours
