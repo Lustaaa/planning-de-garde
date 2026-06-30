@@ -1,6 +1,6 @@
 # Sprint 18 — Supprimer un slot sur une journée depuis le menu clic-case (`supprimer-slot`)
 
-> **Avancement : 4/10 ⏳**
+> **Avancement : 5/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -8,7 +8,7 @@
 | 2 | Slot franchissant minuit : la suppression efface son rendu sur les **deux** jours | @back | ✅ |
 | 3 | Pile horaire : supprimer un slot laisse les autres, dans l'ordre horaire | @back | ✅ |
 | 4 | Lister les slots couvrant une date (alimente la dialog) | @back | ✅ |
-| 5 | Idempotence : supprimer un slot absent / déjà supprimé = no-op qui réussit | @back | ⏳ |
+| 5 | Idempotence : supprimer un slot absent / déjà supprimé = no-op qui réussit | @back | ✅ |
 | 6 | Menu clic-case → dialog liste les slots → supprimer → grille relue + accusé | 🖥️ @ihm | ⏳ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ⏳ |
 | 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ⏳ |
@@ -151,7 +151,7 @@ Scenario: La lecture des slots d'une date renvoie ceux qui la couvrent, avec leu
   Et la liste des slots couvrant le jeudi 18 juin 2026 est vide
 ```
 
-### Scenario 5 — Idempotence : supprimer un slot absent ou déjà supprimé réussit sans effet `@back` `@pending`
+### Scenario 5 — Idempotence : supprimer un slot absent ou déjà supprimé réussit sans effet `@back` `@vert`
 
 ```gherkin
 Scenario: Supprimer un slot inexistant ne change rien et ne lève aucune erreur
