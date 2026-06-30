@@ -88,6 +88,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();
         services.AddScoped<PeriodesDuJourQuery>();
+        services.AddScoped<SlotsDuJourQuery>();
 
         return services;
     }

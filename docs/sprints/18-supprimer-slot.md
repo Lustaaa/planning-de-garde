@@ -1,13 +1,13 @@
 # Sprint 18 — Supprimer un slot sur une journée depuis le menu clic-case (`supprimer-slot`)
 
-> **Avancement : 3/10 ⏳**
+> **Avancement : 4/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Supprimer un slot le retire du store durable relu (+ redémarrage) | @back | ✅ |
 | 2 | Slot franchissant minuit : la suppression efface son rendu sur les **deux** jours | @back | ✅ |
 | 3 | Pile horaire : supprimer un slot laisse les autres, dans l'ordre horaire | @back | ✅ |
-| 4 | Lister les slots couvrant une date (alimente la dialog) | @back | ⏳ |
+| 4 | Lister les slots couvrant une date (alimente la dialog) | @back | ✅ |
 | 5 | Idempotence : supprimer un slot absent / déjà supprimé = no-op qui réussit | @back | ⏳ |
 | 6 | Menu clic-case → dialog liste les slots → supprimer → grille relue + accusé | 🖥️ @ihm | ⏳ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ⏳ |
@@ -138,7 +138,7 @@ Scenario: Supprimer un slot d'une pile laisse les autres slots du jour empilés 
   Et la case du mardi 16 juin 2026 comporte encore "École" 08h30-12h00 puis "Chez Mamie" 17h00-19h00, dans l'ordre horaire
 ```
 
-### Scenario 4 — Lister les slots couvrant une date alimente la dialog `@back` `@pending`
+### Scenario 4 — Lister les slots couvrant une date alimente la dialog `@back` `@vert`
 
 ```gherkin
 Scenario: La lecture des slots d'une date renvoie ceux qui la couvrent, avec leur identité
