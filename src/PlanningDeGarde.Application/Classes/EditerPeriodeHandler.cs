@@ -40,7 +40,13 @@ public sealed class EditerPeriodeHandler
             Debut = commande.NouveauDebut,
             Fin = commande.NouvelleFin,
         };
-        _periodes.Modifier(commande.EtatObserve, modification);
+        // Concurrence optimiste (décision CP : rejet sur état périmé, pas last-write-wins) : le port
+        // n'écrit que si l'état observé est encore l'état courant. Devancé → false → rejet, rien appliqué.
+        var enregistree = _periodes.Modifier(commande.EtatObserve, modification);
+        if (!enregistree)
+            return Result<EditerPeriodeResultat>.Echec(
+                "Édition rejetée : l'état affiché est périmé, veuillez recharger la période à jour.");
+
         return Result<EditerPeriodeResultat>.Succes(new EditerPeriodeResultat(modification));
     }
 }

@@ -1,6 +1,6 @@
 # Sprint 17 — Éditer une période depuis la dialog (`editer-periode`)
 
-> **Avancement : 5/11 ⏳**
+> **Avancement : 6/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -9,7 +9,7 @@
 | 3 | Re-bornage : la portion libérée retombe sur le responsable de fond (le cycle reprend) | @back | ✅ |
 | 4 | Re-bornage : portion libérée sur index non mappé → neutre sans nom fantôme | @back | ✅ |
 | 5 | Bornes invalides (fin ≤ début) refusées, période inchangée | @back | ✅ |
-| 6 | Édition concurrente sur état périmé → rejet, rien appliqué | @back | ⏳ |
+| 6 | Édition concurrente sur état périmé → rejet, rien appliqué | @back | ✅ |
 | 7 | « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé | 🖥️ @ihm | ⏳ |
 | 8 | Annulation : fermer le formulaire sans enregistrer ne change rien | 🖥️ @ihm | ⏳ |
 | 9 | Gating Invité : aucun bouton « Éditer » ni commande émissible | 🖥️ @ihm | ⏳ |
@@ -171,7 +171,7 @@ Scenario: Éditer une période avec une fin antérieure ou égale au début est 
   Et le store relu comporte toujours la période d'origine du lundi 15 au mercredi 17 juin 2026
 ```
 
-### Scenario 6 — Édition concurrente sur état périmé → rejet, rien appliqué `@back` `@pending`
+### Scenario 6 — Édition concurrente sur état périmé → rejet, rien appliqué `@back` `@vert`
 
 > Décision CP : **rejet sur état périmé** (agrégat période, Sc.10 s01), **pas** last-write-wins.
 
