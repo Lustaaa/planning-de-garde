@@ -1,6 +1,6 @@
 # Sprint 18 — Supprimer un slot sur une journée depuis le menu clic-case (`supprimer-slot`)
 
-> **Avancement : 8/10 ⏳**
+> **Avancement : 9/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -12,7 +12,7 @@
 | 6 | Menu clic-case → dialog liste les slots → supprimer → grille relue + accusé | 🖥️ @ihm | ✅ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ✅ |
 | 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ✅ |
-| 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
+| 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ✅ |
 | 10 | Temps réel : la suppression propage la grille sans rechargement | 🖥️ @ihm | ⏳ |
 
 ---
@@ -210,7 +210,7 @@ Scenario: En consultation seule, aucune suppression de slot n'est proposée
   Et le slot "École" reste inchangé
 ```
 
-### Scenario 9 — API injoignable : la dialog reste ouverte, rien n'est appliqué `@ihm` `@pending`
+### Scenario 9 — API injoignable : la dialog reste ouverte, rien n'est appliqué `@ihm` `@vert`
 
 > Échec clair règle 28, registre acquis ; aucune mise en file ni rejeu (PWA = palier ultérieur).
 
