@@ -11,3 +11,9 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   `/sprint`, `/cloture`) ; ~10 agents → 3 (`scrum-master`, `dev-team`, `architecte`) ;
   paperasse de sprint → 1 fichier/sprint avec tableau en tête ; spec monolithique → `docs/specs/`
   éclatée éditée en diff ; rétro impérative → conditionnelle. Skill `dotnet` ajouté.
+- 2026-06-30 — Migration intégrale (architecte, hors pipeline) : monolithe `docs/15-specification.md`
+  (666 l.) → `docs/specs/` éclaté par sujet (11 fichiers neufs + `periodes-et-cycle-de-fond.md`
+  préexistant). `docs/specs/` est désormais la **source complète et courante** ; le monolithe peut
+  être archivé. Anti-duplication : une règle = un texte canonique (R11/12/14/15+R15bis dans
+  `periodes-…`, référencées par le catalogue `regles-de-gestion.md`). `index.md` + `CLAUDE.md`
+  (Source de vérité) resynchronisés.

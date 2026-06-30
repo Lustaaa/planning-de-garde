@@ -97,8 +97,8 @@ email, suivi des heures de la nounou.
 
 🚧 **En développement itératif.** Le 1ᵉʳ sprint (semaine de garde : créneaux,
 périodes, transferts) est livré côté back + IHM ; les retours d'usage nourrissent
-le sprint suivant. La spec est une **documentation vivante**, reversionnée à chaque
-itération à partir des retours.
+le sprint suivant. La spec est une **documentation vivante**, éclatée par sujet et
+éditée en diff à chaque itération.
 
-📄 Spec courante : [`docs/15-specification.md`](docs/15-specification.md)
-*(les versions précédentes, ex. [`docs/14-specification.md`](docs/14-specification.md), restent figées en historique)*
+📄 Spec courante : [`docs/specs/`](docs/specs/index.md) (index navigable par sujet)
+*(les anciens monolithes `docs/NN-specification.md` sont archivés sous [`docs/_archive/`](docs/_archive/) ; `docs/01-specification.md` reste à la racine comme spec d'origine)*
