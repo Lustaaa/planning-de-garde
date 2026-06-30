@@ -14,6 +14,13 @@ Affecter une période / Définir un transfert) ; chaque entrée ouvre une **dial
 (et leurs routes) — slot, période **et transfert** — ont été **retirés** : il n'existe plus qu'**un
 seul chemin d'écriture**, en contexte. L'épic « écriture en contexte » est **refermé**.
 
+> **Menu clic-case = point d'entrée mutualisé.** Au-delà des trois dialogs d'écriture, le menu porte
+> désormais les usages de **cycle de vie** ajoutés par les paliers suivants, tous gatés sur le même
+> déclencheur et alignés sur le même registre d'issues (succès / échec → dialog reste ouverte /
+> accusé-à-part non bloquant / temps réel) : **suppression** (s16) et **édition** (s17) de période
+> (texte canonique dans [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md), R15/R15bis),
+> et **suppression de slot** (s18, ci-dessous).
+
 ## Séquence
 
 **Palier 7 — LIVRÉ COMPLET, épic refermé.** Trois dialogs livrées (Poser un slot, Affecter une
@@ -40,6 +47,18 @@ aucune persistance tirée en avant. Texte complet :
   commande. La **sélection de plage** (palier 9) ouvrira l'affectation sur l'intervalle.
 - **Gating** : le menu n'apparaît qu'aux Parents (consultation seule des Invités préservée), gating
   **mutualisé** sur le déclencheur quelle que soit l'entrée.
+- **Supprimer un slot** *(6ᵉ usage du menu clic-case, livré s18)* → dialog listant les slots
+  **couvrant** la date (`SlotsDuJourQuery` : enfant, lieu, bornes horaires, **identifiant stable** ;
+  lecture seule, ne déclenche **jamais** la diffusion) → bouton supprimer par ligne → commande `POST
+  /api/canal/supprimer-slot` (**idempotente** : id absent / déjà supprimé = **succès no-op** ; clé =
+  identifiant stable, jamais un libellé). **Succès** → **accusé « Slot supprimé » à part** (non
+  bloquant) + **diffusion temps réel** : le slot disparaît de la case relue **et de chacun des deux
+  jours** s'il franchit minuit, la **pile horaire** des autres slots restant **empilée dans l'ordre**.
+  **Échec API** → dialog **reste ouverte**, rien appliqué ; **annulation** → aucune commande émise ;
+  **gating Invité** (R9). *À la différence de la suppression de période, supprimer un slot **n'ouvre
+  AUCUNE règle de résolution** : un slot est une **localisation**, pas une responsabilité — pas de
+  repli surcharge > fond > neutre, aucun effet sur teinte / responsable / légende de la case. Réutilise
+  le store **durable (Mongo, s15)** ; aucune persistance neuve.*
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 *Résolution de la case (surcharge > fond > neutre) & suppression/édition de période :*

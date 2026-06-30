@@ -243,4 +243,7 @@ Scenario: Supprimer un slot sur un écran rafraîchit l'autre écran sans rechar
 
 # Retours produit (PO)
 
-_(à remplir au gate G3 / clôture)_
+**Aucun retour produit nouveau** — gate G3 validé PO (10/10, 270/270). Le retour s17 #1
+(« suppression d'un slot sur une journée ») est **livré** par ce sprint et passé `fait` au backlog
+(épic É6). Friction de méthode (flake P2 *TempsReel* SignalR, Sc.7) traitée en rétro : cf.
+`docs/sprints/JOURNAL-METHODE.md` (2026-06-30) + garde-fou `dev-team`.

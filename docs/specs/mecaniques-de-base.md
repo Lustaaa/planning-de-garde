@@ -19,7 +19,11 @@
   était mappé au cycle, son index devient non mappé → neutre (cf. règle 6, livrée).* (détail :
   [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md))
 - Le hub `/planning` est une grille agenda où les slots sont positionnés dans les cases
-  jour/horaire. Il a vocation à devenir un **calendrier navigable** façon agenda — déplacement dans le
+  jour/horaire. **Un slot qui franchit minuit (ou s'étend sur plusieurs jours) est rendu sur chacun
+  des jours calendaires qu'il couvre** (acquis s01, explicité s18 — l'ensemble des *jours couverts*) :
+  le **supprimer** l'efface **de tous ces jours d'un coup**, les autres slots du jour restant empilés
+  dans l'ordre horaire (cf. [`ecriture-en-contexte.md`](ecriture-en-contexte.md), suppression de slot).
+  Il a vocation à devenir un **calendrier navigable** façon agenda — déplacement dans le
   **passé et le futur**, **vues prédéfinies** (semaine, mois, 4 semaines glissantes), **fenêtre par
   défaut** = 4 semaines glissantes à partir de la semaine en cours, et **sélection d'une plage de
   cases** pour définir une période sur l'intervalle. *Cette navigation est le **prochain sujet**
