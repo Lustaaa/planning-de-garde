@@ -1,6 +1,6 @@
 # Sprint 17 — Éditer une période depuis la dialog (`editer-periode`)
 
-> **Avancement : 9/11 ⏳**
+> **Avancement : 10/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -13,7 +13,7 @@
 | 7 | « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé | 🖥️ @ihm | ✅ |
 | 8 | Annulation : fermer le formulaire sans enregistrer ne change rien | 🖥️ @ihm | ✅ |
 | 9 | Gating Invité : aucun bouton « Éditer » ni commande émissible | 🖥️ @ihm | ✅ |
-| 10 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
+| 10 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ✅ |
 | 11 | Temps réel : l'édition propage grille + légende sans rechargement | 🖥️ @ihm | ⏳ |
 
 ---
@@ -231,7 +231,7 @@ Scenario: En consultation seule, aucune édition de période n'est proposée
   Et la période de "Nounou" reste inchangée
 ```
 
-### Scenario 10 — API injoignable : la dialog reste ouverte, rien n'est appliqué `@ihm` `@pending`
+### Scenario 10 — API injoignable : la dialog reste ouverte, rien n'est appliqué `@ihm` `@vert`
 
 > Échec clair règle 28, registre acquis ; aucune mise en file ni rejeu (PWA = palier ultérieur).
 
