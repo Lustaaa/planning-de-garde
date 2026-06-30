@@ -76,6 +76,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DeplacerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();
         services.AddScoped<ModifierPeriodeHandler>();
+        services.AddScoped<EditerPeriodeHandler>();
         services.AddScoped<SupprimerPeriodeHandler>();
         services.AddScoped<DefinirTransfertHandler>();
         services.AddScoped<EditerActeurHandler>();
