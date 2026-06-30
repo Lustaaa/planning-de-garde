@@ -61,7 +61,8 @@ technique, entre deux sprints.
 ## Artefacts
 
 - `docs/specs/` — **spec vivante éclatée par sujet** + `index.md` navigable, éditée **en diff**
-  (fin du monolithe et du ×10). Migration depuis `docs/15-specification.md` au fil des sprints.
+  (fin du monolithe et du ×10). **Migration intégrale faite** : c'est la source complète et
+  courante ; les monolithes `docs/NN-specification.md` sont figés en historique.
 - `docs/BACKLOG.md` — **backlog produit vivant** : retours persistants (rien ne se perd), source
   des goals.
 - `docs/sprints/NN-<slug>.md` — **1 fichier par sprint** : tableau d'avancement en tête (X/N,

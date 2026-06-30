@@ -4,7 +4,7 @@ App de planning de garde d'enfants partagé entre parents/intervenants. Pilotée
 
 ## Source de vérité
 
-- **Produit** : `README.md` (pitch) · spec vivante **éclatée par sujet** sous `docs/specs/` (index navigable `docs/specs/index.md`), éditée **en diff**. Migration en cours : tant qu'un sujet n'y est pas découpé, la source figée reste `docs/15-specification.md` (dernière monolithique). Les `docs/NN-specification.md` restent figées en historique.
+- **Produit** : `README.md` (pitch) · spec vivante **éclatée par sujet** sous `docs/specs/` (index navigable `docs/specs/index.md`), éditée **en diff**. **Migration intégrale faite** : `docs/specs/` est la **source complète et courante** (tout `docs/15-specification.md` y est migré). Les monolithes `docs/NN-specification.md` restent **figés en historique** — ne plus s'y référer comme source.
 - **Backlog** : `docs/BACKLOG.md` (backlog produit **vivant** : retours persistants fait / à faire, source des goals candidats).
 - **Pipeline / méthode** : `README-claude.md` (cycle de sprint, étages, conventions de relais).
 
