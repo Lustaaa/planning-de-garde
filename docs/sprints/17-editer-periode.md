@@ -1,13 +1,13 @@
 # Sprint 17 — Éditer une période depuis la dialog (`editer-periode`)
 
-> **Avancement : 3/11 ⏳**
+> **Avancement : 4/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Re-borner une période la met à jour dans le store durable relu (+ redémarrage) | @back | ✅ |
 | 2 | Réaffecter le responsable : la case affiche le nouveau, plus l'ancien | @back | ✅ |
 | 3 | Re-bornage : la portion libérée retombe sur le responsable de fond (le cycle reprend) | @back | ✅ |
-| 4 | Re-bornage : portion libérée sur index non mappé → neutre sans nom fantôme | @back | ⏳ |
+| 4 | Re-bornage : portion libérée sur index non mappé → neutre sans nom fantôme | @back | ✅ |
 | 5 | Bornes invalides (fin ≤ début) refusées, période inchangée | @back | ⏳ |
 | 6 | Édition concurrente sur état périmé → rejet, rien appliqué | @back | ⏳ |
 | 7 | « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé | 🖥️ @ihm | ⏳ |
@@ -146,7 +146,7 @@ Scenario: Re-borner une période libère une journée qui retombe sur le respons
   Et la case du lundi 15 juin 2026 affiche "Parent A" et sa couleur
 ```
 
-### Scenario 4 — Re-bornage : portion libérée sur index non mappé → neutre sans nom fantôme `@back` `@pending`
+### Scenario 4 — Re-bornage : portion libérée sur index non mappé → neutre sans nom fantôme `@back` `@vert`
 
 ```gherkin
 Scenario: Re-borner une période libère une journée sur un index de fond non mappé qui retombe sur le neutre
