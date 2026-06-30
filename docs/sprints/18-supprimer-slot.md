@@ -1,12 +1,12 @@
 # Sprint 18 — Supprimer un slot sur une journée depuis le menu clic-case (`supprimer-slot`)
 
-> **Avancement : 2/10 ⏳**
+> **Avancement : 3/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Supprimer un slot le retire du store durable relu (+ redémarrage) | @back | ✅ |
 | 2 | Slot franchissant minuit : la suppression efface son rendu sur les **deux** jours | @back | ✅ |
-| 3 | Pile horaire : supprimer un slot laisse les autres, dans l'ordre horaire | @back | ⏳ |
+| 3 | Pile horaire : supprimer un slot laisse les autres, dans l'ordre horaire | @back | ✅ |
 | 4 | Lister les slots couvrant une date (alimente la dialog) | @back | ⏳ |
 | 5 | Idempotence : supprimer un slot absent / déjà supprimé = no-op qui réussit | @back | ⏳ |
 | 6 | Menu clic-case → dialog liste les slots → supprimer → grille relue + accusé | 🖥️ @ihm | ⏳ |
@@ -126,7 +126,7 @@ Scenario: Supprimer un slot à cheval sur minuit le retire des deux jours qu'il 
   Et le slot n'apparaît plus dans la case du mercredi 17 juin 2026
 ```
 
-### Scenario 3 — Pile horaire : supprimer un slot laisse les autres dans l'ordre horaire `@back` `@pending`
+### Scenario 3 — Pile horaire : supprimer un slot laisse les autres dans l'ordre horaire `@back` `@vert`
 
 ```gherkin
 Scenario: Supprimer un slot d'une pile laisse les autres slots du jour empilés dans l'ordre horaire
