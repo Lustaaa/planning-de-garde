@@ -1,6 +1,6 @@
 # Sprint 17 — Éditer une période depuis la dialog (`editer-periode`)
 
-> **Avancement : 7/11 ⏳**
+> **Avancement : 8/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -11,7 +11,7 @@
 | 5 | Bornes invalides (fin ≤ début) refusées, période inchangée | @back | ✅ |
 | 6 | Édition concurrente sur état périmé → rejet, rien appliqué | @back | ✅ |
 | 7 | « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé | 🖥️ @ihm | ✅ |
-| 8 | Annulation : fermer le formulaire sans enregistrer ne change rien | 🖥️ @ihm | ⏳ |
+| 8 | Annulation : fermer le formulaire sans enregistrer ne change rien | 🖥️ @ihm | ✅ |
 | 9 | Gating Invité : aucun bouton « Éditer » ni commande émissible | 🖥️ @ihm | ⏳ |
 | 10 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
 | 11 | Temps réel : l'édition propage grille + légende sans rechargement | 🖥️ @ihm | ⏳ |
@@ -204,7 +204,7 @@ Scenario: Éditer une période depuis sa dialog met à jour la grille avec un ac
   Et la période modifiée est reflétée dans le store Mongo relu
 ```
 
-### Scenario 8 — Annulation : fermer le formulaire sans enregistrer ne change rien `@ihm` `@pending`
+### Scenario 8 — Annulation : fermer le formulaire sans enregistrer ne change rien `@ihm` `@vert`
 
 ```gherkin
 Scenario: Fermer le formulaire d'édition sans enregistrer laisse période et grille inchangées
