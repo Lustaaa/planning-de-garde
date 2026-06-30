@@ -4,8 +4,10 @@ namespace PlanningDeGarde.Domain;
 
 /// <summary>
 /// Snapshot immuable d'un slot — frontière publique pour les assertions / la persistance.
+/// <paramref name="Id"/> est l'<b>identifiant stable</b> attribué par le store à l'enregistrement
+/// (clé de suppression, jamais un libellé) ; vide tant que le slot n'a pas été persisté.
 /// </summary>
-public sealed record SlotSnapshot(string EnfantId, string LieuId, DateTime Debut, DateTime Fin);
+public sealed record SlotSnapshot(string EnfantId, string LieuId, DateTime Debut, DateTime Fin, string Id = "");
 
 /// <summary>
 /// Agrégat « où est l'enfant » (axe localisation, orthogonal à la responsabilité).

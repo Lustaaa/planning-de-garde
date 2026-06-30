@@ -39,6 +39,14 @@ public sealed class MongoSlotRepository : ISlotRepository
         _slots.InsertOne(SlotDocument.De(nouveau.ToSnapshot()));
     }
 
+    public void Supprimer(string slotId)
+    {
+        // Idempotent : un identifiant absent / malformé ne retire rien et ne lève pas (DeleteOne no-op).
+        if (!ObjectId.TryParse(slotId, out var id))
+            return;
+        _slots.DeleteOne(Builders<SlotDocument>.Filter.Eq(d => d.Id, id));
+    }
+
     /// <summary>Document persisté d'un slot (clé technique générée ; bornes datées + enfant/lieu).</summary>
     private sealed class SlotDocument
     {
@@ -54,6 +62,6 @@ public sealed class MongoSlotRepository : ISlotRepository
             // marquer Utc évite la conversion locale→UTC de BSON qui décalerait la date d'un jour près de minuit.
             => new() { EnfantId = s.EnfantId, LieuId = s.LieuId, Debut = DateTimeMongo.WallClock(s.Debut), Fin = DateTimeMongo.WallClock(s.Fin) };
 
-        public SlotSnapshot VersSnapshot() => new(EnfantId, LieuId, Debut, Fin);
+        public SlotSnapshot VersSnapshot() => new(EnfantId, LieuId, Debut, Fin, Id.ToString());
     }
 }

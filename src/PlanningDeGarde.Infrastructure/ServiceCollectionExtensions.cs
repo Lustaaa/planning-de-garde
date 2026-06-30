@@ -74,6 +74,7 @@ public static class ServiceCollectionExtensions
         // Use cases (handlers) et read models.
         services.AddScoped<PoserSlotHandler>();
         services.AddScoped<DeplacerSlotHandler>();
+        services.AddScoped<SupprimerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();
         services.AddScoped<ModifierPeriodeHandler>();
         services.AddScoped<EditerPeriodeHandler>();
