@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -31,6 +32,11 @@ public partial class DefinirTransfertDialog
     private TimeOnly? _heure = new(8, 30);
     private string? _motifEchec;
 
+    /// <summary>Acteurs du foyer énumérés <b>depuis le store vivant</b> (canal de lecture HTTP
+    /// <c>GET /api/foyer/acteurs</c>) : les sélecteurs dépose/récupère ne proposent que les acteurs RÉELS
+    /// déclarés (id stable, jamais le libellé), y compris un acteur fraîchement ajouté (sprint 19, Sc.5).</summary>
+    private List<ActeurFoyer> _acteurs = new();
+
     /// <summary>Date de la case cliquée : elle ancre le transfert sur ce seul jour (la date de
     /// contexte prime sur le défaut « aujourd'hui », règle 17 composée, Sc.2).</summary>
     [Parameter, EditorRequired]
@@ -45,8 +51,25 @@ public partial class DefinirTransfertDialog
     [Parameter]
     public EventCallback OnAnnule { get; set; }
 
-    protected override void OnInitialized()
-        => _form.Date = DateContexte.ToDateTime(TimeOnly.MinValue);
+    protected override async Task OnInitializedAsync()
+    {
+        _form.Date = DateContexte.ToDateTime(TimeOnly.MinValue);
+        await ChargerActeurs();
+    }
+
+    /// <summary>Charge les acteurs déclarés du foyer depuis le store via l'API distante. Référentiel
+    /// distant injoignable → sélecteurs vides plutôt que dialog plantée (parité EditerPeriodeDialog).</summary>
+    private async Task ChargerActeurs()
+    {
+        try
+        {
+            _acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs") ?? new List<ActeurFoyer>();
+        }
+        catch (HttpRequestException)
+        {
+            _acteurs = new List<ActeurFoyer>();
+        }
+    }
 
     private async Task Soumettre()
     {

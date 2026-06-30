@@ -1,6 +1,6 @@
 # Sprint 19 — Acteurs réels partout, retrait des « Parent A / Parent B » fictifs (`acteurs-reels-partout`)
 
-> **Avancement : 4/7 ⏳**
+> **Avancement : 5/7 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -8,7 +8,7 @@
 | 2 | Store d'acteurs **vide** → grille entièrement neutre + légende vide, **aucun** acteur fictif injecté | @back | ✅ |
 | 3 | Référence orpheline (id absent du store) → repli **surcharge > fond > neutre sans nom fantôme** | @back | ✅ |
 | 4 | Aucun libellé « Parent A / Parent B » exposé par le domaine ; runtime Mongo démarre vide, fixtures de test renommées (asymétrie seed s15 préservée) | @back | ✅ |
-| 5 | Sélecteurs des dialogs + légende + grille ne montrent que les **acteurs déclarés** (runtime) | 🖥️ @ihm | ⏳ |
+| 5 | Sélecteurs des dialogs + légende + grille ne montrent que les **acteurs déclarés** (runtime) | 🖥️ @ihm | ✅ |
 | 6 | Store vide au 1er lancement → sélecteurs vides + message « aucun acteur, ajoutez-en », grille neutre, **zéro** fantôme | 🖥️ @ihm | ⏳ |
 | 7 | Temps réel : l'ajout d'un acteur réel propage aux sélecteurs + grille + légende du second écran sans rechargement (SignalR), toujours sans fantôme | 🖥️ @ihm | ⏳ |
 
@@ -92,7 +92,7 @@ Scénario 4 — Aucun « Parent A / Parent B » dans le domaine ; runtime vide, 
 ### @ihm — IHM ne montre que des acteurs réels (RED → GREEN runtime)
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 5 — Sélecteurs, légende et grille ne montrent que les acteurs déclarés (runtime)
   Étant donné un foyer dont le store contient des acteurs déclarés réels
   Quand j'ouvre le planning et chaque dialog d'écriture (poser slot, affecter période, transfert, éditer)

@@ -17,9 +17,9 @@
                     <label class="form-label">Dépose par</label>
                     <InputSelect class="form-select" data-testid="champ-depose" @bind-Value="_form.DeposeParId">
                         <option value="">— choisir —</option>
-                        @foreach (var r in Foyer.Responsables)
+                        @foreach (var a in _acteurs)
                         {
-                            <option value="@r.Id">@r.Libelle</option>
+                            <option value="@a.Id">@a.Nom</option>
                         }
                     </InputSelect>
                 </div>
@@ -27,9 +27,9 @@
                     <label class="form-label">Récupère par</label>
                     <InputSelect class="form-select" data-testid="champ-recupere" @bind-Value="_form.RecupereParId">
                         <option value="">— choisir —</option>
-                        @foreach (var r in Foyer.Responsables)
+                        @foreach (var a in _acteurs)
                         {
-                            <option value="@r.Id">@r.Libelle</option>
+                            <option value="@a.Id">@a.Nom</option>
                         }
                     </InputSelect>
                 </div>
