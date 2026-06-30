@@ -20,10 +20,11 @@ public static class CanalLecture
     /// sprint 14) pour piloter le rôle de l'identité effective lors d'une impersonation bornée.</summary>
     public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur, TypeActeur Type);
 
-    /// <summary>Vue d'une période couvrant une date, pour alimenter la dialog de suppression : identifiant
-    /// stable (clé de suppression, jamais le libellé), nom d'affichage du responsable résolu sur l'id, et
-    /// bornes datées. Lecture seule — ne déclenche jamais la diffusion.</summary>
-    public sealed record PeriodeDuJourVue(string Id, string ResponsableNom, DateTime Debut, DateTime Fin);
+    /// <summary>Vue d'une période couvrant une date, pour alimenter les dialogs de suppression et d'édition :
+    /// identifiant stable (clé, jamais le libellé), identifiant stable du responsable (pour pré-sélectionner
+    /// l'édition), nom d'affichage du responsable résolu sur l'id, et bornes datées. Lecture seule — ne
+    /// déclenche jamais la diffusion.</summary>
+    public sealed record PeriodeDuJourVue(string Id, string ResponsableId, string ResponsableNom, DateTime Debut, DateTime Fin);
 
     public static IEndpointRouteBuilder MapperCanalLecture(this IEndpointRouteBuilder routes)
     {
@@ -58,7 +59,7 @@ public static class CanalLecture
             (int annee, int mois, int jour, PeriodesDuJourQuery periodes, IReferentielResponsables referentiel) =>
             {
                 var vues = periodes.Lister(new DateOnly(annee, mois, jour))
-                    .Select(p => new PeriodeDuJourVue(p.Id, referentiel.NomDe(p.ResponsableId), p.Debut, p.Fin))
+                    .Select(p => new PeriodeDuJourVue(p.Id, p.ResponsableId, referentiel.NomDe(p.ResponsableId), p.Debut, p.Fin))
                     .ToList();
                 return Results.Ok(vues);
             });

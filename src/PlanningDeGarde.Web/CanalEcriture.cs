@@ -47,4 +47,10 @@ public static class CanalEcriture
     /// l'<b>identifiant stable</b> de la période (jamais un libellé) ; la suppression est idempotente côté
     /// handler (id absent / déjà supprimé = no-op qui réussit).</summary>
     public sealed record SupprimerPeriodeRequete(string PeriodeId);
+
+    /// <summary>Corps de la requête d'édition d'une période émise via le canal d'écriture (5ᵉ usage du menu
+    /// clic-case). La clé est l'<b>identifiant stable</b> de la période (jamais un libellé) ; le nouveau
+    /// responsable et les nouvelles bornes décrivent l'état voulu. L'état observé (jeton de concurrence) est
+    /// résolu côté API sur cet identifiant — le front n'émet que la cible (aucune règle métier dans l'UI).</summary>
+    public sealed record EditerPeriodeRequete(string PeriodeId, string NouveauResponsableId, DateTime NouveauDebut, DateTime NouvelleFin);
 }

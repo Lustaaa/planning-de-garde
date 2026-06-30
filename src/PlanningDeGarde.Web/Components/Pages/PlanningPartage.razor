@@ -86,6 +86,17 @@
     </div>
 }
 
+@* Accusé « Période modifiée » à part (Sc.7) : feedback transitoire NON bloquant, levé sur le succès du
+   canal d'écriture d'édition. La case re-résolue (nouveau responsable, ou repli pour la portion libérée)
+   provient de la relecture de la grille distante, jamais d'une mutation locale. Refermable. *@
+@if (_accusePeriodeModifiee)
+{
+    <div class="alert alert-success alert-dismissible py-2" data-testid="accuse-periode-modifiee" role="status">
+        Période modifiée
+        <button type="button" class="btn-close" aria-label="Fermer" @onclick="FermerAccusePeriodeModifiee"></button>
+    </div>
+}
+
 @* Échec de navigation (Sc.6) : la re-requête de la date naviguée a échoué (API distante injoignable).
    La fenêtre affichée est conservée (l'ancre a été restaurée) ; le bandeau signale l'échec de façon
    claire, NON bloquante (refermable). Aucune navigation n'est mise en file ni rejouée (règle 28). *@
@@ -208,6 +219,8 @@
                     @onclick="@(() => OuvrirAffecterPeriode(dateMenu))">Affecter une période</button>
             <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-definir-transfert"
                     @onclick="@(() => OuvrirDefinirTransfert(dateMenu))">Définir un transfert</button>
+            <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-editer-periode"
+                    @onclick="@(() => OuvrirEditerPeriode(dateMenu))">Éditer une période</button>
             <button type="button" class="btn btn-outline-danger w-100" data-testid="action-supprimer-periode"
                     @onclick="@(() => OuvrirSupprimerPeriode(dateMenu))">Supprimer une période</button>
         </div>
@@ -241,6 +254,13 @@
     <SupprimerPeriodeDialog DateContexte="dateSupprimer"
                             OnValide="FermerSuppressionEtAccuser"
                             OnAnnule="FermerDialog" />
+}
+
+@if (_dateDialogEditerPeriode is { } dateEditer)
+{
+    <EditerPeriodeDialog DateContexte="dateEditer"
+                         OnValide="FermerEditionEtAccuser"
+                         OnAnnule="FermerDialog" />
 }
 
 <style>

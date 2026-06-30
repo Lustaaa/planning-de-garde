@@ -1,6 +1,6 @@
 # Sprint 17 — Éditer une période depuis la dialog (`editer-periode`)
 
-> **Avancement : 6/11 ⏳**
+> **Avancement : 7/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -10,7 +10,7 @@
 | 4 | Re-bornage : portion libérée sur index non mappé → neutre sans nom fantôme | @back | ✅ |
 | 5 | Bornes invalides (fin ≤ début) refusées, période inchangée | @back | ✅ |
 | 6 | Édition concurrente sur état périmé → rejet, rien appliqué | @back | ✅ |
-| 7 | « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé | 🖥️ @ihm | ⏳ |
+| 7 | « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé | 🖥️ @ihm | ✅ |
 | 8 | Annulation : fermer le formulaire sans enregistrer ne change rien | 🖥️ @ihm | ⏳ |
 | 9 | Gating Invité : aucun bouton « Éditer » ni commande émissible | 🖥️ @ihm | ⏳ |
 | 10 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
@@ -186,7 +186,7 @@ Scenario: Une seconde édition fondée sur un état périmé est rejetée sans r
   Et la seconde édition n'a rien appliqué
 ```
 
-### Scenario 7 — « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé `@ihm` `@pending`
+### Scenario 7 — « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé `@ihm` `@vert`
 
 > Lot IHM final (`ihm-builder`), mené en RED→GREEN runtime ; groupable avec Sc.8–Sc.11.
 > Acceptation runtime : front WASM + API distante + Mongo réel.

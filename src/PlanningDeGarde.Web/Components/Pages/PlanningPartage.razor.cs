@@ -37,6 +37,7 @@ public partial class PlanningPartage
     private DateOnly? _dateDialogAffecterPeriode;
     private DateOnly? _dateDialogDefinirTransfert;
     private DateOnly? _dateDialogSupprimerPeriode;
+    private DateOnly? _dateDialogEditerPeriode;
     // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
     // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
     // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
@@ -54,6 +55,10 @@ public partial class PlanningPartage
     // canal d'écriture de suppression. La re-résolution de la case vient de la relecture de la grille
     // distante (repli surcharge > fond > neutre), jamais d'une mutation locale. Refermable.
     private bool _accusePeriodeSupprimee;
+    // Accusé « Période modifiée » à part (Sc.7) : feedback transitoire NON bloquant levé sur le succès du
+    // canal d'écriture d'édition. La case re-résolue (nouveau responsable, ou repli surcharge > fond > neutre
+    // pour la portion libérée) provient de la relecture de la grille distante, jamais d'une mutation locale.
+    private bool _accusePeriodeModifiee;
     // Échec de navigation (Sc.6) : la re-requête de la date naviguée a échoué (API distante injoignable).
     // Bandeau d'échec clair, NON bloquant et refermable. La fenêtre affichée est conservée (l'ancre est
     // restaurée), et la navigation échouée n'est NI mise en file NI rejouée (règle 28). Levé à part.
@@ -368,6 +373,29 @@ public partial class PlanningPartage
         _dateDialogSupprimerPeriode = date;
     }
 
+    /// <summary>Depuis le menu (5ᵉ entrée, Sc.7), ouvre la dialog « Éditer une période » sur la date de la
+    /// case : elle listera les périodes couvrant ce jour, chaque ligne ouvrant un formulaire pré-rempli. Un
+    /// accusé précédent ne survit pas à l'ouverture.</summary>
+    private void OuvrirEditerPeriode(DateOnly date)
+    {
+        _dateMenu = null;
+        _accusePeriodeModifiee = false;
+        _dateDialogEditerPeriode = date;
+    }
+
+    /// <summary>Issue succès de l'édition (Sc.7) : ferme la dialog, <b>relit</b> la grille distante (la case
+    /// affiche le nouveau responsable ; une portion libérée retombe sur le fond / le neutre sans nom fantôme)
+    /// et lève l'accusé « Période modifiée » à part, non bloquant. La re-résolution provient de la relecture,
+    /// jamais d'une mutation locale de la grille.</summary>
+    private async Task FermerEditionEtAccuser()
+    {
+        await FermerDialogEtRecharger();
+        _accusePeriodeModifiee = true;
+    }
+
+    /// <summary>Referme l'accusé « Période modifiée » (non bloquant).</summary>
+    private void FermerAccusePeriodeModifiee() => _accusePeriodeModifiee = false;
+
     /// <summary>Issue succès de la suppression (Sc.6) : ferme la dialog, <b>relit</b> la grille distante
     /// (la case re-résolue retombe sur le fond ou le neutre, sans nom fantôme) et lève l'accusé « Période
     /// supprimée » à part, non bloquant. La re-résolution provient de la relecture, jamais d'une mutation
@@ -421,6 +449,7 @@ public partial class PlanningPartage
         _dateDialogAffecterPeriode = null;
         _dateDialogDefinirTransfert = null;
         _dateDialogSupprimerPeriode = null;
+        _dateDialogEditerPeriode = null;
         // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
         _plageDebut = null;
         _plageFin = null;
