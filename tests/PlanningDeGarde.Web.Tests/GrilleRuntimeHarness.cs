@@ -133,6 +133,15 @@ internal static class GrilleRuntimeHarness
             .Enregistrer(PeriodeDeGarde.Affecter(responsableId, debut, fin).Valeur!);
 
     /// <summary>
+    /// Sème un slot de localisation dans le store réel de l'API distante (Given d'un scénario de
+    /// suppression de slot) — la projection réelle le rendra dans la (les) case(s) qu'il couvre. Sème
+    /// EN DIRECT via le port (pas la pose validée), pour pouvoir placer un lieu hors référentiel.
+    /// </summary>
+    public static void SemerSlot(ApiDistanteFactory api, string enfantId, string lieuId, DateTime debut, DateTime fin)
+        => api.Services.GetRequiredService<ISlotRepository>()
+            .Enregistrer(SlotDeLocalisation.Poser(enfantId, lieuId, debut, fin).Valeur!);
+
+    /// <summary>
     /// Sème un cycle de fond dans le store réel de l'API distante (Given d'un scénario de navigation) —
     /// la projection réelle résout le responsable de fond par parité ISO de chaque semaine, le
     /// référentiel réel résolvant nom et couleur. Permet d'observer la re-résolution du fond à la date

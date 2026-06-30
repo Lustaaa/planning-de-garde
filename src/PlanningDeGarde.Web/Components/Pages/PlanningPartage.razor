@@ -86,6 +86,18 @@
     </div>
 }
 
+@* Accusé « Slot supprimé » à part (s18 Sc.6) : feedback transitoire NON bloquant, levé sur le succès du
+   canal d'écriture de suppression de slot. La case relue ne rend plus le slot retiré (les autres slots
+   demeurent) ; le retrait provient de la relecture de la grille distante, jamais d'une mutation locale.
+   Refermable. *@
+@if (_accuseSlotSupprime)
+{
+    <div class="alert alert-success alert-dismissible py-2" data-testid="accuse-slot-supprime" role="status">
+        Slot supprimé
+        <button type="button" class="btn-close" aria-label="Fermer" @onclick="FermerAccuseSlotSupprime"></button>
+    </div>
+}
+
 @* Accusé « Période modifiée » à part (Sc.7) : feedback transitoire NON bloquant, levé sur le succès du
    canal d'écriture d'édition. La case re-résolue (nouveau responsable, ou repli pour la portion libérée)
    provient de la relecture de la grille distante, jamais d'une mutation locale. Refermable. *@
@@ -221,8 +233,10 @@
                     @onclick="@(() => OuvrirDefinirTransfert(dateMenu))">Définir un transfert</button>
             <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-editer-periode"
                     @onclick="@(() => OuvrirEditerPeriode(dateMenu))">Éditer une période</button>
-            <button type="button" class="btn btn-outline-danger w-100" data-testid="action-supprimer-periode"
+            <button type="button" class="btn btn-outline-danger w-100 mb-2" data-testid="action-supprimer-periode"
                     @onclick="@(() => OuvrirSupprimerPeriode(dateMenu))">Supprimer une période</button>
+            <button type="button" class="btn btn-outline-danger w-100" data-testid="action-supprimer-slot"
+                    @onclick="@(() => OuvrirSupprimerSlot(dateMenu))">Supprimer un slot</button>
         </div>
     </div>
 }
@@ -260,6 +274,13 @@
 {
     <EditerPeriodeDialog DateContexte="dateEditer"
                          OnValide="FermerEditionEtAccuser"
+                         OnAnnule="FermerDialog" />
+}
+
+@if (_dateDialogSupprimerSlot is { } dateSupprimerSlot)
+{
+    <SupprimerSlotDialog DateContexte="dateSupprimerSlot"
+                         OnValide="FermerSuppressionSlotEtAccuser"
                          OnAnnule="FermerDialog" />
 }
 

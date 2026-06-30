@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using PlanningDeGarde.Application;
@@ -8,6 +9,7 @@ namespace PlanningDeGarde.Infrastructure;
 /// <summary>
 /// Persistance en mémoire des slots (process unique). Copy-on-read : stocke et rend des
 /// snapshots, jamais l'agrégat vivant. Singleton DI = source de vérité du foyer.
+/// L'enregistrement attribue un identifiant stable (clé de suppression, miroir de l'ObjectId Mongo).
 /// </summary>
 public sealed class InMemorySlotRepository : ISlotRepository
 {
@@ -16,7 +18,7 @@ public sealed class InMemorySlotRepository : ISlotRepository
 
     public void Enregistrer(SlotDeLocalisation slot)
     {
-        lock (_verrou) _slots.Add(slot.ToSnapshot());
+        lock (_verrou) _slots.Add(slot.ToSnapshot() with { Id = Guid.NewGuid().ToString() });
     }
 
     public IReadOnlyList<SlotSnapshot> AllSnapshots()
@@ -31,5 +33,10 @@ public sealed class InMemorySlotRepository : ISlotRepository
             _slots.Remove(ancien);
             _slots.Add(nouveau.ToSnapshot());
         }
+    }
+
+    public void Supprimer(string slotId)
+    {
+        lock (_verrou) _slots.RemoveAll(s => s.Id == slotId);
     }
 }

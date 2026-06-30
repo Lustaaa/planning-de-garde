@@ -17,3 +17,9 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   être archivé. Anti-duplication : une règle = un texte canonique (R11/12/14/15+R15bis dans
   `periodes-…`, référencées par le catalogue `regles-de-gestion.md`). `index.md` + `CLAUDE.md`
   (Source de vérité) resynchronisés.
+- 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
+  full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
+  gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake
+  *TempsReel* catalogué** dans `dev-team` (re-run ciblé pour confirmer le vert, consigne dans `notes`
+  sans investiguer `src/`, ni RED ni vert-qui-ment, et signale la **montée de sévérité** au
+  `scrum-master` pour prioriser le rétrofit P2). Dette + candidat +2 du backlog mis à jour.

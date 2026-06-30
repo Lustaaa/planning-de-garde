@@ -72,6 +72,16 @@ lancement.
 - Jamais de framework de mock ; doublures à la main, ne doubler que les **ports**.
 - Asserter sur le **snapshot** / la frontière publique, jamais un champ privé.
 - **Acceptation runtime obligatoire** (store réel / câblage réel) — pas de preuve par doublure.
+- **Flake *TempsReel* SignalR catalogué (P2, dette de test connue).** Si la suite complète passe au
+  rouge **uniquement** sur un test `*TempsReel*` qui **repasse vert en isolation + re-run ciblé**,
+  c'est le **flake P2 catalogué** (convergence SignalR multi-clients sous charge — dette
+  `docs/BACKLOG.md`), **pas une régression** : confirme le vert par un **re-run ciblé**, **consigne
+  l'occurrence** dans les `notes` (test, fréquence observée), **ne le traite ni comme RED ni comme un
+  vert qui ment**, et **n'investigue pas `src/`** (le code de prod n'est pas en cause). Si sa fréquence
+  monte au point de **rougir la suite complète de façon récurrente** (ex. ≥ la moitié des runs),
+  **signale-le** dans `notes` comme **montée de sévérité** (signal de priorisation du rétrofit P2 pour
+  le `scrum-master`). Ne jamais étendre ce passe-droit à un **autre** test (un rouge hors `*TempsReel*`
+  = régression à traiter).
 - **Tenir le tableau d'avancement en tête à jour à CHAQUE transition** (le compte `X/N` =
   nombre de lignes `✅`, toujours).
 - **Ne touche jamais** la section `# Retours produit (PO)` ni `docs/BACKLOG.md` (hors de ton rôle).

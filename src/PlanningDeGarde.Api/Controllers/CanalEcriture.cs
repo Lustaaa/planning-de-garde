@@ -53,6 +53,11 @@ public static class CanalEcriture
     /// handler (id absent / déjà supprimé = no-op qui réussit).</summary>
     public sealed record SupprimerPeriodeRequete(string PeriodeId);
 
+    /// <summary>Corps de la requête de suppression d'un slot émise via le canal d'écriture (6ᵉ usage du menu
+    /// clic-case). La clé est l'<b>identifiant stable</b> du slot (jamais un libellé) ; la suppression est
+    /// idempotente côté handler (id absent / déjà supprimé = no-op qui réussit).</summary>
+    public sealed record SupprimerSlotRequete(string SlotId);
+
     /// <summary>Corps de la requête d'édition d'une période émise via le canal d'écriture (5ᵉ usage du menu
     /// clic-case). La clé est l'<b>identifiant stable</b> de la période ; le nouveau responsable et les
     /// nouvelles bornes décrivent l'état voulu. L'état observé (jeton de concurrence optimiste) est résolu
@@ -143,6 +148,23 @@ public static class CanalEcriture
             // un identifiant absent / déjà supprimé réussit sans effet (Sc.5). Sur succès, l'adaptateur de
             // gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres écrans re-projettent la
             // grille et la légende sans rechargement (Sc.10). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/supprimer-slot",
+            (SupprimerSlotRequete requete, SupprimerSlotHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new SupprimerSlotCommand(requete.SlotId));
+
+            // Même convention que les autres écritures : succès acquitté (le slot ne sera plus relu depuis
+            // le store, la case ne le rend plus), refus métier renvoyé avec son motif. Idempotent : un
+            // identifiant absent / déjà supprimé réussit sans effet (Sc.5). Sur succès, l'adaptateur de
+            // gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres écrans re-projettent la
+            // grille sans rechargement (Sc.10). Jamais d'écriture par le canal de diffusion.
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 

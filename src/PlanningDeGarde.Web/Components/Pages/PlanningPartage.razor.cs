@@ -38,6 +38,7 @@ public partial class PlanningPartage
     private DateOnly? _dateDialogDefinirTransfert;
     private DateOnly? _dateDialogSupprimerPeriode;
     private DateOnly? _dateDialogEditerPeriode;
+    private DateOnly? _dateDialogSupprimerSlot;
     // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
     // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
     // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
@@ -59,6 +60,10 @@ public partial class PlanningPartage
     // canal d'écriture d'édition. La case re-résolue (nouveau responsable, ou repli surcharge > fond > neutre
     // pour la portion libérée) provient de la relecture de la grille distante, jamais d'une mutation locale.
     private bool _accusePeriodeModifiee;
+    // Accusé « Slot supprimé » à part (s18 Sc.6) : feedback transitoire NON bloquant levé sur le succès du
+    // canal d'écriture de suppression de slot. La case relue ne rend plus le slot retiré (les autres slots
+    // demeurent) ; le retrait provient de la relecture de la grille distante, jamais d'une mutation locale.
+    private bool _accuseSlotSupprime;
     // Échec de navigation (Sc.6) : la re-requête de la date naviguée a échoué (API distante injoignable).
     // Bandeau d'échec clair, NON bloquant et refermable. La fenêtre affichée est conservée (l'ancre est
     // restaurée), et la navigation échouée n'est NI mise en file NI rejouée (règle 28). Levé à part.
@@ -373,6 +378,27 @@ public partial class PlanningPartage
         _dateDialogSupprimerPeriode = date;
     }
 
+    /// <summary>Depuis le menu (6ᵉ entrée, s18 Sc.6), ouvre la dialog « Supprimer un slot » sur la date de la
+    /// case : elle listera les slots couvrant ce jour. Un accusé précédent ne survit pas à l'ouverture.</summary>
+    private void OuvrirSupprimerSlot(DateOnly date)
+    {
+        _dateMenu = null;
+        _accuseSlotSupprime = false;
+        _dateDialogSupprimerSlot = date;
+    }
+
+    /// <summary>Issue succès de la suppression de slot (s18 Sc.6) : ferme la dialog, <b>relit</b> la grille
+    /// distante (la case ne rend plus le slot retiré, les autres slots demeurent) et lève l'accusé « Slot
+    /// supprimé » à part, non bloquant. Le retrait provient de la relecture, jamais d'une mutation locale.</summary>
+    private async Task FermerSuppressionSlotEtAccuser()
+    {
+        await FermerDialogEtRecharger();
+        _accuseSlotSupprime = true;
+    }
+
+    /// <summary>Referme l'accusé « Slot supprimé » (non bloquant).</summary>
+    private void FermerAccuseSlotSupprime() => _accuseSlotSupprime = false;
+
     /// <summary>Depuis le menu (5ᵉ entrée, Sc.7), ouvre la dialog « Éditer une période » sur la date de la
     /// case : elle listera les périodes couvrant ce jour, chaque ligne ouvrant un formulaire pré-rempli. Un
     /// accusé précédent ne survit pas à l'ouverture.</summary>
@@ -450,6 +476,7 @@ public partial class PlanningPartage
         _dateDialogDefinirTransfert = null;
         _dateDialogSupprimerPeriode = null;
         _dateDialogEditerPeriode = null;
+        _dateDialogSupprimerSlot = null;
         // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
         _plageDebut = null;
         _plageFin = null;
