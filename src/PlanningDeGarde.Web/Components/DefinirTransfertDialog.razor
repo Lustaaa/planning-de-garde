@@ -34,6 +34,10 @@
                     </InputSelect>
                 </div>
             </div>
+            @if (_acteursCharges && _acteurs.Count == 0)
+            {
+                <div class="alert alert-warning py-2" data-testid="aucun-acteur-invite">Aucun acteur, ajoutez-en.</div>
+            }
             <div class="row">
                 <div class="col mb-3">
                     <label class="form-label">Lieu</label>

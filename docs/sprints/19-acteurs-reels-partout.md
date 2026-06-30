@@ -1,6 +1,6 @@
 # Sprint 19 — Acteurs réels partout, retrait des « Parent A / Parent B » fictifs (`acteurs-reels-partout`)
 
-> **Avancement : 5/7 ⏳**
+> **Avancement : 6/7 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -9,7 +9,7 @@
 | 3 | Référence orpheline (id absent du store) → repli **surcharge > fond > neutre sans nom fantôme** | @back | ✅ |
 | 4 | Aucun libellé « Parent A / Parent B » exposé par le domaine ; runtime Mongo démarre vide, fixtures de test renommées (asymétrie seed s15 préservée) | @back | ✅ |
 | 5 | Sélecteurs des dialogs + légende + grille ne montrent que les **acteurs déclarés** (runtime) | 🖥️ @ihm | ✅ |
-| 6 | Store vide au 1er lancement → sélecteurs vides + message « aucun acteur, ajoutez-en », grille neutre, **zéro** fantôme | 🖥️ @ihm | ⏳ |
+| 6 | Store vide au 1er lancement → sélecteurs vides + message « aucun acteur, ajoutez-en », grille neutre, **zéro** fantôme | 🖥️ @ihm | ✅ |
 | 7 | Temps réel : l'ajout d'un acteur réel propage aux sélecteurs + grille + légende du second écran sans rechargement (SignalR), toujours sans fantôme | 🖥️ @ihm | ⏳ |
 
 ---
@@ -102,7 +102,7 @@ Scénario 5 — Sélecteurs, légende et grille ne montrent que les acteurs déc
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 6 — Store vide au 1er lancement → sélecteurs vides, grille neutre, zéro fantôme
   Étant donné un runtime Mongo dont le store d'acteurs est vide (1er lancement)
   Quand j'ouvre le planning et une dialog d'écriture

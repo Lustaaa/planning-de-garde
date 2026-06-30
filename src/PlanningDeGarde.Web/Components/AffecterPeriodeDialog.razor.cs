@@ -34,6 +34,11 @@ public partial class AffecterPeriodeDialog
     /// (sprint 19, Sc.5).</summary>
     private List<ActeurFoyer> _acteurs = new();
 
+    /// <summary>Vrai une fois l'énumération du store chargée : distingue le « en cours de chargement »
+    /// du « chargé et vide » (store sans acteur, 1er lancement) — qui seul déclenche l'invite à en
+    /// ajouter (sprint 19, Sc.6), sans flash transitoire avant la réponse de l'API.</summary>
+    private bool _acteursCharges;
+
     /// <summary>Date de la case cliquée : elle ancre l'affectation sur ce jour (la date de
     /// contexte prime sur le défaut « aujourd'hui », règle 17 composée). En contexte de plage (Sc.5),
     /// c'est la borne de DÉBUT de l'intervalle sélectionné.</summary>
@@ -75,6 +80,7 @@ public partial class AffecterPeriodeDialog
         {
             _acteurs = new List<ActeurFoyer>();
         }
+        _acteursCharges = true;
     }
 
     private async Task Soumettre()

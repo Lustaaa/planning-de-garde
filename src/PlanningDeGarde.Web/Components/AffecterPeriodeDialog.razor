@@ -19,6 +19,10 @@
                         <option value="@a.Id">@a.Nom</option>
                     }
                 </InputSelect>
+                @if (_acteursCharges && _acteurs.Count == 0)
+                {
+                    <div class="form-text text-warning" data-testid="aucun-acteur-invite">Aucun acteur, ajoutez-en.</div>
+                }
             </div>
             <div class="row">
                 <div class="col mb-3">
