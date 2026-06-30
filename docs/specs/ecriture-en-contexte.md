@@ -34,6 +34,11 @@ aucune persistance tirée en avant. Texte complet :
 
 - **Clic sur une case → menu d'actions → dialog** pré-remplie sur la **date de la case**, alimentée par
   acteurs et lieux du foyer.
+- **Source unique des acteurs des dialogs *(précisé s19)*** : `PlanningPartage` est la **seule source**
+  qui passe la **liste des acteurs déclarés** (lue depuis le **store vivant**, id stable) **en paramètre**
+  aux trois dialogs. Les sélecteurs de responsable ne montrent donc **que des acteurs réels** — jamais un
+  libellé fictif « Parent A/B ». Sur **store vide**, les sélecteurs sont vides et invitent par **« Aucun
+  acteur, ajoutez-en. »**. Cf. [`acteurs-et-config-foyer.md`](acteurs-et-config-foyer.md) (R5).
 - **Issues de la commande** :
   - **succès** → la dialog se ferme, la grille est relue ; pour le transfert, un **accusé « Transfert
     défini »** s'affiche **à part**, non bloquant.

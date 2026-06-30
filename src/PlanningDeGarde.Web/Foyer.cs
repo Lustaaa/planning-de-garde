@@ -19,12 +19,14 @@ public static class Foyer
     /// Responsables du foyer comme paires (identifiant stable, libellé). Le sélecteur affiche le
     /// <see cref="Responsable.Libelle"/> mais bind l'<see cref="Responsable.Id"/> : le canal reçoit
     /// l'identifiant stable (<c>parent-a</c>/<c>parent-b</c>), clé atteignable du set de couleurs — et
-    /// non le libellé qui retombait sur le gris neutre (cadrage (B), Sc.6).
+    /// non le libellé qui retombait sur le gris neutre (cadrage (B), Sc.6). Les libellés portent les
+    /// noms RÉELS du foyer (Alice/Bruno) — plus aucun « Parent A / Parent B » fictif exposé (sprint 19,
+    /// Sc.4) ; l'unification sur le store vivant des acteurs déclarés est portée par l'IHM (Sc.5).
     /// </summary>
     public static readonly IReadOnlyList<Responsable> Responsables = new[]
     {
-        new Responsable("parent-a", "Parent A"),
-        new Responsable("parent-b", "Parent B"),
+        new Responsable("parent-a", "Alice"),
+        new Responsable("parent-b", "Bruno"),
     };
 
     /// <summary>

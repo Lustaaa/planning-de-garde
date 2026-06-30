@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -30,6 +31,18 @@ public partial class DefinirTransfertDialog
     private readonly Formulaire _form = new();
     private TimeOnly? _heure = new(8, 30);
     private string? _motifEchec;
+
+    /// <summary>Acteurs DÉCLARÉS du foyer (id stable + nom), fournis par le parent depuis le store vivant :
+    /// les sélecteurs dépose/récupère ne proposent que ces acteurs réels (jamais un libellé en dur), y
+    /// compris un acteur fraîchement ajouté (sprint 19, Sc.5).</summary>
+    [Parameter]
+    public IReadOnlyList<ActeurFoyer> Acteurs { get; set; } = Array.Empty<ActeurFoyer>();
+
+    /// <summary>Vrai une fois l'énumération du store chargée par le parent : distingue « en cours de
+    /// chargement » de « chargé et vide » (store sans acteur, 1er lancement) — qui seul déclenche l'invite
+    /// à ajouter un acteur (sprint 19, Sc.6), sans flash transitoire.</summary>
+    [Parameter]
+    public bool ActeursCharges { get; set; }
 
     /// <summary>Date de la case cliquée : elle ancre le transfert sur ce seul jour (la date de
     /// contexte prime sur le défaut « aujourd'hui », règle 17 composée, Sc.2).</summary>

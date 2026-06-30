@@ -252,6 +252,8 @@
 {
     <AffecterPeriodeDialog DateContexte="dateAffecter"
                            DateFinContexte="_plageFin"
+                           Acteurs="_acteursFoyer"
+                           ActeursCharges="_acteursFoyerCharges"
                            OnValide="FermerDialogEtRecharger"
                            OnAnnule="FermerDialog" />
 }
@@ -259,6 +261,8 @@
 @if (_dateDialogDefinirTransfert is { } dateTransfert)
 {
     <DefinirTransfertDialog DateContexte="dateTransfert"
+                            Acteurs="_acteursFoyer"
+                            ActeursCharges="_acteursFoyerCharges"
                             OnValide="FermerTransfertEtAccuser"
                             OnAnnule="FermerDialog" />
 }
