@@ -36,7 +36,7 @@ public class Scenario1_EditerPeriodeReBornage
 
         // When — je re-borne la période (par son identifiant stable) pour qu'elle couvre mardi 16 → mercredi 17.
         var resultat = new EditerPeriodeHandler(periodes)
-            .Handle(new EditerPeriodeCommand(etatObserve, Mardi16Juin2026, Mercredi17Juin2026));
+            .Handle(new EditerPeriodeCommand(etatObserve, etatObserve.ResponsableId, Mardi16Juin2026, Mercredi17Juin2026));
 
         // Then — l'édition réussit.
         Assert.True(resultat.EstSucces);

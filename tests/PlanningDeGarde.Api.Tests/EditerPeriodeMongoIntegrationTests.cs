@@ -63,7 +63,7 @@ public sealed class EditerPeriodeMongoIntegrationTests : IDisposable
 
             // When — je re-borne la période (mardi 16 → mercredi 17), via le handler câblé sur Mongo réel.
             var resultat = serveur1.Services.GetRequiredService<EditerPeriodeHandler>()
-                .Handle(new EditerPeriodeCommand(etatObserve, mardi16, mercredi17));
+                .Handle(new EditerPeriodeCommand(etatObserve, etatObserve.ResponsableId, mardi16, mercredi17));
 
             // Then — l'édition réussit ; le store relu (même hôte) porte les nouvelles bornes, même identifiant.
             Assert.True(resultat.EstSucces);

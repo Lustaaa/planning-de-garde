@@ -1,11 +1,11 @@
 # Sprint 17 — Éditer une période depuis la dialog (`editer-periode`)
 
-> **Avancement : 1/11 ⏳**
+> **Avancement : 2/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Re-borner une période la met à jour dans le store durable relu (+ redémarrage) | @back | ✅ |
-| 2 | Réaffecter le responsable : la case affiche le nouveau, plus l'ancien | @back | ⏳ |
+| 2 | Réaffecter le responsable : la case affiche le nouveau, plus l'ancien | @back | ✅ |
 | 3 | Re-bornage : la portion libérée retombe sur le responsable de fond (le cycle reprend) | @back | ⏳ |
 | 4 | Re-bornage : portion libérée sur index non mappé → neutre sans nom fantôme | @back | ⏳ |
 | 5 | Bornes invalides (fin ≤ début) refusées, période inchangée | @back | ⏳ |
@@ -118,7 +118,7 @@ Scenario: Re-borner une période existante persiste les nouvelles bornes (store 
   Et le store relu après redémarrage comporte toujours les bornes mardi 16 → mercredi 17 juin 2026
 ```
 
-### Scenario 2 — Réaffecter le responsable : la case affiche le nouveau, plus l'ancien `@back` `@pending`
+### Scenario 2 — Réaffecter le responsable : la case affiche le nouveau, plus l'ancien `@back` `@vert`
 
 ```gherkin
 Scenario: Réaffecter le responsable d'une période fait afficher le nouveau responsable dans la case
