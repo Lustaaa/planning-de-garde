@@ -1,6 +1,6 @@
 # Sprint 18 — Supprimer un slot sur une journée depuis le menu clic-case (`supprimer-slot`)
 
-> **Avancement : 7/10 ⏳**
+> **Avancement : 8/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -11,7 +11,7 @@
 | 5 | Idempotence : supprimer un slot absent / déjà supprimé = no-op qui réussit | @back | ✅ |
 | 6 | Menu clic-case → dialog liste les slots → supprimer → grille relue + accusé | 🖥️ @ihm | ✅ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ✅ |
-| 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ⏳ |
+| 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ✅ |
 | 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
 | 10 | Temps réel : la suppression propage la grille sans rechargement | 🖥️ @ihm | ⏳ |
 
@@ -196,7 +196,7 @@ Scenario: Fermer la dialog sans confirmer de suppression laisse slots et grille 
   Et la case du mardi 16 juin 2026 affiche toujours le slot "École"
 ```
 
-### Scenario 8 — Gating Invité : aucun bouton ni commande de suppression `@ihm` `@pending`
+### Scenario 8 — Gating Invité : aucun bouton ni commande de suppression `@ihm` `@vert`
 
 > Gating règle 9, déclencheur rôle mutualisé sur le contexte existant.
 
