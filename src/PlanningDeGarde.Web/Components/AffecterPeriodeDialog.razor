@@ -14,12 +14,12 @@
                 <label class="form-label">Responsable</label>
                 <InputSelect class="form-select" data-testid="champ-responsable" @bind-Value="_form.ResponsableId">
                     <option value="">— choisir —</option>
-                    @foreach (var a in _acteurs)
+                    @foreach (var a in Acteurs)
                     {
                         <option value="@a.Id">@a.Nom</option>
                     }
                 </InputSelect>
-                @if (_acteursCharges && _acteurs.Count == 0)
+                @if (ActeursCharges && Acteurs.Count == 0)
                 {
                     <div class="form-text text-warning" data-testid="aucun-acteur-invite">Aucun acteur, ajoutez-en.</div>
                 }

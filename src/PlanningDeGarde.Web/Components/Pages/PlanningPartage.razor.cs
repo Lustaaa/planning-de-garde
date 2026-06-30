@@ -26,6 +26,15 @@ public partial class PlanningPartage
 
     private GrilleAgenda _grille = new(Array.Empty<JourCase>(), Array.Empty<SemaineLigne>(), Array.Empty<EntreeLegende>());
 
+    // Acteurs DÉCLARÉS du foyer (énumérés depuis le store via api/foyer/acteurs) : source UNIQUE des
+    // sélecteurs de responsable des dialogs d'écriture, passée en paramètre (les dialogs ne s'auto-chargent
+    // plus — évite un re-render async pendant la saisie). Rafraîchie à l'init, à chaque ouverture de dialog
+    // (fetch-on-open : un acteur ajouté apparaît, Sc.5) et à chaque diffusion temps réel (propagation au
+    // second écran, Sc.7). _acteursFoyerCharges distingue « en chargement » de « chargé et vide » (invite
+    // « aucun acteur », Sc.6).
+    private List<ActeurFoyer> _acteursFoyer = new();
+    private bool _acteursFoyerCharges;
+
     private HubConnection? _hub;
 
     // Écriture en contexte (palier 7) — la grille reste en LECTURE SEULE (règle 14) : la case ouvre un
@@ -97,8 +106,11 @@ public partial class PlanningPartage
         // L'ancre de navigation démarre sur la semaine en cours (lundi de la date d'aujourd'hui), via
         // le port d'horloge injecté. Idempotent : une ancre déjà décalée par la navigation est conservée.
         Session.InitialiserAncre(Horloge.Aujourdhui);
-        await ChargerAsync();
+        // Acteurs déclarés AVANT la grille : ainsi, dès que la grille (28 cases) est rendue, la liste des
+        // acteurs est déjà chargée et STABLE — les dialogs ouverts ensuite reçoivent leur sélecteur peuplé
+        // d'emblée, sans re-render async pendant la saisie (robustesse runtime + parité tests).
         await ChargerActeursIncarnablesAsync();
+        await ChargerAsync();
     }
 
     /// <summary>Charge le catalogue des acteurs incarnables depuis le <b>référentiel réel</b> via le
@@ -110,15 +122,21 @@ public partial class PlanningPartage
         {
             var acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs");
             if (acteurs is not null)
+            {
+                // Source unique : alimente À LA FOIS le sélecteur d'incarnation (id+nom+type) et les
+                // sélecteurs de responsable des dialogs (liste complète, id stable — jamais le libellé).
+                _acteursFoyer = acteurs;
                 Session.ActeursIncarnables = acteurs
                     .Select(a => new IdentiteActeur(a.Id, a.Nom, a.Type))
                     .ToList();
+            }
         }
         catch (HttpRequestException)
         {
-            // Référentiel distant injoignable : le sélecteur d'incarnation reste vide plutôt que de
-            // planter la vue (le planning en lecture reste consultable sous l'identité réelle).
+            // Référentiel distant injoignable : les sélecteurs (incarnation + dialogs) restent vides plutôt
+            // que de planter la vue (le planning en lecture reste consultable sous l'identité réelle).
         }
+        _acteursFoyerCharges = true; // tentative faite : les dialogs peuvent décider d'afficher l'invite (Sc.6)
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -352,7 +370,9 @@ public partial class PlanningPartage
         _dateDialogPoserSlot = date;
     }
 
-    /// <summary>Depuis le menu, ouvre la dialog « Affecter une période » pré-remplie sur la date de la case.</summary>
+    /// <summary>Depuis le menu, ouvre la dialog « Affecter une période » pré-remplie sur la date de la case.
+    /// La dialog reçoit la liste des acteurs déclarés en PARAMÈTRE (chargée à l'init + rafraîchie en temps
+    /// réel) : aucun chargement async en son sein → pas de re-render pendant la saisie.</summary>
     private void OuvrirAffecterPeriode(DateOnly date)
     {
         _dateMenu = null;

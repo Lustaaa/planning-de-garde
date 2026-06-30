@@ -44,8 +44,8 @@ public sealed class FrontWasmSelecteursActeursDeclaresTests : TestContext
     public void Le_selecteur_de_la_dialog_affecter_periode_ne_propose_que_les_acteurs_declares_dont_un_acteur_reel_ajoute_au_runtime()
     {
         using var api = new ApiDistanteFactory();
+        var declares = DeclarerCarlaEtListerActeursDeclares(api); // acteur réel déclaré AVANT l'ouverture de l'écran
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Lundi_29_06_2026);
-        var declares = DeclarerCarlaEtListerActeursDeclares(api);
 
         // When — ouvrir le menu de la case puis la dialog « Affecter une période ».
         grille.WaitForAssertion(
@@ -76,8 +76,8 @@ public sealed class FrontWasmSelecteursActeursDeclaresTests : TestContext
     public void Les_selecteurs_depose_et_recupere_de_la_dialog_transfert_ne_proposent_que_les_acteurs_declares_dont_un_acteur_reel_ajoute_au_runtime()
     {
         using var api = new ApiDistanteFactory();
+        var declares = DeclarerCarlaEtListerActeursDeclares(api); // acteur réel déclaré AVANT l'ouverture de l'écran
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Lundi_29_06_2026);
-        var declares = DeclarerCarlaEtListerActeursDeclares(api);
 
         // When — ouvrir le menu de la case puis la dialog « Définir un transfert ».
         grille.WaitForAssertion(

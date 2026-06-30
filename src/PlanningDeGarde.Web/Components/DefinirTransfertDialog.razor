@@ -17,7 +17,7 @@
                     <label class="form-label">Dépose par</label>
                     <InputSelect class="form-select" data-testid="champ-depose" @bind-Value="_form.DeposeParId">
                         <option value="">— choisir —</option>
-                        @foreach (var a in _acteurs)
+                        @foreach (var a in Acteurs)
                         {
                             <option value="@a.Id">@a.Nom</option>
                         }
@@ -27,14 +27,14 @@
                     <label class="form-label">Récupère par</label>
                     <InputSelect class="form-select" data-testid="champ-recupere" @bind-Value="_form.RecupereParId">
                         <option value="">— choisir —</option>
-                        @foreach (var a in _acteurs)
+                        @foreach (var a in Acteurs)
                         {
                             <option value="@a.Id">@a.Nom</option>
                         }
                     </InputSelect>
                 </div>
             </div>
-            @if (_acteursCharges && _acteurs.Count == 0)
+            @if (ActeursCharges && Acteurs.Count == 0)
             {
                 <div class="alert alert-warning py-2" data-testid="aucun-acteur-invite">Aucun acteur, ajoutez-en.</div>
             }

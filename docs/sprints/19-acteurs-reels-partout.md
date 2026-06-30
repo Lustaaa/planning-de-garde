@@ -1,6 +1,6 @@
 # Sprint 19 — Acteurs réels partout, retrait des « Parent A / Parent B » fictifs (`acteurs-reels-partout`)
 
-> **Avancement : 6/7 ⏳**
+> **Avancement : 7/7 ✅**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -10,7 +10,7 @@
 | 4 | Aucun libellé « Parent A / Parent B » exposé par le domaine ; runtime Mongo démarre vide, fixtures de test renommées (asymétrie seed s15 préservée) | @back | ✅ |
 | 5 | Sélecteurs des dialogs + légende + grille ne montrent que les **acteurs déclarés** (runtime) | 🖥️ @ihm | ✅ |
 | 6 | Store vide au 1er lancement → sélecteurs vides + message « aucun acteur, ajoutez-en », grille neutre, **zéro** fantôme | 🖥️ @ihm | ✅ |
-| 7 | Temps réel : l'ajout d'un acteur réel propage aux sélecteurs + grille + légende du second écran sans rechargement (SignalR), toujours sans fantôme | 🖥️ @ihm | ⏳ |
+| 7 | Temps réel : l'ajout d'un acteur réel propage aux sélecteurs + grille + légende du second écran sans rechargement (SignalR), toujours sans fantôme | 🖥️ @ihm | ✅ |
 
 ---
 
@@ -112,7 +112,7 @@ Scénario 6 — Store vide au 1er lancement → sélecteurs vides, grille neutre
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 7 — Temps réel : ajout d'un acteur réel propage sans fantôme
   Étant donné deux écrans ouverts sur le même foyer (store partagé)
   Quand j'ajoute un acteur réel depuis l'écran de config
