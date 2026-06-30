@@ -31,6 +31,9 @@ public sealed class PeriodeDeGarde
         if (string.IsNullOrWhiteSpace(responsableId))
             return Result<PeriodeDeGarde>.Echec("Un responsable est requis pour la période de garde.");
 
+        if (fin < debut)
+            return Result<PeriodeDeGarde>.Echec("Bornes invalides : la fin de la période ne peut pas précéder son début.");
+
         return Result<PeriodeDeGarde>.Succes(new PeriodeDeGarde(responsableId, debut, fin));
     }
 

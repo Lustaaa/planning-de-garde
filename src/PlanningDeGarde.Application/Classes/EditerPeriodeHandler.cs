@@ -28,6 +28,12 @@ public sealed class EditerPeriodeHandler
 
     public Result<EditerPeriodeResultat> Handle(EditerPeriodeCommand commande)
     {
+        // Tell-Don't-Ask : l'agrégat porte l'invariant des bornes (et du responsable). On le consulte
+        // AVANT toute écriture — un état voulu invalide est refusé sans jamais toucher le port (rien appliqué).
+        var validation = PeriodeDeGarde.Affecter(commande.NouveauResponsableId, commande.NouveauDebut, commande.NouvelleFin);
+        if (!validation.EstSucces)
+            return Result<EditerPeriodeResultat>.Echec(validation.Motif!);
+
         var modification = commande.EtatObserve with
         {
             ResponsableId = commande.NouveauResponsableId,

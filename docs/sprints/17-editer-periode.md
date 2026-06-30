@@ -1,6 +1,6 @@
 # Sprint 17 — Éditer une période depuis la dialog (`editer-periode`)
 
-> **Avancement : 4/11 ⏳**
+> **Avancement : 5/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -8,7 +8,7 @@
 | 2 | Réaffecter le responsable : la case affiche le nouveau, plus l'ancien | @back | ✅ |
 | 3 | Re-bornage : la portion libérée retombe sur le responsable de fond (le cycle reprend) | @back | ✅ |
 | 4 | Re-bornage : portion libérée sur index non mappé → neutre sans nom fantôme | @back | ✅ |
-| 5 | Bornes invalides (fin ≤ début) refusées, période inchangée | @back | ⏳ |
+| 5 | Bornes invalides (fin ≤ début) refusées, période inchangée | @back | ✅ |
 | 6 | Édition concurrente sur état périmé → rejet, rien appliqué | @back | ⏳ |
 | 7 | « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé | 🖥️ @ihm | ⏳ |
 | 8 | Annulation : fermer le formulaire sans enregistrer ne change rien | 🖥️ @ihm | ⏳ |
@@ -160,7 +160,7 @@ Scenario: Re-borner une période libère une journée sur un index de fond non m
   Et la case du lundi 15 juin 2026 n'affiche aucun nom de responsable
 ```
 
-### Scenario 5 — Bornes invalides (fin ≤ début) refusées, période inchangée `@back` `@pending`
+### Scenario 5 — Bornes invalides (fin ≤ début) refusées, période inchangée `@back` `@vert`
 
 ```gherkin
 Scenario: Éditer une période avec une fin antérieure ou égale au début est refusé sans rien changer
