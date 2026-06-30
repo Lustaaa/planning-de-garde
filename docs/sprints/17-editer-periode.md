@@ -1,6 +1,6 @@
 # Sprint 17 — Éditer une période depuis la dialog (`editer-periode`)
 
-> **Avancement : 10/11 ⏳**
+> **Avancement : 11/11 ✅**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -14,7 +14,7 @@
 | 8 | Annulation : fermer le formulaire sans enregistrer ne change rien | 🖥️ @ihm | ✅ |
 | 9 | Gating Invité : aucun bouton « Éditer » ni commande émissible | 🖥️ @ihm | ✅ |
 | 10 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ✅ |
-| 11 | Temps réel : l'édition propage grille + légende sans rechargement | 🖥️ @ihm | ⏳ |
+| 11 | Temps réel : l'édition propage grille + légende sans rechargement | 🖥️ @ihm | ✅ |
 
 ---
 
@@ -248,7 +248,7 @@ Scenario: Une édition qui n'atteint pas l'API laisse la dialog ouverte et le pl
   Et aucune mise en file ni rejeu n'est effectué
 ```
 
-### Scenario 11 — Temps réel : l'édition propage grille et légende sans rechargement `@ihm` `@pending`
+### Scenario 11 — Temps réel : l'édition propage grille et légende sans rechargement `@ihm` `@vert`
 
 > Diffusion SignalR lecture seule, déclenchée par l'écriture aboutie. Respecter la convention
 > anti-flake des tests *TempsReel* (rétrofit complet P2 hors scope).
