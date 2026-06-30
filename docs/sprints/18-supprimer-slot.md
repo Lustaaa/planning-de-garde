@@ -1,11 +1,11 @@
 # Sprint 18 — Supprimer un slot sur une journée depuis le menu clic-case (`supprimer-slot`)
 
-> **Avancement : 1/10 ⏳**
+> **Avancement : 2/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Supprimer un slot le retire du store durable relu (+ redémarrage) | @back | ✅ |
-| 2 | Slot franchissant minuit : la suppression efface son rendu sur les **deux** jours | @back | ⏳ |
+| 2 | Slot franchissant minuit : la suppression efface son rendu sur les **deux** jours | @back | ✅ |
 | 3 | Pile horaire : supprimer un slot laisse les autres, dans l'ordre horaire | @back | ⏳ |
 | 4 | Lister les slots couvrant une date (alimente la dialog) | @back | ⏳ |
 | 5 | Idempotence : supprimer un slot absent / déjà supprimé = no-op qui réussit | @back | ⏳ |
@@ -113,7 +113,7 @@ Scenario: Supprimer un slot le retire de la configuration persistée du domaine
   Et le store relu après redémarrage ne comporte toujours pas ce slot
 ```
 
-### Scenario 2 — Slot franchissant minuit : la suppression efface son rendu sur les deux jours `@back` `@pending`
+### Scenario 2 — Slot franchissant minuit : la suppression efface son rendu sur les deux jours `@back` `@vert`
 
 ```gherkin
 Scenario: Supprimer un slot à cheval sur minuit le retire des deux jours qu'il couvrait

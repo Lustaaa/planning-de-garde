@@ -66,8 +66,11 @@ public sealed class GrilleAgendaQuery
 
     private GrilleAgenda ProjeterFenetre(DateOnly premierJour, int nbJours)
     {
+        // Un slot est rendu sur CHAQUE jour calendaire qu'il couvre : un slot franchissant minuit
+        // (début un jour, fin le lendemain) apparaît donc dans la case de ses deux jours.
         var slotsParJour = _slots.AllSnapshots()
-            .ToLookup(snapshot => DateOnly.FromDateTime(snapshot.Debut));
+            .SelectMany(snapshot => JoursCouverts(snapshot).Select(jour => (jour, snapshot)))
+            .ToLookup(x => x.jour, x => x.snapshot);
 
         var periodes = _periodes.AllSnapshots();
 
@@ -101,6 +104,15 @@ public sealed class GrilleAgendaQuery
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
         return new JourCase(date, couleur, nom, SlotsCasePour(slots));
+    }
+
+    /// <summary>Jours calendaires couverts par un slot, du jour de son début à celui de sa fin (inclus).</summary>
+    private static IEnumerable<DateOnly> JoursCouverts(SlotSnapshot slot)
+    {
+        var premier = DateOnly.FromDateTime(slot.Debut);
+        var dernier = DateOnly.FromDateTime(slot.Fin);
+        for (var jour = premier; jour <= dernier; jour = jour.AddDays(1))
+            yield return jour;
     }
 
     private static bool CouvreLeJour(PeriodeSnapshot periode, DateOnly date)
