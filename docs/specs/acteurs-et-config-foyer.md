@@ -19,6 +19,17 @@ Le **CRUD acteurs est complet** (Create + Read + Update + **Delete**) : supprime
 du store durable** et **neutralise par repli** ses cases orphelines. Le dernier maillon, une
 **impersonation bornée lecture seule**, ferme la **boucle du cycle de vie des acteurs**.
 
+Les **acteurs fictifs de démo (« Parent A / Parent B ») sont éliminés partout** *(livré)* : aucune
+**constante de domaine** n'expose plus ces libellés, et **tout l'affichage** (sélecteurs des dialogs,
+grille, légende) résout les responsables **exclusivement** depuis le **store vivant des acteurs
+déclarés**, **clé = identifiant stable** (jamais un libellé en dur). Conséquences observables : sur un
+**store vide** (runtime Mongo au 1er lancement), la grille est **entièrement neutre**, la légende
+**vide**, et les sélecteurs affichent **« Aucun acteur, ajoutez-en. »** — **zéro** acteur fantôme. Une
+**référence orpheline** (id stable absent du store) retombe sur le repli **surcharge > fond > neutre
+sans nom fantôme** (priorité palier 6 + filtre `Resolvable()` s13). L'**asymétrie seed s15** est
+préservée : Mongo démarre vide, le seed InMemory des tests est **conservé mais renommé** en libellés
+neutres (id stables).
+
 ## Objectif & arbitrage
 
 La **persistance de la config foyer** a été tirée **devant l'usage** (exception **bornée**, observable
@@ -60,7 +71,12 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **R1 Multi-enfants · R2 Familles recomposées · R3 Toujours deux parents** (composition du foyer).
 - **R4 — Acteurs « autres » ajoutables, éditables et supprimables.**
 - **R5 — Édition des acteurs (noms + couleurs)** : grille relue immédiatement, store vivant partout,
-  type surfacé lecture seule. Distincte de la durabilité (R30).
+  type surfacé lecture seule. Distincte de la durabilité (R30). **Précisé s19** : sélecteurs des
+  dialogs, grille et légende résolvent **exclusivement** depuis le **store vivant des acteurs déclarés**
+  (id stable, jamais un libellé en dur) ; **aucun** acteur fictif « Parent A/B » dans le domaine ni
+  l'IHM ; store vide → message **« Aucun acteur, ajoutez-en. »**, grille neutre, légende vide, zéro
+  fantôme. Repli des références orphelines : **surcharge > fond > neutre sans nom fantôme**
+  (cf. [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md), R15bis).
 - **R6 — Ajout & suppression d'acteur, neutralisation par repli (cases ET incarnation), persistance
   bornée** : id stable neuf, persistance Mongo bornée, suppression autorisée & idempotente, repli des
   cases orphelines + de l'incarnation, accusé « Acteur supprimé », pas de réaffectation auto.
@@ -79,5 +95,9 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   queue (paliers « config foyer durable — reste » puis « persistance réelle »).
 - **Variantes refus/réaffectation de suppression** = porte G1 au make-gherkin si un vrai trou émerge.
 - **Évolutions de surface config non priorisées** : palette/picker, onglets par acteur.
+- **Dette de cohérence (s19)** : le **sélecteur d'édition de l'écran config** lit **encore**
+  `Foyer.ActeursEditables` (noms réels, zéro fantôme, **pas de régression d'usage**) plutôt que le
+  **store vivant unifié** (`IEnumerationActeursFoyer`) adopté partout ailleurs au s19. Candidat backlog :
+  converger ce dernier chemin de lecture (un seul chemin pour le référentiel acteurs).
 
 Cf. [`risques-et-questions-ouvertes.md`](risques-et-questions-ouvertes.md).
