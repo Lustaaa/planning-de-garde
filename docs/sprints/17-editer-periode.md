@@ -1,6 +1,6 @@
 # Sprint 17 — Éditer une période depuis la dialog (`editer-periode`)
 
-> **Avancement : 8/11 ⏳**
+> **Avancement : 9/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -12,7 +12,7 @@
 | 6 | Édition concurrente sur état périmé → rejet, rien appliqué | @back | ✅ |
 | 7 | « Éditer » dans la dialog → formulaire pré-rempli → enregistrer → grille relue + accusé | 🖥️ @ihm | ✅ |
 | 8 | Annulation : fermer le formulaire sans enregistrer ne change rien | 🖥️ @ihm | ✅ |
-| 9 | Gating Invité : aucun bouton « Éditer » ni commande émissible | 🖥️ @ihm | ⏳ |
+| 9 | Gating Invité : aucun bouton « Éditer » ni commande émissible | 🖥️ @ihm | ✅ |
 | 10 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
 | 11 | Temps réel : l'édition propage grille + légende sans rechargement | 🖥️ @ihm | ⏳ |
 
@@ -217,7 +217,7 @@ Scenario: Fermer le formulaire d'édition sans enregistrer laisse période et gr
   Et la case du mardi 16 juin 2026 affiche toujours "Nounou"
 ```
 
-### Scenario 9 — Gating Invité : aucun bouton « Éditer » ni commande émissible `@ihm` `@pending`
+### Scenario 9 — Gating Invité : aucun bouton « Éditer » ni commande émissible `@ihm` `@vert`
 
 > Gating règle 9, déclencheur rôle mutualisé sur le contexte existant.
 
