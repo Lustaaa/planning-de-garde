@@ -26,6 +26,11 @@ public static class CanalLecture
     /// déclenche jamais la diffusion.</summary>
     public sealed record PeriodeDuJourVue(string Id, string ResponsableId, string ResponsableNom, DateTime Debut, DateTime Fin);
 
+    /// <summary>Vue d'un slot couvrant une date, pour alimenter la dialog de suppression de slot : identifiant
+    /// stable (clé, jamais le libellé), enfant, lieu (libellé d'affichage), bornes horaires datées. Lecture
+    /// seule — ne déclenche jamais la diffusion.</summary>
+    public sealed record SlotDuJourVue(string Id, string EnfantId, string LieuId, DateTime Debut, DateTime Fin);
+
     public static IEndpointRouteBuilder MapperCanalLecture(this IEndpointRouteBuilder routes)
     {
         // Énumération des acteurs du foyer DEPUIS LE STORE (et non la liste statique front
@@ -60,6 +65,18 @@ public static class CanalLecture
             {
                 var vues = periodes.Lister(new DateOnly(annee, mois, jour))
                     .Select(p => new PeriodeDuJourVue(p.Id, p.ResponsableId, referentiel.NomDe(p.ResponsableId), p.Debut, p.Fin))
+                    .ToList();
+                return Results.Ok(vues);
+            });
+
+        // Slots COUVRANT une date (canal de lecture, CQRS) — alimente la dialog de suppression de slot du
+        // menu clic-case. Chaque slot est rendu avec son identifiant stable, son enfant, son lieu et ses
+        // bornes horaires. Un slot franchissant minuit couvre ses deux jours. Ne déclenche jamais la diffusion.
+        routes.MapGet("/api/slots/{annee:int}/{mois:int}/{jour:int}",
+            (int annee, int mois, int jour, SlotsDuJourQuery slots) =>
+            {
+                var vues = slots.Lister(new DateOnly(annee, mois, jour))
+                    .Select(s => new SlotDuJourVue(s.Id, s.EnfantId, s.LieuId, s.Debut, s.Fin))
                     .ToList();
                 return Results.Ok(vues);
             });

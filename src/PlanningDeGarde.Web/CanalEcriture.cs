@@ -48,6 +48,11 @@ public static class CanalEcriture
     /// handler (id absent / déjà supprimé = no-op qui réussit).</summary>
     public sealed record SupprimerPeriodeRequete(string PeriodeId);
 
+    /// <summary>Corps de la requête de suppression d'un slot émise via le canal d'écriture (6ᵉ usage du menu
+    /// clic-case). La clé est l'<b>identifiant stable</b> du slot (jamais un libellé) ; la suppression est
+    /// idempotente côté handler (id absent / déjà supprimé = no-op qui réussit).</summary>
+    public sealed record SupprimerSlotRequete(string SlotId);
+
     /// <summary>Corps de la requête d'édition d'une période émise via le canal d'écriture (5ᵉ usage du menu
     /// clic-case). La clé est l'<b>identifiant stable</b> de la période (jamais un libellé) ; le nouveau
     /// responsable et les nouvelles bornes décrivent l'état voulu. L'état observé (jeton de concurrence) est

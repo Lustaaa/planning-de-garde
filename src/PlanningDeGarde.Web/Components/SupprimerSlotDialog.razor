@@ -1,0 +1,56 @@
+@inject HttpClient Canal
+
+@* Dialog (modal) « Supprimer un slot » ouverte depuis le menu d'actions d'une case (palier 7, écriture
+   en contexte — 6ᵉ usage du menu clic-case). À l'ouverture, elle LIT les slots couvrant la date via le
+   canal de lecture HTTP (GET /api/slots/{aaaa}/{MM}/{jj}) ; supprimer une ligne émet sa commande via le
+   canal d'écriture HTTP (POST /api/canal/supprimer-slot) — JAMAIS un handler en DI direct ni le canal de
+   diffusion. Aucune règle métier ici. La clé envoyée est l'identifiant stable du slot (jamais un libellé).
+   Issues : succès → OnValide (le parent ferme, accuse et relit la grille) ; refus métier / API injoignable
+   → message DANS la dialog, la dialog reste ouverte (Sc.9). *@
+<div class="dialog-backdrop" data-testid="dialog-supprimer-slot">
+    <div class="dialog-panneau">
+        <h2 class="h4 mb-3">Supprimer un slot — @DateContexte.ToString("dd/MM/yyyy")</h2>
+
+        @if (_slots is null)
+        {
+            <p class="text-muted" data-testid="slots-chargement">Chargement des slots…</p>
+        }
+        else if (_slots.Count == 0)
+        {
+            <p class="text-muted" data-testid="slots-vide">Aucun slot ne couvre ce jour.</p>
+        }
+        else
+        {
+            <ul class="list-group mb-3">
+                @foreach (var slot in _slots)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        data-testid="slot-supprimable" data-slot-id="@slot.Id">
+                        <span>
+                            <strong>@slot.LieuId</strong>
+                            <span class="text-muted ms-2">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-testid="bouton-supprimer-slot"
+                                @onclick="@(() => Supprimer(slot.Id))">Supprimer</button>
+                    </li>
+                }
+            </ul>
+        }
+
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-link" data-testid="dialog-annuler" @onclick="Annuler">Fermer</button>
+        </div>
+
+        @if (_motifEchec is not null)
+        {
+            <div class="alert alert-danger mt-3" data-testid="motif-echec">@_motifEchec</div>
+        }
+    </div>
+</div>
+
+<style>
+    .dialog-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.4); display: flex;
+                       align-items: center; justify-content: center; z-index: 1050; }
+    .dialog-panneau { background: #fff; border-radius: 6px; padding: 20px; width: min(480px, 92vw);
+                      box-shadow: 0 8px 28px rgba(0,0,0,.25); }
+</style>

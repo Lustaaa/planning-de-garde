@@ -1,6 +1,6 @@
 # Sprint 18 — Supprimer un slot sur une journée depuis le menu clic-case (`supprimer-slot`)
 
-> **Avancement : 5/10 ⏳**
+> **Avancement : 6/10 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -9,7 +9,7 @@
 | 3 | Pile horaire : supprimer un slot laisse les autres, dans l'ordre horaire | @back | ✅ |
 | 4 | Lister les slots couvrant une date (alimente la dialog) | @back | ✅ |
 | 5 | Idempotence : supprimer un slot absent / déjà supprimé = no-op qui réussit | @back | ✅ |
-| 6 | Menu clic-case → dialog liste les slots → supprimer → grille relue + accusé | 🖥️ @ihm | ⏳ |
+| 6 | Menu clic-case → dialog liste les slots → supprimer → grille relue + accusé | 🖥️ @ihm | ✅ |
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ⏳ |
 | 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ⏳ |
 | 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ⏳ |
@@ -165,7 +165,7 @@ Scenario: Supprimer un slot inexistant ne change rien et ne lève aucune erreur
   Et aucune erreur n'est levée
 ```
 
-### Scenario 6 — Depuis le menu clic-case, la dialog liste les slots et la suppression relit la grille `@ihm` `@pending`
+### Scenario 6 — Depuis le menu clic-case, la dialog liste les slots et la suppression relit la grille `@ihm` `@vert`
 
 > Lot IHM final, mené en RED→GREEN runtime ; groupable avec Sc.7–Sc.10.
 > Acceptation runtime : front WASM + API distante + Mongo réel.
