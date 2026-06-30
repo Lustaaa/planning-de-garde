@@ -1,11 +1,11 @@
 # Sprint 19 — Acteurs réels partout, retrait des « Parent A / Parent B » fictifs (`acteurs-reels-partout`)
 
-> **Avancement : 1/7 ⏳**
+> **Avancement : 2/7 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | La projection de grille résout les responsables **uniquement** depuis le store vivant des acteurs déclarés (id stable), jamais depuis un libellé en dur | @back | ✅ |
-| 2 | Store d'acteurs **vide** → grille entièrement neutre + légende vide, **aucun** acteur fictif injecté | @back | ⏳ |
+| 2 | Store d'acteurs **vide** → grille entièrement neutre + légende vide, **aucun** acteur fictif injecté | @back | ✅ |
 | 3 | Référence orpheline (id absent du store) → repli **surcharge > fond > neutre sans nom fantôme** | @back | ⏳ |
 | 4 | Aucun libellé « Parent A / Parent B » exposé par le domaine ; runtime Mongo démarre vide, fixtures de test renommées (asymétrie seed s15 préservée) | @back | ⏳ |
 | 5 | Sélecteurs des dialogs + légende + grille ne montrent que les **acteurs déclarés** (runtime) | 🖥️ @ihm | ⏳ |
@@ -59,7 +59,7 @@ Scénario 1 — La grille ne résout que des acteurs déclarés (id stable)
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 2 — Store d'acteurs vide → grille neutre, aucun fictif injecté
   Étant donné un foyer dont le store d'acteurs est vide
   Quand on projette la grille agenda
