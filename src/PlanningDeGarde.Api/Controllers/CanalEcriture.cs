@@ -1,4 +1,6 @@
+using System.Linq;
 using PlanningDeGarde.Application;
+using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Api;
 
@@ -50,6 +52,12 @@ public static class CanalEcriture
     /// l'<b>identifiant stable</b> de la période (jamais un libellé) ; la suppression est idempotente côté
     /// handler (id absent / déjà supprimé = no-op qui réussit).</summary>
     public sealed record SupprimerPeriodeRequete(string PeriodeId);
+
+    /// <summary>Corps de la requête d'édition d'une période émise via le canal d'écriture (5ᵉ usage du menu
+    /// clic-case). La clé est l'<b>identifiant stable</b> de la période ; le nouveau responsable et les
+    /// nouvelles bornes décrivent l'état voulu. L'état observé (jeton de concurrence optimiste) est résolu
+    /// côté API sur cet identifiant avant d'invoquer le handler — le front n'émet que la cible.</summary>
+    public sealed record EditerPeriodeRequete(string PeriodeId, string NouveauResponsableId, DateTime NouveauDebut, DateTime NouvelleFin);
 
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
@@ -135,6 +143,30 @@ public static class CanalEcriture
             // un identifiant absent / déjà supprimé réussit sans effet (Sc.5). Sur succès, l'adaptateur de
             // gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres écrans re-projettent la
             // grille et la légende sans rechargement (Sc.10). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/editer-periode",
+            (EditerPeriodeRequete requete, IPeriodeRepository periodes, EditerPeriodeHandler handler, INotificateurPlanning notificateur) =>
+        {
+            // L'état observé (jeton de concurrence optimiste de l'agrégat période) est résolu côté API sur
+            // l'identifiant stable : load-then-act. Un identifiant absent (période supprimée entre-temps) →
+            // refus métier clair, jamais une écriture aveugle.
+            var etatObserve = periodes.AllSnapshots().FirstOrDefault(p => p.Id == requete.PeriodeId);
+            if (etatObserve is null)
+                return Results.BadRequest("Période introuvable : elle a peut-être été supprimée.");
+
+            var resultat = handler.Handle(new EditerPeriodeCommand(
+                etatObserve, requete.NouveauResponsableId, requete.NouveauDebut, requete.NouvelleFin));
+
+            // Même convention que les autres écritures : succès acquitté, refus métier (bornes invalides,
+            // état périmé) renvoyé avec son motif. Sur succès, l'adaptateur de gauche déclenche la DIFFUSION
+            // temps réel (lecture seule) : les autres écrans re-projettent grille et légende sans rechargement
+            // (Sc.11). Jamais d'écriture par le canal de diffusion.
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 
