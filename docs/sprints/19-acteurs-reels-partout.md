@@ -1,13 +1,13 @@
 # Sprint 19 — Acteurs réels partout, retrait des « Parent A / Parent B » fictifs (`acteurs-reels-partout`)
 
-> **Avancement : 3/7 ⏳**
+> **Avancement : 4/7 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | La projection de grille résout les responsables **uniquement** depuis le store vivant des acteurs déclarés (id stable), jamais depuis un libellé en dur | @back | ✅ |
 | 2 | Store d'acteurs **vide** → grille entièrement neutre + légende vide, **aucun** acteur fictif injecté | @back | ✅ |
 | 3 | Référence orpheline (id absent du store) → repli **surcharge > fond > neutre sans nom fantôme** | @back | ✅ |
-| 4 | Aucun libellé « Parent A / Parent B » exposé par le domaine ; runtime Mongo démarre vide, fixtures de test renommées (asymétrie seed s15 préservée) | @back | ⏳ |
+| 4 | Aucun libellé « Parent A / Parent B » exposé par le domaine ; runtime Mongo démarre vide, fixtures de test renommées (asymétrie seed s15 préservée) | @back | ✅ |
 | 5 | Sélecteurs des dialogs + légende + grille ne montrent que les **acteurs déclarés** (runtime) | 🖥️ @ihm | ⏳ |
 | 6 | Store vide au 1er lancement → sélecteurs vides + message « aucun acteur, ajoutez-en », grille neutre, **zéro** fantôme | 🖥️ @ihm | ⏳ |
 | 7 | Temps réel : l'ajout d'un acteur réel propage aux sélecteurs + grille + légende du second écran sans rechargement (SignalR), toujours sans fantôme | 🖥️ @ihm | ⏳ |
@@ -79,7 +79,7 @@ Scénario 3 — Référence orpheline → repli sans nom fantôme
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 4 — Aucun « Parent A / Parent B » dans le domaine ; runtime vide, fixtures renommées
   Étant donné le démarrage runtime sur store Mongo réel
   Alors l'application démarre sans aucun acteur seedé (app vide, durable ensuite)
