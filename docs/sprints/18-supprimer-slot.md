@@ -1,6 +1,6 @@
 # Sprint 18 — Supprimer un slot sur une journée depuis le menu clic-case (`supprimer-slot`)
 
-> **Avancement : 9/10 ⏳**
+> **Avancement : 10/10 ✅**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -13,7 +13,7 @@
 | 7 | Annulation : fermer la dialog sans supprimer ne change rien | 🖥️ @ihm | ✅ |
 | 8 | Gating Invité : aucun bouton ni commande de suppression | 🖥️ @ihm | ✅ |
 | 9 | API injoignable : la dialog reste ouverte, message d'échec, rien n'est appliqué | 🖥️ @ihm | ✅ |
-| 10 | Temps réel : la suppression propage la grille sans rechargement | 🖥️ @ihm | ⏳ |
+| 10 | Temps réel : la suppression propage la grille sans rechargement | 🖥️ @ihm | ✅ |
 
 ---
 
@@ -227,7 +227,7 @@ Scenario: Une suppression qui n'atteint pas l'API laisse la dialog ouverte et le
   Et aucune mise en file ni rejeu n'est effectué
 ```
 
-### Scenario 10 — Temps réel : la suppression propage la grille sans rechargement `@ihm` `@pending`
+### Scenario 10 — Temps réel : la suppression propage la grille sans rechargement `@ihm` `@vert`
 
 > Diffusion SignalR lecture seule, déclenchée par l'écriture aboutie. Respecter la convention
 > anti-flake des tests *TempsReel* (rétrofit complet P2 hors scope).
