@@ -264,4 +264,15 @@ Scenario: Éditer une période sur un écran rafraîchit l'autre écran sans rec
 
 # Retours produit (PO)
 
-_(à remplir au gate G3 / clôture)_
+- Il faut aussi ajouter la suppression d'un slot sur une journée
+- J'aimerai que les notion de Parent A et Parent B n'existe plus et qu'on utilise les acteurs. D'ailleurs, j'aimerai qu'on utilise les acteurs partout.
+- Lors de la définition d'un acteur, j'aimerai qu'un role puisse lui etre affecté (Nounou - Grand-parent)
+- J'aimerai que les parents puisse créer des roles pour les acteurs
+- J'aimerai que les role définit soit les seuls utilisé dans l'appli/usage
+- J'aimerai qu'on retravaille la configuration du foyer
+  - Onglet par theme 
+    - Acteurs
+    - Période de garde
+    - Slot récurent
+  - fait moi une proposition avec ce que tu peux imaginer
+- J'aimerai que les transfert soit matérialiser sur le plannig par un case avec les deux couleur et une séparation en diagonal

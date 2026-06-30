@@ -32,6 +32,7 @@
 | 14 | `impersonation-bornee` — **impersonation bornée lecture seule** : incarner un acteur déjà déclaré (bandeau « Vous incarnez X »), vue selon le rôle de l'**identité effective** (gating règle 9 piloté par l'incarné), retour identité réelle, retour AUTO sur suppression concurrente (repli règle 6 + SignalR), pas d'écriture « au nom de », **durcissement complet du gating config** ; type d'acteur read-only depuis le seed, zéro persistance neuve | ✅ fait | `SessionPlanning` identité réelle/effective (`Incarner`/`RevenirIdentiteReelle`, `EstParent` dérivé de l'effective) + `TypeActeur` surfacé read-only via `IEnumerationActeursFoyer.TypeDe` + bandeau/sélecteur dans `PlanningPartage` + gating effectif grille & config (6 scénarios @vert runtime, 214 verts) — **palier 8 tranche 2 (impersonation lecture) refermé, palier 8 clos côté usage** |
 | 15 | `calendrier-navigable` — **calendrier navigable** (navigation ±semaine, sélecteur de vues **Semaine / 4 semaines glissantes (défaut) / Mois**, retour « Aujourd'hui », **affectation par plage de cases** clic début+fin gardée Parent, échec navigation → fenêtre préservée + message clair, gating Invité) **+ absorption du palier 14 : persistance Mongo de TOUT le domaine** (slots/périodes/transferts/cycle) **+ démarrage runtime SANS seed** (app vide au 1er lancement, durable ensuite) | ✅ fait | `SessionPlanning` ancre+vue (session, non persistée) + nav préc./suiv./Aujourd'hui + `GrilleAgendaQuery.Projeter(ancre, vue)` (défaut 28 j) + endpoint lecture `?vue=` + sélection de plage → `AffecterPeriode` réutilisé (aucun handler neuf) + 4 adaptateurs `AdapterDroite.Mongo` (slots/périodes/transferts/cycle) derrière ports existants + DI commutant **tout** le domaine droite via `Foyer:Persistance` (Mongo runtime / InMemory test) + retrait seed runtime (`AmorcerDonneesDemo` + seed-once acteurs) (9 scénarios @vert runtime, 234 verts, pivot Mongo réel) — **paliers 9 (calendrier navigable) ET 14 (persistance réelle du domaine) refermés. Révision PO hors process : borne anti-cliquet règle 30 levée ; asymétrie seed assumée (Mongo jamais seedé / InMemory gardé)** |
 | 16 | `supprimer-editer-periode` — **suppression de période depuis l'IHM** (4ᵉ usage du menu clic-case → dialog listant les périodes couvrant la date → supprimer) sur **store Mongo réel** ; **repli surcharge > fond > neutre sans nom fantôme** à la re-résolution, **idempotence** (absent/déjà supprimé = no-op qui réussit), accusé non bloquant « Période supprimée », gating Invité, échec API (dialog reste ouverte), temps réel SignalR. Comble la dette « trou fonctionnel » (retours s02 #6 · s03). **Édition de période (re-borner/réaffecter) hors scope (tranche suivante)** | ✅ fait | `SupprimerPeriodeHandler` (idempotent) + `PeriodesDuJourQuery` (lecture pour la dialog) + port `Supprimer(periodeId)` sur le dépôt de périodes (InMemory + `AdapterDroite.Mongo`) + endpoint `POST /api/canal/supprimer-periode` (diffusion sur succès) + `SupprimerPeriodeDialog` (4ᵉ usage menu clic-case, accusé à part, gating/échec/temps réel) ; repli réutilise la priorité surcharge>fond>neutre acquise au palier 6 (10 scénarios @vert runtime, 246 verts, pivot Mongo réel) — **dette « édition/suppression de période depuis l'IHM » à demi refermée (suppression livrée)** |
+| 17 | `editer-periode` — **édition de période depuis l'IHM** (5ᵉ usage du menu clic-case → bouton « Éditer » par ligne → formulaire pré-rempli → **re-borner et/ou réaffecter**) sur **store Mongo réel** ; clé = **identifiant stable** ; re-résolution **surcharge > fond > neutre sans nom fantôme** (portion libérée → fond/neutre, portion couverte → nouveau responsable), invariant **fin > début**, **rejet sur état périmé** (concurrence, agrégat période), accusé non bloquant « Période modifiée », gating Invité, échec API (dialog reste ouverte), temps réel SignalR | ✅ fait | `EditerPeriodeCommand`/`EditerPeriodeHandler` (Result succès/échec, rejet bornes/concurrence) + méthode `Editer(...)` sur le dépôt de périodes (InMemory + `AdapterDroite.Mongo`) + endpoint `POST /api/canal/editer-periode` (diffusion sur succès) + 5ᵉ usage menu clic-case (formulaire pré-rempli bornes+responsable, accusé à part, annulation/gating/échec/temps réel) ; re-résolution réutilise priorité surcharge>fond>neutre (palier 6) + filtre `Resolvable()` (s13), aucune règle de résolution neuve (11 scénarios @vert runtime, 258 verts, pivot Mongo réel) — **dette « édition/suppression de période depuis l'IHM » ENTIÈREMENT refermée (suppression s16 + édition s17)** |
 
 > **Refacto technique HORS pipeline (PR #21, avant s10) : faite** — adaptateurs de droite par techno, `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, outil `test-count.ps1`. Critère de sortie 161/161 tenu.
 
@@ -39,7 +40,7 @@
 
 | Sprint | Sujet | Palier (spec v15) | Statut |
 |-------:|-------|-------------------|:------:|
-| — | *(aucun sprint en cours ; s16 `supprimer-editer-periode` livré et clôturé — gate G3 validé PO, retours produit VIDE)* | 9 + 14 livrés (s15) ; suppression période (s16) | — |
+| — | *(aucun sprint en cours ; s17 `editer-periode` livré et clôturé — gate G3 validé PO, 7 retours produit consommés ci-dessous)* | 9 + 14 livrés (s15) ; suppression (s16) + édition (s17) de période | — |
 
 ## Prochains sprints envisagés
 
@@ -48,8 +49,18 @@
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
 | ~~+1 (P1)~~ ✅ | ~~**Calendrier navigable** + amorce sélection de plage~~ — **LIVRÉ s15** (avec le palier 14 absorbé : persistance Mongo du domaine + démarrage vide). Variantes plage (drag riche, plage vide/chevauchement, à cheval vue/mois) **reportées tranche 2** | É4, É7 | livré |
-| +1 (P1) | **Édition de période depuis la dialog** (re-borner les dates / réaffecter le responsable d'une période existante) — tranche suivante directe de s16, qui n'a livré que le Delete ; réutilise le menu clic-case + la dialog liste par date déjà posés | É7, É12 | Referme la dette « édition/suppression de période depuis l'IHM » (moitié restante après s16) |
-| +2 | **Rétrofit complet du garde déterministe *TempsReel* SignalR** — cibler la **convergence SignalR multi-clients** (distincte de la course d'énumération déjà gardée s13) ; flake 1/30 persistant — **dette de test**, prérequis de l'édition concurrente | É3 | Déverrouille l'édition concurrente sans driver une fondation temps-réel instable |
+| ~~+1 (P1)~~ ✅ | ~~**Édition de période depuis la dialog** (re-borner / réaffecter)~~ — **LIVRÉ s17** : 5ᵉ usage menu clic-case, formulaire pré-rempli, rejet sur état périmé, re-résolution surcharge>fond>neutre, gating/échec/temps réel (11/11 vert, 258 verts). Dette « édition/suppression de période depuis l'IHM » **entièrement refermée** | É7, É12 | livré |
+| +2 | **Rétrofit complet du garde déterministe *TempsReel* SignalR** — cibler la **convergence SignalR multi-clients** (distincte de la course d'énumération déjà gardée s13) ; flake 1/30 persistant (résiduel après s17) — **dette de test**, prérequis de l'édition concurrente | É3 | Déverrouille l'édition concurrente sans driver une fondation temps-réel instable |
+| +3 | **Convergence `EditerPeriodeHandler` / `ModifierPeriodeHandler`** — deux handlers de mutation de période coexistent (le second legacy s02, même port d'écriture + même modèle de concurrence sur l'agrégat période) ; à converger pour un seul chemin d'écriture — **dette de code** (DDD : un seul modèle de concurrence par agrégat) | É7 | Évite la dérive de deux chemins d'édition divergents ; ménage hygiénique post-s17 |
+
+> **Retours produit s17 (7 items, consommés à la clôture)** — replacés dans leurs épics : *suppression
+> d'un slot sur une journée* → **É6** ; *« Parent A / Parent B » → acteurs partout* (suppression des
+> acteurs fictifs, usage systématique des acteurs réels) → **É1/É2** ; *rôle affectable à un acteur
+> (Nounou / Grand-parent)* + *parents créent des rôles* + *seuls les rôles définis sont utilisés dans
+> l'app* → **É2** (modèle de rôles) ; *refonte config foyer en onglets par thème (Acteurs / Période de
+> garde / Slot récurrent), proposition attendue* → **É2** ; *transferts matérialisés sur le planning
+> (case bicolore, séparation diagonale)* → **É8/É5**. Aucun bug : 6 évolutions/nouveaux besoins + 0
+> question. Détails dans les tableaux d'épic ci-dessous.
 | +4 | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — DIFFÉRÉE jusqu'à stabilisation SignalR | É7 | Cas limite runtime ; dépend du +3 |
 | +5 | **Cycle de fond riche** : choisir le début/ancre + config fine (frontière de jour, plage début/fin, sur-cycle vacances, WE-only). Sujet plein — rouvre la décision CP « ancrage ISO sans ancre » | É7, É1 | Retour PO /configuration s10 |
 
@@ -89,6 +100,11 @@
 | Édition des acteurs « autres » (ajout/édition/suppression) | ✅ | s08 (édition) + s09 (ajout) + s13 (suppression) / Paliers 4-5-8 | spec règle 4 · retours s08 |
 | Affichage/actions adaptés au type d'acteur | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
 | **Création d'acteurs par le parent configurateur** (nounou / grand-parent / nouveau parent en couple / autre), **email obligatoire** à la création → crée le compte utilisateur (inactif, cf. É10) | ⬜ | Palier 5-6 | retours s08 (idée) · spec règles 4/6-7 |
+| **« Parent A / Parent B » fictifs supprimés — acteurs réels partout** : éliminer les acteurs de démo (Parent A/B) du domaine ET de l'IHM ; tous les sélecteurs, cases, légendes, formulaires consomment les **acteurs déclarés** (id stable). Recoupe l'asymétrie seed s15 (InMemory seedé / Mongo vide) | ⬜ | Palier 5 | retours s17 (#2) |
+| **Rôle affectable à un acteur** (ex. Nounou, Grand-parent) — champ rôle posé à la définition de l'acteur | ⬜ | Palier 5 | retours s17 (#3) |
+| **Les parents créent/gèrent les rôles** (référentiel de rôles éditable, non figé) | ⬜ | Palier 5 | retours s17 (#4) |
+| **Seuls les rôles définis sont utilisés dans l'app** (les rôles du référentiel bornent les valeurs sélectionnables ; pas de rôle en dur) | ⬜ | Palier 5 | retours s17 (#5) |
+| **Refonte de l'écran config foyer en onglets par thème** (Acteurs / Période de garde / Slot récurrent) — **proposition de structuration attendue** (le scrum-master/PO cadre au prochain make-gherkin) | ⬜ | Palier 10 | retours s17 (#6) |
 
 ### Épic 3 — Fondations techniques (architecture & API)
 *Socle découplé : API exposée, front WASM, conventions de code, swagger.*
@@ -141,6 +157,7 @@
 | Signalement de chevauchement (création acceptée + avertissement) | ✅ | s01 | scénario 5 s01 |
 | Droits : seul Parent crée/édite les slots | ✅ | s01 | spec règle 7 |
 | Poser un slot en contexte via dialog (depuis une case) | ✅ | s11 / Palier 7 | retours s02 (#10) · spec p3 |
+| **Suppression d'un slot sur une journée** (depuis dialog/menu clic-case, miroir de la suppression de période s16) | ⬜ | à séquencer | retours s17 (#1) |
 | **Slot imbriqué** — un slot peut en contenir un autre (ex. enfant chez mamie **et** doit aller à son cours de natation) | ⬜ | à séquencer | retours s07 (idée) |
 
 ### Épic 7 — Périodes de garde & responsabilité récurrente
@@ -153,7 +170,7 @@
 | Bornes de période paramétrables | ✅ | s01 | scénario 9 s01 |
 | Édition concurrente — rejet sur état périmé | ✅ | s01 | scénario 10 s01 |
 | Suppression de période (depuis dialog) | ✅ | s16 / Palier 7 | retours s02 (#6) · retours s03 (trou) |
-| **Édition de période (re-borner / réaffecter le responsable depuis la dialog)** | ⬜ | à séquencer (tranche suivante après s16) | retours s02 (#6) · titre goal s16 (hors scope G2) |
+| **Édition de période (re-borner / réaffecter le responsable depuis la dialog)** | ✅ | s17 / Palier 7 | retours s02 (#6) · titre goal s16 (hors scope G2) |
 | Affecter période en contexte via dialog | ✅ | s11 / Palier 7 | retours s02 (#7) · spec p3 |
 | Responsabilité de fond déclarée en config foyer (le cycle, alternance parité ISO) — **durable Mongo depuis s15** | ✅ | s10 (mémoire) + s15 (durable) / Paliers 6+14 | spec règles 5/11 · besoins s07/s08 |
 | Cycle de fond **riche** (ancre/début explicite, frontière de jour, plage début/fin, sur-cycle vacances, WE-only) | ⬜ | à séquencer (rouvre l'ancrage ISO) | retours s10 (R3/R4) |
@@ -168,6 +185,7 @@
 | Transfert dérivé automatiquement par défaut (saisie réservée au ponctuel) | ⬜ | Palier 5-6 | spec règle 17 · retours s02 (#14) |
 | Transfert ponctuel & modifiable | 🟡 | s01 (modèle) + Palier 5+ | spec règle 18 |
 | Transfert en contexte via dialog (3e entrée du menu clic-case + retrait page dédiée) | ✅ | s12 / Palier 7 | retours s02 (#8) · spec p3 · G2 PO s11 |
+| **Transfert matérialisé sur le planning** : case **bicolore** (deux responsables) avec **séparation en diagonale** (départ → arrivée visibles d'un coup d'œil) — rendu lisibilité, recoupe É5 | ⬜ | à séquencer | retours s17 (#7) |
 | Transferts exposés dans le panneau cloche | ⬜ | Palier 4 item 6 | spec règle 20 · retours s02 (#8)/s03 (#4) |
 
 ### Épic 9 — Notifications & événements à venir
@@ -213,7 +231,7 @@
 | Dialogs d'écriture (poser slot + affecter période) depuis les cases (menu clic-case, pré-rempli date case, échec/annulation/chevauchement/gating Invité) | ✅ | s11 / Palier 7 | retours s02 (#7/8/10)/s03 |
 | Dialog « Définir un transfert » en contexte + retrait page dédiée (referme l'épic) | ✅ | s12 / Palier 7 | retours s02 (#8) · G2 PO s11 |
 | Suppression de période depuis dialog | ✅ | s16 / Palier 7 | retours s02 (#6) · retours s03 (trou) |
-| Édition de période depuis dialog (re-borner / réaffecter) | ⬜ | à séquencer (tranche suivante après s16) | retours s02 (#6) · titre goal s16 (hors scope) |
+| Édition de période depuis dialog (re-borner / réaffecter) | ✅ | s17 / Palier 7 | retours s02 (#6) · titre goal s16 (hors scope) |
 | Recâblage de l'écriture via API HTTP (au lieu du DI direct) | ✅ | s05 (poser/affecter/transfert via API distante WASM) | retours s03 (#5) · spec p1 |
 | Rafraîchissement immédiat : la saisie réapparaît dans la grille | ✅ | s06 / Palier 2 | retours s03 (#5, bug runtime) |
 
@@ -286,7 +304,7 @@
 ## Dettes explicitement signalées
 
 - Données en dur dans `Foyer.cs` (É1) — persister en base — retours s03 (#11).
-- ~~Aucune édition/suppression de période depuis l'IHM (É7)~~ — **suppression éteinte au s16** : 4ᵉ usage du menu clic-case → dialog listant les périodes d'une date → supprimer (store Mongo réel, repli surcharge>fond>neutre sans nom fantôme, idempotence, accusé/gating/échec/temps réel, 10/10 vert). **Reste l'édition** (re-borner / réaffecter) — séquencée tranche suivante. « trou fonctionnel assumé » — retours s03.
+- ~~Aucune édition/suppression de période depuis l'IHM (É7)~~ — **ENTIÈREMENT refermée** : suppression au **s16** (4ᵉ usage menu clic-case, idempotente) **+ édition au s17** (5ᵉ usage : re-borner / réaffecter, formulaire pré-rempli, rejet sur état périmé, re-résolution surcharge>fond>neutre, 11/11 vert, store Mongo réel). « trou fonctionnel assumé » — retours s03. **Clos.**
 - ~~Saisies invisibles à l'écran (É12)~~ — **éteint au s06 (palier 2)** : faux bug (date par défaut → `IDateTimeProvider`) ET vrai défaut couleur (mapping libellé→identifiant stable + seed) corrigés, 8/8 vert — retours s03 (#5) · consolidation s05 · livré s06.
 - Risque d'adoption du second parent (É10) — repoussé au palier 13 (auth), « ne pas laisser glisser ».
 - Faux sentiment de progrès — 2 sprints structurels d'affilée (s04, s05) sans besoin produit observable ; **résorbé au s06** : le palier 2 (Saisie visible) a rendu la main à l'usage (8/8 vert). Vigilance maintenue : ne pas remonter les paliers techniques 10/11 devant l'usage.
@@ -294,7 +312,7 @@
 - ~~Cycle multi-semaines non affiché/éditable (É1)~~ — **éteint au s10 (palier 6)** : cycle de fond affiché (grille + légende) et éditable (section config), EN MÉMOIRE ; durabilité séquencée au palier 10.
 - ~~**Dropdown « Acteur du foyer » périmée au renommage** (É2, /configuration)~~ — **résorbée au s13** : le sélecteur lit désormais le store vivant `Foyer.ActeursEditables` (cohérence règle 5 tenue partout, y compris après suppression). Signalée au gate s10, fix embarqué tête de sprint s13.
 - **Cycle de fond riche réclamé** (É7) — l'usage (gate s10) demande ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only : au-delà du plus petit incrément livré, sujet plein séquencé (+5).
-- **Flakes temps-réel SignalR** (É3, `FrontWasmConfig*TempsReel*`) — verts en isolation, flaky sous charge parallèle (timing SignalR/Docker) ; **dette de test** (pas un bug `src/`). Convention anti-flake codifiée (rétro s11, `ihm-builder`) ; **garde déterministe `WaitForState(acteur-foyer)` posé sur 7 `*TempsReel*` au s13** (course `UnknownEventHandlerId` rendue déterministe par la touche d'un composant partagé) ; **rétrofit complet = P2** (helper bUnit partagé + audit, rétro s13), prérequis de l'édition concurrente (P3). Constaté s11, partiellement traité s13.
+- **Flakes temps-réel SignalR** (É3, `FrontWasmConfig*TempsReel*`) — verts en isolation, flaky sous charge parallèle (timing SignalR/Docker) ; **dette de test** (pas un bug `src/`). Convention anti-flake codifiée (rétro s11, `ihm-builder`) ; **garde déterministe `WaitForState(acteur-foyer)` posé sur 7 `*TempsReel*` au s13** (course `UnknownEventHandlerId` rendue déterministe par la touche d'un composant partagé) ; **rétrofit complet = P2** (helper bUnit partagé + audit, rétro s13), prérequis de l'édition concurrente (P3). Constaté s11, partiellement traité s13, **flake résiduel reconstaté au s17** (le P2 existe déjà au catalogue, +2).
 - ~~Dernière saisie hors-contexte restante~~ — **éteinte au s12 (palier 7)** : page/route/lien `/planning/definir-transfert` supprimés, 3e dialog transfert livrée, épic É12 refermé. Constaté s11, résolu s12.
 - **Asymétrie seed runtime/tests (s15)** — en mode Mongo, **aucun seed** (app vide au 1er lancement, durable ensuite) ; en InMemory, seed de base **conservé** pour la non-régression. Décision PO assumée (hors process). Effet de bord : 3 tests Mongo s09 ont été re-câblés sur ajout explicite d'acteurs (durabilité toujours prouvée sur store réel).
 - **Vulnérabilités transitives du driver Mongo** (`SharpCompress` 0.30.1 NU1902 modéré, `Snappier` 1.0.0 NU1903 élevé) — warnings au build depuis le pivot Mongo généralisé (s15). À traiter par une montée de version du driver MongoDB.Driver. Non bloquant (warnings, pas erreurs).

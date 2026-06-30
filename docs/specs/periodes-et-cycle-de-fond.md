@@ -22,8 +22,9 @@ et permettre de **défaire** une surcharge depuis l'IHM. Arbitrages actés :
   son make-gherkin, pas avant).
 - **Suppression idempotente** : supprimer une période absente / déjà supprimée = **no-op qui
   réussit** (jamais un refus). Clé = **identifiant stable**, jamais un libellé.
-- **Édition de période** (re-borner / réaffecter) = **tranche suivante** (hors s16, qui n'a
-  livré que le Delete).
+- **Édition de période** (re-borner / réaffecter) — **livrée s17** (R15bis). Clé =
+  **identifiant stable** ; invariant **fin > début** ; **rejet sur état périmé** (concurrence,
+  modèle de l'agrégat période — *pas* le last-write-wins du mapping de fond, R11).
 
 ## Séquence (résolution d'une case)
 
@@ -34,7 +35,9 @@ et permettre de **défaire** une surcharge depuis l'IHM. Arbitrages actés :
    nom** (pas de nom fantôme).
 
 Supprimer une surcharge fait **re-jouer cette séquence** : la case retombe sur le fond si le
-cycle le résout, sinon sur le neutre.
+cycle le résout, sinon sur le neutre. **Re-borner** une surcharge re-joue la séquence sur **les
+deux portions** : la portion **libérée** retombe sur le fond (ou le neutre, sans nom fantôme),
+la portion **encore couverte** affiche le responsable (ré)affecté.
 
 ## Mécaniques
 
@@ -49,6 +52,14 @@ cycle le résout, sinon sur le neutre.
   (case + légende re-résolues sans rechargement). Échec API → la dialog **reste ouverte**, message
   clair, **rien appliqué** ; annulation → **aucune commande émise**. **Gating Invité** : entrée
   absente, aucune commande émissible.
+- **Éditer une période** — 5ᵉ usage du **menu clic-case** : un bouton « Éditer » par ligne de la
+  dialog liste ouvre un **formulaire pré-rempli** (bornes + responsable) → re-borner et/ou
+  réaffecter → commande `POST /api/canal/editer-periode` (clé = identifiant stable). Sur succès,
+  **accusé « Période modifiée » à part** (non bloquant) et **diffusion temps réel** (case + légende
+  re-résolues sans rechargement). **Rejet** si bornes invalides (fin ≤ début), responsable manquant,
+  **ou état périmé** (concurrence) → message clair dans la dialog, **rien appliqué**. Échec API → la
+  dialog **reste ouverte**, rien appliqué ; annulation → **aucune commande émise**. **Gating
+  Invité** : aucun bouton « Éditer », aucune commande émissible.
 
 ## Règles de gestion
 
@@ -82,7 +93,21 @@ cycle le résout, sinon sur le neutre.
   registre avertissement-à-part), **propage en temps réel** (case + légende, sans rechargement),
   est **gatée Invité** (R9) et **robuste à l'échec** (API injoignable → dialog ouverte, rien
   appliqué, aucune mise en file ni rejeu). *Le même repli s'applique à une période **orpheline**
-  (acteur supprimé, R6).* **Édition** (re-borner / réaffecter) = tranche suivante, **non livrée**.
+  (acteur supprimé, R6).* **Édition** (re-borner / réaffecter) = R15bis.
+- **R15bis — Édition de période *(livrée s17)*.** Un **Parent / Admin** édite une période depuis le
+  **formulaire pré-rempli** ouvert par le 5ᵉ usage du menu clic-case (bouton « Éditer » par ligne) :
+  **re-borner** (début et/ou fin) et/ou **réaffecter** le responsable d'une période **existante**,
+  clé = **identifiant stable** (jamais un libellé). À l'enregistrement, le **store Mongo durable**
+  est mis à jour (reflété dans le store relu **et après redémarrage**) et les cases concernées
+  **re-résolvent** (R12) : la portion **libérée** retombe sur le **fond** (ou le **neutre**, sans nom
+  fantôme, R6/R15), la portion **couverte** affiche le **nouveau** responsable. Invariant **fin >
+  début** (fin ≤ début refusée, période inchangée). **Concurrence : rejet sur état périmé** —
+  l'édition se fonde sur l'**état (version) attendu** de l'agrégat période (modèle Sc.10 s01) ; une
+  édition sur état périmé est **rejetée, rien appliqué** (*modèle de l'agrégat période, distinct du
+  last-write-wins de R11 qui ne vise que le mapping du cycle de fond*). Porte un **accusé « Période
+  modifiée » à part** (R16), **propage en temps réel** (case + légende, sans rechargement), est
+  **gatée Invité** (R9) et **robuste à l'échec** (API injoignable → dialog ouverte, rien appliqué) ;
+  annulation → **aucune commande émise**.
 
 ## Risques
 
