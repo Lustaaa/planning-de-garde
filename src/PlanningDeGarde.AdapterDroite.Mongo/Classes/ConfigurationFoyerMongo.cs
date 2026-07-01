@@ -70,6 +70,14 @@ public sealed class ConfigurationFoyerMongo : IReferentielResponsables, IEditeur
     public void AffecterRole(string acteurId, string roleId)
         => Persister(acteurId, doc => doc.RoleId = roleId); // id de rôle porté par l'acteur (write-through durable)
 
+    public void RetirerRole(string acteurId)
+    {
+        // « sans rôle » (neutre) write-through : ne mute que si l'acteur existe (tolérant à l'absence,
+        // aucun rôle fantôme, aucun document créé pour un acteur inconnu).
+        if (_cache.ContainsKey(acteurId))
+            Persister(acteurId, d => d.RoleId = null);
+    }
+
     /// <summary>Id de rôle porté par l'acteur, ou <c>null</c> s'il n'en porte aucun (« sans rôle »).</summary>
     public string? RoleDe(string acteurId)
         => _cache.TryGetValue(acteurId, out var doc) ? doc.RoleId : null;

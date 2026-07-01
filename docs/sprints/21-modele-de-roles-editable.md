@@ -1,6 +1,6 @@
 # Sprint 21 — Modèle de rôles éditable (`modele-de-roles-editable`)
 
-> **Avancement : 4/11 ⏳**
+> **Avancement : 5/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -8,7 +8,7 @@
 | 2 | **Renommer un rôle** du référentiel (même id stable, libellé mis à jour, persisté) | @back | ✅ |
 | 3 | **Rejet** création/renommage : libellé vide **ou** doublon de libellé (référentiel inchangé) | @back | ✅ |
 | 4 | **Affecter un rôle à un acteur** : la valeur provient **exclusivement** du référentiel ; rôle hors référentiel **rejeté** (jamais de rôle en dur) | @back | ✅ |
-| 5 | **Acteur sans rôle = neutre assumé** (aucun rôle fantôme, aucune erreur ; l'attribut rôle est optionnel) | @back | ⏳ |
+| 5 | **Acteur sans rôle = neutre assumé** (aucun rôle fantôme, aucune erreur ; l'attribut rôle est optionnel) | @back | ✅ |
 | 6 | **Supprimer un rôle référencé** → les acteurs porteurs retombent « sans rôle » (repli neutre, pas de rôle fantôme), **idempotence** (absent/déjà supprimé = no-op qui réussit) | @back | ⏳ |
 | 7 | Onglet **Acteurs** : **gérer le référentiel de rôles** (créer / renommer / supprimer : Nounou, Grand-parent…) depuis l'écran config | 🖥️ @ihm | ⏳ |
 | 8 | Onglet **Acteurs** : **affecter un rôle à un acteur** via un **sélecteur borné au référentiel** ; acteur sans rôle affiché **neutre** | 🖥️ @ihm | ⏳ |
@@ -100,7 +100,7 @@ Scénario 4 — Affecter un rôle (du référentiel) à un acteur — champ born
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 5 — Acteur sans rôle = neutre assumé
   Étant donné un acteur déclaré auquel aucun rôle n'a été affecté
   Quand on énumère cet acteur et son rôle

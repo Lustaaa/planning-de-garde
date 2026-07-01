@@ -57,6 +57,9 @@ public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEdi
     public void AffecterRole(string acteurId, string roleId)
         => _roles[acteurId] = roleId; // surface distincte du nom/couleur : l'id de rôle porté par l'acteur
 
+    public void RetirerRole(string acteurId)
+        => _roles.Remove(acteurId); // « sans rôle » (neutre) ; tolérant à l'absence — aucun rôle fantôme
+
     /// <summary>Id de rôle porté par l'acteur, ou <c>null</c> s'il n'en porte aucun (« sans rôle »,
     /// attribut optionnel — valeur neutre par défaut).</summary>
     public string? RoleDe(string acteurId)

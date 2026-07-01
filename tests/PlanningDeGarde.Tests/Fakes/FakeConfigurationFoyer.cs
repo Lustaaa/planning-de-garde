@@ -39,6 +39,8 @@ public sealed class FakeConfigurationFoyer : IEditeurConfigurationFoyer, IRefere
 
     public void AffecterRole(string acteurId, string roleId) => _roles[acteurId] = roleId;
 
+    public void RetirerRole(string acteurId) => _roles.Remove(acteurId); // « sans rôle » ; tolérant à l'absence
+
     /// <summary>Id de rôle porté par l'acteur, ou <c>null</c> s'il n'en porte aucun (« sans rôle »).</summary>
     public string? RoleDe(string acteurId) => _roles.TryGetValue(acteurId, out var roleId) ? roleId : null;
 
