@@ -29,8 +29,8 @@ public sealed class RenommerRoleMongoDurabiliteTests : IDisposable
         string nounouId;
         {
             var store1 = NouveauStore();
-            nounouId = new CreerRoleHandler(store1).Handle(new CreerRoleCommand("Nounou")).Valeur!.RoleId;
-            var renommage = new RenommerRoleHandler(store1).Handle(new RenommerRoleCommand(nounouId, "Assistante maternelle"));
+            nounouId = new CreerRoleHandler(store1, store1).Handle(new CreerRoleCommand("Nounou")).Valeur!.RoleId;
+            var renommage = new RenommerRoleHandler(store1, store1).Handle(new RenommerRoleCommand(nounouId, "Assistante maternelle"));
             Assert.True(renommage.EstSucces);
         }
 

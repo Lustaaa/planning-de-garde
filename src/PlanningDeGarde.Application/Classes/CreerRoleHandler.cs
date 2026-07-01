@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application;
@@ -19,15 +20,27 @@ public sealed record CreerRoleResultat(string RoleId);
 /// </summary>
 public sealed class CreerRoleHandler
 {
+    private readonly IEnumerationRoles _roles;
     private readonly IEditeurReferentielRoles _referentiel;
 
-    public CreerRoleHandler(IEditeurReferentielRoles referentiel)
+    public CreerRoleHandler(IEnumerationRoles roles, IEditeurReferentielRoles referentiel)
     {
+        _roles = roles;
         _referentiel = referentiel;
     }
 
     public Result<CreerRoleResultat> Handle(CreerRoleCommand commande)
     {
+        // Garde « libellé requis » (Sc.3) : un libellé vide ou tout-espaces est refusé AVANT toute
+        // génération d'id et toute écriture — aucun rôle vide persisté, référentiel inchangé.
+        if (string.IsNullOrWhiteSpace(commande.Libelle))
+            return Result<CreerRoleResultat>.Echec("libellé requis");
+
+        // Garde « libellé déjà défini » (Sc.3) : refus si un rôle porte déjà ce libellé — aucun
+        // doublon persisté, référentiel inchangé (unicité du libellé lue sur le référentiel courant).
+        if (_roles.EnumererRoles().Any(r => r.Libelle == commande.Libelle))
+            return Result<CreerRoleResultat>.Echec("libellé déjà défini");
+
         // Identifiant stable neuf OPAQUE, généré (jamais dérivé du libellé, anti-pattern s06) et
         // unique (GUID → jamais un id existant). Le libellé se résout ensuite sur cet id.
         var roleId = $"role-{Guid.NewGuid():N}";

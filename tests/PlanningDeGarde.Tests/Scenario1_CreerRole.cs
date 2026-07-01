@@ -24,7 +24,7 @@ public class Scenario1_CreerRole
     public void Acceptation_Should_Enumerer_Nounou_exactement_une_fois_sur_un_identifiant_neuf_opaque_non_derive_du_libelle_When_le_parent_cree_le_role_Nounou()
     {
         var referentiel = new ReferentielRolesEnMemoire();
-        var handler = new CreerRoleHandler(referentiel);
+        var handler = new CreerRoleHandler(referentiel, referentiel);
 
         var resultat = handler.Handle(new CreerRoleCommand(Nounou));
 
@@ -45,7 +45,7 @@ public class Scenario1_CreerRole
     public void Should_Faire_exister_le_role_cree_resolu_par_son_libelle_sur_un_identifiant_neuf_When_le_parent_cree_un_role()
     {
         var referentiel = new FakeReferentielRoles();
-        var handler = new CreerRoleHandler(referentiel);
+        var handler = new CreerRoleHandler(referentiel, referentiel);
 
         var resultat = handler.Handle(new CreerRoleCommand(Nounou));
 
@@ -62,7 +62,7 @@ public class Scenario1_CreerRole
     public void Should_Porter_un_identifiant_opaque_distinct_du_libelle_When_un_role_est_cree()
     {
         var referentiel = new FakeReferentielRoles();
-        var handler = new CreerRoleHandler(referentiel);
+        var handler = new CreerRoleHandler(referentiel, referentiel);
 
         var idNeuf = handler.Handle(new CreerRoleCommand(Nounou)).Valeur!.RoleId;
 

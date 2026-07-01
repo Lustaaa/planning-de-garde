@@ -24,8 +24,8 @@ public class Scenario2_RenommerRole
     public void Acceptation_Should_Conserver_le_meme_id_stable_avec_le_nouveau_libelle_et_aucun_doublon_When_le_parent_renomme_Nounou_en_Assistante_maternelle()
     {
         var referentiel = new ReferentielRolesEnMemoire();
-        var idNounou = new CreerRoleHandler(referentiel).Handle(new CreerRoleCommand(Nounou)).Valeur!.RoleId;
-        var handler = new RenommerRoleHandler(referentiel);
+        var idNounou = new CreerRoleHandler(referentiel, referentiel).Handle(new CreerRoleCommand(Nounou)).Valeur!.RoleId;
+        var handler = new RenommerRoleHandler(referentiel, referentiel);
 
         var resultat = handler.Handle(new RenommerRoleCommand(idNounou, AssistanteMaternelle));
 
@@ -46,7 +46,7 @@ public class Scenario2_RenommerRole
     {
         var referentiel = new FakeReferentielRoles();
         referentiel.Creer("role-nounou", Nounou);
-        var handler = new RenommerRoleHandler(referentiel);
+        var handler = new RenommerRoleHandler(referentiel, referentiel);
 
         handler.Handle(new RenommerRoleCommand("role-nounou", AssistanteMaternelle));
 
@@ -62,7 +62,7 @@ public class Scenario2_RenommerRole
     {
         var referentiel = new FakeReferentielRoles();
         referentiel.Creer("role-nounou", Nounou);
-        var handler = new RenommerRoleHandler(referentiel);
+        var handler = new RenommerRoleHandler(referentiel, referentiel);
 
         handler.Handle(new RenommerRoleCommand("role-nounou", AssistanteMaternelle));
 

@@ -30,7 +30,7 @@ public sealed class ReferentielRolesMongoDurabiliteTests : IDisposable
         string nounouId;
         {
             var store1 = NouveauStore();
-            var handler = new CreerRoleHandler(store1);
+            var handler = new CreerRoleHandler(store1, store1);
             var resultat = handler.Handle(new CreerRoleCommand("Nounou"));
             Assert.True(resultat.EstSucces);
             nounouId = resultat.Valeur!.RoleId;
