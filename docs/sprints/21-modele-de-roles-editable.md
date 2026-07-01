@@ -175,4 +175,10 @@ Scénario 11 — Non-régression : grille et légende inchangées par le rôle
 
 # Retours produit (PO)
 
-<!-- Rempli après le gate G3 (clôture). Un item par retour. -->
+Quelque retour, mais ca me semble vraiment pas mal.
+
+- Il faut d'urgence mettre en place les utilisateurs (Page de connection custom, avec connection Google, apple, microsoft)
+  - Dans la configuration du foyer, l'acteur selectionnée par défaut doit etre l'utilisateur
+  - L'acteur administrateur du foyer est obligatoirement un parent ou les deux parent quand les deux parents sont utilisateur
+- Il faut que ce qui est mis dans la configuration du foyer soit effectif pour le planning
+- Il faudra un sprint de design pour refondre l'app au niveau du design, car c'est une catastrophe
