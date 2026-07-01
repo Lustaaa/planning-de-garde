@@ -34,6 +34,15 @@ public partial class ConfigurationFoyer
         public string Couleur { get; set; } = "";
     }
 
+    /// <summary>Onglet de thème actuellement affiché (Sc.2). L'écran est réorganisé en trois onglets par
+    /// thème — <c>acteurs</c> (CRUD acteurs), <c>periode-garde</c> (cycle de fond), <c>slot-recurrent</c>
+    /// (réservé, placeholder) — <b>sans</b> fonctionnalité neuve : c'est un simple cloisonnement de
+    /// surface du contenu existant. « Acteurs » est actif par défaut ; changer d'onglet ne perd pas
+    /// l'état de saisie et ne déclenche aucune écriture.</summary>
+    private string _ongletActif = "acteurs";
+
+    private void ActiverOnglet(string onglet) => _ongletActif = onglet;
+
     private readonly Formulaire _form = new();
     private string? _confirmation;
     private string? _motifEchec;

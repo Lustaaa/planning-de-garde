@@ -59,7 +59,8 @@ public sealed class FrontWasmGrilleInverserMappingCycleTempsReelTests : TestCont
         });
 
         var config = RenderComponent<ConfigurationFoyer>();
-        config.WaitForElement("[data-testid='champ-cycle-index-1']", TimeSpan.FromSeconds(10));
+        // … le cycle de fond est désormais sous l'onglet « Période de garde » (Sc.2, s20) : on l'active.
+        GrilleRuntimeHarness.AllerOngletPeriodeGarde(config);
 
         // … un parent définit un cycle de 2 semaines : index pair (0) → parent-a, index impair (1) → parent-b,
         // et valide. L'écriture transite par le canal HTTP réel vers l'API distante (store cycle réel écrit).
