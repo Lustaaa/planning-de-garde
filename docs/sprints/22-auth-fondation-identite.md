@@ -1,11 +1,11 @@
 # Sprint 22 — Auth · tranche 1 : fondation identité & compte↔acteur (`auth-fondation-identite`)
 
-> **Avancement : 1/9 ⏳**
+> **Avancement : 2/9 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | **Créer un compte utilisateur** (id stable opaque neuf, email, statut **inactif** par défaut) associé 1-1 à un acteur déclaré, persisté config foyer Mongo borné | @back | ✅ |
-| 2 | **Rejet** création : email vide **ou** email en doublon (aucun compte écrit) | @back | ⏳ |
+| 2 | **Rejet** création : email vide **ou** email en doublon (aucun compte écrit) | @back | ✅ |
 | 3 | **Association bornée 1-1** : un acteur ne peut porter qu'un seul compte, un compte ne référence qu'un acteur **déclaré** (acteur inconnu → rejet sans écriture) | @back | ⏳ |
 | 4 | **Invariant admin = parent** : désigner comme **admin du foyer** un acteur de type **Parent** réussit ; un acteur non-Parent est **rejeté sans écriture** (retour PO URGENT #3) | @back | ⏳ |
 | 5 | **Deux parents admins** : quand les deux parents sont utilisateurs, les deux peuvent être admins (l'invariant borne le **type**, pas l'unicité) | @back | ⏳ |
@@ -49,7 +49,7 @@ Scénario 1 — Créer un compte utilisateur associé à un acteur déclaré
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 2 — Rejet : email vide ou email en doublon
   Étant donné un référentiel contenant déjà un compte d'email « alice@foyer.fr »
   Quand le parent tente de créer un compte d'email vide

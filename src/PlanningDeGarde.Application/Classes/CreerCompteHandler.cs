@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application;
@@ -21,19 +22,31 @@ public sealed record CreerCompteResultat(string CompteId);
 /// </summary>
 public sealed class CreerCompteHandler
 {
-    private readonly IEditeurComptes _comptes;
+    private readonly IEnumerationComptes _comptes;
+    private readonly IEditeurComptes _editeur;
 
-    public CreerCompteHandler(IEditeurComptes comptes)
+    public CreerCompteHandler(IEnumerationComptes comptes, IEditeurComptes editeur)
     {
         _comptes = comptes;
+        _editeur = editeur;
     }
 
     public Result<CreerCompteResultat> Handle(CreerCompteCommand commande)
     {
+        // Garde « email requis » (Sc.2) : un email vide ou tout-espaces est refusé AVANT toute
+        // génération d'id et toute écriture — aucun compte vide persisté, référentiel inchangé.
+        if (string.IsNullOrWhiteSpace(commande.Email))
+            return Result<CreerCompteResultat>.Echec("email requis");
+
+        // Garde « email déjà utilisé » (Sc.2) : refus si un compte porte déjà cet email — aucun
+        // doublon persisté, référentiel inchangé (unicité de l'email lue sur le référentiel courant).
+        if (_comptes.EnumererComptes().Any(c => c.Email == commande.Email))
+            return Result<CreerCompteResultat>.Echec("email déjà utilisé");
+
         // Identifiant stable neuf OPAQUE, généré (jamais dérivé de l'email, anti-pattern s06) et
         // unique (GUID → jamais un id existant). L'email se résout ensuite sur cet id.
         var compteId = $"compte-{Guid.NewGuid():N}";
-        _comptes.Creer(compteId, commande.Email, StatutCompte.Inactif, commande.ActeurId);
+        _editeur.Creer(compteId, commande.Email, StatutCompte.Inactif, commande.ActeurId);
         return Result<CreerCompteResultat>.Succes(new CreerCompteResultat(compteId));
     }
 }

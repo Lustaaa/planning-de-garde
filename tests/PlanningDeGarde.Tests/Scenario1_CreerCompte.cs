@@ -27,7 +27,7 @@ public class Scenario1_CreerCompte
     public void Acceptation_Should_Enumerer_le_compte_exactement_une_fois_sur_un_id_neuf_opaque_email_statut_inactif_et_acteur_associe_When_le_parent_cree_un_compte()
     {
         var referentiel = new ReferentielComptesEnMemoire();
-        var handler = new CreerCompteHandler(referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel);
 
         var resultat = handler.Handle(new CreerCompteCommand(Email, ActeurId));
 
@@ -50,7 +50,7 @@ public class Scenario1_CreerCompte
     public void Should_Faire_exister_le_compte_cree_resolu_par_son_email_sur_un_identifiant_neuf_When_le_parent_cree_un_compte()
     {
         var referentiel = new FakeReferentielComptes();
-        var handler = new CreerCompteHandler(referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel);
 
         var resultat = handler.Handle(new CreerCompteCommand(Email, ActeurId));
 
@@ -67,7 +67,7 @@ public class Scenario1_CreerCompte
     public void Should_Porter_un_identifiant_opaque_distinct_de_l_email_When_un_compte_est_cree()
     {
         var referentiel = new FakeReferentielComptes();
-        var handler = new CreerCompteHandler(referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel);
 
         var idNeuf = handler.Handle(new CreerCompteCommand(Email, ActeurId)).Valeur!.CompteId;
 
@@ -81,7 +81,7 @@ public class Scenario1_CreerCompte
     public void Should_Porter_le_statut_inactif_par_defaut_When_un_compte_est_cree()
     {
         var referentiel = new FakeReferentielComptes();
-        var handler = new CreerCompteHandler(referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel);
 
         var idNeuf = handler.Handle(new CreerCompteCommand(Email, ActeurId)).Valeur!.CompteId;
 
@@ -95,7 +95,7 @@ public class Scenario1_CreerCompte
     public void Should_Referencer_l_id_stable_de_l_acteur_associe_When_un_compte_est_cree()
     {
         var referentiel = new FakeReferentielComptes();
-        var handler = new CreerCompteHandler(referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel);
 
         var idNeuf = handler.Handle(new CreerCompteCommand(Email, ActeurId)).Valeur!.CompteId;
 

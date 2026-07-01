@@ -34,7 +34,7 @@ public sealed class ReferentielComptesMongoDurabiliteTests : IDisposable
         string compteId;
         {
             var store1 = NouveauStore();
-            var handler = new CreerCompteHandler(store1);
+            var handler = new CreerCompteHandler(store1, store1);
             var resultat = handler.Handle(new CreerCompteCommand("alice@foyer.fr", acteurId));
             Assert.True(resultat.EstSucces);
             compteId = resultat.Valeur!.CompteId;
