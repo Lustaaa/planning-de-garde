@@ -1,6 +1,6 @@
 # Sprint 20 — Config foyer en onglets + convergence du dernier sélecteur (`config-foyer-onglets`)
 
-> **Avancement : 5/7 ⏳**
+> **Avancement : 6/7 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -9,7 +9,7 @@
 | 3 | Onglet **Acteurs** = CRUD acteurs existant (édition / ajout / suppression) **iso-fonctionnel**, grille relue immédiatement | 🖥️ @ihm | ✅ |
 | 4 | Onglet **Période de garde** = section cycle de fond existante **iso-fonctionnelle** (définir / éditer le cycle) | 🖥️ @ihm | ✅ |
 | 5 | Onglet **Slot récurrent** **réservé** (placeholder « à venir »), **aucune** fonctionnalité neuve | 🖥️ @ihm | ✅ |
-| 6 | Sélecteur d'édition (onglet Acteurs) **cohérent** avec dialogs + grille (source unifiée) **et** temps réel préservé : ajout/renommage depuis un 2ᵉ écran s'y reflète sans rechargement (SignalR) | 🖥️ @ihm | ⏳ |
+| 6 | Sélecteur d'édition (onglet Acteurs) **cohérent** avec dialogs + grille (source unifiée) **et** temps réel préservé : ajout/renommage depuis un 2ᵉ écran s'y reflète sans rechargement (SignalR) | 🖥️ @ihm | ✅ |
 | 7 | **Gating** identité effective **préservé sur chaque onglet** (Invité ne peut écrire) — non-régression du durcissement config | 🖥️ @ihm | ⏳ |
 
 ---
@@ -101,7 +101,7 @@ Scénario 5 — Onglet Slot récurrent réservé (placeholder, aucune fonctionna
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 6 — Sélecteur config cohérent (source unifiée) + temps réel préservé
   Étant donné deux écrans ouverts sur le même foyer (store partagé) et l'onglet « Acteurs » actif
   Alors le sélecteur d'édition config propose exactement les mêmes acteurs déclarés que les dialogs et la grille (id stable)
