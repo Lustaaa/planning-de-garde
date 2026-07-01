@@ -31,13 +31,21 @@ public sealed class ReferentielRolesMongo : IEnumerationRoles, IEditeurReferenti
     }
 
     public void Creer(string roleId, string libelle)
+        => Persister(roleId, libelle);
+
+    public void Renommer(string roleId, string nouveauLibelle)
+        => Persister(roleId, nouveauLibelle); // même id (clé) → aucun doublon, dernière écriture gagne
+
+    /// <summary>Écrit le libellé du rôle sur son id stable (write-through Mongo, upsert) — survit
+    /// au redémarrage. Le même id reste un unique document (jamais de doublon).</summary>
+    private void Persister(string roleId, string libelle)
     {
         var doc = new RoleDocument { Id = roleId, Libelle = libelle };
         _cache[roleId] = doc;
         _roles.ReplaceOne(
             Builders<RoleDocument>.Filter.Eq(d => d.Id, roleId),
             doc,
-            new ReplaceOptions { IsUpsert = true }); // write-through : survit au redémarrage
+            new ReplaceOptions { IsUpsert = true });
     }
 
     public IReadOnlyCollection<RoleFoyer> EnumererRoles()

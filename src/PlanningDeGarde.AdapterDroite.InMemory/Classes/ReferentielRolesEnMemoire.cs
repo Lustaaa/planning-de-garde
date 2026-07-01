@@ -18,6 +18,9 @@ public sealed class ReferentielRolesEnMemoire : IEnumerationRoles, IEditeurRefer
     public void Creer(string roleId, string libelle)
         => _libelles[roleId] = libelle; // le rôle neuf existe désormais sur son id opaque
 
+    public void Renommer(string roleId, string nouveauLibelle)
+        => _libelles[roleId] = nouveauLibelle; // même id (clé) → aucun doublon, dernière écriture gagne
+
     public IReadOnlyCollection<RoleFoyer> EnumererRoles()
         => _libelles.Select(kv => new RoleFoyer(kv.Key, kv.Value)).ToList();
 }

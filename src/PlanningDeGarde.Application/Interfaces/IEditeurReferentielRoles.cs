@@ -12,4 +12,9 @@ public interface IEditeurReferentielRoles
     /// <summary>Enregistre un rôle <b>neuf</b> dans le référentiel : persiste son libellé sur
     /// l'identifiant stable opaque fourni (jamais un id existant).</summary>
     void Creer(string roleId, string libelle);
+
+    /// <summary>Affecte un nouveau libellé au rôle identifié de façon stable (l'id n'est jamais
+    /// éditable — il est la clé) : dernière écriture gagne, aucun doublon (le même id reste un
+    /// unique rôle).</summary>
+    void Renommer(string roleId, string nouveauLibelle);
 }

@@ -16,6 +16,8 @@ public sealed class FakeReferentielRoles : IEditeurReferentielRoles, IEnumeratio
 
     public void Creer(string roleId, string libelle) => _libelles[roleId] = libelle;
 
+    public void Renommer(string roleId, string nouveauLibelle) => _libelles[roleId] = nouveauLibelle;
+
     public IReadOnlyCollection<RoleFoyer> EnumererRoles()
         => _libelles.Select(kv => new RoleFoyer(kv.Key, kv.Value)).ToList();
 }

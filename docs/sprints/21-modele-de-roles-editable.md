@@ -1,11 +1,11 @@
 # Sprint 21 — Modèle de rôles éditable (`modele-de-roles-editable`)
 
-> **Avancement : 1/11 ⏳**
+> **Avancement : 2/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | **Créer un rôle** dans le référentiel (id stable opaque, libellé, persisté config foyer Mongo borné) | @back | ✅ |
-| 2 | **Renommer un rôle** du référentiel (même id stable, libellé mis à jour, persisté) | @back | ⏳ |
+| 2 | **Renommer un rôle** du référentiel (même id stable, libellé mis à jour, persisté) | @back | ✅ |
 | 3 | **Rejet** création/renommage : libellé vide **ou** doublon de libellé (référentiel inchangé) | @back | ⏳ |
 | 4 | **Affecter un rôle à un acteur** : la valeur provient **exclusivement** du référentiel ; rôle hors référentiel **rejeté** (jamais de rôle en dur) | @back | ⏳ |
 | 5 | **Acteur sans rôle = neutre assumé** (aucun rôle fantôme, aucune erreur ; l'attribut rôle est optionnel) | @back | ⏳ |
@@ -69,7 +69,7 @@ Scénario 1 — Créer un rôle dans le référentiel
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 2 — Renommer un rôle du référentiel
   Étant donné un référentiel contenant un rôle « Nounou » (id stable connu)
   Quand le parent configurateur renomme ce rôle en « Assistante maternelle »
