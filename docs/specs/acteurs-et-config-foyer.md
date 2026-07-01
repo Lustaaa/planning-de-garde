@@ -57,8 +57,21 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **Acteurs (noms + couleurs) éditables, ajoutables, supprimables** depuis l'écran de config ; ajout =
   identifiant stable neuf ; suppression = retrait du store + neutralisation des cases orphelines par
   repli. Config foyer **persistée** (durabilité **bornée** au référentiel des acteurs).
+- **Écran de config organisé en trois onglets par thème** *(livré s20)* : **Acteurs** (CRUD acteurs),
+  **Période de garde** (cycle de fond), **Slot récurrent** (**placeholder réservé** — aucune écriture ni
+  persistance, tient la structure sans fonctionnalité neuve). Onglet **Acteurs actif par défaut** ;
+  contenu **cloisonné par rendu conditionnel** (le contenu existant est **réparti**, rien perdu ni
+  dupliqué) ; le passage d'un onglet à l'autre **ne perd pas** l'état et **ne casse aucune** écriture.
+  Réorganisation **iso-fonctionnelle** : **aucun handler neuf**, aucune règle métier ni persistance neuve.
+- **Sélecteur d'édition de la config convergé sur le store vivant unifié** *(livré s20)* : l'énumération
+  des acteurs éditables de l'écran de config lit **exclusivement** `IEnumerationActeursFoyer` (id stable),
+  **même source** que les sélecteurs des dialogs, la grille et la légende. `Foyer.ActeursEditables` est
+  **retirée** → **un seul chemin de lecture** du référentiel acteurs, cohérence stricte
+  config ↔ dialogs ↔ grille ↔ légende. L'écran de config est **abonné au hub SignalR de lecture** :
+  ajout/renommage depuis un 2ᵉ écran **ré-énumère** son sélecteur **sans rechargement**.
 - **Toutes les écritures de l'écran de config** (édition, ajout, édition du cycle de fond, suppression)
-  sont **gatées sur l'identité effective** (durcissement complet, plus seulement le bouton supprimer).
+  sont **gatées sur l'identité effective**, **sur chaque onglet** (durcissement complet, plus seulement
+  le bouton supprimer ; non-régression du gating config s14 tenue par onglet).
 - **Impersonation bornée lecture** : session = identité **réelle** (configurateur fixe) vs identité
   **effective** (acteur incarné, ou **repli sur la réelle**) ; bandeau « Vous incarnez X » ; droit
   d'écriture dérivé du type de l'identité effective ; retour à l'identité réelle ; repli auto sur
@@ -76,7 +89,10 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   (id stable, jamais un libellé en dur) ; **aucun** acteur fictif « Parent A/B » dans le domaine ni
   l'IHM ; store vide → message **« Aucun acteur, ajoutez-en. »**, grille neutre, légende vide, zéro
   fantôme. Repli des références orphelines : **surcharge > fond > neutre sans nom fantôme**
-  (cf. [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md), R15bis).
+  (cf. [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md), R15bis). **Convergence achevée
+  s20** : le **sélecteur d'édition de l'écran config** lit lui aussi `IEnumerationActeursFoyer`
+  (`Foyer.ActeursEditables` retirée) → **un seul chemin de lecture** du référentiel, temps réel SignalR
+  compris.
 - **R6 — Ajout & suppression d'acteur, neutralisation par repli (cases ET incarnation), persistance
   bornée** : id stable neuf, persistance Mongo bornée, suppression autorisée & idempotente, repli des
   cases orphelines + de l'incarnation, accusé « Acteur supprimé », pas de réaffectation auto.
@@ -94,10 +110,11 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **Borne anti-cliquet** : la persistance reste **bornée à la config foyer** ; le reste du domaine en
   queue (paliers « config foyer durable — reste » puis « persistance réelle »).
 - **Variantes refus/réaffectation de suppression** = porte G1 au make-gherkin si un vrai trou émerge.
-- **Évolutions de surface config non priorisées** : palette/picker, onglets par acteur.
-- **Dette de cohérence (s19)** : le **sélecteur d'édition de l'écran config** lit **encore**
-  `Foyer.ActeursEditables` (noms réels, zéro fantôme, **pas de régression d'usage**) plutôt que le
-  **store vivant unifié** (`IEnumerationActeursFoyer`) adopté partout ailleurs au s19. Candidat backlog :
-  converger ce dernier chemin de lecture (un seul chemin pour le référentiel acteurs).
+- **Évolutions de surface config non priorisées** : palette/picker, refonte visuelle profonde du thème,
+  contenu réel de l'onglet **Slot récurrent** (placeholder réservé au s20, aucune fonctionnalité neuve).
+- ~~**Dette de cohérence (s19)** — sélecteur d'édition config encore sur `Foyer.ActeursEditables`~~ —
+  **RÉSOLUE s20** : convergé sur le **store vivant unifié** `IEnumerationActeursFoyer` (`Foyer.ActeursEditables`
+  retirée) → **un seul chemin de lecture** du référentiel, cohérence stricte config ↔ dialogs ↔ grille ↔
+  légende, temps réel SignalR compris.
 
 Cf. [`risques-et-questions-ouvertes.md`](risques-et-questions-ouvertes.md).
