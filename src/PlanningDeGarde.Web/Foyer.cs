@@ -29,23 +29,11 @@ public static class Foyer
         new Responsable("parent-b", "Bruno"),
     };
 
-    /// <summary>
-    /// Les acteurs <b>éditables</b> du foyer pour l'écran de configuration (renommer / recolorier),
-    /// comme paires (identifiant stable, nom d'affichage courant). Le sélecteur affiche le
-    /// <see cref="Responsable.Libelle"/> (vrai nom du foyer) mais bind l'<see cref="Responsable.Id"/>
-    /// stable (clé de résolution nom+couleur, règle 18) : <c>parent-a</c> (Alice), <c>parent-b</c>
-    /// (Bruno), <c>parent-c</c> (Marie-Hélène Grand-Dubois), <c>grand-pere</c> (grand-père, hors set
-    /// couleur). Aide de saisie côté front (miroir du seed) : la valeur résolue de référence reste le
-    /// store derrière l'API distante. Distincte de <see cref="Responsables"/> (libellés génériques
-    /// hérités du sélecteur d'affectation, dont des tests de caractérisation dépendent).
-    /// </summary>
-    public static readonly IReadOnlyList<Responsable> ActeursEditables = new[]
-    {
-        new Responsable("parent-a", "Alice"),
-        new Responsable("parent-b", "Bruno"),
-        new Responsable("parent-c", "Marie-Hélène Grand-Dubois"),
-        new Responsable("grand-pere", "grand-père"),
-    };
+    // Convergence s20 (Sc.1) : l'ancienne liste statique `ActeursEditables` qui peuplait le sélecteur
+    // d'édition de l'écran de configuration a été RETIRÉE. Le sélecteur énumère désormais les acteurs
+    // DEPUIS LE STORE VIVANT UNIFIÉ (IEnumerationActeursFoyer, via GET /api/foyer/acteurs) — même et
+    // unique chemin de lecture du référentiel acteurs que les dialogs et la grille. Plus aucune source
+    // statique parallèle susceptible de diverger du store.
 }
 
 /// <summary>Un responsable du foyer : identifiant stable (bindé) et libellé (affiché).</summary>

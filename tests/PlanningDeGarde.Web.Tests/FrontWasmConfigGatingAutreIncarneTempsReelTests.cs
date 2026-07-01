@@ -27,15 +27,18 @@ namespace PlanningDeGarde.Web.Tests;
 /// </summary>
 public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContext
 {
-    // data-testid des affordances d'écriture (proxys des formulaires gatés) : champ-nom (édition d'acteur),
-    // champ-nom-ajout (ajout), champ-nombre-semaines (cycle), bouton-supprimer (suppression).
-    private static readonly string[] EcrituresConfig =
+    // Affordances d'écriture (proxys des formulaires gatés) réparties par onglet depuis la refonte s20
+    // (Sc.2) : sous l'onglet « Acteurs » — champ-nom (édition), champ-nom-ajout (ajout), bouton-supprimer
+    // (suppression) ; sous l'onglet « Période de garde » — champ-nombre-semaines (cycle). Le gating règle 9
+    // (identité effective) est préservé DANS chaque onglet (Sc.7, s20).
+    private static readonly string[] EcrituresOngletActeurs =
     {
         "[data-testid='champ-nom']",
         "[data-testid='champ-nom-ajout']",
-        "[data-testid='champ-nombre-semaines']",
         "[data-testid='bouton-supprimer']",
     };
+
+    private const string EcritureOngletPeriodeGarde = "[data-testid='champ-nombre-semaines']";
 
     [Fact]
     public void Should_MasquerToutesLesEcrituresDeLaConfiguration_When_OnIncarneUnActeurDeTypeAutre()
@@ -53,9 +56,11 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
             TimeSpan.FromSeconds(10));
 
         // Contrôle positif — sous l'identité réelle (Parent), TOUTES les écritures config sont proposées
-        // (les formulaires ne sont pas cassés pour tous).
-        foreach (var ecriture in EcrituresConfig)
-            Assert.NotEmpty(config.FindAll(ecriture));
+        // (les formulaires ne sont pas cassés pour tous), sur chacun de leurs onglets respectifs.
+        foreach (var ecriture in EcrituresOngletActeurs)
+            Assert.NotEmpty(config.FindAll(ecriture)); // onglet « Acteurs », actif par défaut
+        config.Find("[data-testid='onglet-periode-garde']").Click();
+        Assert.NotEmpty(config.FindAll(EcritureOngletPeriodeGarde)); // onglet « Période de garde »
 
         // When — le configurateur incarne Nina la nounou (type Autre) ; l'écran est re-rendu.
         session.ActeursIncarnables = new List<IdentiteActeur>
@@ -66,8 +71,12 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
         Assert.False(session.EstParent); // garde-fou : l'incarnation d'un Autre retire bien le droit d'écrire
         config.Render();
 
-        // Then — en incarnant un Autre, AUCUNE écriture config n'est proposée (ajout, édition, cycle, supprimer).
-        foreach (var ecriture in EcrituresConfig)
+        // Then — en incarnant un Autre, AUCUNE écriture config n'est proposée sur AUCUN onglet (Sc.7, s20) :
+        // le cycle est masqué sous « Période de garde » (onglet actif), et l'ajout/édition/suppression sous
+        // « Acteurs ».
+        Assert.Empty(config.FindAll(EcritureOngletPeriodeGarde)); // onglet « Période de garde » encore actif
+        config.Find("[data-testid='onglet-acteurs']").Click();
+        foreach (var ecriture in EcrituresOngletActeurs)
             Assert.Empty(config.FindAll(ecriture));
 
         // … la liste des acteurs reste visible (consultation seule préservée) : le durcissement masque les
@@ -107,11 +116,13 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
             config.Find("[data-testid='bandeau-incarnation']").TextContent);
         Assert.Empty(config.FindAll("[data-testid='champ-nom']"));
 
-        // En revenant à l'identité réelle DEPUIS la configuration : bandeau retiré, écritures restaurées.
+        // En revenant à l'identité réelle DEPUIS la configuration : bandeau retiré, écritures restaurées sur
+        // chaque onglet (édition/ajout sous « Acteurs » actif, cycle sous « Période de garde », Sc.2/Sc.7 s20).
         config.Find("[data-testid='revenir-identite-reelle']").Click();
         Assert.Empty(config.FindAll("[data-testid='bandeau-incarnation']"));
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nom']"));
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nom-ajout']"));
+        config.Find("[data-testid='onglet-periode-garde']").Click();
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
     }
 }

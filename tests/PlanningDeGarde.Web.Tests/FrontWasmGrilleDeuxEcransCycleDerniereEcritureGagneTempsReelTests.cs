@@ -65,7 +65,8 @@ public sealed class FrontWasmGrilleDeuxEcransCycleDerniereEcritureGagneTempsReel
         // (« Bruno »), et valide. L'écriture transite par le canal HTTP réel → le store cycle réel porte ce
         // mapping. (« Écran 1 règle l'index pair sur Parent A. »)
         var config1 = RenderComponent<ConfigurationFoyer>();
-        config1.WaitForElement("[data-testid='champ-cycle-index-1']", TimeSpan.FromSeconds(10));
+        // … le cycle de fond est désormais sous l'onglet « Période de garde » (Sc.2, s20) : on l'active.
+        GrilleRuntimeHarness.AllerOngletPeriodeGarde(config1);
         DefinirCycle(config1, indexPair: "parent-a", indexImpair: "parent-b");
         config1.WaitForElement("[data-testid='confirmation-cycle']", TimeSpan.FromSeconds(10));
         Assert.Empty(config1.FindAll("[data-testid='motif-echec-cycle']")); // 1ʳᵉ écriture acceptée, aucun rejet
@@ -84,7 +85,8 @@ public sealed class FrontWasmGrilleDeuxEcransCycleDerniereEcritureGagneTempsReel
         // l'impair (1) restant parent-b, et valide (même store partagé, dernière écriture gagne). Émission via
         // le canal d'écriture HTTP réel → le handler écrase le store cycle ET déclenche la diffusion temps réel.
         var config2 = ecran2.RenderComponent<ConfigurationFoyer>();
-        config2.WaitForElement("[data-testid='champ-cycle-index-1']", TimeSpan.FromSeconds(10));
+        // … le cycle de fond est sous l'onglet « Période de garde » (Sc.2, s20) : on l'active sur l'écran 2.
+        GrilleRuntimeHarness.AllerOngletPeriodeGarde(config2);
         DefinirCycle(config2, indexPair: "parent-c", indexImpair: "parent-b");
         config2.WaitForElement("[data-testid='confirmation-cycle']", TimeSpan.FromSeconds(10));
         Assert.Empty(config2.FindAll("[data-testid='motif-echec-cycle']")); // 2ᵉ écriture acceptée (pas de jeton optimiste)

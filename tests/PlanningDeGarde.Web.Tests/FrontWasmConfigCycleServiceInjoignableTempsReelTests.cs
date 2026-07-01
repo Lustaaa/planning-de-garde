@@ -48,8 +48,9 @@ public sealed class FrontWasmConfigCycleServiceInjoignableTempsReelTests : TestC
         var storeCycle = api.Services.GetRequiredService<IReferentielCycleDeFond>();
         Assert.Null(storeCycle.CycleCourant());
 
-        // … le formulaire de cycle est présent et propose deux index de semaine (N = 2 par défaut).
-        config.WaitForElement("[data-testid='champ-cycle-index-1']", TimeSpan.FromSeconds(10));
+        // … le cycle de fond est désormais sous l'onglet « Période de garde » (Sc.2, s20) : on l'active,
+        // puis le formulaire est présent et propose deux index de semaine (N = 2 par défaut).
+        GrilleRuntimeHarness.AllerOngletPeriodeGarde(config);
 
         // … un parent saisit un cycle de 2 semaines : index 0 → parent-a, index 1 → parent-b.
         config.Find("[data-testid='champ-nombre-semaines']").Change("2");

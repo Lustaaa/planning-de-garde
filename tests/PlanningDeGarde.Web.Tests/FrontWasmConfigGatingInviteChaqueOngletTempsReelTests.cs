@@ -1,0 +1,73 @@
+using System;
+using System.Linq;
+using Bunit;
+using Microsoft.Extensions.DependencyInjection;
+using PlanningDeGarde.Application;
+using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.State;
+using Xunit;
+
+namespace PlanningDeGarde.Web.Tests;
+
+/// <summary>
+/// Sprint 20 — Sc.7 (🖥️ @ihm — acceptation de NIVEAU RUNTIME) : le <b>gating</b> sur l'identité
+/// effective (règle 9, durcissement config s14) est <b>préservé sur CHAQUE onglet</b> de l'écran de
+/// configuration réorganisé. Sous une identité effective <b>« Invité »</b> (non Parent/Admin), aucune
+/// action d'écriture n'est proposée — ni sur l'onglet « Acteurs » (éditer / ajouter / supprimer un
+/// acteur), ni sur « Période de garde » (définir / éditer le cycle), ni sur « Slot récurrent »
+/// (réservé) — tandis que la <b>lecture</b> (liste des acteurs) reste visible.
+///
+/// <para>Contrôle positif (anti faux-vert) : sous l'identité Parent, ces mêmes écritures REDEVIENNENT
+/// proposées sur chaque onglet — sinon leur absence sous « Invité » serait un faux vert (formulaires
+/// cassés pour tous). Test déterministe (aucun hub SignalR câblé) : le gating se lit sur l'identité
+/// effective, jamais un effet de temps réel.</para>
+/// </summary>
+public sealed class FrontWasmConfigGatingInviteChaqueOngletTempsReelTests : TestContext
+{
+    [Fact]
+    public void Le_gating_identite_effective_est_preserve_sur_chaque_onglet_un_Invite_ne_voit_aucune_ecriture_mais_conserve_la_lecture()
+    {
+        // Given — l'écran de configuration réellement câblé à l'API distante réelle, sous une identité
+        // effective « Invité » (rôle démo Invité → EstParent = false, quelle que soit l'identité).
+        using var api = new ApiDistanteFactory();
+        Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        var session = new SessionPlanning { Role = RoleAuteur.Invite };
+        Services.AddSingleton(session);
+
+        var config = RenderComponent<ConfigurationFoyer>();
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+        Assert.False(session.EstParent); // garde-fou : un Invité n'a pas le droit d'écrire
+
+        // Then (onglet « Acteurs », actif par défaut) — aucune écriture proposée (éditer / ajouter /
+        // supprimer), mais la LECTURE (liste des acteurs) reste visible : le durcissement masque les
+        // écritures, pas la consultation.
+        Assert.Empty(config.FindAll("[data-testid='champ-nom']"));
+        Assert.Empty(config.FindAll("[data-testid='champ-nom-ajout']"));
+        Assert.Empty(config.FindAll("[data-testid='bouton-supprimer']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='liste-acteurs']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='acteur-foyer']"));
+
+        // Then (onglet « Période de garde ») — aucune écriture du cycle de fond n'est proposée (gatée).
+        config.Find("[data-testid='onglet-periode-garde']").Click();
+        Assert.Empty(config.FindAll("[data-testid='champ-nombre-semaines']"));
+
+        // Then (onglet « Slot récurrent ») — réservé : placeholder « à venir » et aucune affordance d'écriture.
+        config.Find("[data-testid='onglet-slot-recurrent']").Click();
+        Assert.NotEmpty(config.FindAll("[data-testid='placeholder-slot-recurrent']"));
+        Assert.Empty(config.Find("[data-testid='panneau-slot-recurrent']").QuerySelectorAll("form"));
+
+        // Contrôle positif (anti faux-vert) — sous l'identité Parent, les écritures REDEVIENNENT proposées
+        // sur chaque onglet : preuve que le gating est bien le discriminant (les formulaires ne sont pas
+        // cassés pour tous). Le changement de rôle est reflété au re-render déclenché par la navigation d'onglet.
+        session.Role = RoleAuteur.Parent;
+        config.Find("[data-testid='onglet-acteurs']").Click();
+        Assert.NotEmpty(config.FindAll("[data-testid='champ-nom']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='champ-nom-ajout']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='bouton-supprimer']"));
+
+        config.Find("[data-testid='onglet-periode-garde']").Click();
+        Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
+    }
+}

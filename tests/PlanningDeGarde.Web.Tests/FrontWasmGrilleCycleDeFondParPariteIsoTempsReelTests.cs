@@ -55,8 +55,9 @@ public sealed class FrontWasmGrilleCycleDeFondParPariteIsoTempsReelTests : TestC
 
         var config = RenderComponent<ConfigurationFoyer>();
 
-        // … le formulaire de cycle est présent et propose deux index de semaine (N = 2 par défaut).
-        config.WaitForElement("[data-testid='champ-cycle-index-1']", TimeSpan.FromSeconds(10));
+        // … le cycle de fond est désormais sous l'onglet « Période de garde » (Sc.2, s20) : on l'active,
+        // puis le formulaire est présent et propose deux index de semaine (N = 2 par défaut).
+        GrilleRuntimeHarness.AllerOngletPeriodeGarde(config);
 
         // When — un parent définit un cycle de 2 semaines : index pair (0) → parent-a, index impair
         // (1) → parent-b, et valide. L'écriture transite par le canal HTTP réel vers l'API distante.

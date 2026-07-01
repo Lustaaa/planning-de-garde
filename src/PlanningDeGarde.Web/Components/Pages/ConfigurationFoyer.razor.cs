@@ -4,6 +4,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
+using Microsoft.Extensions.DependencyInjection;
 using static PlanningDeGarde.Web.CanalEcriture;
 
 namespace PlanningDeGarde.Web.Components.Pages;
@@ -33,6 +36,15 @@ public partial class ConfigurationFoyer
         public string Nom { get; set; } = "";
         public string Couleur { get; set; } = "";
     }
+
+    /// <summary>Onglet de thème actuellement affiché (Sc.2). L'écran est réorganisé en trois onglets par
+    /// thème — <c>acteurs</c> (CRUD acteurs), <c>periode-garde</c> (cycle de fond), <c>slot-recurrent</c>
+    /// (réservé, placeholder) — <b>sans</b> fonctionnalité neuve : c'est un simple cloisonnement de
+    /// surface du contenu existant. « Acteurs » est actif par défaut ; changer d'onglet ne perd pas
+    /// l'état de saisie et ne déclenche aucune écriture.</summary>
+    private string _ongletActif = "acteurs";
+
+    private void ActiverOnglet(string onglet) => _ongletActif = onglet;
 
     private readonly Formulaire _form = new();
     private string? _confirmation;
@@ -74,12 +86,63 @@ public partial class ConfigurationFoyer
     /// la liste statique front : c'est cette énumération qui fait apparaître un acteur ajouté (Sc.1).</summary>
     private IReadOnlyList<ActeurFoyer> _acteurs = Array.Empty<ActeurFoyer>();
 
+    /// <summary>Fournisseur de services pour résoudre <see cref="OptionsConnexionHub"/> de façon
+    /// <b>optionnelle</b> : présent, il redirige la connexion au hub vers le TestServer (acceptation runtime
+    /// Sc.6) ; absent (écrans de config qui n'observent pas le temps réel), la connexion reste neutre et son
+    /// éventuel échec est simplement avalé — l'écran demeure fonctionnel.</summary>
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    private HubConnection? _hub;
+
     /// <summary>Au montage de l'écran, charge la liste des acteurs depuis le store via l'API distante.</summary>
     protected override Task OnInitializedAsync() => RechargerActeurs();
 
     private async Task RechargerActeurs()
         => _acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs")
             ?? new List<ActeurFoyer>();
+
+    /// <summary>
+    /// S'abonne au <b>hub SignalR de lecture</b> de l'API distante (même hôte que le canal) pour préserver
+    /// le <b>temps réel</b> sur l'écran de configuration (Sc.6) : une écriture aboutie ailleurs — typiquement
+    /// un acteur ajouté ou renommé depuis un second écran (store partagé) — <b>ré-énumère</b> les acteurs
+    /// depuis le store unifié, si bien que le sélecteur d'édition (onglet Acteurs) et la liste suivent
+    /// <b>sans rechargement</b>, cohérents avec la grille, la légende et les sélecteurs des dialogs. Lecture
+    /// seule : la diffusion ne déclenche jamais d'écriture. Le temps réel est un confort : si le hub est
+    /// indisponible, l'écran reste fonctionnel (rechargement à la navigation).
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        try
+        {
+            var urlHub = new Uri(Canal.BaseAddress!, "hubs/planning");
+            var configurer = Services.GetService<OptionsConnexionHub>()?.Configurer ?? (_ => { });
+            _hub = new HubConnectionBuilder()
+                .WithUrl(urlHub, configurer)
+                .WithAutomaticReconnect()
+                .Build();
+
+            _hub.On(PlanningHubEvenement.MiseAJour, async () =>
+            {
+                await RechargerActeurs();
+                await InvokeAsync(StateHasChanged);
+            });
+
+            await _hub.StartAsync();
+        }
+        catch
+        {
+            // Hub indisponible : le temps réel est un confort, l'écran reste consultable et éditable.
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_hub is not null)
+            await _hub.DisposeAsync();
+    }
 
     /// <summary>Revient à l'identité réelle depuis le bandeau d'incarnation de l'écran de configuration
     /// (sprint 14, cohérence inter-écrans, Sc.2) : l'incarnation est levée → les écritures config
@@ -89,7 +152,7 @@ public partial class ConfigurationFoyer
     /// <summary>Nom d'affichage courant de l'acteur sélectionné (aide de saisie, miroir du seed) —
     /// <c>null</c> tant qu'aucun acteur n'est choisi. Sert d'indicateur « ce que vous éditez ».</summary>
     private string? NomActuel
-        => Foyer.ActeursEditables.FirstOrDefault(a => a.Id == _form.ActeurId)?.Libelle;
+        => _acteurs.FirstOrDefault(a => a.Id == _form.ActeurId)?.Nom;
 
     /// <summary>À la sélection d'un acteur, pré-remplit le champ nom avec son nom courant et efface les
     /// messages de l'édition précédente — pour qu'on parte de la valeur en place plutôt que d'un champ

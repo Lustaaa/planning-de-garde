@@ -32,6 +32,22 @@ internal static class GrilleRuntimeHarness
         => new(api.Server.CreateHandler()) { BaseAddress = api.Server.BaseAddress };
 
     /// <summary>
+    /// Navigue vers l'onglet « Période de garde » de l'écran de configuration (Sc.2, s20) : depuis ce
+    /// sprint, le formulaire du cycle de fond y est cloisonné (l'onglet « Acteurs » est actif par défaut).
+    /// Attend d'abord le chargement des acteurs (les options du cycle sont résolues depuis le store, énumérées
+    /// sur l'onglet Acteurs actif par défaut), active l'onglet « Période de garde », puis attend que le
+    /// formulaire de cycle soit rendu (index 1 présent, N=2 par défaut) — garde déterministe anti-flake.
+    /// </summary>
+    public static void AllerOngletPeriodeGarde(IRenderedComponent<ConfigurationFoyer> config)
+    {
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+        config.Find("[data-testid='onglet-periode-garde']").Click();
+        config.WaitForElement("[data-testid='champ-cycle-index-1']", TimeSpan.FromSeconds(10));
+    }
+
+    /// <summary>
     /// Client HTTP du front pointé sur l'API distante réelle, MAIS dont une <b>écriture précise</b>
     /// (un <c>POST</c> dont le chemin se termine par <paramref name="suffixeEndpointEcriture"/>) subit un
     /// <b>échec de transport déterministe</b> (<see cref="HttpRequestException"/> levée par le handler,

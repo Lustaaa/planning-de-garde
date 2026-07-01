@@ -61,7 +61,8 @@ public sealed class FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests : TestCo
 
         // … un cycle de fond de 2 semaines est d'abord défini depuis l'écran (le « cycle précédent ») :
         // index 0 → parent-a, index 1 → parent-b. L'écriture transite par le canal HTTP réel et aboutit.
-        config.WaitForElement("[data-testid='champ-cycle-index-1']", TimeSpan.FromSeconds(10));
+        // … le cycle de fond est désormais sous l'onglet « Période de garde » (Sc.2, s20) : on l'active.
+        GrilleRuntimeHarness.AllerOngletPeriodeGarde(config);
         config.Find("[data-testid='champ-nombre-semaines']").Change("2");
         config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a");
         config.Find("[data-testid='champ-cycle-index-1']").Change("parent-b");
