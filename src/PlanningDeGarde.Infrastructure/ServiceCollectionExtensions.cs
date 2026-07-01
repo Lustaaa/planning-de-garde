@@ -99,6 +99,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CreerRoleHandler>();
         services.AddScoped<RenommerRoleHandler>();
         services.AddScoped<SupprimerRoleHandler>();
+        services.AddScoped<AffecterRoleActeurHandler>();
+        services.AddScoped<RetirerRoleActeurHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();

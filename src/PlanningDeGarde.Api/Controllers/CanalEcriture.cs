@@ -78,6 +78,16 @@ public static class CanalEcriture
     /// acteurs porteurs (repli neutre) et est idempotente côté handler (id absent = no-op qui réussit).</summary>
     public sealed record SupprimerRoleRequete(string RoleId);
 
+    /// <summary>Corps de la requête d'affectation d'un rôle du référentiel à un acteur (s21) émise via le
+    /// canal d'écriture : l'identifiant stable de l'acteur et l'identifiant stable du <b>rôle du référentiel</b>
+    /// (jamais un libellé en dur). Un id de rôle absent du référentiel = rejet côté handler (champ fermé
+    /// sur le référentiel).</summary>
+    public sealed record AffecterRoleRequete(string ActeurId, string RoleId);
+
+    /// <summary>Corps de la requête de retrait du rôle d'un acteur (s21) : l'identifiant stable de l'acteur.
+    /// L'acteur retombe « sans rôle » (repli neutre, attribut optionnel vidé).</summary>
+    public sealed record RetirerRoleRequete(string ActeurId);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
@@ -249,6 +259,27 @@ public static class CanalEcriture
 
             // Succès acquitté (le rôle quitte le référentiel, ses porteurs retombent « sans rôle »).
             // Idempotent : un identifiant absent / déjà supprimé réussit sans effet (Sc.6).
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/affecter-role", (AffecterRoleRequete requete, AffecterRoleActeurHandler handler) =>
+        {
+            var resultat = handler.Handle(new AffecterRoleActeurCommand(requete.ActeurId, requete.RoleId));
+
+            // Succès acquitté (l'acteur porte le rôle du référentiel, relu depuis le store côté écran, Sc.8),
+            // refus métier renvoyé avec son motif (id de rôle hors référentiel, Sc.4 — jamais de rôle en dur).
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/retirer-role", (RetirerRoleRequete requete, RetirerRoleActeurHandler handler) =>
+        {
+            var resultat = handler.Handle(new RetirerRoleActeurCommand(requete.ActeurId));
+
+            // Succès acquitté (l'acteur retombe « sans rôle », repli neutre, Sc.5).
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);

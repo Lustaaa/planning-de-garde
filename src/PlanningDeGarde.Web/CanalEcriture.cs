@@ -68,4 +68,12 @@ public static class CanalEcriture
 
     /// <summary>Corps de la requête de suppression d'un rôle : l'identifiant stable (clé). Idempotente côté handler.</summary>
     public sealed record SupprimerRoleRequete(string RoleId);
+
+    /// <summary>Corps de la requête d'affectation d'un rôle du référentiel à un acteur (s21) : l'id stable de
+    /// l'acteur et l'id stable du rôle du référentiel (jamais un libellé en dur). Un id hors référentiel = rejet.</summary>
+    public sealed record AffecterRoleRequete(string ActeurId, string RoleId);
+
+    /// <summary>Corps de la requête de retrait du rôle d'un acteur (s21) : l'id stable de l'acteur ; il retombe
+    /// « sans rôle » (repli neutre).</summary>
+    public sealed record RetirerRoleRequete(string ActeurId);
 }

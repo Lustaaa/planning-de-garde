@@ -321,6 +321,47 @@ public partial class ConfigurationFoyer
         _accuseSuppression = "Acteur supprimé.";
     }
 
+    /// <summary>Libellé d'affichage du rôle courant d'un acteur (Sc.8) : le libellé du rôle du référentiel
+    /// porté (résolu sur son id stable, jamais un libellé en dur), ou « sans rôle » si aucun (attribut
+    /// optionnel non renseigné = neutre assumé).</summary>
+    private string LibelleRoleActeur(string? roleId)
+        => roleId is not null && _roles.FirstOrDefault(r => r.Id == roleId) is { } r
+            ? r.Libelle
+            : "sans rôle";
+
+    /// <summary>
+    /// Affecte (ou retire, si l'option « sans rôle » est choisie = valeur vide) un rôle du référentiel à un
+    /// acteur via le <b>canal d'écriture HTTP</b> de l'API distante (POST /api/canal/affecter-role ou
+    /// /retirer-role, règle 27 — aucune vue n'écrit le domaine en direct). La valeur émise est l'<b>id de
+    /// rôle du référentiel</b> (jamais un libellé en dur, Sc.8) ; sur succès, on relit les acteurs pour que
+    /// le rôle courant suive sans rechargement. Sur refus métier (id hors référentiel, Sc.4), le motif est surfacé.
+    /// </summary>
+    private async Task AffecterRole(string acteurId, string? roleId)
+    {
+        _motifEchecRole = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = string.IsNullOrWhiteSpace(roleId)
+                ? await Canal.PostAsJsonAsync("api/canal/retirer-role", new RetirerRoleRequete(acteurId))
+                : await Canal.PostAsJsonAsync("api/canal/affecter-role", new AffecterRoleRequete(acteurId, roleId));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecRole = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecRole = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        await RechargerActeurs();
+    }
+
     /// <summary>
     /// Crée un rôle du référentiel du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
     /// (<c>POST /api/canal/creer-role</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis

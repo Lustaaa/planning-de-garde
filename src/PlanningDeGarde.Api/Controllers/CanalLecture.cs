@@ -17,8 +17,11 @@ public static class CanalLecture
     /// identifiant (couleur neutre par contrat si l'acteur n'en a pas) — pour que la liste de
     /// configuration affiche le nom ET sa pastille de couleur, cohérente avec la grille. Le
     /// <see cref="Type"/> (Admin / Parent / Autre) est surfacé en LECTURE SEULE depuis le seed (D3,
-    /// sprint 14) pour piloter le rôle de l'identité effective lors d'une impersonation bornée.</summary>
-    public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur, TypeActeur Type);
+    /// sprint 14) pour piloter le rôle de l'identité effective lors d'une impersonation bornée. Le
+    /// <see cref="RoleId"/> (s21) est l'identifiant stable du rôle du référentiel porté par l'acteur, ou
+    /// <c>null</c> = « sans rôle » (attribut optionnel, neutre assumé) — pour afficher le rôle courant et
+    /// pré-sélectionner le sélecteur borné au référentiel (jamais un libellé en dur).</summary>
+    public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur, TypeActeur Type, string? RoleId);
 
     /// <summary>Vue d'un rôle du référentiel du foyer énumérée pour l'écran de configuration (onglet
     /// Acteurs, s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable.
@@ -45,7 +48,8 @@ public static class CanalLecture
             (IEnumerationActeursFoyer enumeration, IReferentielResponsables referentiel, IPaletteCouleurs palette) =>
             {
                 var acteurs = enumeration.EnumererActeurs()
-                    .Select(id => new ActeurFoyerVue(id, referentiel.NomDe(id), palette.CouleurDe(id), enumeration.TypeDe(id)))
+                    .Select(id => new ActeurFoyerVue(
+                        id, referentiel.NomDe(id), palette.CouleurDe(id), enumeration.TypeDe(id), enumeration.RoleDe(id)))
                     .ToList();
                 return Results.Ok(acteurs);
             });
