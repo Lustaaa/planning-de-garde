@@ -1,6 +1,6 @@
 # Sprint 20 — Config foyer en onglets + convergence du dernier sélecteur (`config-foyer-onglets`)
 
-> **Avancement : 6/7 ⏳**
+> **Avancement : 7/7 ✅**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -10,7 +10,7 @@
 | 4 | Onglet **Période de garde** = section cycle de fond existante **iso-fonctionnelle** (définir / éditer le cycle) | 🖥️ @ihm | ✅ |
 | 5 | Onglet **Slot récurrent** **réservé** (placeholder « à venir »), **aucune** fonctionnalité neuve | 🖥️ @ihm | ✅ |
 | 6 | Sélecteur d'édition (onglet Acteurs) **cohérent** avec dialogs + grille (source unifiée) **et** temps réel préservé : ajout/renommage depuis un 2ᵉ écran s'y reflète sans rechargement (SignalR) | 🖥️ @ihm | ✅ |
-| 7 | **Gating** identité effective **préservé sur chaque onglet** (Invité ne peut écrire) — non-régression du durcissement config | 🖥️ @ihm | ⏳ |
+| 7 | **Gating** identité effective **préservé sur chaque onglet** (Invité ne peut écrire) — non-régression du durcissement config | 🖥️ @ihm | ✅ |
 
 ---
 
@@ -111,7 +111,7 @@ Scénario 6 — Sélecteur config cohérent (source unifiée) + temps réel pré
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 7 — Gating identité effective préservé sur chaque onglet
   Étant donné une identité effective « Invité » (non Parent/Admin)
   Quand j'ouvre chacun des onglets de l'écran de configuration
