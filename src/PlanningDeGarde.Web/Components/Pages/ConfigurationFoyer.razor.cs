@@ -295,8 +295,17 @@ public partial class ConfigurationFoyer
     /// </summary>
     private async Task Supprimer(string acteurId)
     {
-        _accuseSuppression = null;
         _motifEchecSuppression = null;
+
+        // Accusé posé — et rendu — AVANT l'appel réseau. Raison : la suppression aboutie côté API déclenche
+        // une diffusion SignalR MiseAJour qui, sur CE même écran, ré-énumère le store et fait quitter l'acteur
+        // de la liste de façon concurrente à notre propre flux. Poser l'accusé après la réponse OK le mettrait
+        // en course avec ce re-render de diffusion (l'acteur peut disparaître de la liste AVANT que l'accusé ne
+        // soit posé → accusé absent au moment de l'observation, régression Sc.6). En le posant en amont, l'accusé
+        // est déjà présent quel que soit le chemin qui retire l'acteur en premier. C'est un accusé optimiste :
+        // on le rétracte sur échec (transport injoignable ou refus métier), sans qu'aucune suppression ait eu lieu.
+        _accuseSuppression = "Acteur supprimé.";
+        StateHasChanged();
 
         HttpResponseMessage reponse;
         try
@@ -308,22 +317,24 @@ public partial class ConfigurationFoyer
         catch (HttpRequestException)
         {
             // Service de configuration injoignable (échec de transport, pas un refus métier) : le handler
-            // SupprimerActeur ne s'exécute jamais. Message dédié, liste/grille/légende inchangées, aucune
-            // suppression ni mise en file (règle 28). Cf. Sc.8.
+            // SupprimerActeur ne s'exécute jamais. On rétracte l'accusé optimiste, on surface le message dédié ;
+            // liste/grille/légende inchangées, aucune suppression ni mise en file (règle 28). Cf. Sc.8.
+            _accuseSuppression = null;
             _motifEchecSuppression = MessagesEcriture.ServiceInjoignable;
             return;
         }
 
         if (!reponse.IsSuccessStatusCode)
         {
-            // Refus métier éventuel : on surface le motif renvoyé par le canal sans muter la liste.
+            // Refus métier éventuel : on rétracte l'accusé optimiste et on surface le motif renvoyé par le
+            // canal, sans muter la liste.
+            _accuseSuppression = null;
             _motifEchecSuppression = await reponse.Content.ReadFromJsonAsync<string>();
             return;
         }
 
         // La liste reflète la suppression sans recharger la page : on relit l'énumération du store durable.
         await RechargerActeurs();
-        _accuseSuppression = "Acteur supprimé.";
     }
 
     /// <summary>Libellé d'affichage du rôle courant d'un acteur (Sc.8) : le libellé du rôle du référentiel
