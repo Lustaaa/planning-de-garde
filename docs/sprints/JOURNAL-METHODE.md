@@ -17,6 +17,14 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   être archivé. Anti-duplication : une règle = un texte canonique (R11/12/14/15+R15bis dans
   `periodes-…`, référencées par le catalogue `regles-de-gestion.md`). `index.md` + `CLAUDE.md`
   (Source de vérité) resynchronisés.
+- 2026-07-01 — s21 : régression `FrontWasmConfigSupprimerActeurTempsReelTests` (rouge **3/3 en
+  isolation, déterministe** — `RechargerRoles()` diffusait contre l'accusé de suppression) étiquetée
+  « flake *TempsReel* » par dev-team et **a failli passer le gate** (détectée au G3 par le thread
+  principal : re-run isolé + baseline s20 288/288 verte ; corrigée à la cause, commit `37bced4`). Le
+  garde-fou triage-flake (rétro s18) était **sur-appliqué** faute de **discriminateur**. Fix : dans
+  `dev-team`, exiger un **re-run EN ISOLATION x2-3** AVANT tout étiquetage — **N/N rouge déterministe =
+  régression** (STOP, jamais « flake », jamais continuer sur re-run) ; seul un rouge **intermittent**
+  (vert ≥1/N isolé, ou rouge seulement sous charge de suite) reste flake catalogué.
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake

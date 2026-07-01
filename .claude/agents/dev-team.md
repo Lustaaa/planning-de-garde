@@ -72,16 +72,24 @@ lancement.
 - Jamais de framework de mock ; doublures à la main, ne doubler que les **ports**.
 - Asserter sur le **snapshot** / la frontière publique, jamais un champ privé.
 - **Acceptation runtime obligatoire** (store réel / câblage réel) — pas de preuve par doublure.
-- **Flake *TempsReel* SignalR catalogué (P2, dette de test connue).** Si la suite complète passe au
-  rouge **uniquement** sur un test `*TempsReel*` qui **repasse vert en isolation + re-run ciblé**,
-  c'est le **flake P2 catalogué** (convergence SignalR multi-clients sous charge — dette
-  `docs/BACKLOG.md`), **pas une régression** : confirme le vert par un **re-run ciblé**, **consigne
-  l'occurrence** dans les `notes` (test, fréquence observée), **ne le traite ni comme RED ni comme un
-  vert qui ment**, et **n'investigue pas `src/`** (le code de prod n'est pas en cause). Si sa fréquence
-  monte au point de **rougir la suite complète de façon récurrente** (ex. ≥ la moitié des runs),
-  **signale-le** dans `notes` comme **montée de sévérité** (signal de priorisation du rétrofit P2 pour
-  le `scrum-master`). Ne jamais étendre ce passe-droit à un **autre** test (un rouge hors `*TempsReel*`
-  = régression à traiter).
+- **Flake *TempsReel* SignalR — DISCRIMINER flake vs régression AVANT tout étiquetage (dette P1).**
+  Un rouge sur un test `*TempsReel*` **n'est jamais présumé flake**. **Obligation** : re-lancer le test
+  **EN ISOLATION x2-3** (`… test.ps1 -Filter "<TestExact>"`, seul, hors charge de suite).
+  - **N/N rouge déterministe en isolation** = **VRAIE RÉGRESSION** (le nom `*TempsReel*` ne l'excuse
+    pas) : **traite-la comme un RED de régression** (échec comportemental à investiguer dans `src/`,
+    corriger à la cause), **STOP**, **ne commite pas**, **n'étiquette JAMAIS « flake »** et **ne continue
+    pas sur re-run**. Si tu ne trouves pas la cause, renvoie `{ "type":"question", … }` au lieu de
+    poursuivre. *(Friction réelle s21 : `FrontWasmConfigSupprimerActeurTempsReelTests` échouait **3/3 en
+    isolation** — régression déterministe s21 — mais a été étiqueté « flake » et a failli passer le gate.)*
+  - **Rouge INTERMITTENT** (vert au moins 1/N en isolation, ou vert isolé mais rouge seulement sous
+    charge de suite complète) = **flake P1 catalogué** (convergence SignalR multi-clients sous charge —
+    dette `docs/BACKLOG.md`) : **pas une régression**, **consigne l'occurrence** dans les `notes` (test,
+    fréquence observée, résultat isolé N/M), **ne le traite ni comme RED ni comme un vert qui ment**, et
+    **n'investigue pas `src/`**. Si sa fréquence monte au point de **rougir la suite complète de façon
+    récurrente** (ex. ≥ la moitié des runs), **signale-le** dans `notes` comme **montée de sévérité**
+    (signal de priorisation du rétrofit pour le `scrum-master`).
+  - Ne jamais étendre le passe-droit flake à un **autre** test (un rouge hors `*TempsReel*` = régression
+    à traiter), ni **étiqueter flake sans le re-run isolé** qui l'a démontré intermittent.
 - **Tenir le tableau d'avancement en tête à jour à CHAQUE transition** (le compte `X/N` =
   nombre de lignes `✅`, toujours).
 - **Ne touche jamais** la section `# Retours produit (PO)` ni `docs/BACKLOG.md` (hors de ton rôle).
