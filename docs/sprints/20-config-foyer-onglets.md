@@ -1,12 +1,12 @@
 # Sprint 20 — Config foyer en onglets + convergence du dernier sélecteur (`config-foyer-onglets`)
 
-> **Avancement : 2/7 ⏳**
+> **Avancement : 3/7 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Le sélecteur d'édition de l'écran config lit le **store vivant unifié** (`IEnumerationActeursFoyer`), **plus** `Foyer.ActeursEditables` — un **seul chemin de lecture** du référentiel acteurs | @back | ✅ |
 | 2 | L'écran config présente **trois onglets par thème** (Acteurs / Période de garde / Slot récurrent), onglet **Acteurs actif par défaut**, contenu existant réparti | 🖥️ @ihm | ✅ |
-| 3 | Onglet **Acteurs** = CRUD acteurs existant (édition / ajout / suppression) **iso-fonctionnel**, grille relue immédiatement | 🖥️ @ihm | ⏳ |
+| 3 | Onglet **Acteurs** = CRUD acteurs existant (édition / ajout / suppression) **iso-fonctionnel**, grille relue immédiatement | 🖥️ @ihm | ✅ |
 | 4 | Onglet **Période de garde** = section cycle de fond existante **iso-fonctionnelle** (définir / éditer le cycle) | 🖥️ @ihm | ⏳ |
 | 5 | Onglet **Slot récurrent** **réservé** (placeholder « à venir »), **aucune** fonctionnalité neuve | 🖥️ @ihm | ⏳ |
 | 6 | Sélecteur d'édition (onglet Acteurs) **cohérent** avec dialogs + grille (source unifiée) **et** temps réel préservé : ajout/renommage depuis un 2ᵉ écran s'y reflète sans rechargement (SignalR) | 🖥️ @ihm | ⏳ |
@@ -72,7 +72,7 @@ Scénario 2 — Trois onglets par thème, Acteurs actif par défaut
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 3 — Onglet Acteurs : CRUD acteurs iso-fonctionnel
   Étant donné l'onglet « Acteurs » actif
   Quand je renomme, recolorie, ajoute ou supprime un acteur comme avant la refonte
