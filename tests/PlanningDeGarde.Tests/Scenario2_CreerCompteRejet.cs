@@ -24,7 +24,7 @@ public class Scenario2_CreerCompteRejet
     public void Acceptation_Should_Echouer_et_laisser_le_referentiel_inchange_When_l_email_est_deja_utilise()
     {
         var referentiel = new ReferentielComptesEnMemoire();
-        var handler = new CreerCompteHandler(referentiel, referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel, new FakeEnumerationActeursFoyer(ActeurId, AutreActeurId));
         var premier = handler.Handle(new CreerCompteCommand(Email, ActeurId));
         Assert.True(premier.EstSucces);
 
@@ -43,7 +43,7 @@ public class Scenario2_CreerCompteRejet
     public void Acceptation_Should_Echouer_et_ne_rien_ecrire_When_l_email_est_vide()
     {
         var referentiel = new ReferentielComptesEnMemoire();
-        var handler = new CreerCompteHandler(referentiel, referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel, new FakeEnumerationActeursFoyer(ActeurId, AutreActeurId));
 
         var resultat = handler.Handle(new CreerCompteCommand("", ActeurId));
 
@@ -59,7 +59,7 @@ public class Scenario2_CreerCompteRejet
     public void Should_Refuser_sans_ecrire_When_l_email_est_vide()
     {
         var referentiel = new FakeReferentielComptes();
-        var handler = new CreerCompteHandler(referentiel, referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel, new FakeEnumerationActeursFoyer(ActeurId, AutreActeurId));
 
         var resultat = handler.Handle(new CreerCompteCommand("", ActeurId));
 
@@ -74,7 +74,7 @@ public class Scenario2_CreerCompteRejet
     public void Should_Refuser_sans_ecrire_When_l_email_est_tout_espaces()
     {
         var referentiel = new FakeReferentielComptes();
-        var handler = new CreerCompteHandler(referentiel, referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel, new FakeEnumerationActeursFoyer(ActeurId, AutreActeurId));
 
         var resultat = handler.Handle(new CreerCompteCommand("   ", ActeurId));
 
@@ -89,7 +89,7 @@ public class Scenario2_CreerCompteRejet
     public void Should_Refuser_le_second_compte_sans_ecrire_When_l_email_est_deja_utilise()
     {
         var referentiel = new FakeReferentielComptes();
-        var handler = new CreerCompteHandler(referentiel, referentiel);
+        var handler = new CreerCompteHandler(referentiel, referentiel, new FakeEnumerationActeursFoyer(ActeurId, AutreActeurId));
         Assert.True(handler.Handle(new CreerCompteCommand(Email, ActeurId)).EstSucces);
 
         var doublon = handler.Handle(new CreerCompteCommand(Email, AutreActeurId));

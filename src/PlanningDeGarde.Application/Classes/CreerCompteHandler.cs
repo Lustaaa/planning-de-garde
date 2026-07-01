@@ -24,11 +24,13 @@ public sealed class CreerCompteHandler
 {
     private readonly IEnumerationComptes _comptes;
     private readonly IEditeurComptes _editeur;
+    private readonly IEnumerationActeursFoyer _acteurs;
 
-    public CreerCompteHandler(IEnumerationComptes comptes, IEditeurComptes editeur)
+    public CreerCompteHandler(IEnumerationComptes comptes, IEditeurComptes editeur, IEnumerationActeursFoyer acteurs)
     {
         _comptes = comptes;
         _editeur = editeur;
+        _acteurs = acteurs;
     }
 
     public Result<CreerCompteResultat> Handle(CreerCompteCommand commande)
@@ -42,6 +44,18 @@ public sealed class CreerCompteHandler
         // doublon persisté, référentiel inchangé (unicité de l'email lue sur le référentiel courant).
         if (_comptes.EnumererComptes().Any(c => c.Email == commande.Email))
             return Result<CreerCompteResultat>.Echec("email déjà utilisé");
+
+        // Garde « acteur inconnu » (Sc.3) : le compte ne peut référencer qu'un acteur DÉCLARÉ du foyer.
+        // Un id absent de l'énumération des acteurs est rejeté AVANT toute écriture (aucun compte
+        // fantôme pointant un acteur absent).
+        if (!_acteurs.EnumererActeurs().Contains(commande.ActeurId))
+            return Result<CreerCompteResultat>.Echec("acteur inconnu");
+
+        // Garde « acteur déjà porteur d'un compte » (Sc.3) : association bornée 1-1 côté acteur — un
+        // acteur ne porte qu'un seul compte. La borne vise l'ACTEUR (pas le référentiel) : un autre
+        // acteur déclaré sans compte reste éligible.
+        if (_comptes.EnumererComptes().Any(c => c.ActeurId == commande.ActeurId))
+            return Result<CreerCompteResultat>.Echec("acteur déjà associé à un compte");
 
         // Identifiant stable neuf OPAQUE, généré (jamais dérivé de l'email, anti-pattern s06) et
         // unique (GUID → jamais un id existant). L'email se résout ensuite sur cet id.

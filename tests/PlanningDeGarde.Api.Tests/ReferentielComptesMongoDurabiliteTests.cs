@@ -24,17 +24,19 @@ public sealed class ReferentielComptesMongoDurabiliteTests : IDisposable
     private readonly string _baseDeTest = $"planning_test_{Guid.NewGuid():N}";
 
     private ReferentielComptesMongo NouveauStore() => new(ConnectionString, _baseDeTest);
+    private ConfigurationFoyerMongo NouvelleConfig() => new(ConnectionString, _baseDeTest);
 
     [MongoRequisFact]
     public void Acceptation_Should_Enumerer_toujours_le_compte_avec_email_statut_inactif_et_acteur_apres_un_redemarrage_When_le_compte_a_ete_cree_sur_le_store_Mongo_reel()
     {
-        const string acteurId = "acteur-alice";
-
-        // --- Serveur #1 : le parent crée le compte « alice@foyer.fr » via le handler câblé sur le store durable ---
+        // --- Serveur #1 : un acteur déclaré dans le store réel, puis un compte « alice@foyer.fr » créé pour lui ---
+        string acteurId;
         string compteId;
         {
+            var config1 = NouvelleConfig();
+            acteurId = new AjouterActeurHandler(config1).Handle(new AjouterActeurCommand("Alice", "rose")).Valeur!.ActeurId;
             var store1 = NouveauStore();
-            var handler = new CreerCompteHandler(store1, store1);
+            var handler = new CreerCompteHandler(store1, store1, config1);
             var resultat = handler.Handle(new CreerCompteCommand("alice@foyer.fr", acteurId));
             Assert.True(resultat.EstSucces);
             compteId = resultat.Valeur!.CompteId;
