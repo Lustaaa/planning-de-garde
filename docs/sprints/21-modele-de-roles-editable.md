@@ -1,13 +1,13 @@
 # Sprint 21 — Modèle de rôles éditable (`modele-de-roles-editable`)
 
-> **Avancement : 3/11 ⏳**
+> **Avancement : 4/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | **Créer un rôle** dans le référentiel (id stable opaque, libellé, persisté config foyer Mongo borné) | @back | ✅ |
 | 2 | **Renommer un rôle** du référentiel (même id stable, libellé mis à jour, persisté) | @back | ✅ |
 | 3 | **Rejet** création/renommage : libellé vide **ou** doublon de libellé (référentiel inchangé) | @back | ✅ |
-| 4 | **Affecter un rôle à un acteur** : la valeur provient **exclusivement** du référentiel ; rôle hors référentiel **rejeté** (jamais de rôle en dur) | @back | ⏳ |
+| 4 | **Affecter un rôle à un acteur** : la valeur provient **exclusivement** du référentiel ; rôle hors référentiel **rejeté** (jamais de rôle en dur) | @back | ✅ |
 | 5 | **Acteur sans rôle = neutre assumé** (aucun rôle fantôme, aucune erreur ; l'attribut rôle est optionnel) | @back | ⏳ |
 | 6 | **Supprimer un rôle référencé** → les acteurs porteurs retombent « sans rôle » (repli neutre, pas de rôle fantôme), **idempotence** (absent/déjà supprimé = no-op qui réussit) | @back | ⏳ |
 | 7 | Onglet **Acteurs** : **gérer le référentiel de rôles** (créer / renommer / supprimer : Nounou, Grand-parent…) depuis l'écran config | 🖥️ @ihm | ⏳ |
@@ -89,7 +89,7 @@ Scénario 3 — Rejet : libellé vide ou doublon
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 4 — Affecter un rôle (du référentiel) à un acteur — champ borné
   Étant donné un acteur déclaré (id stable) et un référentiel contenant le rôle « Nounou »
   Quand on affecte à cet acteur le rôle « Nounou » (par son id de rôle)

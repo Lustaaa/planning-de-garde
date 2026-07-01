@@ -67,6 +67,13 @@ public sealed class ConfigurationFoyerMongo : IReferentielResponsables, IEditeur
     public void Recolorier(string acteurId, string nouvelleCouleur)
         => Persister(acteurId, doc => doc.Couleur = nouvelleCouleur); // surface distincte du nom
 
+    public void AffecterRole(string acteurId, string roleId)
+        => Persister(acteurId, doc => doc.RoleId = roleId); // id de rôle porté par l'acteur (write-through durable)
+
+    /// <summary>Id de rôle porté par l'acteur, ou <c>null</c> s'il n'en porte aucun (« sans rôle »).</summary>
+    public string? RoleDe(string acteurId)
+        => _cache.TryGetValue(acteurId, out var doc) ? doc.RoleId : null;
+
     public void Supprimer(string acteurId)
     {
         // Retrait write-through : le cache de session ET le store durable (l'acteur ne réapparaît pas
@@ -99,5 +106,6 @@ public sealed class ConfigurationFoyerMongo : IReferentielResponsables, IEditeur
         public string Id { get; set; } = default!;
         public string? Nom { get; set; }
         public string? Couleur { get; set; }
+        public string? RoleId { get; set; } // id de rôle porté par l'acteur (null = « sans rôle »)
     }
 }
