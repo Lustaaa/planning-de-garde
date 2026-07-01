@@ -28,6 +28,12 @@ public static class CanalLecture
     /// Alimente la liste des rôles et le sélecteur de rôle borné au référentiel (jamais de rôle en dur).</summary>
     public sealed record RoleFoyerVue(string Id, string Libelle);
 
+    /// <summary>Vue d'un compte utilisateur du foyer énumérée pour l'écran de configuration (onglet Acteurs,
+    /// s22) : identifiant stable opaque (clé, jamais l'email) + email + statut (« inactif » / « actif ») +
+    /// id stable de l'acteur associé, ou <c>null</c> quand le compte est désassocié (Sc.6). Alimente
+    /// l'affichage du compte associé à un acteur et son statut, sans règle métier côté UI.</summary>
+    public sealed record CompteFoyerVue(string Id, string Email, string Statut, string? ActeurId);
+
     /// <summary>Vue d'une période couvrant une date, pour alimenter les dialogs de suppression et d'édition :
     /// identifiant stable (clé, jamais le libellé), identifiant stable du responsable (pour pré-sélectionner
     /// l'édition), nom d'affichage du responsable résolu sur l'id, et bornes datées. Lecture seule — ne
@@ -62,6 +68,18 @@ public static class CanalLecture
             {
                 var vues = roles.EnumererRoles()
                     .Select(r => new RoleFoyerVue(r.Id, r.Libelle))
+                    .ToList();
+                return Results.Ok(vues);
+            });
+
+        // Énumération des comptes utilisateurs du foyer DEPUIS LE STORE (s22) : l'onglet Acteurs de
+        // l'écran config la lit pour afficher le compte associé à chaque acteur et son statut. Lecture
+        // seule — ne déclenche jamais la diffusion. Le statut est rendu en libellé minuscule stable.
+        routes.MapGet("/api/foyer/comptes",
+            (IEnumerationComptes comptes) =>
+            {
+                var vues = comptes.EnumererComptes()
+                    .Select(c => new CompteFoyerVue(c.Id, c.Email, c.Statut.ToString().ToLowerInvariant(), c.ActeurId))
                     .ToList();
                 return Results.Ok(vues);
             });

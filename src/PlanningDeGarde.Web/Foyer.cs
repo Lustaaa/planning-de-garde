@@ -54,3 +54,9 @@ public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris",
 /// lecture (s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable.
 /// Alimente la liste des rôles de l'onglet Acteurs et le sélecteur de rôle borné au référentiel.</summary>
 public sealed record RoleFoyer(string Id, string Libelle);
+
+/// <summary>Un compte utilisateur du foyer <b>énuméré depuis le store durable</b> via le canal de lecture
+/// (s22) : identifiant stable opaque (clé, jamais l'email) + email + statut (« inactif » / « actif ») +
+/// id stable de l'acteur associé (ou <c>null</c> = désassocié). Alimente l'affichage du compte associé à
+/// un acteur et de son statut dans l'onglet Acteurs.</summary>
+public sealed record CompteFoyer(string Id, string Email, string Statut, string? ActeurId);

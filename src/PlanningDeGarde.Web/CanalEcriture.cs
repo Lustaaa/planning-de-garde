@@ -76,4 +76,8 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de retrait du rôle d'un acteur (s21) : l'id stable de l'acteur ; il retombe
     /// « sans rôle » (repli neutre).</summary>
     public sealed record RetirerRoleRequete(string ActeurId);
+
+    /// <summary>Corps de la requête de création d'un compte utilisateur (s22) : l'id stable de l'acteur et
+    /// l'email. L'id stable neuf opaque du compte et le statut « inactif » sont posés côté handler.</summary>
+    public sealed record CreerCompteRequete(string ActeurId, string Email);
 }

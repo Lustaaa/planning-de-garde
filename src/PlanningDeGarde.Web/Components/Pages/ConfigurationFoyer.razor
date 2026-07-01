@@ -234,6 +234,34 @@
                         <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
                                 data-testid="bouton-supprimer" data-acteur-id="@a.Id"
                                 @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer</button>
+
+                        @* Compte utilisateur associé à l'acteur (Sc.7) : soit le compte existant (email +
+                           statut « inactif »), soit un mini-formulaire de création/association (email
+                           obligatoire). L'écriture passe par le canal HTTP (POST /api/canal/creer-compte) ;
+                           sur refus, le motif reste affiché dans la ligne, sans compte créé. *@
+                        @if (CompteDe(a.Id) is { } compte)
+                        {
+                            <span class="acteur-compte" data-testid="compte-acteur">
+                                @compte.Email — <span class="acteur-compte-statut">@compte.Statut</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="acteur-compte-form">
+                                <input type="email" class="form-control form-control-sm acteur-champ-email"
+                                       data-testid="champ-email-compte" placeholder="email du compte"
+                                       @bind:get="EmailCompte(a.Id)" @bind:set="v => SaisirEmailCompte(a.Id, v)"
+                                       @bind:event="onchange" />
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                        data-testid="bouton-creer-compte"
+                                        @onclick="() => CreerCompte(a.Id)">Créer le compte</button>
+                            </span>
+                            @if (MotifEchecCompte(a.Id) is { } motifCompte)
+                            {
+                                <span class="alert alert-danger py-1 px-2 mb-0 acteur-compte-motif"
+                                      data-testid="motif-echec-compte">@motifCompte</span>
+                            }
+                        }
                     }
                 </li>
             }
