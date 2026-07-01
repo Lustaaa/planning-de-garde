@@ -25,8 +25,9 @@ public sealed class AucunLibelleFictifExposeTests
     [Fact]
     public void Les_referentiels_d_affichage_des_selecteurs_n_exposent_aucun_libelle_fictif_Parent_A_ou_Parent_B()
     {
-        var libellesSelecteurs = FoyerWeb.Responsables.Select(r => r.Libelle)
-            .Concat(FoyerWeb.ActeursEditables.Select(a => a.Libelle));
+        // Sprint 20 (Sc.1) : Foyer.ActeursEditables retiré (convergence vers le store vivant unifié) ;
+        // ce garde-fou ne veille plus que sur Foyer.Responsables (dialogs d'affectation / de transfert).
+        var libellesSelecteurs = FoyerWeb.Responsables.Select(r => r.Libelle);
 
         Assert.DoesNotContain(libellesSelecteurs, l => LibellesFictifs.Contains(l));
     }

@@ -89,7 +89,7 @@ public partial class ConfigurationFoyer
     /// <summary>Nom d'affichage courant de l'acteur sélectionné (aide de saisie, miroir du seed) —
     /// <c>null</c> tant qu'aucun acteur n'est choisi. Sert d'indicateur « ce que vous éditez ».</summary>
     private string? NomActuel
-        => Foyer.ActeursEditables.FirstOrDefault(a => a.Id == _form.ActeurId)?.Libelle;
+        => _acteurs.FirstOrDefault(a => a.Id == _form.ActeurId)?.Nom;
 
     /// <summary>À la sélection d'un acteur, pré-remplit le champ nom avec son nom courant et efface les
     /// messages de l'édition précédente — pour qu'on parte de la valeur en place plutôt que d'un champ

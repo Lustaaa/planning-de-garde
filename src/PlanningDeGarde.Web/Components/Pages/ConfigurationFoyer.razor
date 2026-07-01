@@ -35,11 +35,16 @@
 <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="editer-acteur">
     <div class="mb-3">
         <label class="form-label">Acteur du foyer</label>
-        <InputSelect class="form-select" @bind-Value="_form.ActeurId" @bind-Value:after="PreRemplirNom">
+        <InputSelect class="form-select" data-testid="selecteur-acteur-edition"
+                     @bind-Value="_form.ActeurId" @bind-Value:after="PreRemplirNom">
             <option value="">— choisir —</option>
-            @foreach (var a in Foyer.ActeursEditables)
+            @* Convergence s20 (Sc.1) : le sélecteur d'édition énumère les acteurs DEPUIS LE STORE VIVANT
+               UNIFIÉ (_acteurs, chargés via GET /api/foyer/acteurs = IEnumerationActeursFoyer), même source
+               que les sélecteurs des dialogs et la grille — plus la liste statique Foyer.ActeursEditables.
+               Un acteur fraîchement ajouté est aussitôt éditable, sur son identifiant stable (règle 19). *@
+            @foreach (var a in _acteurs)
             {
-                <option value="@a.Id">@a.Libelle</option>
+                <option value="@a.Id">@a.Nom</option>
             }
         </InputSelect>
         @if (NomActuel is not null)
