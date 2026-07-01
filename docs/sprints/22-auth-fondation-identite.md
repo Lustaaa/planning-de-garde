@@ -1,6 +1,6 @@
 # Sprint 22 — Auth · tranche 1 : fondation identité & compte↔acteur (`auth-fondation-identite`)
 
-> **Avancement : 5/9 ⏳**
+> **Avancement : 6/9 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -9,7 +9,7 @@
 | 3 | **Association bornée 1-1** : un acteur ne peut porter qu'un seul compte, un compte ne référence qu'un acteur **déclaré** (acteur inconnu → rejet sans écriture) | @back | ✅ |
 | 4 | **Invariant admin = parent** : désigner comme **admin du foyer** un acteur de type **Parent** réussit ; un acteur non-Parent est **rejeté sans écriture** (retour PO URGENT #3) | @back | ✅ |
 | 5 | **Deux parents admins** : quand les deux parents sont utilisateurs, les deux peuvent être admins (l'invariant borne le **type**, pas l'unicité) | @back | ✅ |
-| 6 | **Suppression concurrente de l'acteur associé** → le compte retombe **orphelin/désassocié** (repli propre, pas de compte fantôme référençant un acteur absent), idempotence | @back | ⏳ |
+| 6 | **Suppression concurrente de l'acteur associé** → le compte retombe **orphelin/désassocié** (repli propre, pas de compte fantôme référençant un acteur absent), idempotence | @back | ✅ |
 | 7 | Onglet **Acteurs** : **créer/associer un compte** à un acteur (email obligatoire) + voir le statut (inactif) ; échec API → le formulaire reste ouvert avec un motif clair | 🖥️ @ihm | ⏳ |
 | 8 | Onglet **Acteurs** : **gating identité effective** — « Invité » ne peut ni créer un compte ni désigner l'admin (non-régression durcissement s14, gating par onglet s20) | 🖥️ @ihm | ⏳ |
 | 9 | **Temps réel SignalR** : création d'un compte / désignation de l'admin propagée à un **2ᵉ écran** sans rechargement | 🖥️ @ihm | ⏳ |
@@ -91,7 +91,7 @@ Scénario 5 — Deux parents peuvent être admins
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 6 — Suppression concurrente de l'acteur associé : désassociation propre + idempotence
   Étant donné un acteur déclaré portant un compte
   Quand l'acteur est supprimé du foyer (store réel)

@@ -41,7 +41,7 @@ public class Scenario4_ActeurMappeFondIndexNonMappe
         var cycle = new FakeReferentielCycleDeFond(
             new CycleDeFond(2, new Dictionary<int, string> { [0] = nounouId, [1] = ParentA }));
 
-        new SupprimerActeurHandler(store, new FakeNotificateurPlanning())
+        new SupprimerActeurHandler(store, new FakeNotificateurPlanning(), new FakeReferentielComptes(), new FakeReferentielComptes())
             .Handle(new SupprimerActeurCommand(nounouId)); // Nounou supprimée : son index de fond devient orphelin
 
         var query = new GrilleAgendaQuery(new FakeSlotRepository(), new FakePeriodeRepository(), store, store, cycle, store);

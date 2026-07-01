@@ -17,5 +17,11 @@ public sealed class FakeReferentielComptes : IEditeurComptes, IEnumerationCompte
     public void Creer(string compteId, string email, StatutCompte statut, string acteurId)
         => _comptes[compteId] = new CompteUtilisateur(compteId, email, statut, acteurId);
 
+    public void Desassocier(string compteId)
+    {
+        if (_comptes.TryGetValue(compteId, out var compte))
+            _comptes[compteId] = compte with { ActeurId = null }; // repli propre, idempotent
+    }
+
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes() => _comptes.Values.ToList();
 }

@@ -29,7 +29,8 @@ public class Scenario1_SupprimerActeur
             new Dictionary<string, string> { [NounouId] = Nounou, ["parent-a"] = "Parent A", ["parent-b"] = "Parent B" },
             new Dictionary<string, string> { [NounouId] = "vert" });
         var notificateur = new FakeNotificateurPlanning();
-        var handler = new SupprimerActeurHandler(configuration, notificateur);
+        var comptes = new FakeReferentielComptes();
+        var handler = new SupprimerActeurHandler(configuration, notificateur, comptes, comptes);
 
         var resultat = handler.Handle(new SupprimerActeurCommand(NounouId));
 

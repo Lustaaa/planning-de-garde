@@ -1,3 +1,4 @@
+using System.Linq;
 using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application;
@@ -22,15 +23,30 @@ public sealed class SupprimerActeurHandler
 {
     private readonly IEditeurConfigurationFoyer _configuration;
     private readonly INotificateurPlanning _notificateur;
+    private readonly IEnumerationComptes _comptes;
+    private readonly IEditeurComptes _editeurComptes;
 
-    public SupprimerActeurHandler(IEditeurConfigurationFoyer configuration, INotificateurPlanning notificateur)
+    public SupprimerActeurHandler(
+        IEditeurConfigurationFoyer configuration,
+        INotificateurPlanning notificateur,
+        IEnumerationComptes comptes,
+        IEditeurComptes editeurComptes)
     {
         _configuration = configuration;
         _notificateur = notificateur;
+        _comptes = comptes;
+        _editeurComptes = editeurComptes;
     }
 
     public Result<SupprimerActeurResultat> Handle(SupprimerActeurCommand commande)
     {
+        // Repli propre ciblé : chaque compte référençant l'acteur supprimé retombe DÉSASSOCIÉ (le
+        // compte survit, énuméré, sans acteur) — pas de compte fantôme pointant un acteur absent.
+        // Miroir du repli acteur orphelin (s13/s19). Aucun porteur → aucune écriture (idempotence Sc.6).
+        foreach (var compte in _comptes.EnumererComptes())
+            if (compte.ActeurId == commande.ActeurId)
+                _editeurComptes.Desassocier(compte.Id);
+
         _configuration.Supprimer(commande.ActeurId);
         _notificateur.NotifierMiseAJour(); // diffusion temps réel sur suppression aboutie
         return Result<SupprimerActeurResultat>.Succes(new SupprimerActeurResultat(commande.ActeurId));

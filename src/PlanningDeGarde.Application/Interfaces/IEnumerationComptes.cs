@@ -25,5 +25,7 @@ public enum StatutCompte
 }
 
 /// <summary>Un compte utilisateur du référentiel du foyer : identifiant stable opaque (clé, jamais
-/// dérivé de l'email), email, statut, et id stable de l'acteur associé (association 1-1).</summary>
-public sealed record CompteUtilisateur(string Id, string Email, StatutCompte Statut, string ActeurId);
+/// dérivé de l'email), email, statut, et id stable de l'acteur associé (association 1-1). L'acteur
+/// est <c>null</c> quand le compte est <b>désassocié</b> (repli après suppression de l'acteur
+/// associé, Sc.6) — jamais un compte fantôme pointant un acteur absent.</summary>
+public sealed record CompteUtilisateur(string Id, string Email, StatutCompte Statut, string? ActeurId);

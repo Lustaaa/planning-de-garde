@@ -43,7 +43,7 @@ public class Scenario2_SurchargeOrphelineRetombeFond
         periodes.Enregistrer(PeriodeDeGarde.Affecter(nounouId,
             new DateTime(2026, 6, 16), new DateTime(2026, 6, 16)).Valeur!); // surcharge au seul 16/06
 
-        new SupprimerActeurHandler(store, new FakeNotificateurPlanning())
+        new SupprimerActeurHandler(store, new FakeNotificateurPlanning(), new FakeReferentielComptes(), new FakeReferentielComptes())
             .Handle(new SupprimerActeurCommand(nounouId)); // Nounou supprimée : sa surcharge devient orpheline
 
         var query = new GrilleAgendaQuery(new FakeSlotRepository(), periodes, store, store, CycleToujoursParentA(), store);

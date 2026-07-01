@@ -48,17 +48,32 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
             new ReplaceOptions { IsUpsert = true });
     }
 
+    public void Desassocier(string compteId)
+    {
+        // Repli propre write-through : le compte survit, sans acteur (ActeurId null) — cache de session
+        // ET store durable (il reste désassocié au redémarrage, pas de compte fantôme). Tolérant à
+        // l'absence / à un compte déjà désassocié (no-op qui réussit — idempotence Sc.6).
+        if (!_cache.TryGetValue(compteId, out var doc))
+            return;
+        doc.ActeurId = null;
+        _cache[compteId] = doc;
+        _comptes.ReplaceOne(
+            Builders<CompteDocument>.Filter.Eq(d => d.Id, compteId),
+            doc,
+            new ReplaceOptions { IsUpsert = true });
+    }
+
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes()
         => _cache.Values.Select(d => new CompteUtilisateur(d.Id, d.Email, d.Statut, d.ActeurId)).ToList();
 
     /// <summary>Document persisté d'un compte du foyer : identifiant stable (clé), email, statut et
-    /// id de l'acteur associé.</summary>
+    /// id de l'acteur associé (null quand désassocié).</summary>
     private sealed class CompteDocument
     {
         [BsonId]
         public string Id { get; set; } = default!;
         public string Email { get; set; } = default!;
         public StatutCompte Statut { get; set; }
-        public string ActeurId { get; set; } = default!;
+        public string? ActeurId { get; set; }
     }
 }

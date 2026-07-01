@@ -19,5 +19,13 @@ public sealed class ReferentielComptesEnMemoire : IEnumerationComptes, IEditeurC
     public void Creer(string compteId, string email, StatutCompte statut, string acteurId)
         => _comptes[compteId] = new CompteUtilisateur(compteId, email, statut, acteurId);
 
+    public void Desassocier(string compteId)
+    {
+        // Repli propre : le compte survit, sans acteur (ActeurId null). Tolérant à l'absence / à un
+        // compte déjà désassocié (no-op qui réussit — idempotence Sc.6).
+        if (_comptes.TryGetValue(compteId, out var compte))
+            _comptes[compteId] = compte with { ActeurId = null };
+    }
+
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes() => _comptes.Values.ToList();
 }
