@@ -23,6 +23,19 @@ public interface IEditeurConfigurationFoyer
     /// distincte du nom — recolorier ne touche jamais le nom).</summary>
     void Recolorier(string acteurId, string nouvelleCouleur);
 
+    /// <summary>Affecte un rôle du référentiel à l'acteur identifié de façon stable (surface distincte
+    /// du nom et de la couleur — attribut optionnel d'organisation, réutilise le chemin d'écriture de
+    /// la config acteur augmenté d'un id de rôle). La valeur est un <b>id de rôle</b> du référentiel,
+    /// jamais un libellé en dur : la validation « rôle présent dans le référentiel » est faite en amont
+    /// par le use case (le store écrit ce qu'on lui donne).</summary>
+    void AffecterRole(string acteurId, string roleId);
+
+    /// <summary>Retire le rôle porté par l'acteur identifié de façon stable : l'attribut rôle redevient
+    /// non renseigné (« sans rôle » = neutre assumé). Tolérant à l'absence (un acteur déjà sans rôle
+    /// reste sans rôle) — aucun rôle fantôme. Sert au retrait explicite (Sc.5) et au repli des porteurs
+    /// d'un rôle supprimé (Sc.6).</summary>
+    void RetirerRole(string acteurId);
+
     /// <summary>Retire l'acteur identifié de façon stable de la configuration : son <b>nom</b>
     /// ET sa <b>couleur</b> (miroir d'<see cref="Ajouter"/>). Après retrait, l'acteur n'est plus
     /// énuméré ni résolu — <see cref="IReferentielResponsables.NomDe"/> retombe sur l'id brut et la

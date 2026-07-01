@@ -17,6 +17,7 @@ public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEdi
 {
     private readonly Dictionary<string, string> _noms;
     private readonly Dictionary<string, string> _couleurs;
+    private readonly Dictionary<string, string> _roles = new(); // acteurId → id de rôle (attribut optionnel)
 
     public ConfigurationFoyerEnMemoire()
     {
@@ -52,6 +53,17 @@ public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEdi
 
     public void Recolorier(string acteurId, string nouvelleCouleur)
         => _couleurs[acteurId] = nouvelleCouleur; // dernière écriture gagne (surface distincte du nom)
+
+    public void AffecterRole(string acteurId, string roleId)
+        => _roles[acteurId] = roleId; // surface distincte du nom/couleur : l'id de rôle porté par l'acteur
+
+    public void RetirerRole(string acteurId)
+        => _roles.Remove(acteurId); // « sans rôle » (neutre) ; tolérant à l'absence — aucun rôle fantôme
+
+    /// <summary>Id de rôle porté par l'acteur, ou <c>null</c> s'il n'en porte aucun (« sans rôle »,
+    /// attribut optionnel — valeur neutre par défaut).</summary>
+    public string? RoleDe(string acteurId)
+        => _roles.TryGetValue(acteurId, out var roleId) ? roleId : null;
 
     public void Supprimer(string acteurId)
     {

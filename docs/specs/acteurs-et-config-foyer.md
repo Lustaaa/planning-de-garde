@@ -19,6 +19,14 @@ Le **CRUD acteurs est complet** (Create + Read + Update + **Delete**) : supprime
 du store durable** et **neutralise par repli** ses cases orphelines. Le dernier maillon, une
 **impersonation bornée lecture seule**, ferme la **boucle du cycle de vie des acteurs**.
 
+Un **modèle de rôles éditable** est **livré** *(s21)* : un **référentiel de rôles** que le parent
+crée / renomme / supprime, chaque rôle porté par un **identifiant stable opaque** (jamais le libellé),
+**persisté Mongo** comme la config foyer. Un rôle est **affectable à un acteur** en le **bornant au
+référentiel** ; un acteur peut rester **sans rôle** (**neutre assumé**, `RoleDe = null`). **Invariant
+majeur** : le rôle est une **caractéristique d'acteur, PAS une responsabilité** — il **n'intervient pas**
+dans la résolution grille / légende (ni teinte, ni nom de case, ni légende ne dépendent du rôle ;
+priorité **surcharge > fond > neutre** strictement inchangée).
+
 Les **acteurs fictifs de démo (« Parent A / Parent B ») sont éliminés partout** *(livré)* : aucune
 **constante de domaine** n'expose plus ces libellés, et **tout l'affichage** (sélecteurs des dialogs,
 grille, légende) résout les responsables **exclusivement** depuis le **store vivant des acteurs
@@ -76,6 +84,15 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   **effective** (acteur incarné, ou **repli sur la réelle**) ; bandeau « Vous incarnez X » ; droit
   d'écriture dérivé du type de l'identité effective ; retour à l'identité réelle ; repli auto sur
   suppression concurrente ; **aucune écriture « au nom de »**, état en session / mémoire.
+- **Référentiel de rôles éditable + affectation** *(livré s21)* : dans l'**onglet Acteurs**
+  (**Parent-gated**), le parent **crée / renomme / supprime** des rôles (id stable opaque, persisté
+  Mongo). **Rejets sans écriture** : libellé **vide** ou **doublon** de libellé. Un rôle se **affecte à
+  un acteur** en étant **borné au référentiel** — un id de rôle **hors référentiel est rejeté sans
+  écriture**. Un acteur **sans rôle** est **neutre assumé** (`RoleDe = null`). **Suppression d'un rôle** :
+  les acteurs qui le portaient **retombent sans rôle** (repli neutre, aucun rôle fantôme) **puis** le
+  rôle est retiré du référentiel. **Temps réel SignalR** : liste des rôles et sélecteurs de rôle d'un
+  2ᵉ écran **convergent sans rechargement**. **Invariant** : le rôle **n'intervient pas** dans la
+  résolution grille / légende (caractéristique d'acteur, pas responsabilité).
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 
@@ -102,6 +119,14 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   dures, hors-cap = écriture « au nom de »).
 - **R9 — Modification réservée aux parents/admin, gating sur l'identité effective** (durcissement
   config livré).
+- **R10 — Modèle de rôles éditable, borné au référentiel, hors résolution** *(livré s21)* :
+  référentiel de rôles créable / renommable / supprimable par le parent (id stable opaque, persisté
+  Mongo) ; rejet **sans écriture** du libellé vide ou en doublon ; rôle affecté à un acteur **borné au
+  référentiel** (id hors référentiel rejeté sans écriture) ; acteur **sans rôle = neutre** (`RoleDe =
+  null`) ; **suppression d'un rôle → acteurs porteurs retombent sans rôle** (repli neutre) puis rôle
+  retiré ; gestion + affectation **Parent-gated** (onglet Acteurs) ; temps réel SignalR (2 écrans
+  convergent). **Invariant : le rôle est une caractéristique d'acteur, PAS une responsabilité — il
+  n'intervient pas dans la résolution grille / légende.**
 
 ## Risques
 
@@ -112,6 +137,10 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **Variantes refus/réaffectation de suppression** = porte G1 au make-gherkin si un vrai trou émerge.
 - **Évolutions de surface config non priorisées** : palette/picker, refonte visuelle profonde du thème,
   contenu réel de l'onglet **Slot récurrent** (placeholder réservé au s20, aucune fonctionnalité neuve).
+- **Rôle sans effet fonctionnel encore** *(s21)* : le rôle est **livré comme caractéristique** (pas une
+  responsabilité) — il n'a **pas encore** de droits/comportements attachés. Le couplage rôle → droits
+  par acteur (nounou / grand-parent / second parent) vit dans **É10 (auth, palier 13)**, après la prise
+  en main de compte.
 - ~~**Dette de cohérence (s19)** — sélecteur d'édition config encore sur `Foyer.ActeursEditables`~~ —
   **RÉSOLUE s20** : convergé sur le **store vivant unifié** `IEnumerationActeursFoyer` (`Foyer.ActeursEditables`
   retirée) → **un seul chemin de lecture** du référentiel, cohérence stricte config ↔ dialogs ↔ grille ↔

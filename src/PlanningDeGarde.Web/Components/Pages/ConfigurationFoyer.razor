@@ -142,6 +142,51 @@
             }
 
             <hr class="my-4" />
+
+            @* ── Référentiel de rôles du foyer (Sc.7) : créer / renommer / supprimer. Les rôles créés
+                 apparaissent dans la liste ci-dessous (relue depuis le store durable, GET /api/foyer/roles) ;
+                 la valeur d'un rôle affectable à un acteur provient EXCLUSIVEMENT de ce référentiel (jamais
+                 un libellé en dur). Écritures via le canal HTTP (POST /api/canal/{creer,renommer,supprimer}-role). ── *@
+            <h2 class="h5 mb-3">Rôles du foyer</h2>
+            <p class="text-muted">Gérer le référentiel de rôles (Nounou, Grand-parent…). Un rôle reçoit un
+                identifiant stable neuf (jamais dérivé du libellé) ; il peut ensuite être affecté à un acteur.
+                Créer, renommer ou supprimer un rôle met la liste à jour sans recharger la page.</p>
+
+            <EditForm Model="_role" OnValidSubmit="CreerRole" FormName="creer-role" id="form-creer-role">
+                <div class="input-group mb-3">
+                    <InputText class="form-control" @bind-Value="_role.Libelle" data-testid="champ-libelle-role"
+                               placeholder="Libellé du rôle (ex. Nounou)" />
+                    <button type="submit" class="btn btn-primary">Créer le rôle</button>
+                </div>
+            </EditForm>
+
+            @if (_motifEchecRole is not null)
+            {
+                <div class="alert alert-danger mt-3" data-testid="motif-echec-role">@_motifEchecRole</div>
+            }
+
+            <ul class="list-group mb-3" data-testid="liste-roles">
+                @foreach (var r in _roles)
+                {
+                    <li class="list-group-item role-ligne" data-testid="role-foyer" data-role-id="@r.Id">
+                        <span class="role-libelle">@r.Libelle</span>
+                        <span class="role-actions">
+                            <input type="text" class="form-control form-control-sm role-champ-renommer"
+                                   data-testid="champ-renommer-role"
+                                   @bind:get="LibelleRenommage(r.Id, r.Libelle)"
+                                   @bind:set="v => SaisirRenommage(r.Id, v)" @bind:event="onchange" />
+                            <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    data-testid="bouton-renommer-role"
+                                    @onclick="() => RenommerRole(r.Id)">Renommer</button>
+                            <button type="button" class="btn btn-outline-danger btn-sm"
+                                    data-testid="bouton-supprimer-role"
+                                    @onclick="() => SupprimerRole(r.Id)" aria-label="Supprimer @r.Libelle">Supprimer</button>
+                        </span>
+                    </li>
+                }
+            </ul>
+
+            <hr class="my-4" />
         }
 
         <h2 class="h5 mt-4 mb-3">Acteurs du foyer</h2>
@@ -167,10 +212,25 @@
                     data-acteur-id="@a.Id" data-couleur="@a.Couleur">
                     <span class="acteur-pastille" style="background-color:@CouleursTheme.Pleine(a.Couleur);"
                           aria-hidden="true"></span><span class="acteur-nom">@a.Nom</span>
-                    @* Gating règle 9 : le bouton supprimer (action d'écriture) n'est rendu que pour un Parent —
-                       un Invité en consultation seule ne peut émettre aucune commande de suppression (Sc.7). *@
+                    @* Rôle courant de l'acteur (Sc.8) : libellé du rôle du référentiel porté (résolu sur son id
+                       stable, jamais en dur), ou « sans rôle » (neutre). Affiché en lecture pour tous. *@
+                    <span class="acteur-role" data-testid="role-acteur-courant">@LibelleRoleActeur(a.RoleId)</span>
+                    @* Gating règle 9 : le sélecteur de rôle et le bouton supprimer (actions d'écriture) ne sont
+                       rendus que pour un Parent — un Invité en consultation seule n'émet aucune commande (Sc.7/9). *@
                     @if (Session.EstParent)
                     {
+                        @* Sélecteur de rôle BORNÉ AU RÉFÉRENTIEL (Sc.8) : exactement les rôles du foyer (_roles,
+                           relus depuis le store) plus « sans rôle ». La valeur bindée est l'id de rôle (jamais le
+                           libellé) ; le choix vide = retrait (retombe « sans rôle »). Aucun rôle en dur. *@
+                        <select class="form-select form-select-sm acteur-selecteur-role" data-testid="selecteur-role-acteur"
+                                value="@(a.RoleId ?? "")"
+                                @onchange="e => AffecterRole(a.Id, e.Value?.ToString())">
+                            <option value="">sans rôle</option>
+                            @foreach (var r in _roles)
+                            {
+                                <option value="@r.Id">@r.Libelle</option>
+                            }
+                        </select>
                         <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
                                 data-testid="bouton-supprimer" data-acteur-id="@a.Id"
                                 @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer</button>

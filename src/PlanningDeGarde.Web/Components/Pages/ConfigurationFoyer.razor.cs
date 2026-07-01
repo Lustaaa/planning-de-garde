@@ -86,6 +86,25 @@ public partial class ConfigurationFoyer
     /// la liste statique front : c'est cette énumération qui fait apparaître un acteur ajouté (Sc.1).</summary>
     private IReadOnlyList<ActeurFoyer> _acteurs = Array.Empty<ActeurFoyer>();
 
+    /// <summary>Formulaire de saisie du libellé d'un rôle à créer (référentiel du foyer, s21). Le front
+    /// n'émet que le libellé ; l'identifiant stable neuf opaque est généré côté handler.</summary>
+    private sealed class FormulaireRole
+    {
+        public string Libelle { get; set; } = "";
+    }
+
+    private readonly FormulaireRole _role = new();
+    private string? _motifEchecRole;
+
+    /// <summary>Rôles du référentiel du foyer énumérés <b>depuis le store durable</b> (GET /api/foyer/roles),
+    /// jamais un rôle en dur : alimente la liste des rôles de l'onglet Acteurs (créés / renommés / supprimés
+    /// suivent sans rechargement, Sc.7).</summary>
+    private IReadOnlyList<RoleFoyer> _roles = Array.Empty<RoleFoyer>();
+
+    /// <summary>Tampon d'édition du libellé par ligne de rôle (renommage inline) : clé = identifiant stable
+    /// du rôle, valeur = nouveau libellé saisi. La clé n'est jamais éditable (règle 19).</summary>
+    private readonly Dictionary<string, string> _renommageRole = new();
+
     /// <summary>Fournisseur de services pour résoudre <see cref="OptionsConnexionHub"/> de façon
     /// <b>optionnelle</b> : présent, il redirige la connexion au hub vers le TestServer (acceptation runtime
     /// Sc.6) ; absent (écrans de config qui n'observent pas le temps réel), la connexion reste neutre et son
@@ -94,12 +113,22 @@ public partial class ConfigurationFoyer
 
     private HubConnection? _hub;
 
-    /// <summary>Au montage de l'écran, charge la liste des acteurs depuis le store via l'API distante.</summary>
-    protected override Task OnInitializedAsync() => RechargerActeurs();
+    /// <summary>Au montage de l'écran, charge acteurs et rôles depuis le store via l'API distante.</summary>
+    protected override async Task OnInitializedAsync()
+    {
+        await RechargerActeurs();
+        await RechargerRoles();
+    }
 
     private async Task RechargerActeurs()
         => _acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs")
             ?? new List<ActeurFoyer>();
+
+    /// <summary>Ré-énumère les rôles du référentiel depuis le store durable (GET /api/foyer/roles) : c'est
+    /// cette relecture qui fait suivre la liste des rôles après création / renommage / suppression (Sc.7).</summary>
+    private async Task RechargerRoles()
+        => _roles = await Canal.GetFromJsonAsync<List<RoleFoyer>>("api/foyer/roles")
+            ?? new List<RoleFoyer>();
 
     /// <summary>
     /// S'abonne au <b>hub SignalR de lecture</b> de l'API distante (même hôte que le canal) pour préserver
@@ -126,7 +155,12 @@ public partial class ConfigurationFoyer
 
             _hub.On(PlanningHubEvenement.MiseAJour, async () =>
             {
+                // Ré-énumère acteurs ET rôles depuis le store partagé : une création / suppression de rôle
+                // aboutie sur un autre écran (store partagé) fait suivre la liste des rôles et les sélecteurs
+                // de rôle sans rechargement, et un acteur portant un rôle supprimé retombe « sans rôle »
+                // (repli neutre) — cohérence temps réel du référentiel de rôles (Sc.10). Lecture seule.
                 await RechargerActeurs();
+                await RechargerRoles();
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -261,8 +295,17 @@ public partial class ConfigurationFoyer
     /// </summary>
     private async Task Supprimer(string acteurId)
     {
-        _accuseSuppression = null;
         _motifEchecSuppression = null;
+
+        // Accusé posé — et rendu — AVANT l'appel réseau. Raison : la suppression aboutie côté API déclenche
+        // une diffusion SignalR MiseAJour qui, sur CE même écran, ré-énumère le store et fait quitter l'acteur
+        // de la liste de façon concurrente à notre propre flux. Poser l'accusé après la réponse OK le mettrait
+        // en course avec ce re-render de diffusion (l'acteur peut disparaître de la liste AVANT que l'accusé ne
+        // soit posé → accusé absent au moment de l'observation, régression Sc.6). En le posant en amont, l'accusé
+        // est déjà présent quel que soit le chemin qui retire l'acteur en premier. C'est un accusé optimiste :
+        // on le rétracte sur échec (transport injoignable ou refus métier), sans qu'aucune suppression ait eu lieu.
+        _accuseSuppression = "Acteur supprimé.";
+        StateHasChanged();
 
         HttpResponseMessage reponse;
         try
@@ -274,22 +317,169 @@ public partial class ConfigurationFoyer
         catch (HttpRequestException)
         {
             // Service de configuration injoignable (échec de transport, pas un refus métier) : le handler
-            // SupprimerActeur ne s'exécute jamais. Message dédié, liste/grille/légende inchangées, aucune
-            // suppression ni mise en file (règle 28). Cf. Sc.8.
+            // SupprimerActeur ne s'exécute jamais. On rétracte l'accusé optimiste, on surface le message dédié ;
+            // liste/grille/légende inchangées, aucune suppression ni mise en file (règle 28). Cf. Sc.8.
+            _accuseSuppression = null;
             _motifEchecSuppression = MessagesEcriture.ServiceInjoignable;
             return;
         }
 
         if (!reponse.IsSuccessStatusCode)
         {
-            // Refus métier éventuel : on surface le motif renvoyé par le canal sans muter la liste.
+            // Refus métier éventuel : on rétracte l'accusé optimiste et on surface le motif renvoyé par le
+            // canal, sans muter la liste.
+            _accuseSuppression = null;
             _motifEchecSuppression = await reponse.Content.ReadFromJsonAsync<string>();
             return;
         }
 
         // La liste reflète la suppression sans recharger la page : on relit l'énumération du store durable.
         await RechargerActeurs();
-        _accuseSuppression = "Acteur supprimé.";
+    }
+
+    /// <summary>Libellé d'affichage du rôle courant d'un acteur (Sc.8) : le libellé du rôle du référentiel
+    /// porté (résolu sur son id stable, jamais un libellé en dur), ou « sans rôle » si aucun (attribut
+    /// optionnel non renseigné = neutre assumé).</summary>
+    private string LibelleRoleActeur(string? roleId)
+        => roleId is not null && _roles.FirstOrDefault(r => r.Id == roleId) is { } r
+            ? r.Libelle
+            : "sans rôle";
+
+    /// <summary>
+    /// Affecte (ou retire, si l'option « sans rôle » est choisie = valeur vide) un rôle du référentiel à un
+    /// acteur via le <b>canal d'écriture HTTP</b> de l'API distante (POST /api/canal/affecter-role ou
+    /// /retirer-role, règle 27 — aucune vue n'écrit le domaine en direct). La valeur émise est l'<b>id de
+    /// rôle du référentiel</b> (jamais un libellé en dur, Sc.8) ; sur succès, on relit les acteurs pour que
+    /// le rôle courant suive sans rechargement. Sur refus métier (id hors référentiel, Sc.4), le motif est surfacé.
+    /// </summary>
+    private async Task AffecterRole(string acteurId, string? roleId)
+    {
+        _motifEchecRole = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = string.IsNullOrWhiteSpace(roleId)
+                ? await Canal.PostAsJsonAsync("api/canal/retirer-role", new RetirerRoleRequete(acteurId))
+                : await Canal.PostAsJsonAsync("api/canal/affecter-role", new AffecterRoleRequete(acteurId, roleId));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecRole = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecRole = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        await RechargerActeurs();
+    }
+
+    /// <summary>
+    /// Crée un rôle du référentiel du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/creer-role</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
+    /// ré-énumère le référentiel pour faire apparaître le rôle créé <b>sans rechargement</b> (Sc.7). Le
+    /// front n'émet que le libellé ; l'identifiant stable neuf est généré côté handler. Sur refus métier
+    /// (libellé vide / doublon, Sc.3), le motif renvoyé par le canal est surfacé sans muter la liste.
+    /// </summary>
+    private async Task CreerRole()
+    {
+        _motifEchecRole = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/creer-role",
+                new CreerRoleRequete(_role.Libelle));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecRole = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecRole = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        await RechargerRoles();
+        _role.Libelle = "";
+    }
+
+    /// <summary>Libellé courant du champ de renommage inline d'un rôle : le tampon saisi s'il existe,
+    /// sinon le libellé persisté (valeur de départ).</summary>
+    private string LibelleRenommage(string roleId, string libellePersiste)
+        => _renommageRole.TryGetValue(roleId, out var l) ? l : libellePersiste;
+
+    /// <summary>Mémorise le nouveau libellé saisi pour le renommage inline d'un rôle (clé = identifiant
+    /// stable, jamais éditable).</summary>
+    private void SaisirRenommage(string roleId, string? libelle)
+        => _renommageRole[roleId] = libelle ?? "";
+
+    /// <summary>Renomme un rôle du référentiel via le <b>canal d'écriture HTTP</b>
+    /// (<c>POST /api/canal/renommer-role</c>) : la clé est l'identifiant stable du rôle (jamais éditable,
+    /// règle 19), seul le libellé change. Sur succès, on relit le référentiel (le libellé suit sans
+    /// rechargement, même id, Sc.7) ; sur refus métier, le motif est surfacé.</summary>
+    private async Task RenommerRole(string roleId)
+    {
+        _motifEchecRole = null;
+        var nouveauLibelle = _renommageRole.TryGetValue(roleId, out var l) ? l : "";
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/renommer-role",
+                new RenommerRoleRequete(roleId, nouveauLibelle));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecRole = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecRole = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        await RechargerRoles();
+    }
+
+    /// <summary>Supprime un rôle du référentiel via le <b>canal d'écriture HTTP</b>
+    /// (<c>POST /api/canal/supprimer-role</c>) : la clé est l'identifiant stable du rôle. Sur succès, on
+    /// relit le référentiel (le rôle quitte la liste sans rechargement, Sc.7). Idempotence côté handler.</summary>
+    private async Task SupprimerRole(string roleId)
+    {
+        _motifEchecRole = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/supprimer-role",
+                new SupprimerRoleRequete(roleId));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecRole = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecRole = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        await RechargerRoles();
     }
 
     /// <summary>

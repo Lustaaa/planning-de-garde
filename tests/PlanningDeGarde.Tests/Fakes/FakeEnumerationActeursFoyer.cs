@@ -24,4 +24,8 @@ public sealed class FakeEnumerationActeursFoyer : IEnumerationActeursFoyer
     /// <summary>Type read-only (sprint 14) : ces scénarios ne pilotent pas le rôle par le type — défaut
     /// Parent, suffisant pour le contrat d'existence éprouvé ici.</summary>
     public TypeActeur TypeDe(string acteurId) => TypeActeur.Parent;
+
+    /// <summary>Rôle read-only (sprint 21) : ces scénarios (résolution grille/légende) ne portent pas
+    /// de rôle — « sans rôle » par défaut, suffisant pour le contrat d'existence éprouvé ici.</summary>
+    public string? RoleDe(string acteurId) => null;
 }

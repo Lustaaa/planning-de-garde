@@ -25,4 +25,13 @@ public interface IEnumerationActeursFoyer
     /// bornée ; aucune écriture, aucun recalcul métier.
     /// </summary>
     TypeActeur TypeDe(string acteurId);
+
+    /// <summary>
+    /// Id de rôle porté par l'acteur (résolu sur son identifiant stable), ou <c>null</c> s'il n'en
+    /// porte aucun (« sans rôle » = neutre assumé, attribut optionnel). L'id de rôle provient
+    /// exclusivement du référentiel de rôles ; sa résolution en libellé se fait via
+    /// <see cref="IEnumerationRoles"/>. Sert notamment au repli neutre des porteurs d'un rôle supprimé
+    /// (Sc.6) et à l'affichage du rôle courant d'un acteur (Sc.8).
+    /// </summary>
+    string? RoleDe(string acteurId);
 }
