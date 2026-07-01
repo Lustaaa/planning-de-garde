@@ -84,6 +84,11 @@ public static class CanalLecture
                 return Results.Ok(vues);
             });
 
+        // Énumération des ids d'acteurs admins du foyer DEPUIS LE STORE (s22) : l'onglet Acteurs de l'écran
+        // config la lit pour marquer l'acteur admin. Lecture seule — ne déclenche jamais la diffusion.
+        routes.MapGet("/api/foyer/admins",
+            (IEnumerationAdminsFoyer admins) => Results.Ok(admins.EnumererAdmins().ToList()));
+
         // Grille projetée à une ANCRE (date de référence / date naviguée), passée en segments yyyy/MM/dd
         // pour le déterminisme côté front (jamais DateTime.Now côté serveur), plus un paramètre de VUE
         // (span : semaine / 4semaines / mois) sur le canal de LECTURE (CQRS — ne déclenche jamais la

@@ -215,6 +215,12 @@
                     @* Rôle courant de l'acteur (Sc.8) : libellé du rôle du référentiel porté (résolu sur son id
                        stable, jamais en dur), ou « sans rôle » (neutre). Affiché en lecture pour tous. *@
                     <span class="acteur-role" data-testid="role-acteur-courant">@LibelleRoleActeur(a.RoleId)</span>
+                    @* Marqueur d'admin du foyer (Sc.9) : affiché en lecture pour tous quand l'acteur est admin
+                       (énuméré depuis le store) ; suit une désignation aboutie ailleurs sans rechargement (SignalR). *@
+                    @if (EstAdmin(a.Id))
+                    {
+                        <span class="badge bg-secondary acteur-admin" data-testid="acteur-admin-marqueur">admin</span>
+                    }
                     @* Gating règle 9 : le sélecteur de rôle et le bouton supprimer (actions d'écriture) ne sont
                        rendus que pour un Parent — un Invité en consultation seule n'émet aucune commande (Sc.7/9). *@
                     @if (Session.EstParent)

@@ -296,16 +296,20 @@ public static class CanalEcriture
                 : Results.BadRequest(resultat.Motif);
         });
 
-        routes.MapPost("/api/canal/creer-compte", (CreerCompteRequete requete, CreerCompteHandler handler) =>
+        routes.MapPost("/api/canal/creer-compte", (CreerCompteRequete requete, CreerCompteHandler handler, INotificateurPlanning notificateur) =>
         {
             var resultat = handler.Handle(new CreerCompteCommand(requete.Email, requete.ActeurId));
 
             // Même convention que les autres écritures : succès acquitté (le compte est désormais énuméré
             // depuis le store, associé à l'acteur, statut « inactif », Sc.7), refus métier renvoyé avec son
-            // motif (email vide / doublon, acteur inconnu, acteur déjà associé, Sc.2/Sc.3).
-            return resultat.EstSucces
-                ? Results.Ok()
-                : Results.BadRequest(resultat.Motif);
+            // motif (email vide / doublon, acteur inconnu, acteur déjà associé, Sc.2/Sc.3). Sur succès,
+            // l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres écrans
+            // ré-énumèrent les comptes sans rechargement (Sc.9). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
         });
 
         routes.MapPost("/api/canal/designer-admin", (DesignerAdminRequete requete, DesignerAdminHandler handler, INotificateurPlanning notificateur) =>

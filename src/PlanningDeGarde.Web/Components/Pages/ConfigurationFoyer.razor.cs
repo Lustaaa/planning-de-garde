@@ -119,6 +119,11 @@ public partial class ConfigurationFoyer
     /// ouvert avec ce motif clair, sans compte créé (Sc.7).</summary>
     private readonly Dictionary<string, string> _motifEchecCompte = new();
 
+    /// <summary>Ids stables des acteurs admins du foyer énumérés <b>depuis le store durable</b> (GET
+    /// /api/foyer/admins), jamais en dur : marque l'acteur admin dans l'onglet Acteurs ; suit une désignation
+    /// aboutie ailleurs sans rechargement (temps réel SignalR, Sc.9).</summary>
+    private IReadOnlyList<string> _admins = Array.Empty<string>();
+
     /// <summary>Fournisseur de services pour résoudre <see cref="OptionsConnexionHub"/> de façon
     /// <b>optionnelle</b> : présent, il redirige la connexion au hub vers le TestServer (acceptation runtime
     /// Sc.6) ; absent (écrans de config qui n'observent pas le temps réel), la connexion reste neutre et son
@@ -133,6 +138,7 @@ public partial class ConfigurationFoyer
         await RechargerActeurs();
         await RechargerRoles();
         await RechargerComptes();
+        await RechargerAdmins();
     }
 
     private async Task RechargerActeurs()
@@ -151,6 +157,12 @@ public partial class ConfigurationFoyer
     private async Task RechargerComptes()
         => _comptes = await Canal.GetFromJsonAsync<List<CompteFoyer>>("api/foyer/comptes")
             ?? new List<CompteFoyer>();
+
+    /// <summary>Ré-énumère les admins du foyer depuis le store durable (GET /api/foyer/admins) : c'est cette
+    /// relecture qui fait suivre le marqueur d'admin après une désignation aboutie, sans rechargement (Sc.9).</summary>
+    private async Task RechargerAdmins()
+        => _admins = await Canal.GetFromJsonAsync<List<string>>("api/foyer/admins")
+            ?? new List<string>();
 
     /// <summary>
     /// S'abonne au <b>hub SignalR de lecture</b> de l'API distante (même hôte que le canal) pour préserver
@@ -184,6 +196,7 @@ public partial class ConfigurationFoyer
                 await RechargerActeurs();
                 await RechargerRoles();
                 await RechargerComptes();
+                await RechargerAdmins();
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -542,6 +555,10 @@ public partial class ConfigurationFoyer
     /// porte aucun. Un acteur porte au plus un compte (association 1-1, Sc.3).</summary>
     private CompteFoyer? CompteDe(string acteurId)
         => _comptes.FirstOrDefault(c => c.ActeurId == acteurId);
+
+    /// <summary>Vrai si l'acteur (résolu sur son id stable) est admin du foyer (énuméré depuis le store),
+    /// pour marquer sa ligne. Suit une désignation aboutie ailleurs sans rechargement (Sc.9).</summary>
+    private bool EstAdmin(string acteurId) => _admins.Contains(acteurId);
 
     /// <summary>Email courant du champ de création de compte d'une ligne d'acteur (tampon saisi, sinon vide).</summary>
     private string EmailCompte(string acteurId)
