@@ -21,6 +21,9 @@ public sealed class ReferentielRolesEnMemoire : IEnumerationRoles, IEditeurRefer
     public void Renommer(string roleId, string nouveauLibelle)
         => _libelles[roleId] = nouveauLibelle; // même id (clé) → aucun doublon, dernière écriture gagne
 
+    public void Supprimer(string roleId)
+        => _libelles.Remove(roleId); // cesse d'être énuméré ; tolérant à l'absence (idempotence)
+
     public IReadOnlyCollection<RoleFoyer> EnumererRoles()
         => _libelles.Select(kv => new RoleFoyer(kv.Key, kv.Value)).ToList();
 }

@@ -1,6 +1,6 @@
 # Sprint 21 — Modèle de rôles éditable (`modele-de-roles-editable`)
 
-> **Avancement : 5/11 ⏳**
+> **Avancement : 6/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -9,7 +9,7 @@
 | 3 | **Rejet** création/renommage : libellé vide **ou** doublon de libellé (référentiel inchangé) | @back | ✅ |
 | 4 | **Affecter un rôle à un acteur** : la valeur provient **exclusivement** du référentiel ; rôle hors référentiel **rejeté** (jamais de rôle en dur) | @back | ✅ |
 | 5 | **Acteur sans rôle = neutre assumé** (aucun rôle fantôme, aucune erreur ; l'attribut rôle est optionnel) | @back | ✅ |
-| 6 | **Supprimer un rôle référencé** → les acteurs porteurs retombent « sans rôle » (repli neutre, pas de rôle fantôme), **idempotence** (absent/déjà supprimé = no-op qui réussit) | @back | ⏳ |
+| 6 | **Supprimer un rôle référencé** → les acteurs porteurs retombent « sans rôle » (repli neutre, pas de rôle fantôme), **idempotence** (absent/déjà supprimé = no-op qui réussit) | @back | ✅ |
 | 7 | Onglet **Acteurs** : **gérer le référentiel de rôles** (créer / renommer / supprimer : Nounou, Grand-parent…) depuis l'écran config | 🖥️ @ihm | ⏳ |
 | 8 | Onglet **Acteurs** : **affecter un rôle à un acteur** via un **sélecteur borné au référentiel** ; acteur sans rôle affiché **neutre** | 🖥️ @ihm | ⏳ |
 | 9 | **Gating identité effective** : « Invité » ne peut **ni** gérer le référentiel **ni** affecter un rôle (non-régression durcissement s14, par onglet s20) | 🖥️ @ihm | ⏳ |
@@ -110,7 +110,7 @@ Scénario 5 — Acteur sans rôle = neutre assumé
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 6 — Supprimer un rôle référencé : repli neutre + idempotence
   Étant donné un référentiel contenant « Nounou » et un acteur portant ce rôle
   Quand le parent supprime le rôle « Nounou » du référentiel

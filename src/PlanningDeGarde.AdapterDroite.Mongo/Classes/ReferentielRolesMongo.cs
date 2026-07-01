@@ -36,6 +36,14 @@ public sealed class ReferentielRolesMongo : IEnumerationRoles, IEditeurReferenti
     public void Renommer(string roleId, string nouveauLibelle)
         => Persister(roleId, nouveauLibelle); // même id (clé) → aucun doublon, dernière écriture gagne
 
+    public void Supprimer(string roleId)
+    {
+        // Retrait write-through : cache de session ET store durable (le rôle ne réapparaît pas au
+        // redémarrage). Tolérant à l'absence (no-op sur clé/document absent) — idempotence Sc.6.
+        _cache.Remove(roleId);
+        _roles.DeleteOne(Builders<RoleDocument>.Filter.Eq(d => d.Id, roleId));
+    }
+
     /// <summary>Écrit le libellé du rôle sur son id stable (write-through Mongo, upsert) — survit
     /// au redémarrage. Le même id reste un unique document (jamais de doublon).</summary>
     private void Persister(string roleId, string libelle)

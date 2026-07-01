@@ -17,4 +17,9 @@ public interface IEditeurReferentielRoles
     /// éditable — il est la clé) : dernière écriture gagne, aucun doublon (le même id reste un
     /// unique rôle).</summary>
     void Renommer(string roleId, string nouveauLibelle);
+
+    /// <summary>Retire le rôle identifié de façon stable du référentiel : il cesse d'être énuméré.
+    /// Tolérant à l'absence (un rôle déjà absent = no-op qui réussit — idempotence Sc.6). Le repli
+    /// « sans rôle » des acteurs porteurs est orchestré en amont par le use case.</summary>
+    void Supprimer(string roleId);
 }
