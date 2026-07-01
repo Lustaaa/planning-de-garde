@@ -46,3 +46,8 @@ public sealed record Responsable(string Id, string Libelle);
 /// Le <see cref="Type"/> (Admin / Parent / Autre) est surfacé en lecture seule depuis le seed (D3,
 /// sprint 14) ; défaut <see cref="TypeActeur.Parent"/> si absent (acteur ajouté en session).</summary>
 public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris", TypeActeur Type = TypeActeur.Parent);
+
+/// <summary>Un rôle du référentiel du foyer <b>énuméré depuis le store durable</b> via le canal de
+/// lecture (s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable.
+/// Alimente la liste des rôles de l'onglet Acteurs et le sélecteur de rôle borné au référentiel.</summary>
+public sealed record RoleFoyer(string Id, string Libelle);

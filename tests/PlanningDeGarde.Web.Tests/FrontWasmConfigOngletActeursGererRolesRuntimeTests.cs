@@ -1,0 +1,96 @@
+using System;
+using System.Linq;
+using Bunit;
+using Microsoft.Extensions.DependencyInjection;
+using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.State;
+using Xunit;
+
+namespace PlanningDeGarde.Web.Tests;
+
+/// <summary>
+/// Sprint 21 — Sc.7 (🖥️ @ihm — acceptation de NIVEAU RUNTIME) : depuis l'onglet « Acteurs » (actif par
+/// défaut) de l'écran de configuration réellement câblé (<see cref="ConfigurationFoyer"/>, API distante
+/// réelle <see cref="ApiDistanteFactory"/>, store réel), on <b>gère le référentiel de rôles du foyer</b> :
+/// créer « Nounou », le renommer, créer « Grand-parent », puis supprimer un rôle. Le référentiel commence
+/// vide (store réel neuf). Les écritures transitent par le <b>canal HTTP réel</b>
+/// (POST /api/canal/creer-role, /renommer-role, /supprimer-role) et la liste des rôles est relue depuis le
+/// store durable (GET /api/foyer/roles) — jamais une doublure de transport. Observé sur les observables
+/// propres de l'écran : la liste des rôles reflète créations, renommage et suppression sans rechargement.
+/// </summary>
+public sealed class FrontWasmConfigOngletActeursGererRolesRuntimeTests : TestContext
+{
+    private static string? LibelleLigne(AngleSharp.Dom.IElement li)
+        => li.QuerySelector(".role-libelle")?.TextContent.Trim();
+
+    [Fact]
+    public void Should_creer_renommer_et_supprimer_un_role_du_referentiel_depuis_l_onglet_Acteurs()
+    {
+        // Given — l'écran de configuration réellement câblé à l'API distante réelle (store réel neuf),
+        // identité Parent. L'onglet « Acteurs » est actif par défaut ; le référentiel de rôles y est géré.
+        using var api = new ApiDistanteFactory();
+        Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton(new SessionPlanning());
+
+        var config = RenderComponent<ConfigurationFoyer>();
+        config.WaitForState(
+            () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
+            TimeSpan.FromSeconds(10));
+        Assert.Equal("true", config.Find("[data-testid='onglet-acteurs']").GetAttribute("aria-selected"));
+
+        // When (création) — je crée un rôle « Nounou » (canal d'écriture HTTP réel : POST /api/canal/creer-role).
+        config.Find("[data-testid='champ-libelle-role']").Change("Nounou");
+        config.Find("#form-creer-role").Submit();
+
+        // Then (création) — sans rechargement, la liste relue des rôles (GET /api/foyer/roles) contient « Nounou ».
+        config.WaitForAssertion(
+            () => Assert.Contains(config.FindAll("[data-testid='role-foyer']"), li => LibelleLigne(li) == "Nounou"),
+            TimeSpan.FromSeconds(10));
+
+        // When (renommage) — je renomme « Nounou » en « Assistante maternelle » (POST /api/canal/renommer-role,
+        // clé = identifiant stable du rôle, jamais le libellé). Le champ re-rend l'arbre à la saisie : je
+        // ré-issue le FindAll avant chaque interaction (workaround bUnit) et enveloppe find+click dans
+        // InvokeAsync pour qu'aucun re-render ne survienne entre la résolution et le déclenchement.
+        var idNounou = config.FindAll("[data-testid='role-foyer']").Single(li => LibelleLigne(li) == "Nounou")
+            .GetAttribute("data-role-id");
+        config.InvokeAsync(() =>
+            config.FindAll("[data-testid='role-foyer']").Single(li => li.GetAttribute("data-role-id") == idNounou)
+                .QuerySelector("[data-testid='champ-renommer-role']")!.Change("Assistante maternelle"));
+        config.InvokeAsync(() =>
+            config.FindAll("[data-testid='role-foyer']").Single(li => li.GetAttribute("data-role-id") == idNounou)
+                .QuerySelector("[data-testid='bouton-renommer-role']")!.Click());
+
+        // Then (renommage) — la liste relue reflète le nouveau libellé, sur le MÊME identifiant stable.
+        config.WaitForAssertion(
+            () => Assert.Contains(
+                config.FindAll("[data-testid='role-foyer']"),
+                li => LibelleLigne(li) == "Assistante maternelle" && li.GetAttribute("data-role-id") == idNounou),
+            TimeSpan.FromSeconds(10));
+
+        // When (2e création) — je crée « Grand-parent ».
+        config.Find("[data-testid='champ-libelle-role']").Change("Grand-parent");
+        config.Find("#form-creer-role").Submit();
+
+        // Then (2e création) — la liste relue contient les deux rôles.
+        config.WaitForAssertion(
+            () => Assert.Contains(config.FindAll("[data-testid='role-foyer']"), li => LibelleLigne(li) == "Grand-parent"),
+            TimeSpan.FromSeconds(10));
+
+        // When (suppression) — je supprime « Grand-parent » via son bouton (POST /api/canal/supprimer-role).
+        config.FindAll("[data-testid='role-foyer']")
+            .Single(li => LibelleLigne(li) == "Grand-parent")
+            .QuerySelector("[data-testid='bouton-supprimer-role']")!
+            .Click();
+
+        // Then (suppression) — sans rechargement, « Grand-parent » quitte la liste relue ; « Assistante
+        // maternelle » reste. Les écritures ont bien abouti sur le store réel (relu via l'API distante).
+        config.WaitForAssertion(
+            () =>
+            {
+                var libelles = config.FindAll("[data-testid='role-foyer']").Select(LibelleLigne).ToList();
+                Assert.DoesNotContain("Grand-parent", libelles);
+                Assert.Contains("Assistante maternelle", libelles);
+            },
+            TimeSpan.FromSeconds(10));
+    }
+}

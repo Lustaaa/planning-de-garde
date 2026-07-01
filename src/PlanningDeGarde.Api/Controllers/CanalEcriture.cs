@@ -64,6 +64,20 @@ public static class CanalEcriture
     /// côté API sur cet identifiant avant d'invoquer le handler — le front n'émet que la cible.</summary>
     public sealed record EditerPeriodeRequete(string PeriodeId, string NouveauResponsableId, DateTime NouveauDebut, DateTime NouvelleFin);
 
+    /// <summary>Corps de la requête de création d'un rôle du référentiel du foyer (s21) émise via le canal
+    /// d'écriture : le front ne fournit que le libellé ; l'identifiant stable neuf opaque est généré côté
+    /// handler (jamais dérivé du libellé). Refus métier (libellé vide / doublon) renvoyé avec son motif.</summary>
+    public sealed record CreerRoleRequete(string Libelle);
+
+    /// <summary>Corps de la requête de renommage d'un rôle du référentiel émise via le canal d'écriture.
+    /// La clé est l'<b>identifiant stable</b> du rôle (jamais éditable) ; seul le libellé change.</summary>
+    public sealed record RenommerRoleRequete(string RoleId, string NouveauLibelle);
+
+    /// <summary>Corps de la requête de suppression d'un rôle du référentiel émise via le canal d'écriture.
+    /// La clé est l'<b>identifiant stable</b> du rôle ; la suppression fait retomber « sans rôle » les
+    /// acteurs porteurs (repli neutre) et est idempotente côté handler (id absent = no-op qui réussit).</summary>
+    public sealed record SupprimerRoleRequete(string RoleId);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
@@ -203,6 +217,38 @@ public static class CanalEcriture
             // Même convention que les autres écritures : succès acquitté (le cycle est défini, les grilles
             // suivent via la diffusion temps réel déclenchée par le handler), refus métier renvoyé avec son
             // motif (« le cycle doit compter au moins une semaine », N < 1, Sc.7).
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/creer-role", (CreerRoleRequete requete, CreerRoleHandler handler) =>
+        {
+            var resultat = handler.Handle(new CreerRoleCommand(requete.Libelle));
+
+            // Même convention que les autres écritures : succès acquitté (le rôle est désormais énuméré
+            // depuis le store, Sc.7), refus métier renvoyé avec son motif (libellé vide / doublon, Sc.3).
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/renommer-role", (RenommerRoleRequete requete, RenommerRoleHandler handler) =>
+        {
+            var resultat = handler.Handle(new RenommerRoleCommand(requete.RoleId, requete.NouveauLibelle));
+
+            // Succès acquitté (même id, libellé mis à jour), refus métier (libellé vide / doublon) avec motif.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/supprimer-role", (SupprimerRoleRequete requete, SupprimerRoleHandler handler) =>
+        {
+            var resultat = handler.Handle(new SupprimerRoleCommand(requete.RoleId));
+
+            // Succès acquitté (le rôle quitte le référentiel, ses porteurs retombent « sans rôle »).
+            // Idempotent : un identifiant absent / déjà supprimé réussit sans effet (Sc.6).
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);

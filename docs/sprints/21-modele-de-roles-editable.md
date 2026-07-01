@@ -1,6 +1,6 @@
 # Sprint 21 — Modèle de rôles éditable (`modele-de-roles-editable`)
 
-> **Avancement : 6/11 ⏳**
+> **Avancement : 7/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -10,7 +10,7 @@
 | 4 | **Affecter un rôle à un acteur** : la valeur provient **exclusivement** du référentiel ; rôle hors référentiel **rejeté** (jamais de rôle en dur) | @back | ✅ |
 | 5 | **Acteur sans rôle = neutre assumé** (aucun rôle fantôme, aucune erreur ; l'attribut rôle est optionnel) | @back | ✅ |
 | 6 | **Supprimer un rôle référencé** → les acteurs porteurs retombent « sans rôle » (repli neutre, pas de rôle fantôme), **idempotence** (absent/déjà supprimé = no-op qui réussit) | @back | ✅ |
-| 7 | Onglet **Acteurs** : **gérer le référentiel de rôles** (créer / renommer / supprimer : Nounou, Grand-parent…) depuis l'écran config | 🖥️ @ihm | ⏳ |
+| 7 | Onglet **Acteurs** : **gérer le référentiel de rôles** (créer / renommer / supprimer : Nounou, Grand-parent…) depuis l'écran config | 🖥️ @ihm | ✅ |
 | 8 | Onglet **Acteurs** : **affecter un rôle à un acteur** via un **sélecteur borné au référentiel** ; acteur sans rôle affiché **neutre** | 🖥️ @ihm | ⏳ |
 | 9 | **Gating identité effective** : « Invité » ne peut **ni** gérer le référentiel **ni** affecter un rôle (non-régression durcissement s14, par onglet s20) | 🖥️ @ihm | ⏳ |
 | 10 | **Temps réel SignalR** : création / suppression d'un rôle propagée à un **2ᵉ écran** sans rechargement (sélecteur de rôle relu) | 🖥️ @ihm | ⏳ |
@@ -123,7 +123,7 @@ Scénario 6 — Supprimer un rôle référencé : repli neutre + idempotence
 ### @ihm — gestion des rôles dans l'onglet Acteurs (RED → GREEN runtime)
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 7 — Onglet Acteurs : gérer le référentiel de rôles
   Étant donné l'onglet « Acteurs » de l'écran de configuration, actif
   Quand je crée un rôle « Nounou », le renomme, puis crée un rôle « Grand-parent »

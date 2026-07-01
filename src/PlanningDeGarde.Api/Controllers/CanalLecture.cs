@@ -20,6 +20,11 @@ public static class CanalLecture
     /// sprint 14) pour piloter le rôle de l'identité effective lors d'une impersonation bornée.</summary>
     public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur, TypeActeur Type);
 
+    /// <summary>Vue d'un rôle du référentiel du foyer énumérée pour l'écran de configuration (onglet
+    /// Acteurs, s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable.
+    /// Alimente la liste des rôles et le sélecteur de rôle borné au référentiel (jamais de rôle en dur).</summary>
+    public sealed record RoleFoyerVue(string Id, string Libelle);
+
     /// <summary>Vue d'une période couvrant une date, pour alimenter les dialogs de suppression et d'édition :
     /// identifiant stable (clé, jamais le libellé), identifiant stable du responsable (pour pré-sélectionner
     /// l'édition), nom d'affichage du responsable résolu sur l'id, et bornes datées. Lecture seule — ne
@@ -43,6 +48,18 @@ public static class CanalLecture
                     .Select(id => new ActeurFoyerVue(id, referentiel.NomDe(id), palette.CouleurDe(id), enumeration.TypeDe(id)))
                     .ToList();
                 return Results.Ok(acteurs);
+            });
+
+        // Énumération des rôles du référentiel du foyer DEPUIS LE STORE (s21) : l'onglet Acteurs de
+        // l'écran config la lit pour lister les rôles et alimenter le sélecteur borné au référentiel
+        // (jamais de rôle en dur). Lecture seule — ne déclenche jamais la diffusion.
+        routes.MapGet("/api/foyer/roles",
+            (IEnumerationRoles roles) =>
+            {
+                var vues = roles.EnumererRoles()
+                    .Select(r => new RoleFoyerVue(r.Id, r.Libelle))
+                    .ToList();
+                return Results.Ok(vues);
             });
 
         // Grille projetée à une ANCRE (date de référence / date naviguée), passée en segments yyyy/MM/dd

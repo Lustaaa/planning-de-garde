@@ -46,6 +46,13 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IPaletteCouleurs>(sp => sp.GetRequiredService<ConfigurationFoyerMongo>());
             services.AddSingleton<IEditeurConfigurationFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerMongo>());
             services.AddSingleton<IEnumerationActeursFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerMongo>());
+
+            // Référentiel de rôles (petit agrégat de config foyer, s21) durable Mongo, borné à la config
+            // foyer (même socle Mongo, collection dédiée « roles ») : lecture IEnumerationRoles + écriture
+            // IEditeurReferentielRoles, un rôle créé/renommé/supprimé survit au redémarrage de l'hôte.
+            services.AddSingleton(_ => new ReferentielRolesMongo(connectionString, baseDeDonnees));
+            services.AddSingleton<IEnumerationRoles>(sp => sp.GetRequiredService<ReferentielRolesMongo>());
+            services.AddSingleton<IEditeurReferentielRoles>(sp => sp.GetRequiredService<ReferentielRolesMongo>());
         }
         else
         {
@@ -54,6 +61,11 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IPaletteCouleurs>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
             services.AddSingleton<IEditeurConfigurationFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
             services.AddSingleton<IEnumerationActeursFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
+
+            // Référentiel de rôles InMemory (volatile, re-parti vide au redémarrage) — même ports.
+            services.AddSingleton<ReferentielRolesEnMemoire>();
+            services.AddSingleton<IEnumerationRoles>(sp => sp.GetRequiredService<ReferentielRolesEnMemoire>());
+            services.AddSingleton<IEditeurReferentielRoles>(sp => sp.GetRequiredService<ReferentielRolesEnMemoire>());
         }
 
         // Cycle de fond : adaptateur InMemory singleton par défaut (volatile) = source de vérité partagée
@@ -84,6 +96,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AjouterActeurHandler>();
         services.AddScoped<SupprimerActeurHandler>();
         services.AddScoped<DefinirCycleHandler>();
+        services.AddScoped<CreerRoleHandler>();
+        services.AddScoped<RenommerRoleHandler>();
+        services.AddScoped<SupprimerRoleHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();
