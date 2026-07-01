@@ -1,6 +1,6 @@
 # Sprint 21 — Modèle de rôles éditable (`modele-de-roles-editable`)
 
-> **Avancement : 9/11 ⏳**
+> **Avancement : 10/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -13,7 +13,7 @@
 | 7 | Onglet **Acteurs** : **gérer le référentiel de rôles** (créer / renommer / supprimer : Nounou, Grand-parent…) depuis l'écran config | 🖥️ @ihm | ✅ |
 | 8 | Onglet **Acteurs** : **affecter un rôle à un acteur** via un **sélecteur borné au référentiel** ; acteur sans rôle affiché **neutre** | 🖥️ @ihm | ✅ |
 | 9 | **Gating identité effective** : « Invité » ne peut **ni** gérer le référentiel **ni** affecter un rôle (non-régression durcissement s14, par onglet s20) | 🖥️ @ihm | ✅ |
-| 10 | **Temps réel SignalR** : création / suppression d'un rôle propagée à un **2ᵉ écran** sans rechargement (sélecteur de rôle relu) | 🖥️ @ihm | ⏳ |
+| 10 | **Temps réel SignalR** : création / suppression d'un rôle propagée à un **2ᵉ écran** sans rechargement (sélecteur de rôle relu) | 🖥️ @ihm | ✅ |
 | 11 | **Non-régression grille/légende** : la résolution de responsabilité (surcharge > fond > neutre) est **inchangée** ; le rôle **n'intervient pas** dans la case ni la légende | 🖥️ @ihm | ⏳ |
 
 ---
@@ -153,7 +153,7 @@ Scénario 9 — Gating identité effective : Invité ne gère ni le référentie
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 10 — Temps réel : le référentiel de rôles converge sur un 2ᵉ écran
   Étant donné deux écrans de configuration ouverts sur le même foyer (store partagé)
   Quand je crée puis supprime un rôle depuis le second écran

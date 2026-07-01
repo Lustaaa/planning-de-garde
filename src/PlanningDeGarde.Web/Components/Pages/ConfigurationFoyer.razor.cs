@@ -155,7 +155,12 @@ public partial class ConfigurationFoyer
 
             _hub.On(PlanningHubEvenement.MiseAJour, async () =>
             {
+                // Ré-énumère acteurs ET rôles depuis le store partagé : une création / suppression de rôle
+                // aboutie sur un autre écran (store partagé) fait suivre la liste des rôles et les sélecteurs
+                // de rôle sans rechargement, et un acteur portant un rôle supprimé retombe « sans rôle »
+                // (repli neutre) — cohérence temps réel du référentiel de rôles (Sc.10). Lecture seule.
                 await RechargerActeurs();
+                await RechargerRoles();
                 await InvokeAsync(StateHasChanged);
             });
 
