@@ -105,6 +105,25 @@ public partial class ConfigurationFoyer
     /// du rôle, valeur = nouveau libellé saisi. La clé n'est jamais éditable (règle 19).</summary>
     private readonly Dictionary<string, string> _renommageRole = new();
 
+    /// <summary>Comptes utilisateurs du foyer énumérés <b>depuis le store durable</b> (GET /api/foyer/comptes),
+    /// jamais en dur : alimente l'affichage du compte associé à chaque acteur et de son statut dans l'onglet
+    /// Acteurs (créés / désassociés suivent sans rechargement, Sc.7).</summary>
+    private IReadOnlyList<CompteFoyer> _comptes = Array.Empty<CompteFoyer>();
+
+    /// <summary>Tampon de saisie de l'email de création de compte, par ligne d'acteur : clé = id stable de
+    /// l'acteur, valeur = email saisi. La clé n'est jamais éditable (règle 19).</summary>
+    private readonly Dictionary<string, string> _emailCompte = new();
+
+    /// <summary>Motif d'échec de création de compte, par ligne d'acteur (clé = id stable de l'acteur) : sur
+    /// refus métier (email vide / doublon, Sc.2) ou service injoignable, le formulaire de la ligne reste
+    /// ouvert avec ce motif clair, sans compte créé (Sc.7).</summary>
+    private readonly Dictionary<string, string> _motifEchecCompte = new();
+
+    /// <summary>Ids stables des acteurs admins du foyer énumérés <b>depuis le store durable</b> (GET
+    /// /api/foyer/admins), jamais en dur : marque l'acteur admin dans l'onglet Acteurs ; suit une désignation
+    /// aboutie ailleurs sans rechargement (temps réel SignalR, Sc.9).</summary>
+    private IReadOnlyList<string> _admins = Array.Empty<string>();
+
     /// <summary>Fournisseur de services pour résoudre <see cref="OptionsConnexionHub"/> de façon
     /// <b>optionnelle</b> : présent, il redirige la connexion au hub vers le TestServer (acceptation runtime
     /// Sc.6) ; absent (écrans de config qui n'observent pas le temps réel), la connexion reste neutre et son
@@ -118,6 +137,8 @@ public partial class ConfigurationFoyer
     {
         await RechargerActeurs();
         await RechargerRoles();
+        await RechargerComptes();
+        await RechargerAdmins();
     }
 
     private async Task RechargerActeurs()
@@ -129,6 +150,19 @@ public partial class ConfigurationFoyer
     private async Task RechargerRoles()
         => _roles = await Canal.GetFromJsonAsync<List<RoleFoyer>>("api/foyer/roles")
             ?? new List<RoleFoyer>();
+
+    /// <summary>Ré-énumère les comptes du foyer depuis le store durable (GET /api/foyer/comptes) : c'est
+    /// cette relecture qui fait suivre l'affichage du compte associé à un acteur après création / désassociation
+    /// (Sc.7), sans rechargement.</summary>
+    private async Task RechargerComptes()
+        => _comptes = await Canal.GetFromJsonAsync<List<CompteFoyer>>("api/foyer/comptes")
+            ?? new List<CompteFoyer>();
+
+    /// <summary>Ré-énumère les admins du foyer depuis le store durable (GET /api/foyer/admins) : c'est cette
+    /// relecture qui fait suivre le marqueur d'admin après une désignation aboutie, sans rechargement (Sc.9).</summary>
+    private async Task RechargerAdmins()
+        => _admins = await Canal.GetFromJsonAsync<List<string>>("api/foyer/admins")
+            ?? new List<string>();
 
     /// <summary>
     /// S'abonne au <b>hub SignalR de lecture</b> de l'API distante (même hôte que le canal) pour préserver
@@ -161,6 +195,8 @@ public partial class ConfigurationFoyer
                 // (repli neutre) — cohérence temps réel du référentiel de rôles (Sc.10). Lecture seule.
                 await RechargerActeurs();
                 await RechargerRoles();
+                await RechargerComptes();
+                await RechargerAdmins();
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -513,5 +549,103 @@ public partial class ConfigurationFoyer
             _confirmationCycle = "Cycle de fond enregistré.";
         else
             _motifEchecCycle = await reponse.Content.ReadFromJsonAsync<string>();
+    }
+
+    /// <summary>Compte utilisateur associé à un acteur (résolu sur son id stable), ou <c>null</c> s'il n'en
+    /// porte aucun. Un acteur porte au plus un compte (association 1-1, Sc.3).</summary>
+    private CompteFoyer? CompteDe(string acteurId)
+        => _comptes.FirstOrDefault(c => c.ActeurId == acteurId);
+
+    /// <summary>Vrai si l'acteur (résolu sur son id stable) est admin du foyer (énuméré depuis le store),
+    /// pour marquer sa ligne. Suit une désignation aboutie ailleurs sans rechargement (Sc.9).</summary>
+    private bool EstAdmin(string acteurId) => _admins.Contains(acteurId);
+
+    /// <summary>Email courant du champ de création de compte d'une ligne d'acteur (tampon saisi, sinon vide).</summary>
+    private string EmailCompte(string acteurId)
+        => _emailCompte.TryGetValue(acteurId, out var email) ? email : "";
+
+    /// <summary>Mémorise l'email saisi pour la création de compte d'un acteur (clé = id stable, jamais éditable).</summary>
+    private void SaisirEmailCompte(string acteurId, string? email)
+        => _emailCompte[acteurId] = email ?? "";
+
+    /// <summary>Motif d'échec de création de compte d'une ligne d'acteur, ou <c>null</c> (aucun échec en cours).</summary>
+    private string? MotifEchecCompte(string acteurId)
+        => _motifEchecCompte.TryGetValue(acteurId, out var m) ? m : null;
+
+    /// <summary>
+    /// Crée / associe un compte à un acteur via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/creer-compte</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
+    /// ré-énumère les comptes pour que le compte associé apparaisse <b>sans rechargement</b>, avec son
+    /// statut « inactif » (Sc.7). Le front n'émet que l'acteur et l'email ; l'id stable neuf et le statut
+    /// sont posés côté handler. Sur refus métier (email vide / doublon, Sc.2) ou <b>service injoignable</b>
+    /// (échec de transport, règle 28), le motif est surfacé DANS la ligne, le formulaire reste ouvert et
+    /// la saisie conservée, aucun compte créé.
+    /// </summary>
+    private async Task CreerCompte(string acteurId)
+    {
+        _motifEchecCompte.Remove(acteurId);
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/creer-compte",
+                new CreerCompteRequete(acteurId, EmailCompte(acteurId)));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecCompte[acteurId] = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecCompte[acteurId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de la création du compte.";
+            return;
+        }
+
+        await RechargerComptes();
+        _emailCompte.Remove(acteurId);
+    }
+
+    /// <summary>Motif d'échec de désignation d'admin d'une ligne d'acteur (clé = id stable), ou <c>null</c> :
+    /// sur refus métier (l'admin doit être un parent, Sc.4) ou service injoignable, le motif reste affiché
+    /// dans la ligne, sans écriture (Sc.8/Sc.9).</summary>
+    private readonly Dictionary<string, string> _motifEchecAdmin = new();
+
+    private string? MotifEchecAdmin(string acteurId)
+        => _motifEchecAdmin.TryGetValue(acteurId, out var m) ? m : null;
+
+    /// <summary>
+    /// Désigne un acteur comme admin du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/designer-admin</c>, règle 27 — aucune vue n'écrit le domaine en direct). L'invariant
+    /// admin=parent est tranché côté Domain : un acteur non-Parent est rejeté avec son motif, surfacé dans la
+    /// ligne (Sc.4). Sur succès, l'API diffuse la mise à jour (les écrans re-projettent l'admin sans rechargement,
+    /// Sc.9). Sur <b>service injoignable</b> (échec de transport, règle 28), un message dédié s'affiche.
+    /// </summary>
+    private async Task DesignerAdmin(string acteurId)
+    {
+        _motifEchecAdmin.Remove(acteurId);
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/designer-admin",
+                new DesignerAdminRequete(acteurId));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecAdmin[acteurId] = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecAdmin[acteurId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de la désignation.";
+            return;
+        }
+
+        await RechargerActeurs();
     }
 }

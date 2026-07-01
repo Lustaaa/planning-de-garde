@@ -27,6 +27,21 @@ majeur** : le rôle est une **caractéristique d'acteur, PAS une responsabilité
 dans la résolution grille / légende (ni teinte, ni nom de case, ni légende ne dépendent du rôle ;
 priorité **surcharge > fond > neutre** strictement inchangée).
 
+Une **fondation d'identité** est **livrée** *(s22, auth tranche 1)* : un agrégat **`CompteUtilisateur`**
+(identifiant **stable opaque**, **email**, **statut** `Actif`/`Inactif` — défaut **Inactif**, un `ActeurId`
+**nullable**) **lié 1-1 à un acteur déclaré**, **persisté Mongo** dans la config foyer (mêmes bornes que
+le référentiel des acteurs et des rôles). **Gardes de création** : email **requis**, email **unique**,
+**acteur inconnu rejeté sans écriture**, **acteur déjà porteur d'un compte rejeté sans écriture** (borne
+1-1). Un **invariant PUR Domain** est posé : **l'admin du foyer est obligatoirement un acteur de type
+Parent** (agrégat `AdministrationFoyer`, `DesignerAdmin` **refuse un non-Parent AVANT toute mutation**) ;
+le **cardinal des admins n'est pas borné** — quand les deux parents sont utilisateurs, **les deux peuvent
+être admins** (l'invariant borne le **type**, pas l'unicité). **Cycle de vie** : la **suppression d'un
+acteur désassocie** ses comptes (repli propre, `ActeurId = null`, **jamais de compte fantôme** référençant
+un acteur absent) ; la **désassociation est idempotente** (deux fois = no-op qui réussit). **Hors scope
+explicite** (auth tranche 2) : **OAuth Google / Apple / Microsoft**, **page de connexion custom**,
+**sessions HTTP / logout**, et le couplage **« acteur par défaut = utilisateur connecté »** (dépend d'une
+session). Cette tranche pose la **relation identité ↔ acteur** qui rendra ce couplage trivial ensuite.
+
 Les **acteurs fictifs de démo (« Parent A / Parent B ») sont éliminés partout** *(livré)* : aucune
 **constante de domaine** n'expose plus ces libellés, et **tout l'affichage** (sélecteurs des dialogs,
 grille, légende) résout les responsables **exclusivement** depuis le **store vivant des acteurs
@@ -94,6 +109,27 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   2ᵉ écran **convergent sans rechargement**. **Invariant** : le rôle **n'intervient pas** dans la
   résolution grille / légende (caractéristique d'acteur, pas responsabilité).
 
+- **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
+  **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
+  rôles), doté d'un **id stable opaque** + **email** + **statut** (`Actif`/`Inactif`, défaut **Inactif** —
+  l'activation viendra avec la prise en main de compte, palier 13) + un **`ActeurId` nullable**. Ports
+  dédiés (lecture `IEnumerationComptes`, écriture `IEditeurComptes` : créer / associer / désigner-admin /
+  désassocier), **deux adaptateurs de droite** (InMemory tests **+** Mongo runtime), **bornés à la config
+  foyer** (aucune persistance neuve hors config foyer). **Association 1-1** : le compte **référence l'id
+  stable d'un acteur déclaré** ; un acteur porte **au plus un** compte. **Gardes de création (rejet sans
+  écriture)** : email **vide**, email en **doublon**, **acteur inconnu**, **acteur déjà porteur** d'un
+  compte. **Invariant admin = Parent (PUR Domain)** : l'agrégat **`AdministrationFoyer`** refuse via
+  `DesignerAdmin` un acteur **non-Parent AVANT toute mutation** (rejet sans écriture, motif clair) ; le
+  **cardinal des admins n'est pas borné** (deux parents utilisateurs → deux admins possibles). **Repli à la
+  suppression de l'acteur** : les comptes de l'acteur supprimé retombent **désassociés** (`ActeurId = null`,
+  pas de compte fantôme), **désassociation idempotente**. **IHM onglet Acteurs** : **création/association
+  d'un compte** (email obligatoire, statut inactif affiché ; échec API → formulaire reste ouvert avec motif
+  clair) + **désignation de l'admin** ; l'un et l'autre **Parent-gated** et **gatés « Invité »**
+  (durcissement gating config s14, gating par onglet s20 — non-régression) ; **temps réel SignalR** (compte
+  créé / admin désigné / compte désassocié convergent sur un 2ᵉ écran sans rechargement). **Hors scope
+  (auth tranche 2)** : **OAuth 3 providers**, **page de connexion custom**, **sessions HTTP / logout**,
+  **acteur par défaut = utilisateur connecté**.
+
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 
 ## Règles de gestion (catalogue : `regles-de-gestion.md`)
@@ -128,8 +164,25 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   convergent). **Invariant : le rôle est une caractéristique d'acteur, PAS une responsabilité — il
   n'intervient pas dans la résolution grille / légende.**
 
+- **R11 — Fondation identité : compte utilisateur ↔ acteur & admin = Parent** *(livré s22, auth
+  tranche 1)* : agrégat `CompteUtilisateur` (id stable opaque, email, statut `Actif`/`Inactif` défaut
+  Inactif, `ActeurId` nullable) **lié 1-1 à un acteur déclaré**, **persisté Mongo** (borné config foyer).
+  **Création rejetée sans écriture** si email vide, email en doublon, acteur inconnu, ou acteur déjà
+  porteur d'un compte. **Invariant PUR Domain** : l'admin du foyer est **obligatoirement de type Parent**
+  (`AdministrationFoyer.DesignerAdmin` refuse un non-Parent avant mutation) ; **cardinal admins non borné**
+  (deux parents admins possibles). **Suppression d'un acteur → ses comptes se désassocient** (`ActeurId =
+  null`, pas de fantôme), désassociation **idempotente**. Gestion + désignation **Parent-gated** (onglet
+  Acteurs, gating Invité), temps réel SignalR. **Hors scope (tranche 2)** : OAuth Google/Apple/Microsoft,
+  page de connexion custom, sessions HTTP/logout, acteur par défaut = utilisateur connecté.
+
 ## Risques
 
+- **Auth tranche 1 livrée (fondation identité) — frontière avec l'auth réelle (tranche 2, palier 13)** :
+  **OAuth 3 providers, page de connexion custom, sessions HTTP/logout, acteur par défaut = utilisateur
+  connecté** sont **explicitement hors scope** (non testables en runtime local, secrets/callbacks). La
+  relation identité ↔ acteur posée ici rend le couplage « défaut = moi » trivial dès qu'une session
+  existera. Statut du compte **Inactif par défaut** : l'**activation** (prise en main de compte) reste au
+  palier 13.
 - **Impersonation bornée lecture livrée — frontière avec l'auth réelle (palier 16) ; écriture « au nom
   de » = hors-cap** (décision PO explicite, candidat G1).
 - **Borne anti-cliquet** : la persistance reste **bornée à la config foyer** ; le reste du domaine en

@@ -1,0 +1,22 @@
+namespace PlanningDeGarde.Application;
+
+/// <summary>
+/// Port d'<b>écriture</b> du référentiel des comptes utilisateurs du foyer (miroir écriture
+/// d'<see cref="IEnumerationComptes"/>) : crée un compte neuf sur un identifiant stable opaque
+/// (jamais dérivé de l'email — l'id est la clé), avec son email, son statut, et l'id stable de
+/// l'acteur associé (association 1-1). Réalisé par le store mutable en Infrastructure (InMemory
+/// tests / Mongo runtime, bornés à la config foyer), consommé par le handler de création de compte.
+/// Association / désignation-admin / désassociation seront ajoutées aux scénarios suivants (borne
+/// YAGNI : Sc.1 ne crée que <see cref="Creer"/>).
+/// </summary>
+public interface IEditeurComptes
+{
+    /// <summary>Enregistre un compte <b>neuf</b> dans le référentiel : persiste son email, son statut
+    /// et l'id de l'acteur associé sur l'identifiant stable opaque fourni (jamais un id existant).</summary>
+    void Creer(string compteId, string email, StatutCompte statut, string acteurId);
+
+    /// <summary>Désassocie le compte identifié : il cesse de référencer un acteur (repli après
+    /// suppression de l'acteur associé, Sc.6) — le compte survit, énuméré, sans acteur. Tolérant à
+    /// l'absence / à un compte déjà désassocié (no-op qui réussit — idempotence).</summary>
+    void Desassocier(string compteId);
+}

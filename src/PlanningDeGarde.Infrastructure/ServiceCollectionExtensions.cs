@@ -53,6 +53,21 @@ public static class ServiceCollectionExtensions
             services.AddSingleton(_ => new ReferentielRolesMongo(connectionString, baseDeDonnees));
             services.AddSingleton<IEnumerationRoles>(sp => sp.GetRequiredService<ReferentielRolesMongo>());
             services.AddSingleton<IEditeurReferentielRoles>(sp => sp.GetRequiredService<ReferentielRolesMongo>());
+
+            // Référentiel des comptes utilisateurs (petit agrégat de config foyer, s22) durable Mongo,
+            // borné à la config foyer (même socle Mongo, collection dédiée « comptes ») : lecture
+            // IEnumerationComptes + écriture IEditeurComptes, un compte créé survit au redémarrage.
+            services.AddSingleton(_ => new ReferentielComptesMongo(connectionString, baseDeDonnees));
+            services.AddSingleton<IEnumerationComptes>(sp => sp.GetRequiredService<ReferentielComptesMongo>());
+            services.AddSingleton<IEditeurComptes>(sp => sp.GetRequiredService<ReferentielComptesMongo>());
+
+            // Admins du foyer (petit agrégat de config foyer, s22) durable Mongo, borné à la config
+            // foyer (même socle Mongo, collection dédiée « admins ») : lecture IEnumerationAdminsFoyer +
+            // écriture IEditeurAdminsFoyer, une désignation d'admin survit au redémarrage. L'invariant
+            // admin=parent reste porté par l'agrégat Domain.
+            services.AddSingleton(_ => new AdminsFoyerMongo(connectionString, baseDeDonnees));
+            services.AddSingleton<IEnumerationAdminsFoyer>(sp => sp.GetRequiredService<AdminsFoyerMongo>());
+            services.AddSingleton<IEditeurAdminsFoyer>(sp => sp.GetRequiredService<AdminsFoyerMongo>());
         }
         else
         {
@@ -66,6 +81,16 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<ReferentielRolesEnMemoire>();
             services.AddSingleton<IEnumerationRoles>(sp => sp.GetRequiredService<ReferentielRolesEnMemoire>());
             services.AddSingleton<IEditeurReferentielRoles>(sp => sp.GetRequiredService<ReferentielRolesEnMemoire>());
+
+            // Référentiel des comptes utilisateurs InMemory (volatile, re-parti vide au redémarrage) — mêmes ports.
+            services.AddSingleton<ReferentielComptesEnMemoire>();
+            services.AddSingleton<IEnumerationComptes>(sp => sp.GetRequiredService<ReferentielComptesEnMemoire>());
+            services.AddSingleton<IEditeurComptes>(sp => sp.GetRequiredService<ReferentielComptesEnMemoire>());
+
+            // Admins du foyer InMemory (volatile, re-parti vide au redémarrage) — mêmes ports.
+            services.AddSingleton<AdminsFoyerEnMemoire>();
+            services.AddSingleton<IEnumerationAdminsFoyer>(sp => sp.GetRequiredService<AdminsFoyerEnMemoire>());
+            services.AddSingleton<IEditeurAdminsFoyer>(sp => sp.GetRequiredService<AdminsFoyerEnMemoire>());
         }
 
         // Cycle de fond : adaptateur InMemory singleton par défaut (volatile) = source de vérité partagée
@@ -101,6 +126,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<SupprimerRoleHandler>();
         services.AddScoped<AffecterRoleActeurHandler>();
         services.AddScoped<RetirerRoleActeurHandler>();
+        services.AddScoped<CreerCompteHandler>();
+        services.AddScoped<DesignerAdminHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();

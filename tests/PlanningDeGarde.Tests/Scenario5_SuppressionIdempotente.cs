@@ -24,7 +24,7 @@ public class Scenario5_SuppressionIdempotente
     public void Acceptation_Should_Reussir_sans_lever_d_erreur_ni_modifier_la_configuration_When_un_acteur_absent_ou_deja_supprime_est_supprime()
     {
         var store = new ConfigurationFoyerEnMemoire(); // seeds : parent-a, parent-b, …
-        var handler = new SupprimerActeurHandler(store, new FakeNotificateurPlanning());
+        var handler = new SupprimerActeurHandler(store, new FakeNotificateurPlanning(), new FakeReferentielComptes(), new FakeReferentielComptes());
 
         // Supprimer un id INEXISTANT : succès sans effet (Parent A / Parent B toujours présents).
         var rInexistant = handler.Handle(new SupprimerActeurCommand("acteur-inexistant"));
@@ -48,7 +48,7 @@ public class Scenario5_SuppressionIdempotente
     public void Should_Reussir_sans_effet_ni_erreur_When_l_acteur_a_supprimer_est_absent_ou_deja_supprime()
     {
         var store = new ConfigurationFoyerEnMemoire();
-        var handler = new SupprimerActeurHandler(store, new FakeNotificateurPlanning());
+        var handler = new SupprimerActeurHandler(store, new FakeNotificateurPlanning(), new FakeReferentielComptes(), new FakeReferentielComptes());
         var avant = store.EnumererActeurs().OrderBy(id => id).ToList();
 
         var premier = handler.Handle(new SupprimerActeurCommand("acteur-inexistant"));

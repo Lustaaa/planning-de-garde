@@ -215,6 +215,12 @@
                     @* Rôle courant de l'acteur (Sc.8) : libellé du rôle du référentiel porté (résolu sur son id
                        stable, jamais en dur), ou « sans rôle » (neutre). Affiché en lecture pour tous. *@
                     <span class="acteur-role" data-testid="role-acteur-courant">@LibelleRoleActeur(a.RoleId)</span>
+                    @* Marqueur d'admin du foyer (Sc.9) : affiché en lecture pour tous quand l'acteur est admin
+                       (énuméré depuis le store) ; suit une désignation aboutie ailleurs sans rechargement (SignalR). *@
+                    @if (EstAdmin(a.Id))
+                    {
+                        <span class="badge bg-secondary acteur-admin" data-testid="acteur-admin-marqueur">admin</span>
+                    }
                     @* Gating règle 9 : le sélecteur de rôle et le bouton supprimer (actions d'écriture) ne sont
                        rendus que pour un Parent — un Invité en consultation seule n'émet aucune commande (Sc.7/9). *@
                     @if (Session.EstParent)
@@ -234,6 +240,46 @@
                         <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
                                 data-testid="bouton-supprimer" data-acteur-id="@a.Id"
                                 @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer</button>
+
+                        @* Compte utilisateur associé à l'acteur (Sc.7) : soit le compte existant (email +
+                           statut « inactif »), soit un mini-formulaire de création/association (email
+                           obligatoire). L'écriture passe par le canal HTTP (POST /api/canal/creer-compte) ;
+                           sur refus, le motif reste affiché dans la ligne, sans compte créé. *@
+                        @if (CompteDe(a.Id) is { } compte)
+                        {
+                            <span class="acteur-compte" data-testid="compte-acteur">
+                                @compte.Email — <span class="acteur-compte-statut">@compte.Statut</span>
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="acteur-compte-form">
+                                <input type="email" class="form-control form-control-sm acteur-champ-email"
+                                       data-testid="champ-email-compte" placeholder="email du compte"
+                                       @bind:get="EmailCompte(a.Id)" @bind:set="v => SaisirEmailCompte(a.Id, v)"
+                                       @bind:event="onchange" />
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                        data-testid="bouton-creer-compte"
+                                        @onclick="() => CreerCompte(a.Id)">Créer le compte</button>
+                            </span>
+                            @if (MotifEchecCompte(a.Id) is { } motifCompte)
+                            {
+                                <span class="alert alert-danger py-1 px-2 mb-0 acteur-compte-motif"
+                                      data-testid="motif-echec-compte">@motifCompte</span>
+                            }
+                        }
+
+                        @* Désignation de l'admin du foyer (Sc.8/Sc.9) : affordance gatée Parent (un Invité ne
+                           la voit pas). L'invariant admin=parent est tranché côté Domain (POST /api/canal/designer-admin) ;
+                           sur refus (acteur non-Parent), le motif reste affiché dans la ligne. *@
+                        <button type="button" class="btn btn-outline-secondary btn-sm acteur-designer-admin"
+                                data-testid="bouton-designer-admin" data-acteur-id="@a.Id"
+                                @onclick="() => DesignerAdmin(a.Id)">Désigner admin</button>
+                        @if (MotifEchecAdmin(a.Id) is { } motifAdmin)
+                        {
+                            <span class="alert alert-danger py-1 px-2 mb-0 acteur-admin-motif"
+                                  data-testid="motif-echec-admin">@motifAdmin</span>
+                        }
                     }
                 </li>
             }

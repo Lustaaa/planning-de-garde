@@ -88,6 +88,17 @@ public static class CanalEcriture
     /// L'acteur retombe « sans rôle » (repli neutre, attribut optionnel vidé).</summary>
     public sealed record RetirerRoleRequete(string ActeurId);
 
+    /// <summary>Corps de la requête de création d'un compte utilisateur (s22) associé à un acteur, émise via
+    /// le canal d'écriture : l'identifiant stable de l'acteur et l'email. L'identifiant stable neuf opaque du
+    /// compte est généré côté handler (jamais dérivé de l'email) ; le statut « inactif » est le défaut métier.
+    /// Refus métier (email vide / doublon, acteur inconnu, acteur déjà associé) renvoyé avec son motif.</summary>
+    public sealed record CreerCompteRequete(string ActeurId, string Email);
+
+    /// <summary>Corps de la requête de désignation d'un acteur comme admin du foyer (s22) émise via le canal
+    /// d'écriture : l'identifiant stable de l'acteur. L'invariant admin=parent est porté par l'agrégat Domain
+    /// (un acteur non-Parent est rejeté sans écriture, Sc.4) ; le motif de refus est renvoyé au front.</summary>
+    public sealed record DesignerAdminRequete(string ActeurId);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
@@ -283,6 +294,37 @@ public static class CanalEcriture
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/creer-compte", (CreerCompteRequete requete, CreerCompteHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new CreerCompteCommand(requete.Email, requete.ActeurId));
+
+            // Même convention que les autres écritures : succès acquitté (le compte est désormais énuméré
+            // depuis le store, associé à l'acteur, statut « inactif », Sc.7), refus métier renvoyé avec son
+            // motif (email vide / doublon, acteur inconnu, acteur déjà associé, Sc.2/Sc.3). Sur succès,
+            // l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres écrans
+            // ré-énumèrent les comptes sans rechargement (Sc.9). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/designer-admin", (DesignerAdminRequete requete, DesignerAdminHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new DesignerAdminCommand(requete.ActeurId));
+
+            // Même convention que les autres écritures : succès acquitté (l'acteur est désormais admin du
+            // foyer, Sc.4), refus métier renvoyé avec son motif (l'admin doit être un parent, Sc.4). Sur
+            // succès, l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres
+            // écrans re-projettent l'admin sans rechargement (Sc.9). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
         });
 
         return routes;
