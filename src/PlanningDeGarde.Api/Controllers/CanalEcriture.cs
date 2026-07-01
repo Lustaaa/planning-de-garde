@@ -94,6 +94,11 @@ public static class CanalEcriture
     /// Refus métier (email vide / doublon, acteur inconnu, acteur déjà associé) renvoyé avec son motif.</summary>
     public sealed record CreerCompteRequete(string ActeurId, string Email);
 
+    /// <summary>Corps de la requête de désignation d'un acteur comme admin du foyer (s22) émise via le canal
+    /// d'écriture : l'identifiant stable de l'acteur. L'invariant admin=parent est porté par l'agrégat Domain
+    /// (un acteur non-Parent est rejeté sans écriture, Sc.4) ; le motif de refus est renvoyé au front.</summary>
+    public sealed record DesignerAdminRequete(string ActeurId);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
@@ -301,6 +306,21 @@ public static class CanalEcriture
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/designer-admin", (DesignerAdminRequete requete, DesignerAdminHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new DesignerAdminCommand(requete.ActeurId));
+
+            // Même convention que les autres écritures : succès acquitté (l'acteur est désormais admin du
+            // foyer, Sc.4), refus métier renvoyé avec son motif (l'admin doit être un parent, Sc.4). Sur
+            // succès, l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres
+            // écrans re-projettent l'admin sans rechargement (Sc.9). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
         });
 
         return routes;

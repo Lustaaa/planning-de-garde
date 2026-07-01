@@ -262,6 +262,18 @@
                                       data-testid="motif-echec-compte">@motifCompte</span>
                             }
                         }
+
+                        @* Désignation de l'admin du foyer (Sc.8/Sc.9) : affordance gatée Parent (un Invité ne
+                           la voit pas). L'invariant admin=parent est tranché côté Domain (POST /api/canal/designer-admin) ;
+                           sur refus (acteur non-Parent), le motif reste affiché dans la ligne. *@
+                        <button type="button" class="btn btn-outline-secondary btn-sm acteur-designer-admin"
+                                data-testid="bouton-designer-admin" data-acteur-id="@a.Id"
+                                @onclick="() => DesignerAdmin(a.Id)">Désigner admin</button>
+                        @if (MotifEchecAdmin(a.Id) is { } motifAdmin)
+                        {
+                            <span class="alert alert-danger py-1 px-2 mb-0 acteur-admin-motif"
+                                  data-testid="motif-echec-admin">@motifAdmin</span>
+                        }
                     }
                 </li>
             }

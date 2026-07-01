@@ -590,4 +590,45 @@ public partial class ConfigurationFoyer
         await RechargerComptes();
         _emailCompte.Remove(acteurId);
     }
+
+    /// <summary>Motif d'échec de désignation d'admin d'une ligne d'acteur (clé = id stable), ou <c>null</c> :
+    /// sur refus métier (l'admin doit être un parent, Sc.4) ou service injoignable, le motif reste affiché
+    /// dans la ligne, sans écriture (Sc.8/Sc.9).</summary>
+    private readonly Dictionary<string, string> _motifEchecAdmin = new();
+
+    private string? MotifEchecAdmin(string acteurId)
+        => _motifEchecAdmin.TryGetValue(acteurId, out var m) ? m : null;
+
+    /// <summary>
+    /// Désigne un acteur comme admin du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/designer-admin</c>, règle 27 — aucune vue n'écrit le domaine en direct). L'invariant
+    /// admin=parent est tranché côté Domain : un acteur non-Parent est rejeté avec son motif, surfacé dans la
+    /// ligne (Sc.4). Sur succès, l'API diffuse la mise à jour (les écrans re-projettent l'admin sans rechargement,
+    /// Sc.9). Sur <b>service injoignable</b> (échec de transport, règle 28), un message dédié s'affiche.
+    /// </summary>
+    private async Task DesignerAdmin(string acteurId)
+    {
+        _motifEchecAdmin.Remove(acteurId);
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/designer-admin",
+                new DesignerAdminRequete(acteurId));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecAdmin[acteurId] = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecAdmin[acteurId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de la désignation.";
+            return;
+        }
+
+        await RechargerActeurs();
+    }
 }
