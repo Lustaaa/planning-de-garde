@@ -52,17 +52,43 @@ retombe **exactement** sur le comportement **non connecté**, **aucune identité
 par défaut** est résolu côté serveur (`ResoudreActeurParDefautQuery`) = l'**acteur du compte connecté**
 tant qu'une session existe ; **sans session**, le défaut retombe sur le **comportement actuel** (jamais
 l'acteur d'un compte) — **aucune régression** du chemin non connecté ni de l'impersonation bornée s14.
-**IHM** : un **bandeau de connexion custom** dans `PlanningPartage` (saisie email + « Se connecter » /
-« Se déconnecter » + état « Connecté : … » / motif de refus lisible), cohérent avec le bandeau
-d'impersonation ; une fois connecté, le **sélecteur d'acteur** (config / dialogs) est **pré-positionné**
-sur l'acteur du compte, via l'impersonation bornée s14. Le **temps réel SignalR lecture** (s20) est
-**préservé** : connexion / déconnexion n'altèrent pas la propagation (grille + légende + config convergent
-sur un 2ᵉ écran sans rechargement). **Store touché = comptes en lecture seule** (déjà Mongo config foyer
-s22), **aucune persistance neuve**. **Hors scope explicite** (auth tranche 2b / palier 13) : **OAuth
-Google / Apple / Microsoft** (3 intégrations externes, secrets, callbacks, non testables runtime local) ;
-l'**activation d'un compte** (`Inactif → Actif`, prise en main) — **prérequis d'usabilité non encore
-livré** : les comptes naissant `Inactif` (s22) et **aucun chemin d'activation** n'existant, **aucune
-connexion ne peut réussir sur des données réelles** aujourd'hui (à prioriser haut, cf. backlog).
+**Store touché = comptes en lecture seule** (déjà Mongo config foyer s22), **aucune persistance neuve**.
+
+L'**activation de compte** (`Inactif → Actif`) est **livrée** *(s24, auth tranche 2 — prise en main)*,
+levant le **prérequis d'usabilité** : une **commande applicative** (`ActiverCompteCommand` /
+`ActiverCompteHandler`, canal `POST /api/canal/activer-compte`) cible un compte par son **id stable
+opaque** (s22) et fait passer le statut `Inactif → Actif` ; la mutation est portée par l'agrégat
+**`CompteUtilisateur.Activer()`** *(Domain pur, no-op idempotent si déjà Actif)* et réutilise le port
+d'écriture **`IEditeurComptes`** (s22, InMemory + Mongo) — **aucun nouvel agrégat, aucun store neuf**.
+**Gardes** : compte **inconnu** rejeté (motif clair, **aucune mutation**) ; compte **déjà Actif** = **no-op
+qui réussit** (miroir des suppressions idempotentes s16/s18). Le chemin d'activation est une **bascule par
+l'admin / parent** depuis l'**onglet Acteurs**, **Parent-gated** (identité effective, non-régression gating
+s14/s20), avec accusé non bloquant « Compte activé », **gating Invité** et **temps réel SignalR** (2ᵉ écran
+reflète le statut sans rechargement). La **boucle auth est désormais fonctionnelle E2E** : créer un compte
+(naît Inactif) → connexion refusée → activer → connexion réussit (session ouverte).
+
+Le **parcours de connexion** est **refondu en page dédiée** *(s24, auth tranche 2 — UX)* : la route
+**`/connexion`** est la **landing par défaut** (`/` redirige vers `/connexion`) ; non connecté, l'app
+atterrit sur la page login, **pas** sur le planning. La page **emballe `SeConnecterCommand`** (s23, reste
+**email-only** — elle n'ajoute **aucun** mot de passe) ; en succès elle **pré-positionne le sélecteur
+d'acteur** (incarnation bornée s14) et **redirige vers `/planning`** ; en refus (email inconnu / compte
+Inactif) elle affiche un **motif clair**, **reste sur `/connexion`**, **aucune session**. Le **bandeau de
+connexion inline** de `PlanningPartage` (s23) est **retiré** — **un seul chemin d'entrée**. Une fois
+connecté, un **menu utilisateur** (`MenuUtilisateur` dans `MainLayout`) surface **nom / acteur** (résolu
+serveur s23), l'**accès à la config foyer** et **« Se déconnecter »** (logout s23 = destruction de session
+→ retour `/connexion`). L'**état de connexion est partagé dans `SessionPlanning`** (borne anti-cliquet
+règle 30, **zéro persistance neuve**). Le **temps réel SignalR lecture** (s20) reste **préservé**.
+
+**Hors scope explicite** (palier 13, à venir — cf. backlog) : **OAuth Google / Apple / Microsoft** (tranche
+2b, 3 intégrations externes, secrets/callbacks, non testables runtime local) ; **création de compte en
+libre-service** ; **récupération de mot de passe par email** (adaptateur de droite mail, facteur mot de
+passe distinct de l'email-only). **Bugs / besoins ouverts s24** (backlog) : le rôle affiché ne suit pas
+toujours l'acteur du compte connecté (« connecté en Mamie → rôle Parent ») ; les **routes restent
+accessibles sans session** (protection d'accès non encore posée).
+
+> **NB test (s24)** : 3 tests s23 couvrant les **affordances de connexion inline** ont été **retirés**
+> (l'inline est délibérément déplacé vers la page dédiée) ; les comportements sont **re-couverts** par les
+> Sc.8/9/11 s24. Refactor de test **légitime**, **pas** une perte de couverture.
 
 Les **acteurs fictifs de démo (« Parent A / Parent B ») sont éliminés partout** *(livré)* : aucune
 **constante de domaine** n'expose plus ces libellés, et **tout l'affichage** (sélecteurs des dialogs,
@@ -212,26 +238,45 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   `PlanningPartage` (email + connexion / déconnexion + état / motif) ; sélecteur d'acteur **pré-positionné**
   sur l'acteur du compte via impersonation bornée s14. **Temps réel SignalR lecture préservé** (s20).
   **Store = comptes en lecture seule** (Mongo config foyer s22), **aucune persistance neuve**. **Hors scope
-  (tranche 2b / palier 13)** : OAuth 3 providers ; **activation `Inactif → Actif`** (prise en main) —
-  **prérequis d'usabilité non livré** : sans chemin d'activation, aucune connexion ne réussit sur données
-  réelles (comptes nés `Inactif` s22).
+  (tranche 2b / palier 13)** : OAuth 3 providers ; **création de compte libre-service** ; **récupération de
+  mot de passe par email**.
+
+- **R13 — Activation de compte, page de connexion dédiée & menu utilisateur** *(livré s24, auth tranche 2 —
+  prise en main + UX)* : **activation** `Inactif → Actif` par **commande applicative** (`ActiverCompteCommand`
+  / `ActiverCompteHandler`, canal `POST /api/canal/activer-compte`) ciblant un compte par **id stable opaque**
+  (s22) ; mutation portée par **`CompteUtilisateur.Activer()`** (Domain pur, **no-op idempotent** si déjà
+  Actif), réutilisant le port **`IEditeurComptes`** (s22, InMemory + Mongo) — **aucun agrégat ni store neuf**.
+  **Gardes** : compte **inconnu** → refus motif clair, **aucune mutation** ; **déjà Actif** → **no-op qui
+  réussit**. Chemin d'activation = **bascule admin / parent** depuis l'**onglet Acteurs**, **Parent-gated**
+  (accusé « Compte activé », gating Invité, temps réel SignalR). **Boucle auth E2E fonctionnelle** (créer
+  Inactif → refus → activer → connexion réussit). **Page de connexion dédiée** : route **`/connexion`** =
+  **landing par défaut** (`/` redirige vers `/connexion`) ; emballe `SeConnecterCommand` (s23, **email-only**,
+  pas de mot de passe) ; succès → pré-positionne le sélecteur (impersonation bornée s14) + redirige
+  `/planning` ; refus (email inconnu / compte Inactif) → motif clair, reste sur `/connexion`, **aucune
+  session**. **Bandeau login inline de `PlanningPartage` retiré** (un seul chemin d'entrée). **Menu
+  utilisateur** (`MenuUtilisateur` dans `MainLayout`) : nom / acteur + accès config foyer + « Se déconnecter »
+  (logout s23 → retour `/connexion`). État de connexion partagé dans `SessionPlanning` (borne anti-cliquet
+  R30, **zéro persistance neuve**). **Hors scope (palier 13, cf. backlog)** : OAuth 2b, création de compte
+  libre-service, récupération de mot de passe par email. **Ouverts s24** : rôle affiché ≠ acteur du compte
+  connecté (bug « Mamie → Parent ») ; routes accessibles sans session (protection d'accès non posée).
 
 ## Risques
 
-- **Auth tranche 2a livrée (connexion locale, session, acteur par défaut = moi)** — **reste hors scope
-  (tranche 2b, palier 13)** : **OAuth Google / Apple / Microsoft** (3 intégrations externes,
-  secrets/callbacks, non testables runtime local). La session serveur livrée s23 fournit le socle sur
-  lequel la 2b brancherait un provider externe.
-- **PRÉREQUIS D'USABILITÉ BLOQUANT — activation `Inactif → Actif` non livrée** : les comptes naissent
-  `Inactif` (s22) et **aucun chemin d'activation** n'existe → en pratique **aucune connexion (s23) ne peut
-  réussir sur des données réelles** (elle est prouvée en runtime via un compte rendu Actif par bascule de
-  test). L'activation (prise en main de compte) doit être **priorisée haut** — elle débloque l'usage réel
-  de l'auth livrée (s22 + s23), probablement **avant ou avec la tranche 2b**. Cf. backlog.
-- **Retour PO s23 — l'UX auth actuelle est jugée peu naturelle** : bandeau de connexion sur l'écran
-  planning « n'a aucun sens » ; le PO veut une **page de connexion dédiée = page par défaut**, la
-  **création de compte** en libre-service, la **récupération de mot de passe par email** (adaptateur de
-  droite d'envoi de mail), et l'**accès à la config foyer depuis un menu utilisateur** une fois connecté.
-  À cadrer avec / autour de la tranche 2b (cf. backlog).
+- **Auth utilisable de bout en bout livrée (s22 fondation + s23 session + s24 activation & page login)** :
+  la boucle est **fonctionnelle E2E** (créer Inactif → activer → connexion réussit → session), la page
+  `/connexion` dédiée est la landing, le menu utilisateur donne accès config + logout. Le **prérequis
+  d'usabilité bloquant (activation) est levé** ; l'**UX auth jugée peu naturelle s23 est corrigée** (page
+  dédiée + retrait du bandeau inline). **Reste hors scope (palier 13, cf. backlog)** : **OAuth 2b** (Google
+  / Apple / Microsoft, 3 intégrations externes, secrets/callbacks, non testables runtime local — la session
+  s23 fournit le socle) ; **création de compte libre-service** ; **récupération de mot de passe par email**
+  (adaptateur de droite mail, facteur mot de passe distinct de l'email-only). *(Plus tard, non spécifié : le
+  PO envisage un **envoi de mail d'activation** — description à préciser ultérieurement.)*
+- **Bug ouvert s24 — rôle ≠ acteur du compte connecté** : « connecté en Mamie, j'ai le rôle Parent ».
+  L'identité effective / le rôle affiché ne suit pas toujours l'acteur du compte connecté (recoupe la
+  cohérence config → planning s21). À investiguer / corriger (backlog).
+- **Besoin ouvert s24 — protection d'accès aux routes** : « les pages sont toutes accessibles même sans
+  être loggé ». L'app pose la landing `/connexion` mais **ne garde pas** les routes (planning, config)
+  contre un accès non authentifié. Protection d'accès par route (guard / redirection) à poser (backlog).
 - **Auth tranche 1 livrée (fondation identité)** : la relation identité ↔ acteur posée en s22 a rendu le
   couplage « défaut = moi » trivial (concrétisé s23).
 - **Impersonation bornée lecture livrée — frontière avec l'auth réelle (palier 16) ; écriture « au nom

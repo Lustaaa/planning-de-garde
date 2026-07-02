@@ -122,6 +122,43 @@ public sealed class SessionPlanning
     /// <summary>Revient à l'identité réelle : l'incarnation est levée, l'état restauré (Sc.2).</summary>
     public void RevenirIdentiteReelle() => IdentiteEffective = IdentiteReelle;
 
+    // --- État de connexion (s24, Sc.8/Sc.11) : PARTAGÉ dans la session scoped (survit à la navigation
+    //     page login → planning), état d'HÔTE/session uniquement — zéro persistance neuve (borne
+    //     anti-cliquet règle 30). L'admission (compte existant ET Actif) reste tranchée côté handler ;
+    //     le front ne fait que refléter la session ouverte (nom résolu serveur s23). ---
+
+    /// <summary>Nom d'affichage du compte connecté (résolu côté serveur, s23), ou <c>null</c> hors
+    /// connexion. Surface le menu utilisateur (« nom / acteur », Sc.11).</summary>
+    public string? CompteConnecteNom { get; private set; }
+
+    /// <summary>Vrai si une session est ouverte (un compte est connecté) — condition d'affichage du menu
+    /// utilisateur (Sc.11).</summary>
+    public bool EstConnecte => CompteConnecteNom is not null;
+
+    /// <summary>Notifie un changement d'état de connexion (Sc.11) : le menu utilisateur, consommateur de la
+    /// session partagée mais rendu séparément (dans le layout), s'y abonne pour se re-rendre quand la
+    /// connexion / déconnexion est déclenchée depuis un AUTRE composant (la page de connexion dédiée).</summary>
+    public event Action? EtatConnexionChange;
+
+    /// <summary>Ouvre la session pour le compte connecté (Sc.8) : mémorise le nom résolu serveur et
+    /// pré-positionne le sélecteur d'acteur sur l'acteur du compte (incarnation bornée s14, lecture seule).
+    /// Aucune persistance neuve.</summary>
+    public void Connecter(string nom, string acteurId)
+    {
+        CompteConnecteNom = nom;
+        Incarner(acteurId);
+        EtatConnexionChange?.Invoke();
+    }
+
+    /// <summary>Détruit la session (logout s23, Sc.11) : efface le nom connecté et fait retomber le
+    /// sélecteur d'acteur sur l'identité réelle — aucune identité résiduelle. Aucune écriture domaine.</summary>
+    public void Deconnecter()
+    {
+        CompteConnecteNom = null;
+        RevenirIdentiteReelle();
+        EtatConnexionChange?.Invoke();
+    }
+
     /// <summary>
     /// Repli automatique sur l'identité réelle (D2, projection des règles 6/18/19) : si une incarnation est
     /// active mais que l'acteur incarné <b>n'est plus présent</b> dans le catalogue

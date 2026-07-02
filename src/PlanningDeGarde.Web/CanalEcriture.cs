@@ -81,6 +81,10 @@ public static class CanalEcriture
     /// l'email. L'id stable neuf opaque du compte et le statut « inactif » sont posés côté handler.</summary>
     public sealed record CreerCompteRequete(string ActeurId, string Email);
 
+    /// <summary>Corps de la requête d'activation d'un compte utilisateur (s24) : l'id stable opaque du compte.
+    /// Le statut passe Inactif→Actif côté handler (mutation portée par l'agrégat) ; idempotence assumée.</summary>
+    public sealed record ActiverCompteRequete(string CompteId);
+
     /// <summary>Corps de la requête de désignation d'un acteur comme admin du foyer (s22) : l'id stable de
     /// l'acteur. L'invariant admin=parent est tranché côté Domain (non-Parent rejeté).</summary>
     public sealed record DesignerAdminRequete(string ActeurId);

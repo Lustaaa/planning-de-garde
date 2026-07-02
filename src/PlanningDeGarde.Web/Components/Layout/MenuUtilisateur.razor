@@ -1,0 +1,33 @@
+@inject PlanningDeGarde.Web.State.SessionPlanning Session
+@inject NavigationManager Nav
+
+@* Menu utilisateur connecté (s24, Sc.11) : visible UNIQUEMENT une fois une session ouverte (état partagé
+   de session, s23 — nom résolu serveur). Surface le nom / acteur connecté, un accès à la config foyer, et
+   « Se déconnecter ». La déconnexion détruit la session (logout s23 = état d'hôte, aucun canal neuf) et
+   ramène à la page de connexion dédiée. Aucune règle métier dans l'UI. *@
+@if (Session.EstConnecte)
+{
+    <div class="menu-utilisateur d-flex align-items-center gap-2" data-testid="menu-utilisateur">
+        <span class="menu-utilisateur-nom" data-testid="menu-nom">@Session.CompteConnecteNom</span>
+        <a class="menu-lien-config" href="configuration" data-testid="menu-lien-config">Configuration du foyer</a>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-testid="menu-se-deconnecter"
+                @onclick="SeDeconnecter">Se déconnecter</button>
+    </div>
+}
+
+@implements IDisposable
+@code {
+    // Le menu vit dans le layout (rendu séparément de la page de connexion) : il s'abonne à la session pour
+    // se re-rendre quand la connexion / déconnexion est déclenchée depuis un AUTRE composant (Sc.11).
+    protected override void OnInitialized() => Session.EtatConnexionChange += Rafraichir;
+
+    private void Rafraichir() => InvokeAsync(StateHasChanged);
+
+    private void SeDeconnecter()
+    {
+        Session.Deconnecter();
+        Nav.NavigateTo("connexion");
+    }
+
+    public void Dispose() => Session.EtatConnexionChange -= Rafraichir;
+}

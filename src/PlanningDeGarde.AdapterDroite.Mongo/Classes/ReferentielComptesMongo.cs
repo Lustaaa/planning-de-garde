@@ -63,6 +63,22 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
             new ReplaceOptions { IsUpsert = true });
     }
 
+    public void Activer(string compteId)
+    {
+        // Mutation ciblée du statut write-through : cache de session ET store durable (le compte reste
+        // Actif au redémarrage). La règle métier est portée par l'agrégat (Activer()). Tolérant à
+        // l'absence (no-op). Email et acteur associé inchangés.
+        if (!_cache.TryGetValue(compteId, out var doc))
+            return;
+        var compteActif = new CompteUtilisateur(doc.Id, doc.Email, doc.Statut, doc.ActeurId).Activer();
+        doc.Statut = compteActif.Statut;
+        _cache[compteId] = doc;
+        _comptes.ReplaceOne(
+            Builders<CompteDocument>.Filter.Eq(d => d.Id, compteId),
+            doc,
+            new ReplaceOptions { IsUpsert = true });
+    }
+
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes()
         => _cache.Values.Select(d => new CompteUtilisateur(d.Id, d.Email, d.Statut, d.ActeurId)).ToList();
 

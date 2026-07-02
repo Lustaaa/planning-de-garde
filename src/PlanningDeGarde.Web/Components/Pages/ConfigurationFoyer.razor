@@ -200,6 +200,11 @@
             <div class="alert alert-warning" role="status" data-testid="accuse-suppression">@_accuseSuppression</div>
         }
 
+        @if (_accuseActivation is not null)
+        {
+            <div class="alert alert-success" role="status" data-testid="accuse-activation">@_accuseActivation</div>
+        }
+
         @if (_motifEchecSuppression is not null)
         {
             <div class="alert alert-danger" data-testid="motif-echec-suppression">@_motifEchecSuppression</div>
@@ -250,6 +255,20 @@
                             <span class="acteur-compte" data-testid="compte-acteur">
                                 @compte.Email — <span class="acteur-compte-statut">@compte.Statut</span>
                             </span>
+                            @* Activation du compte (Sc.5) : un compte « inactif » offre l'action « Activer »
+                               (Parent-gated). Le clic transite par le canal HTTP (POST /api/canal/activer-compte) ;
+                               relu depuis le store, le statut passe « actif » et l'action disparaît (déjà Actif). *@
+                            @if (EstInactif(compte))
+                            {
+                                <button type="button" class="btn btn-outline-success btn-sm acteur-activer-compte"
+                                        data-testid="bouton-activer-compte" data-compte-id="@compte.Id"
+                                        @onclick="() => ActiverCompte(compte.Id)">Activer</button>
+                            }
+                            @if (MotifEchecActivation(compte.Id) is { } motifActivation)
+                            {
+                                <span class="alert alert-danger py-1 px-2 mb-0 acteur-activer-motif"
+                                      data-testid="motif-echec-activation">@motifActivation</span>
+                            }
                         }
                         else
                         {

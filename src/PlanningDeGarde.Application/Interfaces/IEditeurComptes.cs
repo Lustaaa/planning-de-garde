@@ -19,4 +19,9 @@ public interface IEditeurComptes
     /// suppression de l'acteur associé, Sc.6) — le compte survit, énuméré, sans acteur. Tolérant à
     /// l'absence / à un compte déjà désassocié (no-op qui réussit — idempotence).</summary>
     void Desassocier(string compteId);
+
+    /// <summary>Active le compte identifié : persiste son statut « Actif » (mutation portée par
+    /// l'agrégat <see cref="CompteUtilisateur"/>, Domain pur). Ne touche que le statut (email et
+    /// acteur associé inchangés). Tolérant à l'absence (no-op).</summary>
+    void Activer(string compteId);
 }

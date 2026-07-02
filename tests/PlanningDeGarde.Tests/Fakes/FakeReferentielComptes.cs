@@ -23,5 +23,11 @@ public sealed class FakeReferentielComptes : IEditeurComptes, IEnumerationCompte
             _comptes[compteId] = compte with { ActeurId = null }; // repli propre, idempotent
     }
 
+    public void Activer(string compteId)
+    {
+        if (_comptes.TryGetValue(compteId, out var compte))
+            _comptes[compteId] = compte.Activer(); // mutation ciblée du statut, portée par l'agrégat
+    }
+
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes() => _comptes.Values.ToList();
 }
