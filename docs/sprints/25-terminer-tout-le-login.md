@@ -44,7 +44,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 4/16
+## Avancement — 5/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
@@ -52,7 +52,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 | 2 | Route protégée : connecté → accès rétabli | 🖥️ IHM | runtime | ✅ |
 | 3 | `/connexion` reste librement accessible (pas de boucle de redirection) | 🖥️ IHM | runtime | ✅ |
 | 4 | Déconnexion → re-verrouillage immédiat des routes | 🖥️ IHM | runtime | ✅ |
-| 5 | Bug rôle : connexion « Mamie » (type Autre) → identité effective ET rôle = Mamie | @back | runtime | ⏳ |
+| 5 | Bug rôle : connexion « Mamie » (type Autre) → identité effective ET rôle = Mamie | @back | runtime | ✅ |
 | 6 | Bug rôle : non-régression impersonation bornée s14 au-dessus de la connexion | @back | runtime | ⏳ |
 | 7 | Login email + **mot de passe** : bon couple → session ouverte | @back | runtime | ⏳ |
 | 8 | Login email + mot de passe : mauvais mot de passe → refus, aucune session, motif clair | @back | runtime | ⏳ |
@@ -112,7 +112,7 @@ Scénario 4 — Déconnexion → re-verrouillage immédiat
 > cet acteur. **Aucune règle de résolution grille/légende touchée** (le rôle n'y intervient pas, s21).
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 5 — Connexion « Mamie » (type Autre) → identité effective ET rôle reflètent Mamie
   Étant donné un CompteUtilisateur Actif lié 1-1 à l'acteur "Mamie" de type Autre (s22)
   Quand je me connecte avec cet email (SeConnecterCommand s23)

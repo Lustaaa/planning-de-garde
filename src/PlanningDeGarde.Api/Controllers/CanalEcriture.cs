@@ -109,10 +109,12 @@ public static class CanalEcriture
     /// Actif ; sinon refus avec motif clair (email inconnu / compte non activé), aucune session ouverte.</summary>
     public sealed record SeConnecterRequete(string Email);
 
-    /// <summary>Corps de la réponse de succès d'une connexion (s23) : l'identité réelle de la session ouverte
-    /// (l'acteur lié 1-1 au compte connecté — id stable) et son nom d'affichage résolu côté serveur, pour que
-    /// le bandeau front affiche « Connecté : &lt;nom&gt; » sans règle métier côté UI.</summary>
-    public sealed record SeConnecterReponse(string ActeurId, string Nom);
+    /// <summary>Corps de la réponse de succès d'une connexion (s23 ; type ancré s25 Sc.5) : l'identité réelle
+    /// de la session ouverte (l'acteur lié 1-1 au compte connecté — id stable), son nom d'affichage résolu côté
+    /// serveur (bandeau « Connecté : &lt;nom&gt; » sans règle métier côté UI), et son <b>type</b> (Admin /
+    /// Parent / Autre) résolu côté serveur : le front ancre l'identité réelle de la session sur CET acteur et
+    /// son type — le gating d'écriture suit le type RÉEL, jamais un rôle Parent hérité du configurateur en dur.</summary>
+    public sealed record SeConnecterReponse(string ActeurId, string Nom, TypeActeur Type);
 
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
@@ -357,7 +359,7 @@ public static class CanalEcriture
             return Results.Ok();
         });
 
-        routes.MapPost("/api/canal/se-connecter", (SeConnecterRequete requete, SeConnecterHandler handler, IReferentielResponsables referentiel) =>
+        routes.MapPost("/api/canal/se-connecter", (SeConnecterRequete requete, SeConnecterHandler handler, IReferentielResponsables referentiel, IEnumerationActeursFoyer acteurs) =>
         {
             var resultat = handler.Handle(new SeConnecterCommand(requete.Email));
 
@@ -369,8 +371,11 @@ public static class CanalEcriture
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 
+            // Type de l'acteur du compte résolu côté serveur (D3, lecture seule) : le front ancre l'identité
+            // réelle de la session sur CET acteur ET son type, de sorte que le gating d'écriture suive le type
+            // RÉEL (Autre → pas les droits Parent), et non un rôle Parent hérité du configurateur en dur (Sc.5).
             var acteurId = resultat.Valeur!.IdentiteReelle;
-            return Results.Ok(new SeConnecterReponse(acteurId, referentiel.NomDe(acteurId)));
+            return Results.Ok(new SeConnecterReponse(acteurId, referentiel.NomDe(acteurId), acteurs.TypeDe(acteurId)));
         });
 
         return routes;
