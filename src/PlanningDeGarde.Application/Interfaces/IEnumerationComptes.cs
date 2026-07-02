@@ -28,4 +28,10 @@ public enum StatutCompte
 /// dérivé de l'email), email, statut, et id stable de l'acteur associé (association 1-1). L'acteur
 /// est <c>null</c> quand le compte est <b>désassocié</b> (repli après suppression de l'acteur
 /// associé, Sc.6) — jamais un compte fantôme pointant un acteur absent.</summary>
-public sealed record CompteUtilisateur(string Id, string Email, StatutCompte Statut, string? ActeurId);
+public sealed record CompteUtilisateur(string Id, string Email, StatutCompte Statut, string? ActeurId)
+{
+    /// <summary>Active le compte : le statut passe à <see cref="StatutCompte.Actif"/> (règle métier
+    /// portée par l'agrégat, Tell-Don't-Ask). Seul le statut change ; email et acteur associé sont
+    /// conservés (mutation immuable ciblée).</summary>
+    public CompteUtilisateur Activer() => this with { Statut = StatutCompte.Actif };
+}

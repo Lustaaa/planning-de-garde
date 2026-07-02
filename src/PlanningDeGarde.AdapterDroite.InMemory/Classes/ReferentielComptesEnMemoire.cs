@@ -27,5 +27,12 @@ public sealed class ReferentielComptesEnMemoire : IEnumerationComptes, IEditeurC
             _comptes[compteId] = compte with { ActeurId = null };
     }
 
+    public void Activer(string compteId)
+    {
+        // Mutation ciblée du seul statut, portée par l'agrégat (Tell-Don't-Ask). Tolérant à l'absence.
+        if (_comptes.TryGetValue(compteId, out var compte))
+            _comptes[compteId] = compte.Activer();
+    }
+
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes() => _comptes.Values.ToList();
 }
