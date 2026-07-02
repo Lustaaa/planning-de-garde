@@ -1,11 +1,11 @@
 # Sprint 23 — Auth · tranche 2a : session locale & acteur-par-défaut = moi (`auth-session-locale-acteur-par-defaut`)
 
-> **Avancement : 1/9 ⏳**
+> **Avancement : 2/9 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | **Connexion locale par email** d'un `CompteUtilisateur` **Actif** existant → session serveur ouverte, identité effective = l'acteur lié au compte | @back | ✅ |
-| 2 | **Rejet connexion : email inconnu** (aucun compte) → refus, motif clair, **aucune session** ouverte | @back | ⏳ |
+| 2 | **Rejet connexion : email inconnu** (aucun compte) → refus, motif clair, **aucune session** ouverte | @back | ✅ |
 | 3 | **Rejet connexion : compte Inactif** (statut par défaut s22) → refus, motif clair, **aucune session** (l'activation reste hors scope) | @back | ⏳ |
 | 4 | **Acteur par défaut = utilisateur connecté** : session ouverte → l'acteur par défaut résolu côté serveur = l'acteur lié 1-1 au compte connecté (relation s22) | @back | ⏳ |
 | 5 | **Logout** : la session ouverte est détruite → l'identité effective retombe sur le comportement **non connecté** (aucune fuite d'identité) | @back | ⏳ |
@@ -52,7 +52,7 @@ Scénario 1 — Connexion locale par email d'un compte Actif
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 2 — Rejet : email inconnu, aucune session
   Étant donné un référentiel de comptes ne contenant aucun compte d'email « inconnu@foyer.fr »
   Quand un visiteur tente de se connecter avec l'email « inconnu@foyer.fr »

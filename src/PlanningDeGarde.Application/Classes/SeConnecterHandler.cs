@@ -35,7 +35,12 @@ public sealed class SeConnecterHandler
 
     public Result<SessionOuverte> Handle(SeConnecterCommand commande)
     {
-        var compte = _comptes.EnumererComptes().First(c => c.Email == commande.Email);
+        // Garde « email inconnu » (Sc.2) : aucun compte ne porte cet email → refus avec motif clair,
+        // aucune session ouverte (le visiteur reste non connecté). Résolution sur l'email lu du référentiel.
+        var compte = _comptes.EnumererComptes().FirstOrDefault(c => c.Email == commande.Email);
+        if (compte is null)
+            return Result<SessionOuverte>.Echec("email inconnu");
+
         return Result<SessionOuverte>.Succes(new SessionOuverte(compte.ActeurId!));
     }
 }
