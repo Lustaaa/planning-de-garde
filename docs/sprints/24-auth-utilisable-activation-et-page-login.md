@@ -1,6 +1,6 @@
 # Sprint 24 — Auth utilisable de bout en bout : activation (Inactif→Actif) + page de connexion dédiée (`auth-utilisable-activation-et-page-login`)
 
-> **Avancement : 9/11 ⏳**
+> **Avancement : 10/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -13,7 +13,7 @@
 | 7 | IHM **temps réel SignalR** : l'activation d'un compte propage le nouveau statut à un 2ᵉ écran (onglet Acteurs) sans rechargement | 🖥️ @ihm | ✅ |
 | 8 | IHM **page de connexion dédiée = landing par défaut** : app démarrée non connecté → **page login dédiée** (pas le planning) ; email valide (compte Actif) → connexion (`SeConnecterCommand` s23) → **redirection planning** | 🖥️ @ihm | ✅ |
 | 9 | IHM **motif clair sur la page login** : email inconnu / compte Inactif → la page affiche un motif clair, reste sur la page login, aucune redirection | 🖥️ @ihm | ✅ |
-| 10 | IHM **bandeau login inline retiré** : `PlanningPartage` n'expose plus le champ email/bouton « Se connecter » inline (**un seul chemin d'entrée** = la page dédiée) ; non-régression du reste du planning | 🖥️ @ihm | ⏳ |
+| 10 | IHM **bandeau login inline retiré** : `PlanningPartage` n'expose plus le champ email/bouton « Se connecter » inline (**un seul chemin d'entrée** = la page dédiée) ; non-régression du reste du planning | 🖥️ @ihm | ✅ |
 | 11 | IHM **menu utilisateur connecté** : une fois connecté, un menu affiche le nom/acteur + **accès config foyer** + **« Se déconnecter »** ; déconnexion (logout s23) → retour à la page login | 🖥️ @ihm | ⏳ |
 
 ---
@@ -142,7 +142,7 @@ Scénario 9 : Motif clair sur la page login (email inconnu / compte Inactif)
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 10 : Retrait du bandeau login inline du planning (un seul chemin d'entrée)
   Étant donné un utilisateur connecté sur le planning
   Alors PlanningPartage n'expose plus de champ email ni de bouton « Se connecter » inline
