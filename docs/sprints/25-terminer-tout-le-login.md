@@ -44,7 +44,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 11/16
+## Avancement — 12/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
@@ -59,7 +59,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 | 9 | **Création de compte libre-service** : email neuf + mot de passe → compte créé (Inactif) | @back | runtime | ✅ |
 | 10 | Libre-service : email déjà porteur → rejet sans écriture, motif clair | @back | runtime | ✅ |
 | 11 | **Récupération mot de passe** : demande sur email connu → jeton + mail émis (port) | @back | doublure+manuel | ✅ |
-| 12 | Récupération : email inconnu → réponse neutre, aucun mail, aucune fuite | @back | doublure+manuel | ⏳ |
+| 12 | Récupération : email inconnu → réponse neutre, aucun mail, aucune fuite | @back | doublure+manuel | ✅ |
 | 13 | Récupération : jeton valide → mot de passe redéfini ; jeton consommé | @back | runtime | ⏳ |
 | 14 | **OAuth** : callback provider, compte lié Actif → `SessionOuverte` | @back | doublure+manuel | ⏳ |
 | 15 | OAuth : identité provider inconnue / compte Inactif → refus, aucune session | @back | doublure+manuel | ⏳ |
@@ -193,7 +193,7 @@ Scénario 11 — Demande de récupération sur email connu → jeton + mail émi
   Et un mail contenant le lien/jeton est remis au port IEnvoiMail (doublure enregistre l'envoi)
   Et la réponse au client est NEUTRE (ne confirme pas l'existence du compte)
 
-@back @preuve-doublure @pending
+@back @preuve-doublure @vert
 Scénario 12 — Demande sur email inconnu → réponse neutre, aucun mail
   # PREUVE PAR DOUBLURE D'ADAPTATEUR ; câblage SMTP réel vérifié manuellement (G3)
   Étant donné aucun compte pour l'email fourni
