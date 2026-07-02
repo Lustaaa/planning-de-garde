@@ -10,7 +10,10 @@ namespace PlanningDeGarde.Application;
 /// </summary>
 public sealed class ResoudreActeurParDefautQuery
 {
-    /// <summary>Acteur par défaut d'une session ouverte = l'acteur lié 1-1 au compte connecté (identité
-    /// réelle de la session).</summary>
-    public string Resoudre(SessionOuverte session) => session.IdentiteReelle;
+    /// <summary>Acteur par défaut : quand une <see cref="SessionOuverte"/> est présente, = l'acteur lié
+    /// 1-1 au compte connecté (identité réelle de la session). Après un <b>logout</b> (session détruite =
+    /// absence de session côté serveur, <c>null</c>), le défaut retombe sur le comportement NON connecté —
+    /// AUCUNE identité résiduelle du compte déconnecté (Sc.5). Le défaut non connecté exact est éprouvé au
+    /// Sc.6.</summary>
+    public string? Resoudre(SessionOuverte? session) => session?.IdentiteReelle;
 }
