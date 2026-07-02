@@ -165,4 +165,12 @@ Scénario 11 : Menu utilisateur connecté (config + déconnexion)
 
 # Retours produit (PO)
 
-<!-- À remplir à la clôture (gate G3). Un item par retour : bug / évolution / nouveau besoin / question. -->
+Tout fonctionne bien. Par contre :
+- Il faudrait mettre un mot de passe 
+- Il faudrait mettre en place l'authentification google, microsoft et apple
+- Lors que je me connecte avec Mamie, j'ai le role parent
+- Les page sont toute accessible meme sans être loggé
+
+Pour plus tard :
+- Il faudrait un envoi de mail pour activer son compte. Mais on verra pour faire une description exacte de ce que je veux.
+
