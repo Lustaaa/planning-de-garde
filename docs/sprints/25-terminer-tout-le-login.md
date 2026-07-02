@@ -44,13 +44,13 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 2/16
+## Avancement — 3/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
 | 1 | Route protégée : non connecté → redirection `/connexion` | 🖥️ IHM | runtime | ✅ |
 | 2 | Route protégée : connecté → accès rétabli | 🖥️ IHM | runtime | ✅ |
-| 3 | `/connexion` reste librement accessible (pas de boucle de redirection) | 🖥️ IHM | runtime | ⏳ |
+| 3 | `/connexion` reste librement accessible (pas de boucle de redirection) | 🖥️ IHM | runtime | ✅ |
 | 4 | Déconnexion → re-verrouillage immédiat des routes | 🖥️ IHM | runtime | ⏳ |
 | 5 | Bug rôle : connexion « Mamie » (type Autre) → identité effective ET rôle = Mamie | @back | runtime | ⏳ |
 | 6 | Bug rôle : non-régression impersonation bornée s14 au-dessus de la connexion | @back | runtime | ⏳ |
@@ -86,7 +86,7 @@ Scénario 2 — Route protégée avec session → accès rétabli
   Alors la route s'affiche normalement
   Et la navigation entre routes protégées ne redéclenche aucune redirection
 
-@ihm @pending
+@ihm @vert
 Scénario 3 — /connexion librement accessible (pas de boucle de redirection)
   Étant donné une application sans session ouverte
   Quand je navigue vers "/connexion"
