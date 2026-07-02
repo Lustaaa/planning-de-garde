@@ -41,6 +41,15 @@ public partial class Connexion
         }
     }
 
+    /// <summary>Déclenche le flux OAuth du provider (volet 4, s25) : navigue vers l'endpoint de
+    /// démarrage OAuth côté serveur (<c>api/oauth/{provider}/demarrer</c>), qui redirige le navigateur
+    /// vers l'authorize réel du provider (Google/Microsoft/Apple — secrets/callbacks vérifiés
+    /// manuellement au G3). La vue ne porte AUCUNE règle métier : elle ne fait que déclencher le flux ;
+    /// la résolution de l'identité externe et l'ouverture de session sont tranchées côté serveur
+    /// (ConnexionOAuthHandler, Sc.14/Sc.15).</summary>
+    private void DemarrerOAuth(string provider)
+        => Nav.NavigateTo($"api/oauth/{provider}/demarrer", forceLoad: true);
+
     private async Task SeConnecterAsync()
     {
         _motif = null;

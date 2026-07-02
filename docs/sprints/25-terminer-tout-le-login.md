@@ -44,7 +44,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 15/16
+## Avancement — 16/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
@@ -63,7 +63,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 | 13 | Récupération : jeton valide → mot de passe redéfini ; jeton consommé | @back | runtime | ✅ |
 | 14 | **OAuth** : callback provider, compte lié Actif → `SessionOuverte` | @back | doublure+manuel | ✅ |
 | 15 | OAuth : identité provider inconnue / compte Inactif → refus, aucune session | @back | doublure+manuel | ✅ |
-| 16 | **IHM login** : bouton « Se connecter avec Google/Microsoft/Apple » sur `/connexion` | 🖥️ IHM | doublure+manuel | ⏳ |
+| 16 | **IHM login** : bouton « Se connecter avec Google/Microsoft/Apple » sur `/connexion` | 🖥️ IHM | doublure+manuel | ✅ |
 
 ---
 
@@ -227,7 +227,7 @@ Scénario 15 — Callback OAuth : identité inconnue ou compte Inactif → refus
   Alors aucune session n'est ouverte
   Et le motif est clair (cohérent avec le refus email inconnu / Inactif s23/s24)
 
-@ihm @preuve-doublure @pending
+@ihm @preuve-doublure @vert
 Scénario 16 — Boutons « Se connecter avec Google / Microsoft / Apple » sur /connexion
   # PREUVE PAR DOUBLURE ; redirection vers le provider réel vérifiée manuellement (G3)
   Étant donné la page /connexion (landing s24)
