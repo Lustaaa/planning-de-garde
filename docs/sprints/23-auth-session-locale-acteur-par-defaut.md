@@ -135,4 +135,10 @@ Scénario 9 — Temps réel SignalR préservé sous connexion/déconnexion
 
 # Retours produit (PO)
 
-<!-- Rempli au gate G3 / à la clôture : bugs, évolutions, nouveaux besoins, questions. -->
+Je ne comprend pas trop pourquoi la saisie de l'email et du bouton se connecter sont sur l'ecran planning. J'aimerai que la page de login soit une page a part entiere et soit la page par défaut de l'application. Au dela de ca, j'aimerai qu'on puisse créer le compte, si on en a pas encore. J'aimerai aussi la possibilité de récupérer le mot de passe par envoi de mais dans un adapteru de droite.
+
+Dans sa forme actuel, le champ email et le bouton se connecter n'ont aucun sens. 
+
+Une fois l'utilisateur connecter, j'aimerai que l'acces a la configuration du foyer soit dispo depuis l'utilisateur.
+
+- "compte non activé". COmment activer le compte ?
