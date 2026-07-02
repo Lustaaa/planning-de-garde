@@ -44,14 +44,14 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 3/16
+## Avancement — 4/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
 | 1 | Route protégée : non connecté → redirection `/connexion` | 🖥️ IHM | runtime | ✅ |
 | 2 | Route protégée : connecté → accès rétabli | 🖥️ IHM | runtime | ✅ |
 | 3 | `/connexion` reste librement accessible (pas de boucle de redirection) | 🖥️ IHM | runtime | ✅ |
-| 4 | Déconnexion → re-verrouillage immédiat des routes | 🖥️ IHM | runtime | ⏳ |
+| 4 | Déconnexion → re-verrouillage immédiat des routes | 🖥️ IHM | runtime | ✅ |
 | 5 | Bug rôle : connexion « Mamie » (type Autre) → identité effective ET rôle = Mamie | @back | runtime | ⏳ |
 | 6 | Bug rôle : non-régression impersonation bornée s14 au-dessus de la connexion | @back | runtime | ⏳ |
 | 7 | Login email + **mot de passe** : bon couple → session ouverte | @back | runtime | ⏳ |
@@ -93,7 +93,7 @@ Scénario 3 — /connexion librement accessible (pas de boucle de redirection)
   Alors la page de connexion s'affiche (aucune redirection, aucune boucle)
   Et "/" redirige vers "/connexion" (landing s24 préservée)
 
-@ihm @pending
+@ihm @vert
 Scénario 4 — Déconnexion → re-verrouillage immédiat
   Étant donné un compte connecté consultant une route protégée
   Quand je me déconnecte (MenuUtilisateur s24 → destruction de session s23)
