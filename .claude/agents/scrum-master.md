@@ -26,6 +26,16 @@ Tu portes **trois chapeaux** selon ce qu'on te dispatche. Un seul à la fois.
    sprint** `docs/sprints/NN-<slug>.md` (`NN` = numéro de sprint) :
    - **Tableau d'avancement EN TÊTE** (obligatoire) : une ligne par scénario, colonnes
      `# | Scénario | Type (back/🖥️ IHM) | Statut (⏳/🔴/✅)`. Compte `X/N` au-dessus.
+   - **GARDE anti-✅-qui-ment sur preuve par doublure (obligatoire dès qu'une entorse G2 de preuve
+     est actée).** Quand un sprint prouve un volet par **doublure de port** faute de runtime local
+     (colonne `Preuve = doublure+manuel`), un `✅` **franc est INTERDIT** sur ces lignes : le statut
+     doit **distinguer la logique verte de la part câblage réel restante** (ex. `✅ logique / ⚠️
+     câblage`) tant que le câblage réel (adaptateur concret + DI + écran IHM) n'est pas branché et
+     prouvé manuellement. **Ajouter une ligne « dette de câblage » explicite** dans le tableau (ou
+     juste dessous) énumérant ce qui reste à brancher. À la clôture, cette dette part au backlog en
+     item `à faire` (P0 si elle rend le livrable non opérationnel). Un `X/N` tout-✅ sur un livrable
+     dont un pan est en dette de câblage **surestime l'état** et trompe le PO (friction réelle s25 :
+     login « 16/16 ✅ » mais OAuth/mail/jetons non câblés → non opérationnel en runtime).
    - **Scénarios Gherkin structurés** (cas nominal / limite / erreur, résultat observable),
      numérotés, taggés `@back` ou `@ihm` et `@pending`.
    - **GARDE de cohérence date ↔ index/parité de cycle (obligatoire).** Dès qu'un scénario nomme
