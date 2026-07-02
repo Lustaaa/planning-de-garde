@@ -26,7 +26,7 @@ public class Scenario5_LogoutSessionDetruite
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-1", Email, StatutCompte.Actif, ActeurAlice);
         var resolveur = new ResoudreActeurParDefautQuery();
-        var session = new SeConnecterHandler(comptes).Handle(new SeConnecterCommand(Email)).Valeur!;
+        var session = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2()).Handle(new SeConnecterCommand(Email)).Valeur!;
         Assert.Equal(ActeurAlice, resolveur.Resoudre(session)); // pré-condition : connecté → « Alice »
 
         // Logout = destruction de session : côté serveur, plus aucune session (absence de session).

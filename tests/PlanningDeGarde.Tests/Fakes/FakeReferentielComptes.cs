@@ -14,8 +14,8 @@ public sealed class FakeReferentielComptes : IEditeurComptes, IEnumerationCompte
 {
     private readonly Dictionary<string, CompteUtilisateur> _comptes = new();
 
-    public void Creer(string compteId, string email, StatutCompte statut, string acteurId)
-        => _comptes[compteId] = new CompteUtilisateur(compteId, email, statut, acteurId);
+    public void Creer(string compteId, string email, StatutCompte statut, string acteurId, string? motDePasseHache = null)
+        => _comptes[compteId] = new CompteUtilisateur(compteId, email, statut, acteurId, motDePasseHache);
 
     public void Desassocier(string compteId)
     {

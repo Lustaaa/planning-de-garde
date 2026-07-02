@@ -108,6 +108,9 @@ public static class ServiceCollectionExtensions
         // Port temps réel réel (SignalR) — remplace le fake des scénarios.
         services.AddSingleton<INotificateurPlanning, SignalRNotificateurPlanning>();
 
+        // Facteur mot de passe local (volet 3, s25) : hachage PBKDF2 salé réel, réalise IHacheurMotDePasse.
+        services.AddSingleton<IHacheurMotDePasse, HacheurMotDePassePbkdf2>();
+
         // Use cases (handlers) et read models.
         services.AddScoped<PoserSlotHandler>();
         services.AddScoped<DeplacerSlotHandler>();

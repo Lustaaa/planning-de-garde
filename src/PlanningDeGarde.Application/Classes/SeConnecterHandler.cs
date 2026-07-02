@@ -9,7 +9,7 @@ namespace PlanningDeGarde.Application;
 /// réelle sur l'acteur lié 1-1 au compte (relation s22) ; l'impersonation lecture (s14) reste possible
 /// au-dessus. Réutilise <see cref="IEnumerationComptes"/> (s22) en lecture — aucun nouvel agrégat.
 /// </summary>
-public sealed record SeConnecterCommand(string Email);
+public sealed record SeConnecterCommand(string Email, string? MotDePasse = null);
 
 /// <summary>
 /// Une session serveur ouverte : distingue l'identité <b>réelle</b> (l'acteur lié au compte connecté,
@@ -30,8 +30,13 @@ public sealed record SessionOuverte(string IdentiteReelle)
 public sealed class SeConnecterHandler
 {
     private readonly IEnumerationComptes _comptes;
+    private readonly IHacheurMotDePasse _hacheur;
 
-    public SeConnecterHandler(IEnumerationComptes comptes) => _comptes = comptes;
+    public SeConnecterHandler(IEnumerationComptes comptes, IHacheurMotDePasse hacheur)
+    {
+        _comptes = comptes;
+        _hacheur = hacheur;
+    }
 
     public Result<SessionOuverte> Handle(SeConnecterCommand commande)
     {

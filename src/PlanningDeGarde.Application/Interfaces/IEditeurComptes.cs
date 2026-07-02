@@ -11,9 +11,11 @@ namespace PlanningDeGarde.Application;
 /// </summary>
 public interface IEditeurComptes
 {
-    /// <summary>Enregistre un compte <b>neuf</b> dans le référentiel : persiste son email, son statut
-    /// et l'id de l'acteur associé sur l'identifiant stable opaque fourni (jamais un id existant).</summary>
-    void Creer(string compteId, string email, StatutCompte statut, string acteurId);
+    /// <summary>Enregistre un compte <b>neuf</b> dans le référentiel : persiste son email, son statut,
+    /// l'id de l'acteur associé et — le cas échéant — le condensat de son mot de passe (facteur local,
+    /// volet 3 s25 ; <c>null</c> pour un compte sans mot de passe) sur l'identifiant stable opaque
+    /// fourni (jamais un id existant).</summary>
+    void Creer(string compteId, string email, StatutCompte statut, string acteurId, string? motDePasseHache = null);
 
     /// <summary>Désassocie le compte identifié : il cesse de référencer un acteur (repli après
     /// suppression de l'acteur associé, Sc.6) — le compte survit, énuméré, sans acteur. Tolérant à

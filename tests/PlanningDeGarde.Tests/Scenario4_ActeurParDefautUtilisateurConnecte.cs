@@ -28,7 +28,7 @@ public class Scenario4_ActeurParDefautUtilisateurConnecte
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-1", Email, StatutCompte.Actif, ActeurAlice);
         var acteurs = new FakeEnumerationActeursFoyer(ActeurAlice, ActeurBob);
-        var session = new SeConnecterHandler(comptes).Handle(new SeConnecterCommand(Email)).Valeur!;
+        var session = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2()).Handle(new SeConnecterCommand(Email)).Valeur!;
         var resolveur = new ResoudreActeurParDefautQuery();
 
         var acteurParDefaut = resolveur.Resoudre(session);
@@ -46,7 +46,7 @@ public class Scenario4_ActeurParDefautUtilisateurConnecte
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-bob", "bob@foyer.fr", StatutCompte.Actif, ActeurBob);
         _ = new FakeEnumerationActeursFoyer(ActeurAlice, ActeurBob); // Alice en tête, Bob connecté
-        var session = new SeConnecterHandler(comptes).Handle(new SeConnecterCommand("bob@foyer.fr")).Valeur!;
+        var session = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2()).Handle(new SeConnecterCommand("bob@foyer.fr")).Valeur!;
         var resolveur = new ResoudreActeurParDefautQuery();
 
         var acteurParDefaut = resolveur.Resoudre(session);

@@ -44,7 +44,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 6/16
+## Avancement — 7/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
@@ -54,7 +54,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 | 4 | Déconnexion → re-verrouillage immédiat des routes | 🖥️ IHM | runtime | ✅ |
 | 5 | Bug rôle : connexion « Mamie » (type Autre) → identité effective ET rôle = Mamie | @back | runtime | ✅ |
 | 6 | Bug rôle : non-régression impersonation bornée s14 au-dessus de la connexion | @back | runtime | ✅ |
-| 7 | Login email + **mot de passe** : bon couple → session ouverte | @back | runtime | ⏳ |
+| 7 | Login email + **mot de passe** : bon couple → session ouverte | @back | runtime | ✅ |
 | 8 | Login email + mot de passe : mauvais mot de passe → refus, aucune session, motif clair | @back | runtime | ⏳ |
 | 9 | **Création de compte libre-service** : email neuf + mot de passe → compte créé (Inactif) | @back | runtime | ⏳ |
 | 10 | Libre-service : email déjà porteur → rejet sans écriture, motif clair | @back | runtime | ⏳ |
@@ -138,7 +138,7 @@ Scénario 6 — Non-régression impersonation bornée s14 au-dessus de la connex
 > au SM si friction). Le port mail (`IEnvoiMail`, volet 5) est réutilisé par la récupération.
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 7 — Login email + mot de passe : bon couple → session ouverte
   Étant donné un CompteUtilisateur Actif avec un mot de passe défini (haché)
   Quand je me connecte avec le bon email et le bon mot de passe
