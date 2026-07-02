@@ -37,6 +37,28 @@
     </div>
 </div>
 
+@* Bandeau de connexion custom (s23, Sc.7) : email + « Se connecter » quand non connecté, ou état
+   « Connecté : Nom » une fois la session ouverte. L'admission (compte existant ET Actif) est tranchée par
+   le handler via le canal requête/réponse ; un refus surface un motif clair, la vue restant non connectée.
+   Aucune règle métier côté UI. *@
+<div class="d-flex align-items-center gap-2 mb-3" data-testid="bandeau-connexion" role="status">
+    @if (_compteConnecteNom is { } nomConnecte)
+    {
+        <span class="alert alert-success py-1 px-2 m-0" data-testid="etat-connexion">Connecté : @nomConnecte</span>
+    }
+    else
+    {
+        <input type="email" class="form-control form-control-sm w-auto" placeholder="votre email"
+               data-testid="champ-email-connexion" @bind="_emailConnexion" />
+        <button type="button" class="btn btn-sm btn-primary" data-testid="bouton-se-connecter"
+                @onclick="SeConnecterAsync">Se connecter</button>
+        @if (_motifConnexion is { } motif)
+        {
+            <span class="text-danger" data-testid="motif-connexion">@motif</span>
+        }
+    }
+</div>
+
 @* Bandeau d'incarnation (sprint 14) : « Vous incarnez X » + retour à l'identité réelle (Sc.2). La vue
    reflète le rôle de l'incarné (menu clic-case visible Parent/Admin, masqué Autre). *@
 @if (Session.LibelleBandeau is { } libelleBandeau)
