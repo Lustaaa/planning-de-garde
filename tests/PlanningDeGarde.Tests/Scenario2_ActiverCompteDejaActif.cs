@@ -25,7 +25,7 @@ public class Scenario2_ActiverCompteDejaActif
     {
         var referentiel = new ReferentielComptesEnMemoire();
         referentiel.Creer(CompteId, Email, StatutCompte.Actif, ActeurId);
-        var handler = new ActiverCompteHandler(referentiel);
+        var handler = new ActiverCompteHandler(referentiel, referentiel);
 
         var resultat = handler.Handle(new ActiverCompteCommand(CompteId));
 
@@ -45,7 +45,7 @@ public class Scenario2_ActiverCompteDejaActif
     {
         var referentiel = new FakeReferentielComptes();
         referentiel.Creer(CompteId, Email, StatutCompte.Actif, ActeurId);
-        var handler = new ActiverCompteHandler(referentiel);
+        var handler = new ActiverCompteHandler(referentiel, referentiel);
 
         Assert.True(handler.Handle(new ActiverCompteCommand(CompteId)).EstSucces);
         Assert.True(handler.Handle(new ActiverCompteCommand(CompteId)).EstSucces);

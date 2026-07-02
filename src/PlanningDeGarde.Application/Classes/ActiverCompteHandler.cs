@@ -1,3 +1,4 @@
+using System.Linq;
 using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application;
@@ -17,12 +18,23 @@ public sealed record ActiverCompteCommand(string CompteId);
 /// </summary>
 public sealed class ActiverCompteHandler
 {
+    private readonly IEnumerationComptes _comptes;
     private readonly IEditeurComptes _editeur;
 
-    public ActiverCompteHandler(IEditeurComptes editeur) => _editeur = editeur;
+    public ActiverCompteHandler(IEnumerationComptes comptes, IEditeurComptes editeur)
+    {
+        _comptes = comptes;
+        _editeur = editeur;
+    }
 
     public Result<ActiverCompteResultat> Handle(ActiverCompteCommand commande)
     {
+        // Garde « compte introuvable » (Sc.3) : un id qui ne correspond à aucun compte est refusé
+        // AVANT toute écriture — aucune mutation, aucun compte fantôme créé (Result échec, pas
+        // d'exception silencieuse). Résolution sur l'id lu du référentiel.
+        if (!_comptes.EnumererComptes().Any(c => c.Id == commande.CompteId))
+            return Result<ActiverCompteResultat>.Echec("compte introuvable");
+
         _editeur.Activer(commande.CompteId);
         return Result<ActiverCompteResultat>.Succes(new ActiverCompteResultat(commande.CompteId));
     }

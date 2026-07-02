@@ -1,12 +1,12 @@
 # Sprint 24 — Auth utilisable de bout en bout : activation (Inactif→Actif) + page de connexion dédiée (`auth-utilisable-activation-et-page-login`)
 
-> **Avancement : 2/11 ⏳**
+> **Avancement : 3/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | **Activation d'un compte Inactif** → le statut passe `Inactif→Actif` (Domain pur + Mongo, `IEditeurComptes` s22) ; le compte devient connectable | @back | ✅ |
 | 2 | **Idempotence : activer un compte déjà Actif** → no-op qui **réussit** (aucune double mutation, statut reste Actif) | @back | ✅ |
-| 3 | **Rejet : activer un compte inconnu** (id absent) → refus, motif clair, **aucune mutation** | @back | ⏳ |
+| 3 | **Rejet : activer un compte inconnu** (id absent) → refus, motif clair, **aucune mutation** | @back | ✅ |
 | 4 | **Boucle auth complète (E2E back)** : créer compte (naît Inactif, s22) → connexion **refusée** (Inactif, s23) → **activer** → connexion **réussit** (session ouverte, s23) | @back | ⏳ |
 | 5 | IHM **bouton « Activer » (onglet Acteurs, Parent-gated)** : un compte Inactif affiche « Activer » → clic → compte Actif + accusé non bloquant « Compte activé » ; un compte déjà Actif n'affiche plus l'action | 🖥️ @ihm | ⏳ |
 | 6 | IHM **gating Invité + échec API** activation : l'Invité ne voit pas l'action ; échec transport → message clair, statut inchangé à l'écran | 🖥️ @ihm | ⏳ |
@@ -67,7 +67,7 @@ Scénario 2 : Idempotence — activer un compte déjà Actif
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 3 : Rejet — activer un compte inconnu
   Étant donné qu'aucun compte ne porte l'id "id-absent"
   Quand j'exécute ActiverCompteCommand sur "id-absent"

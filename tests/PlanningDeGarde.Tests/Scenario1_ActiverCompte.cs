@@ -28,7 +28,7 @@ public class Scenario1_ActiverCompte
     {
         var referentiel = new ReferentielComptesEnMemoire();
         referentiel.Creer(CompteId, Email, StatutCompte.Inactif, ActeurId);
-        var handler = new ActiverCompteHandler(referentiel);
+        var handler = new ActiverCompteHandler(referentiel, referentiel);
 
         var resultat = handler.Handle(new ActiverCompteCommand(CompteId));
 
@@ -48,7 +48,7 @@ public class Scenario1_ActiverCompte
     {
         var referentiel = new FakeReferentielComptes();
         referentiel.Creer(CompteId, Email, StatutCompte.Inactif, ActeurId);
-        var handler = new ActiverCompteHandler(referentiel);
+        var handler = new ActiverCompteHandler(referentiel, referentiel);
 
         var resultat = handler.Handle(new ActiverCompteCommand(CompteId));
 
@@ -65,7 +65,7 @@ public class Scenario1_ActiverCompte
     {
         var referentiel = new FakeReferentielComptes();
         referentiel.Creer(CompteId, Email, StatutCompte.Inactif, ActeurId);
-        var handler = new ActiverCompteHandler(referentiel);
+        var handler = new ActiverCompteHandler(referentiel, referentiel);
 
         handler.Handle(new ActiverCompteCommand(CompteId));
 
