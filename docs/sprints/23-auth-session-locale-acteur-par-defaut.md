@@ -1,6 +1,6 @@
 # Sprint 23 — Auth · tranche 2a : session locale & acteur-par-défaut = moi (`auth-session-locale-acteur-par-defaut`)
 
-> **Avancement : 7/9 ⏳**
+> **Avancement : 8/9 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -11,7 +11,7 @@
 | 5 | **Logout** : la session ouverte est détruite → l'identité effective retombe sur le comportement **non connecté** (aucune fuite d'identité) | @back | ✅ |
 | 6 | **Non connecté = pas de régression** : sans session, l'identité effective et l'impersonation bornée (s14) se comportent exactement comme aujourd'hui | @back | ✅ |
 | 7 | IHM **bandeau de connexion custom** : saisir un email + « Se connecter » → connecté (bandeau « Connecté : … ») ; email inconnu/compte inactif → le bandeau affiche un motif clair, reste déconnecté | 🖥️ @ihm | ✅ |
-| 8 | IHM **déconnexion + acteur par défaut** : « Se déconnecter » repasse déconnecté ; une fois connecté, le sélecteur d'acteur (config/dialogs) est pré-positionné sur **l'acteur du compte connecté** | 🖥️ @ihm | ⏳ |
+| 8 | IHM **déconnexion + acteur par défaut** : « Se déconnecter » repasse déconnecté ; une fois connecté, le sélecteur d'acteur (config/dialogs) est pré-positionné sur **l'acteur du compte connecté** | 🖥️ @ihm | ✅ |
 | 9 | **Temps réel SignalR préservé** : la connexion/déconnexion n'altère pas la propagation lecture (grille/légende/config convergent sur un 2ᵉ écran sans rechargement) | 🖥️ @ihm | ⏳ |
 
 ---
@@ -112,7 +112,7 @@ Scénario 7 — Bandeau de connexion : succès et refus lisibles
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 8 — Déconnexion + acteur par défaut pré-positionné
   Étant donné un visiteur connecté en tant que compte « alice@foyer.fr » (lié à l'acteur « Alice »)
   Quand il ouvre le sélecteur d'acteur (config ou dialog d'écriture)

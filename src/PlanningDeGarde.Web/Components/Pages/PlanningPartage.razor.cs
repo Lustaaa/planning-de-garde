@@ -315,11 +315,28 @@ public partial class PlanningPartage
         {
             var session = await reponse.Content.ReadFromJsonAsync<CanalEcriture.SeConnecterReponse>();
             _compteConnecteNom = session?.Nom;
+            // « Acteur par défaut = utilisateur connecté » (Sc.8) : pré-positionne le sélecteur d'acteur
+            // (source unique ActeursIncarnables, s20) sur l'acteur lié au compte connecté, via le mécanisme
+            // d'incarnation bornée s14 (lecture seule, aucune persistance neuve).
+            if (session is not null)
+                Session.Incarner(session.ActeurId);
         }
         else
         {
             _motifConnexion = await reponse.Content.ReadAsStringAsync();
         }
+    }
+
+    /// <summary>« Se déconnecter » (Sc.8) : détruit l'état de connexion côté front (le bandeau repasse
+    /// « non connecté ») et fait retomber le sélecteur d'acteur sur le défaut non connecté — l'acteur par
+    /// défaut n'est plus celui du compte (retour à l'identité réelle via le mécanisme s14). Aucune identité
+    /// résiduelle. Aucune écriture (la déconnexion n'altère pas le domaine).</summary>
+    private void SeDeconnecter()
+    {
+        _compteConnecteNom = null;
+        _motifConnexion = null;
+        _emailConnexion = "";
+        Session.RevenirIdentiteReelle();
     }
 
     /// <summary>Revient à l'identité réelle (bouton du bandeau d'incarnation, Sc.2) : l'incarnation est

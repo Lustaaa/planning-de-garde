@@ -45,6 +45,8 @@
     @if (_compteConnecteNom is { } nomConnecte)
     {
         <span class="alert alert-success py-1 px-2 m-0" data-testid="etat-connexion">Connecté : @nomConnecte</span>
+        <button type="button" class="btn btn-sm btn-outline-secondary" data-testid="bouton-se-deconnecter"
+                @onclick="SeDeconnecter">Se déconnecter</button>
     }
     else
     {
