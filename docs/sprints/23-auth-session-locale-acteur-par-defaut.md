@@ -1,13 +1,13 @@
 # Sprint 23 — Auth · tranche 2a : session locale & acteur-par-défaut = moi (`auth-session-locale-acteur-par-defaut`)
 
-> **Avancement : 3/9 ⏳**
+> **Avancement : 4/9 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | **Connexion locale par email** d'un `CompteUtilisateur` **Actif** existant → session serveur ouverte, identité effective = l'acteur lié au compte | @back | ✅ |
 | 2 | **Rejet connexion : email inconnu** (aucun compte) → refus, motif clair, **aucune session** ouverte | @back | ✅ |
 | 3 | **Rejet connexion : compte Inactif** (statut par défaut s22) → refus, motif clair, **aucune session** (l'activation reste hors scope) | @back | ✅ |
-| 4 | **Acteur par défaut = utilisateur connecté** : session ouverte → l'acteur par défaut résolu côté serveur = l'acteur lié 1-1 au compte connecté (relation s22) | @back | ⏳ |
+| 4 | **Acteur par défaut = utilisateur connecté** : session ouverte → l'acteur par défaut résolu côté serveur = l'acteur lié 1-1 au compte connecté (relation s22) | @back | ✅ |
 | 5 | **Logout** : la session ouverte est détruite → l'identité effective retombe sur le comportement **non connecté** (aucune fuite d'identité) | @back | ⏳ |
 | 6 | **Non connecté = pas de régression** : sans session, l'identité effective et l'impersonation bornée (s14) se comportent exactement comme aujourd'hui | @back | ⏳ |
 | 7 | IHM **bandeau de connexion custom** : saisir un email + « Se connecter » → connecté (bandeau « Connecté : … ») ; email inconnu/compte inactif → le bandeau affiche un motif clair, reste déconnecté | 🖥️ @ihm | ⏳ |
@@ -71,7 +71,7 @@ Scénario 3 — Rejet : compte Inactif, aucune session
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 4 — Acteur par défaut = utilisateur connecté
   Étant donné une session serveur ouverte pour le compte « alice@foyer.fr » lié à l'acteur « Alice » (1-1, s22)
   Quand on résout l'acteur par défaut de cette session côté serveur
