@@ -608,6 +608,51 @@ public partial class ConfigurationFoyer
         _emailCompte.Remove(acteurId);
     }
 
+    /// <summary>Accusé non bloquant d'activation de compte (registre avertissement-à-part, aligné « Acteur
+    /// supprimé » — D5) : affiché sans interrompre la consultation, effacé à l'activation suivante.</summary>
+    private string? _accuseActivation;
+
+    /// <summary>Vrai si le compte est de statut « inactif » (le statut est renvoyé en minuscules par le canal
+    /// de lecture) — condition d'affichage de l'action « Activer » (Sc.5). Aucune règle métier dans l'UI :
+    /// c'est une simple lecture du statut projeté ; l'activation est tranchée côté handler.</summary>
+    private static bool EstInactif(CompteFoyer compte)
+        => string.Equals(compte.Statut, "inactif", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Active un compte utilisateur via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/activer-compte</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
+    /// ré-énumère les comptes pour que le statut passe « actif » <b>sans rechargement</b> et que l'action
+    /// « Activer » disparaisse (Sc.5). Sur succès, un accusé non bloquant « Compte activé » s'affiche. Sur
+    /// refus métier (compte introuvable, Sc.3) ou <b>service injoignable</b> (échec de transport, règle 28),
+    /// un motif clair est surfacé et le statut affiché reste inchangé (aucun faux positif, Sc.6).
+    /// </summary>
+    private async Task ActiverCompte(string compteId)
+    {
+        _motifEchecCompte.Remove(compteId);
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/activer-compte",
+                new ActiverCompteRequete(compteId));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecCompte[compteId] = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecCompte[compteId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de l'activation du compte.";
+            return;
+        }
+
+        _accuseActivation = "Compte activé.";
+        await RechargerComptes();
+    }
+
     /// <summary>Motif d'échec de désignation d'admin d'une ligne d'acteur (clé = id stable), ou <c>null</c> :
     /// sur refus métier (l'admin doit être un parent, Sc.4) ou service injoignable, le motif reste affiché
     /// dans la ligne, sans écriture (Sc.8/Sc.9).</summary>

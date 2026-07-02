@@ -1,6 +1,6 @@
 # Sprint 24 — Auth utilisable de bout en bout : activation (Inactif→Actif) + page de connexion dédiée (`auth-utilisable-activation-et-page-login`)
 
-> **Avancement : 4/11 ⏳**
+> **Avancement : 5/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -8,7 +8,7 @@
 | 2 | **Idempotence : activer un compte déjà Actif** → no-op qui **réussit** (aucune double mutation, statut reste Actif) | @back | ✅ |
 | 3 | **Rejet : activer un compte inconnu** (id absent) → refus, motif clair, **aucune mutation** | @back | ✅ |
 | 4 | **Boucle auth complète (E2E back)** : créer compte (naît Inactif, s22) → connexion **refusée** (Inactif, s23) → **activer** → connexion **réussit** (session ouverte, s23) | @back | ✅ |
-| 5 | IHM **bouton « Activer » (onglet Acteurs, Parent-gated)** : un compte Inactif affiche « Activer » → clic → compte Actif + accusé non bloquant « Compte activé » ; un compte déjà Actif n'affiche plus l'action | 🖥️ @ihm | ⏳ |
+| 5 | IHM **bouton « Activer » (onglet Acteurs, Parent-gated)** : un compte Inactif affiche « Activer » → clic → compte Actif + accusé non bloquant « Compte activé » ; un compte déjà Actif n'affiche plus l'action | 🖥️ @ihm | ✅ |
 | 6 | IHM **gating Invité + échec API** activation : l'Invité ne voit pas l'action ; échec transport → message clair, statut inchangé à l'écran | 🖥️ @ihm | ⏳ |
 | 7 | IHM **temps réel SignalR** : l'activation d'un compte propage le nouveau statut à un 2ᵉ écran (onglet Acteurs) sans rechargement | 🖥️ @ihm | ⏳ |
 | 8 | IHM **page de connexion dédiée = landing par défaut** : app démarrée non connecté → **page login dédiée** (pas le planning) ; email valide (compte Actif) → connexion (`SeConnecterCommand` s23) → **redirection planning** | 🖥️ @ihm | ⏳ |
@@ -90,7 +90,7 @@ Scénario 4 : Boucle auth complète de bout en bout (E2E back, Mongo réel)
 ### @ihm — Activation dans l'onglet Acteurs (RED→GREEN runtime)
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 5 : Bouton « Activer » dans l'onglet Acteurs (Parent-gated)
   Étant donné un Parent connecté sur l'onglet Acteurs de la config foyer
   Et un compte utilisateur de statut "Inactif" listé

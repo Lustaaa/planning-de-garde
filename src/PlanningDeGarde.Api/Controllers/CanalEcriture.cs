@@ -94,6 +94,11 @@ public static class CanalEcriture
     /// Refus métier (email vide / doublon, acteur inconnu, acteur déjà associé) renvoyé avec son motif.</summary>
     public sealed record CreerCompteRequete(string ActeurId, string Email);
 
+    /// <summary>Corps de la requête d'activation d'un compte utilisateur (s24) émise via le canal d'écriture :
+    /// l'identifiant stable opaque du compte. Le statut passe Inactif→Actif côté handler (mutation portée par
+    /// l'agrégat) ; refus métier (compte introuvable) renvoyé avec son motif, idempotence (déjà Actif) assumée.</summary>
+    public sealed record ActiverCompteRequete(string CompteId);
+
     /// <summary>Corps de la requête de désignation d'un acteur comme admin du foyer (s22) émise via le canal
     /// d'écriture : l'identifiant stable de l'acteur. L'invariant admin=parent est porté par l'agrégat Domain
     /// (un acteur non-Parent est rejeté sans écriture, Sc.4) ; le motif de refus est renvoyé au front.</summary>
@@ -315,6 +320,21 @@ public static class CanalEcriture
             // motif (email vide / doublon, acteur inconnu, acteur déjà associé, Sc.2/Sc.3). Sur succès,
             // l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres écrans
             // ré-énumèrent les comptes sans rechargement (Sc.9). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/activer-compte", (ActiverCompteRequete requete, ActiverCompteHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new ActiverCompteCommand(requete.CompteId));
+
+            // Même convention que les autres écritures : succès acquitté (le compte est désormais Actif,
+            // relu depuis le store, Sc.5), refus métier renvoyé avec son motif (compte introuvable, Sc.3).
+            // Sur succès, l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : les
+            // autres écrans ré-énumèrent les comptes sans rechargement (Sc.7). Jamais d'écriture par diffusion.
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 
