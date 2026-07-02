@@ -46,7 +46,7 @@ public sealed class FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests : TestCo
         // API distante (même store cycle singleton). Tous les services sont enregistrés AVANT tout rendu.
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
-        Services.AddSingleton(new SessionPlanning());
+        Services.AddSingleton(GrilleRuntimeHarness.SessionConnectee());
         Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(GrilleRuntimeHarness.Lundi_29_06_2026));
         Services.AddSingleton(new OptionsConnexionHub
         {

@@ -47,7 +47,7 @@ public sealed class FrontWasmGrilleInverserMappingCycleTempsReelTests : TestCont
         // Tous les services sont enregistrés AVANT le moindre rendu (contrainte du TestServiceProvider).
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
-        Services.AddSingleton(new SessionPlanning());
+        Services.AddSingleton(GrilleRuntimeHarness.SessionConnectee());
         Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(GrilleRuntimeHarness.Lundi_29_06_2026));
         Services.AddSingleton(new OptionsConnexionHub
         {
