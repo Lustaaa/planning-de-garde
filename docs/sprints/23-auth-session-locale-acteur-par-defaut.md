@@ -1,6 +1,6 @@
 # Sprint 23 — Auth · tranche 2a : session locale & acteur-par-défaut = moi (`auth-session-locale-acteur-par-defaut`)
 
-> **Avancement : 8/9 ⏳**
+> **Avancement : 9/9 ✅**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -12,7 +12,7 @@
 | 6 | **Non connecté = pas de régression** : sans session, l'identité effective et l'impersonation bornée (s14) se comportent exactement comme aujourd'hui | @back | ✅ |
 | 7 | IHM **bandeau de connexion custom** : saisir un email + « Se connecter » → connecté (bandeau « Connecté : … ») ; email inconnu/compte inactif → le bandeau affiche un motif clair, reste déconnecté | 🖥️ @ihm | ✅ |
 | 8 | IHM **déconnexion + acteur par défaut** : « Se déconnecter » repasse déconnecté ; une fois connecté, le sélecteur d'acteur (config/dialogs) est pré-positionné sur **l'acteur du compte connecté** | 🖥️ @ihm | ✅ |
-| 9 | **Temps réel SignalR préservé** : la connexion/déconnexion n'altère pas la propagation lecture (grille/légende/config convergent sur un 2ᵉ écran sans rechargement) | 🖥️ @ihm | ⏳ |
+| 9 | **Temps réel SignalR préservé** : la connexion/déconnexion n'altère pas la propagation lecture (grille/légende/config convergent sur un 2ᵉ écran sans rechargement) | 🖥️ @ihm | ✅ |
 
 ---
 
@@ -123,7 +123,7 @@ Scénario 8 — Déconnexion + acteur par défaut pré-positionné
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 9 — Temps réel SignalR préservé sous connexion/déconnexion
   Étant donné deux écrans ouverts sur le même foyer, l'un connecté en tant que « Alice »
   Quand une modification de config (renommer/recolorier un acteur) est appliquée sur un écran
