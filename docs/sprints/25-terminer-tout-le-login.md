@@ -44,7 +44,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 9/16
+## Avancement — 10/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
@@ -57,7 +57,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 | 7 | Login email + **mot de passe** : bon couple → session ouverte | @back | runtime | ✅ |
 | 8 | Login email + mot de passe : mauvais mot de passe → refus, aucune session, motif clair | @back | runtime | ✅ |
 | 9 | **Création de compte libre-service** : email neuf + mot de passe → compte créé (Inactif) | @back | runtime | ✅ |
-| 10 | Libre-service : email déjà porteur → rejet sans écriture, motif clair | @back | runtime | ⏳ |
+| 10 | Libre-service : email déjà porteur → rejet sans écriture, motif clair | @back | runtime | ✅ |
 | 11 | **Récupération mot de passe** : demande sur email connu → jeton + mail émis (port) | @back | doublure+manuel | ⏳ |
 | 12 | Récupération : email inconnu → réponse neutre, aucun mail, aucune fuite | @back | doublure+manuel | ⏳ |
 | 13 | Récupération : jeton valide → mot de passe redéfini ; jeton consommé | @back | runtime | ⏳ |
@@ -160,7 +160,7 @@ Scénario 9 — Création de compte libre-service : email neuf + mot de passe �
   Et ActeurId reste nullable (association / activation ultérieures, s22/s24)
   Et l'email unique + le mot de passe requis sont validés (garde s22 étendue)
 
-@back @pending
+@back @vert
 Scénario 10 — Libre-service : email déjà porteur → rejet sans écriture
   Étant donné un CompteUtilisateur existant pour l'email fourni
   Quand je tente une création libre-service avec le même email

@@ -42,6 +42,12 @@ public sealed class CreerCompteLibreServiceHandler
         if (string.IsNullOrWhiteSpace(commande.MotDePasse))
             return Result<CreerCompteResultat>.Echec("mot de passe requis");
 
+        // Garde « email déjà utilisé » (Sc.10, invariant email unique s22) : refus si un compte porte
+        // déjà cet email — AVANT toute génération d'id et toute écriture. Aucun doublon, aucun écrasement
+        // du compte existant (le référentiel reste inchangé). Unicité lue sur le référentiel courant.
+        if (_comptes.EnumererComptes().Any(c => c.Email == commande.Email))
+            return Result<CreerCompteResultat>.Echec("email déjà utilisé");
+
         // Identifiant stable neuf OPAQUE (jamais dérivé de l'email, anti-pattern s06). Le compte naît
         // Inactif (défaut s22), sans acteur (ActeurId null — association ultérieure), mot de passe haché.
         var compteId = $"compte-{Guid.NewGuid():N}";
