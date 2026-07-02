@@ -1,12 +1,12 @@
 # Sprint 23 — Auth · tranche 2a : session locale & acteur-par-défaut = moi (`auth-session-locale-acteur-par-defaut`)
 
-> **Avancement : 2/9 ⏳**
+> **Avancement : 3/9 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | **Connexion locale par email** d'un `CompteUtilisateur` **Actif** existant → session serveur ouverte, identité effective = l'acteur lié au compte | @back | ✅ |
 | 2 | **Rejet connexion : email inconnu** (aucun compte) → refus, motif clair, **aucune session** ouverte | @back | ✅ |
-| 3 | **Rejet connexion : compte Inactif** (statut par défaut s22) → refus, motif clair, **aucune session** (l'activation reste hors scope) | @back | ⏳ |
+| 3 | **Rejet connexion : compte Inactif** (statut par défaut s22) → refus, motif clair, **aucune session** (l'activation reste hors scope) | @back | ✅ |
 | 4 | **Acteur par défaut = utilisateur connecté** : session ouverte → l'acteur par défaut résolu côté serveur = l'acteur lié 1-1 au compte connecté (relation s22) | @back | ⏳ |
 | 5 | **Logout** : la session ouverte est détruite → l'identité effective retombe sur le comportement **non connecté** (aucune fuite d'identité) | @back | ⏳ |
 | 6 | **Non connecté = pas de régression** : sans session, l'identité effective et l'impersonation bornée (s14) se comportent exactement comme aujourd'hui | @back | ⏳ |
@@ -61,7 +61,7 @@ Scénario 2 — Rejet : email inconnu, aucune session
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 3 — Rejet : compte Inactif, aucune session
   Étant donné un CompteUtilisateur d'email « bob@foyer.fr » de statut « Inactif » (défaut de création s22)
   Quand un visiteur tente de se connecter avec l'email « bob@foyer.fr »

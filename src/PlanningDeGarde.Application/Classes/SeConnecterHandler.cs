@@ -41,6 +41,12 @@ public sealed class SeConnecterHandler
         if (compte is null)
             return Result<SessionOuverte>.Echec("email inconnu");
 
+        // Garde « compte non activé » (Sc.3) : le statut Inactif (défaut de création s22) BORNE la
+        // connexion → refus avec motif clair, aucune session. L'activation Inactif→Actif reste hors
+        // scope (palier 13) : aucun chemin d'activation déclenché ici, le compte demeure Inactif.
+        if (compte.Statut != StatutCompte.Actif)
+            return Result<SessionOuverte>.Echec("compte non activé");
+
         return Result<SessionOuverte>.Succes(new SessionOuverte(compte.ActeurId!));
     }
 }
