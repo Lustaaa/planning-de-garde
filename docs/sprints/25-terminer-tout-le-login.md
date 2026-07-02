@@ -44,12 +44,12 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 1/16
+## Avancement — 2/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
 | 1 | Route protégée : non connecté → redirection `/connexion` | 🖥️ IHM | runtime | ✅ |
-| 2 | Route protégée : connecté → accès rétabli | 🖥️ IHM | runtime | ⏳ |
+| 2 | Route protégée : connecté → accès rétabli | 🖥️ IHM | runtime | ✅ |
 | 3 | `/connexion` reste librement accessible (pas de boucle de redirection) | 🖥️ IHM | runtime | ⏳ |
 | 4 | Déconnexion → re-verrouillage immédiat des routes | 🖥️ IHM | runtime | ⏳ |
 | 5 | Bug rôle : connexion « Mamie » (type Autre) → identité effective ET rôle = Mamie | @back | runtime | ⏳ |
@@ -79,7 +79,7 @@ Scénario 1 — Route protégée sans session → redirection vers /connexion
   Alors je suis redirigé vers "/connexion"
   Et aucun contenu de la route protégée n'est rendu (pas de fuite d'un flash de grille)
 
-@ihm @pending
+@ihm @vert
 Scénario 2 — Route protégée avec session → accès rétabli
   Étant donné un compte Actif connecté (SessionOuverte via SeConnecterCommand s23)
   Quand je navigue vers une route protégée
