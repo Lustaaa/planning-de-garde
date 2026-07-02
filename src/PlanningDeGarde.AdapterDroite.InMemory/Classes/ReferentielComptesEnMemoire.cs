@@ -34,5 +34,12 @@ public sealed class ReferentielComptesEnMemoire : IEnumerationComptes, IEditeurC
             _comptes[compteId] = compte.Activer();
     }
 
+    public void RedefinirMotDePasse(string compteId, string motDePasseHache)
+    {
+        // Mutation ciblée du seul mot de passe (récupération, s25). Tolérant à l'absence (no-op).
+        if (_comptes.TryGetValue(compteId, out var compte))
+            _comptes[compteId] = compte with { MotDePasseHache = motDePasseHache };
+    }
+
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes() => _comptes.Values.ToList();
 }

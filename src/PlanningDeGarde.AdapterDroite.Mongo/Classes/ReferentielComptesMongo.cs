@@ -80,6 +80,20 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
             new ReplaceOptions { IsUpsert = true });
     }
 
+    public void RedefinirMotDePasse(string compteId, string motDePasseHache)
+    {
+        // Mutation ciblée du seul mot de passe write-through (récupération, s25) : cache de session ET
+        // store durable (le nouveau condensat survit au redémarrage). Tolérant à l'absence (no-op).
+        if (!_cache.TryGetValue(compteId, out var doc))
+            return;
+        doc.MotDePasseHache = motDePasseHache;
+        _cache[compteId] = doc;
+        _comptes.ReplaceOne(
+            Builders<CompteDocument>.Filter.Eq(d => d.Id, compteId),
+            doc,
+            new ReplaceOptions { IsUpsert = true });
+    }
+
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes()
         => _cache.Values.Select(d => new CompteUtilisateur(d.Id, d.Email, d.Statut, d.ActeurId, d.MotDePasseHache)).ToList();
 

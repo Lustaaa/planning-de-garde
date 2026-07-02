@@ -44,7 +44,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 12/16
+## Avancement — 13/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
@@ -60,7 +60,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 | 10 | Libre-service : email déjà porteur → rejet sans écriture, motif clair | @back | runtime | ✅ |
 | 11 | **Récupération mot de passe** : demande sur email connu → jeton + mail émis (port) | @back | doublure+manuel | ✅ |
 | 12 | Récupération : email inconnu → réponse neutre, aucun mail, aucune fuite | @back | doublure+manuel | ✅ |
-| 13 | Récupération : jeton valide → mot de passe redéfini ; jeton consommé | @back | runtime | ⏳ |
+| 13 | Récupération : jeton valide → mot de passe redéfini ; jeton consommé | @back | runtime | ✅ |
 | 14 | **OAuth** : callback provider, compte lié Actif → `SessionOuverte` | @back | doublure+manuel | ⏳ |
 | 15 | OAuth : identité provider inconnue / compte Inactif → refus, aucune session | @back | doublure+manuel | ⏳ |
 | 16 | **IHM login** : bouton « Se connecter avec Google/Microsoft/Apple » sur `/connexion` | 🖥️ IHM | doublure+manuel | ⏳ |
@@ -167,7 +167,7 @@ Scénario 10 — Libre-service : email déjà porteur → rejet sans écriture
   Alors la création est rejetée SANS aucune écriture (invariant email unique s22)
   Et le motif est clair
 
-@back @pending
+@back @vert
 Scénario 13 — Récupération : jeton valide → mot de passe redéfini, jeton consommé
   Étant donné un jeton de réinitialisation valide émis pour un compte (cf. Sc.11)
   Quand je soumets un nouveau mot de passe avec ce jeton
