@@ -1,0 +1,28 @@
+@page "/connexion"
+@inject HttpClient Canal
+@inject PlanningDeGarde.Web.State.SessionPlanning Session
+@inject NavigationManager Nav
+
+<PageTitle>Connexion</PageTitle>
+
+<div class="connexion-page">
+    <h1 class="h3 mb-4">Se connecter</h1>
+
+    @* Page de connexion dédiée (s24, Sc.8) : landing par défaut, SEUL chemin d'entrée (Sc.10). Emballe
+       SeConnecterCommand (s23) via le canal requête/réponse (POST /api/canal/se-connecter) — aucune règle
+       d'admission côté front (compte existant ET Actif tranché par le handler). Sur succès : redirection
+       vers le planning, sélecteur d'acteur pré-positionné sur l'acteur du compte (incarnation bornée s14).
+       Sur refus : motif clair affiché, on reste sur la page (Sc.9). Login email-only (s23) : pas de mot de passe. *@
+    <div class="mb-3">
+        <label class="form-label" for="email-connexion">Adresse email</label>
+        <input type="email" id="email-connexion" class="form-control" placeholder="votre email"
+               data-testid="champ-email-connexion" @bind="_email" />
+    </div>
+    <button type="button" class="btn btn-primary" data-testid="bouton-se-connecter"
+            @onclick="SeConnecterAsync">Se connecter</button>
+
+    @if (_motif is { } motif)
+    {
+        <div class="alert alert-danger mt-3" data-testid="motif-connexion" role="alert">@motif</div>
+    }
+</div>

@@ -4,5 +4,7 @@
 <PageTitle>Planning de garde</PageTitle>
 
 @code {
-    protected override void OnInitialized() => Nav.NavigateTo("planning");
+    // Landing par défaut (s24, Sc.8) : un utilisateur non connecté atterrit sur la PAGE DE CONNEXION
+    // DÉDIÉE (un seul chemin d'entrée, Sc.10), jamais directement sur le planning.
+    protected override void OnInitialized() => Nav.NavigateTo("connexion");
 }

@@ -1,0 +1,76 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Threading.Tasks;
+using PlanningDeGarde.Web.State;
+using static PlanningDeGarde.Web.CanalEcriture;
+
+namespace PlanningDeGarde.Web.Components.Pages;
+
+/// <summary>
+/// Page de connexion dédiée (front <b>WASM</b>, s24) : landing par défaut et <b>seul chemin d'entrée</b>
+/// (Sc.8/Sc.10). Emballe la connexion locale par email (<see cref="SeConnecterCommand"/> s23) via le
+/// <b>canal requête/réponse</b> HTTP (<c>POST /api/canal/se-connecter</c>, règle 27 — aucune vue n'écrit le
+/// domaine en direct). Le front ne porte AUCUNE règle d'admission : l'admission (compte existant ET Actif)
+/// est tranchée par le handler. Sur succès, la session pré-positionne l'acteur du compte (incarnation bornée
+/// s14, lecture seule, aucune persistance neuve) puis <b>redirige vers le planning</b>. Sur refus (email
+/// inconnu / compte non activé), le motif clair est surfacé, on reste sur la page (Sc.9).
+/// </summary>
+public partial class Connexion
+{
+    private string _email = "";
+    private string? _motif;
+
+    /// <summary>Au montage, charge le catalogue d'acteurs incarnables depuis le référentiel réel
+    /// (GET /api/foyer/acteurs) et le dépose dans la session : c'est ce catalogue que résout l'incarnation
+    /// du compte connecté (pré-positionnement du sélecteur d'acteur, s23 Sc.8). Lecture seule.</summary>
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs");
+            if (acteurs is not null)
+                Session.ActeursIncarnables = acteurs
+                    .Select(a => new IdentiteActeur(a.Id, a.Nom, a.Type))
+                    .ToList();
+        }
+        catch (HttpRequestException)
+        {
+            // Référentiel distant injoignable : le catalogue reste vide ; la connexion reste tentable.
+        }
+    }
+
+    private async Task SeConnecterAsync()
+    {
+        _motif = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/se-connecter", new SeConnecterRequete(_email));
+        }
+        catch (HttpRequestException)
+        {
+            _motif = "Service injoignable, réessayez.";
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            // Refus métier (email inconnu / compte non activé) : motif clair, on reste sur la page (Sc.9).
+            _motif = await reponse.Content.ReadAsStringAsync();
+            return;
+        }
+
+        var session = await reponse.Content.ReadFromJsonAsync<SeConnecterReponse>();
+        if (session is not null)
+        {
+            // Pré-positionne le sélecteur d'acteur sur l'acteur lié au compte connecté (identité effective,
+            // incarnation bornée s14) puis redirige vers le planning (Sc.8).
+            Session.Incarner(session.ActeurId);
+            Nav.NavigateTo("planning");
+        }
+    }
+}
