@@ -25,4 +25,18 @@
     {
         <div class="alert alert-danger mt-3" data-testid="motif-connexion" role="alert">@motif</div>
     }
+
+    @* Connexion via un fournisseur OAuth externe (volet 4, s25) — À CÔTÉ du login local. Un clic
+       DÉCLENCHE le flux OAuth en naviguant vers l'endpoint de démarrage du provider côté serveur
+       (api/oauth/{provider}/demarrer), qui redirige vers l'authorize réel (secrets/callbacks vérifiés
+       manuellement au G3). Aucune règle métier côté UI : la vue ne fait que déclencher le flux. *@
+    <div class="oauth-providers mt-4">
+        <p class="text-muted mb-2">Ou se connecter avec</p>
+        <button type="button" class="btn btn-outline-secondary me-2" data-testid="bouton-oauth-google"
+                @onclick='() => DemarrerOAuth("google")'>Se connecter avec Google</button>
+        <button type="button" class="btn btn-outline-secondary me-2" data-testid="bouton-oauth-microsoft"
+                @onclick='() => DemarrerOAuth("microsoft")'>Se connecter avec Microsoft</button>
+        <button type="button" class="btn btn-outline-secondary" data-testid="bouton-oauth-apple"
+                @onclick='() => DemarrerOAuth("apple")'>Se connecter avec Apple</button>
+    </div>
 </div>

@@ -99,6 +99,12 @@
    par acteur**. *L'**impersonation écriture « au nom de »** (agir réellement sous l'identité incarnée)
    est **hors-cap** : elle franchit cette borne dure et amorce l'auth réelle — elle exige une
    **décision PO explicite** de changer le cap (cf. Risques).*
+   > **MAJ (s22→s25)** : l'**authentification réelle est désormais LIVRÉE** (comptes, sessions, connexion,
+   > activation, page login, mot de passe, libre-service, récupération, OAuth — cf.
+   > [`acteurs-et-config-foyer.md` R11→R14](acteurs-et-config-foyer.md)). La borne « pas encore d'auth
+   > réelle » de cette règle 8 ne tient plus ; l'identité réelle de la session est **ancrée sur l'acteur
+   > du compte connecté** (fix s25), et l'impersonation bornée lecture s'exerce **au-dessus** de cette
+   > identité réelle. *(Câblage OAuth/SMTP réel en dette assumée, cf. R14.)*
 
 9. **Modification réservée aux parents et à l'admin, gating sur l'identité effective (durcissement
    config livré)** — Seul un Parent (ou l'Admin) peut créer, éditer ou supprimer un créneau, une

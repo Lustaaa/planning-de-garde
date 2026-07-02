@@ -105,8 +105,21 @@ public partial class PlanningPartage
         }
     }
 
+    // Route protégée (s25, Sc.1) : sans session ouverte, la route redirige vers la page de connexion et
+    // NE rend AUCUN contenu (pas de flash de grille). Vrai tant que la session n'est pas connectée.
+    private bool _redirigeVersConnexion;
+
     protected override async Task OnInitializedAsync()
     {
+        // Garde d'accès (s25, Sc.1) : aucune session ouverte → redirection vers /connexion, aucun contenu
+        // rendu. La page de connexion dédiée reste librement accessible (elle n'est pas protégée).
+        if (!Session.EstConnecte)
+        {
+            _redirigeVersConnexion = true;
+            Nav.NavigateTo("connexion");
+            return;
+        }
+
         // L'ancre de navigation démarre sur la semaine en cours (lundi de la date d'aujourd'hui), via
         // le port d'horloge injecté. Idempotent : une ancre déjà décalée par la navigation est conservée.
         Session.InitialiserAncre(Horloge.Aujourdhui);
@@ -145,7 +158,7 @@ public partial class PlanningPartage
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender)
+        if (!firstRender || _redirigeVersConnexion)
             return;
 
         try

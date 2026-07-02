@@ -20,7 +20,7 @@ public class Scenario2_SeConnecterEmailInconnu
     {
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-1", "alice@foyer.fr", StatutCompte.Actif, "acteur-alice"); // un autre compte
-        var handler = new SeConnecterHandler(comptes);
+        var handler = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2());
 
         var resultat = handler.Handle(new SeConnecterCommand(EmailInconnu));
 
@@ -36,7 +36,7 @@ public class Scenario2_SeConnecterEmailInconnu
     public void Should_Nommer_email_inconnu_dans_le_motif_When_l_email_est_inconnu()
     {
         var comptes = new ReferentielComptesEnMemoire();
-        var handler = new SeConnecterHandler(comptes); // référentiel vide
+        var handler = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2()); // référentiel vide
 
         var resultat = handler.Handle(new SeConnecterCommand(EmailInconnu));
 

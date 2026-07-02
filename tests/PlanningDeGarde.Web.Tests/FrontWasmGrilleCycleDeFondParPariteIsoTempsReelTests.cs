@@ -42,7 +42,7 @@ public sealed class FrontWasmGrilleCycleDeFondParPariteIsoTempsReelTests : TestC
         // les deux composants partagent le même canal HTTP réel et la même horloge figée.
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
-        Services.AddSingleton(new SessionPlanning());
+        Services.AddSingleton(GrilleRuntimeHarness.SessionConnectee());
         Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(GrilleRuntimeHarness.Lundi_29_06_2026));
         Services.AddSingleton(new OptionsConnexionHub
         {

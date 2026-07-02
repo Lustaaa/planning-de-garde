@@ -41,7 +41,7 @@ public sealed class FrontWasmConfigOngletPeriodeGardeCycleIsoFonctionnelTempsRee
         GrilleRuntimeHarness.SemerPeriode(api, "parent-b", new DateTime(2026, 7, 6), new DateTime(2026, 7, 6));
 
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
-        Services.AddSingleton(new SessionPlanning());
+        Services.AddSingleton(GrilleRuntimeHarness.SessionConnectee());
         Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(GrilleRuntimeHarness.Lundi_29_06_2026));
         Services.AddSingleton(new OptionsConnexionHub
         {

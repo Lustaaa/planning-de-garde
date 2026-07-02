@@ -39,7 +39,7 @@ public sealed class BoucleAuthCompleteMongoReelTests : IDisposable
         var compteId = new CreerCompteHandler(comptes, comptes, config).Handle(new CreerCompteCommand(Email, acteurId)).Valeur!.CompteId;
 
         // 2. Connexion tentée AVANT activation → refusée (compte Inactif, motif clair, aucune session).
-        var connexionAvant = new SeConnecterHandler(comptes).Handle(new SeConnecterCommand(Email));
+        var connexionAvant = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2()).Handle(new SeConnecterCommand(Email));
         Assert.False(connexionAvant.EstSucces);
         Assert.False(string.IsNullOrWhiteSpace(connexionAvant.Motif));
 
@@ -48,7 +48,7 @@ public sealed class BoucleAuthCompleteMongoReelTests : IDisposable
         Assert.True(activation.EstSucces);
 
         // 4. Nouvelle tentative par le même email → réussit, session ouverte, identité effective = l'acteur lié.
-        var connexionApres = new SeConnecterHandler(comptes).Handle(new SeConnecterCommand(Email));
+        var connexionApres = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2()).Handle(new SeConnecterCommand(Email));
         Assert.True(connexionApres.EstSucces);
         Assert.Equal(acteurId, connexionApres.Valeur!.IdentiteEffective);
     }

@@ -94,8 +94,9 @@ public static class CanalEcriture
     /// existant ET Actif) est tranchée côté handler ; le front n'émet que l'email.</summary>
     public sealed record SeConnecterRequete(string Email);
 
-    /// <summary>Corps de la réponse de succès d'une connexion (s23) : l'id stable de l'acteur lié au compte
-    /// connecté et son nom d'affichage résolu côté serveur — le bandeau affiche « Connecté : &lt;Nom&gt; »
-    /// sans recalcul côté UI.</summary>
-    public sealed record SeConnecterReponse(string ActeurId, string Nom);
+    /// <summary>Corps de la réponse de succès d'une connexion (s23 ; type ancré s25 Sc.5) : l'id stable de
+    /// l'acteur lié au compte connecté, son nom d'affichage résolu côté serveur (« Connecté : &lt;Nom&gt; »
+    /// sans recalcul côté UI), et son <b>type</b> (Admin / Parent / Autre) résolu côté serveur — le front
+    /// ancre l'identité réelle de la session sur CET acteur et son type (gating suivant le type réel).</summary>
+    public sealed record SeConnecterReponse(string ActeurId, string Nom, PlanningDeGarde.Application.TypeActeur Type);
 }

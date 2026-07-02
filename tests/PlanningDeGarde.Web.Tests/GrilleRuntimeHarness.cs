@@ -179,7 +179,7 @@ internal static class GrilleRuntimeHarness
         // écriture précise est coupée (ClientVersAvecEcritureInjoignable) tout en laissant passer la
         // lecture initiale de la grille (Sc.4 « API injoignable » via le contexte grille).
         ctx.Services.AddSingleton(client ?? ClientVers(api));
-        ctx.Services.AddSingleton(new SessionPlanning());
+        ctx.Services.AddSingleton(SessionConnectee());
         ctx.Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(aujourdhui));
         ctx.Services.AddSingleton(new OptionsConnexionHub
         {
@@ -200,6 +200,20 @@ internal static class GrilleRuntimeHarness
             TimeSpan.FromSeconds(10));
 
         return grille;
+    }
+
+    /// <summary>
+    /// Session applicative <b>connectée</b> (s25, Sc.1) : la grille (route protégée) ne se rend que sous
+    /// session ouverte. Les scénarios de la grille présupposent un utilisateur connecté (l'accès a franchi
+    /// la garde d'admission) — on ouvre une session pour refléter cette réalité runtime. L'identité réelle
+    /// est ancrée sur un acteur de type Parent (s25 Sc.5), préservant le gating Parent des scénarios de
+    /// grille pré-s25 (aucun acteur incarnable câblé ici).
+    /// </summary>
+    public static SessionPlanning SessionConnectee()
+    {
+        var session = new SessionPlanning();
+        session.Connecter("utilisateur connecté", "configurateur", TypeActeur.Parent);
+        return session;
     }
 
     /// <summary>La case-jour rendue dont l'en-tête de date affiche <paramref name="jjMM"/> (« dd/MM »).</summary>

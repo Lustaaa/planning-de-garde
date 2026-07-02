@@ -30,7 +30,7 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
         _cache = _comptes.Find(Builders<CompteDocument>.Filter.Empty).ToList().ToDictionary(d => d.Id);
     }
 
-    public void Creer(string compteId, string email, StatutCompte statut, string acteurId)
+    public void Creer(string compteId, string email, StatutCompte statut, string? acteurId, string? motDePasseHache = null)
     {
         // Écriture write-through : cache de session ET store durable (le compte réapparaît au
         // redémarrage). Le même id reste un unique document (jamais de doublon).
@@ -39,7 +39,8 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
             Id = compteId,
             Email = email,
             Statut = statut,
-            ActeurId = acteurId
+            ActeurId = acteurId,
+            MotDePasseHache = motDePasseHache
         };
         _cache[compteId] = doc;
         _comptes.ReplaceOne(
@@ -70,7 +71,7 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
         // l'absence (no-op). Email et acteur associé inchangés.
         if (!_cache.TryGetValue(compteId, out var doc))
             return;
-        var compteActif = new CompteUtilisateur(doc.Id, doc.Email, doc.Statut, doc.ActeurId).Activer();
+        var compteActif = new CompteUtilisateur(doc.Id, doc.Email, doc.Statut, doc.ActeurId, doc.MotDePasseHache).Activer();
         doc.Statut = compteActif.Statut;
         _cache[compteId] = doc;
         _comptes.ReplaceOne(
@@ -79,8 +80,22 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
             new ReplaceOptions { IsUpsert = true });
     }
 
+    public void RedefinirMotDePasse(string compteId, string motDePasseHache)
+    {
+        // Mutation ciblée du seul mot de passe write-through (récupération, s25) : cache de session ET
+        // store durable (le nouveau condensat survit au redémarrage). Tolérant à l'absence (no-op).
+        if (!_cache.TryGetValue(compteId, out var doc))
+            return;
+        doc.MotDePasseHache = motDePasseHache;
+        _cache[compteId] = doc;
+        _comptes.ReplaceOne(
+            Builders<CompteDocument>.Filter.Eq(d => d.Id, compteId),
+            doc,
+            new ReplaceOptions { IsUpsert = true });
+    }
+
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes()
-        => _cache.Values.Select(d => new CompteUtilisateur(d.Id, d.Email, d.Statut, d.ActeurId)).ToList();
+        => _cache.Values.Select(d => new CompteUtilisateur(d.Id, d.Email, d.Statut, d.ActeurId, d.MotDePasseHache)).ToList();
 
     /// <summary>Document persisté d'un compte du foyer : identifiant stable (clé), email, statut et
     /// id de l'acteur associé (null quand désassocié).</summary>
@@ -91,5 +106,10 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
         public string Email { get; set; } = default!;
         public StatutCompte Statut { get; set; }
         public string? ActeurId { get; set; }
+
+        /// <summary>Condensat du mot de passe local (volet 3 s25 ; jamais le clair). Null pour un
+        /// compte sans mot de passe (email-only s23 / OAuth).</summary>
+        [BsonIgnoreIfNull]
+        public string? MotDePasseHache { get; set; }
     }
 }

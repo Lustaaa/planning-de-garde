@@ -25,7 +25,7 @@ public class Scenario1_SeConnecterParEmail
     {
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-1", Email, StatutCompte.Actif, ActeurAlice);
-        var handler = new SeConnecterHandler(comptes);
+        var handler = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2());
 
         var resultat = handler.Handle(new SeConnecterCommand(Email));
 

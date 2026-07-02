@@ -72,9 +72,12 @@ public sealed class SessionPlanning
         return date.AddDays(-deltaDepuisLundi);
     }
 
-    /// <summary>Identité réelle = l'utilisateur principal (le configurateur), fixe et de type Parent.
-    /// C'est l'état de repli quand aucune incarnation n'est active.</summary>
-    public IdentiteActeur IdentiteReelle { get; } =
+    /// <summary>Identité réelle de la session = l'acteur du <b>compte connecté</b> (ancrée à la connexion,
+    /// s25 Sc.5 : id stable + nom + type résolus côté serveur). C'est l'état de repli quand aucune incarnation
+    /// n'est active. Avant toute connexion, valeur d'amorçage neutre (le configurateur) — remplacée dès
+    /// <see cref="Connecter"/> par l'acteur réel du compte, de sorte que le rôle/gating suive son type RÉEL
+    /// (Autre → pas les droits Parent), et non un rôle Parent hérité du configurateur en dur.</summary>
+    public IdentiteActeur IdentiteReelle { get; private set; } =
         new("configurateur", "le configurateur", TypeActeur.Parent);
 
     /// <summary>Identité effective = l'acteur incarné s'il y en a un, sinon l'identité réelle.</summary>
@@ -140,13 +143,17 @@ public sealed class SessionPlanning
     /// connexion / déconnexion est déclenchée depuis un AUTRE composant (la page de connexion dédiée).</summary>
     public event Action? EtatConnexionChange;
 
-    /// <summary>Ouvre la session pour le compte connecté (Sc.8) : mémorise le nom résolu serveur et
-    /// pré-positionne le sélecteur d'acteur sur l'acteur du compte (incarnation bornée s14, lecture seule).
-    /// Aucune persistance neuve.</summary>
-    public void Connecter(string nom, string acteurId)
+    /// <summary>Ouvre la session pour le compte connecté (Sc.8 ; identité ancrée s25 Sc.5) : mémorise le nom
+    /// résolu serveur et <b>ancre l'identité RÉELLE de la session sur l'acteur du compte connecté</b> (id
+    /// stable + nom + type résolus côté serveur), et non plus par une impersonation par-dessus le
+    /// configurateur en dur. L'identité effective repart de cette identité réelle (aucune incarnation active
+    /// à l'ouverture) : le rôle/gating d'écriture suit le type RÉEL de l'acteur (Autre → pas les droits
+    /// Parent). L'impersonation bornée s14 reste possible AU-DESSUS ensuite. Aucune persistance neuve.</summary>
+    public void Connecter(string nom, string acteurId, TypeActeur type)
     {
         CompteConnecteNom = nom;
-        Incarner(acteurId);
+        IdentiteReelle = new IdentiteActeur(acteurId, nom, type);
+        IdentiteEffective = IdentiteReelle;
         EtatConnexionChange?.Invoke();
     }
 

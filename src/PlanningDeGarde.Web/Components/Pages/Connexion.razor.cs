@@ -41,6 +41,15 @@ public partial class Connexion
         }
     }
 
+    /// <summary>Déclenche le flux OAuth du provider (volet 4, s25) : navigue vers l'endpoint de
+    /// démarrage OAuth côté serveur (<c>api/oauth/{provider}/demarrer</c>), qui redirige le navigateur
+    /// vers l'authorize réel du provider (Google/Microsoft/Apple — secrets/callbacks vérifiés
+    /// manuellement au G3). La vue ne porte AUCUNE règle métier : elle ne fait que déclencher le flux ;
+    /// la résolution de l'identité externe et l'ouverture de session sont tranchées côté serveur
+    /// (ConnexionOAuthHandler, Sc.14/Sc.15).</summary>
+    private void DemarrerOAuth(string provider)
+        => Nav.NavigateTo($"api/oauth/{provider}/demarrer", forceLoad: true);
+
     private async Task SeConnecterAsync()
     {
         _motif = null;
@@ -67,10 +76,11 @@ public partial class Connexion
         var session = await reponse.Content.ReadFromJsonAsync<SeConnecterReponse>();
         if (session is not null)
         {
-            // Ouvre la session (nom résolu serveur, s23) et pré-positionne le sélecteur d'acteur sur l'acteur
-            // lié au compte connecté (identité effective, incarnation bornée s14) — état partagé de session
-            // qui surface le menu utilisateur (Sc.11) — puis redirige vers le planning (Sc.8).
-            Session.Connecter(session.Nom, session.ActeurId);
+            // Ouvre la session (nom résolu serveur, s23) en ANCRANT l'identité réelle sur l'acteur lié au
+            // compte connecté ET son type (résolu serveur, s25 Sc.5) — état partagé de session qui surface le
+            // menu utilisateur (Sc.11) — puis redirige vers le planning (Sc.8). Le gating d'écriture suit
+            // désormais le type RÉEL de l'acteur, jamais un rôle Parent hérité du configurateur en dur.
+            Session.Connecter(session.Nom, session.ActeurId, session.Type);
             Nav.NavigateTo("planning");
         }
     }

@@ -22,7 +22,7 @@ public class Scenario3_SeConnecterCompteInactif
     {
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-bob", EmailBob, StatutCompte.Inactif, ActeurBob);
-        var handler = new SeConnecterHandler(comptes);
+        var handler = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2());
 
         var resultat = handler.Handle(new SeConnecterCommand(EmailBob));
 
@@ -39,7 +39,7 @@ public class Scenario3_SeConnecterCompteInactif
     {
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-bob", EmailBob, StatutCompte.Inactif, ActeurBob);
-        var handler = new SeConnecterHandler(comptes);
+        var handler = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2());
 
         var resultat = handler.Handle(new SeConnecterCommand(EmailBob));
 
@@ -55,7 +55,7 @@ public class Scenario3_SeConnecterCompteInactif
     {
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-bob", EmailBob, StatutCompte.Inactif, ActeurBob);
-        var handler = new SeConnecterHandler(comptes);
+        var handler = new SeConnecterHandler(comptes, new HacheurMotDePassePbkdf2());
 
         handler.Handle(new SeConnecterCommand(EmailBob));
 

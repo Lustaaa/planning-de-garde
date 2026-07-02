@@ -16,8 +16,8 @@ public sealed class ReferentielComptesEnMemoire : IEnumerationComptes, IEditeurC
 {
     private readonly Dictionary<string, CompteUtilisateur> _comptes = new();
 
-    public void Creer(string compteId, string email, StatutCompte statut, string acteurId)
-        => _comptes[compteId] = new CompteUtilisateur(compteId, email, statut, acteurId);
+    public void Creer(string compteId, string email, StatutCompte statut, string? acteurId, string? motDePasseHache = null)
+        => _comptes[compteId] = new CompteUtilisateur(compteId, email, statut, acteurId, motDePasseHache);
 
     public void Desassocier(string compteId)
     {
@@ -32,6 +32,13 @@ public sealed class ReferentielComptesEnMemoire : IEnumerationComptes, IEditeurC
         // Mutation ciblée du seul statut, portée par l'agrégat (Tell-Don't-Ask). Tolérant à l'absence.
         if (_comptes.TryGetValue(compteId, out var compte))
             _comptes[compteId] = compte.Activer();
+    }
+
+    public void RedefinirMotDePasse(string compteId, string motDePasseHache)
+    {
+        // Mutation ciblée du seul mot de passe (récupération, s25). Tolérant à l'absence (no-op).
+        if (_comptes.TryGetValue(compteId, out var compte))
+            _comptes[compteId] = compte with { MotDePasseHache = motDePasseHache };
     }
 
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes() => _comptes.Values.ToList();

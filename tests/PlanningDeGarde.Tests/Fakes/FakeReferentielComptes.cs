@@ -14,8 +14,8 @@ public sealed class FakeReferentielComptes : IEditeurComptes, IEnumerationCompte
 {
     private readonly Dictionary<string, CompteUtilisateur> _comptes = new();
 
-    public void Creer(string compteId, string email, StatutCompte statut, string acteurId)
-        => _comptes[compteId] = new CompteUtilisateur(compteId, email, statut, acteurId);
+    public void Creer(string compteId, string email, StatutCompte statut, string? acteurId, string? motDePasseHache = null)
+        => _comptes[compteId] = new CompteUtilisateur(compteId, email, statut, acteurId, motDePasseHache);
 
     public void Desassocier(string compteId)
     {
@@ -27,6 +27,12 @@ public sealed class FakeReferentielComptes : IEditeurComptes, IEnumerationCompte
     {
         if (_comptes.TryGetValue(compteId, out var compte))
             _comptes[compteId] = compte.Activer(); // mutation ciblée du statut, portée par l'agrégat
+    }
+
+    public void RedefinirMotDePasse(string compteId, string motDePasseHache)
+    {
+        if (_comptes.TryGetValue(compteId, out var compte))
+            _comptes[compteId] = compte with { MotDePasseHache = motDePasseHache }; // mutation ciblée du MDP
     }
 
     public IReadOnlyCollection<CompteUtilisateur> EnumererComptes() => _comptes.Values.ToList();

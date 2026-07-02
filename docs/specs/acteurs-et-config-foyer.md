@@ -2,8 +2,9 @@
 
 > Sujet **migré** depuis `docs/15-specification.md` (paliers 4/5/8 + règles 1-9) à la migration
 > complète des specs. Source de vérité pour le **référentiel des acteurs** (édition, ajout, suppression
-> — CRUD complet), sa **persistance Mongo**, le **gating** et l'**impersonation bornée lecture**. Édité
-> en diff, jamais réécrit en bloc.
+> — CRUD complet), sa **persistance Mongo**, le **gating**, l'**impersonation bornée lecture** et
+> l'**authentification / login complet** (fondation identité → mot de passe / libre-service / récupération /
+> OAuth, R11→R14). Édité en diff, jamais réécrit en bloc.
 
 ## Contexte
 
@@ -256,27 +257,70 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   session**. **Bandeau login inline de `PlanningPartage` retiré** (un seul chemin d'entrée). **Menu
   utilisateur** (`MenuUtilisateur` dans `MainLayout`) : nom / acteur + accès config foyer + « Se déconnecter »
   (logout s23 → retour `/connexion`). État de connexion partagé dans `SessionPlanning` (borne anti-cliquet
-  R30, **zéro persistance neuve**). **Hors scope (palier 13, cf. backlog)** : OAuth 2b, création de compte
-  libre-service, récupération de mot de passe par email. **Ouverts s24** : rôle affiché ≠ acteur du compte
-  connecté (bug « Mamie → Parent ») ; routes accessibles sans session (protection d'accès non posée).
+  R30, **zéro persistance neuve**). *(Les volets encore hors scope à la clôture s24 — OAuth, libre-service,
+  récupération de mot de passe, protection des routes, bug rôle — sont **tous livrés / corrigés s25**, cf. R14.)*
+
+- **R14 — Login complet : protection des routes, mot de passe local, libre-service, récupération & OAuth**
+  *(livré s25, auth tranche 2 — terminaison, entorse G2 de preuve actée)*. Ferme le login d'un seul tenant :
+  - **Protection d'accès aux routes** : non connecté → **redirection `/connexion`** (aucun contenu de route
+    protégée rendu, pas de flash de grille) ; connecté → accès rétabli (navigation entre routes protégées
+    **sans** re-redirection) ; **`/connexion` librement accessible** (pas de boucle), `/` → `/connexion`
+    (landing s24 préservée) ; **déconnexion → re-verrouillage immédiat** des routes.
+  - **Correction du bug rôle ≠ acteur du compte connecté** (« connecté en Mamie → rôle Parent ») :
+    l'**identité réelle de la session est ancrée sur l'acteur du compte connecté** (relation 1-1 s22) au lieu
+    du **configurateur en dur** ; le **rôle / gating d'écriture suit le type RÉEL** de cet acteur (Mamie type
+    Autre → **pas** les droits Parent), plus un rôle Parent hérité par défaut. **Aucune règle de résolution
+    grille/légende touchée** (le rôle n'y intervient pas, R10). **Non-régression impersonation bornée s14** :
+    retour à l'identité réelle → acteur du compte (pas le configurateur), repli sur suppression concurrente
+    de l'incarné vers l'identité réelle du compte (SignalR).
+  - **Facteur mot de passe local** : mot de passe **stocké haché (PBKDF2)**, **jamais en clair** ni exposé par
+    le canal, sur `CompteUtilisateur`. Login **email + mot de passe** (bon couple → `SessionOuverte`, identité
+    réelle = acteur du compte). **Refus NEUTRE anti-énumération** : mauvais mot de passe et email inconnu
+    donnent le **même** motif (ne les distingue jamais). L'**email-only s23** reste couvert pour les comptes
+    sans mot de passe / OAuth.
+  - **Inscription libre-service** : email **neuf** + mot de passe → `CompteUtilisateur` créé **Inactif** (défaut
+    s22) avec mot de passe **haché**, `ActeurId` **nullable** (association / activation ultérieures s22/s24) ;
+    email **déjà porteur** → **rejet sans écriture** (invariant email unique s22), motif clair.
+  - **Récupération de mot de passe par jeton** : demande sur **email connu** → **jeton usage-unique +
+    expiration** généré côté serveur + mail (lien/jeton) remis au **port de droite `IEnvoiMail`** ; **réponse
+    NEUTRE** (ne confirme pas l'existence du compte). **Email inconnu** → **aucun jeton, aucun envoi**, **même**
+    réponse neutre (anti-énumération, aucune fuite). **Jeton valide** → mot de passe **redéfini (haché)** et
+    **jeton consommé** (2ᵉ usage échoue) ; jeton **expiré / inconnu** rejeté sans mutation. Le jeton est porté
+    par un **port `IReferentielJetonsReset`**.
+  - **OAuth externe Google / Microsoft / Apple** : branché **derrière** `SessionOuverte` s23 via le **port de
+    droite `IFournisseurOAuth`**. Callback → identité externe **liée à un compte Actif** → `SessionOuverte`
+    (**même chemin** que la connexion locale s23, aucun agrégat durable neuf) ; identité **inconnue** ou compte
+    **Inactif** → **refus** (motif clair, cohérent Sc.8 / s23 / s24). **Boutons « Se connecter avec Google /
+    Microsoft / Apple »** sur `/connexion`, à côté du login local.
+
+  > **⚠️ Entorse G2 de preuve ACTÉE (PO) — volets non testables en runtime local.** OAuth (providers réels,
+  > secrets, callbacks) et **envoi de mail SMTP** ne peuvent pas passer le rempart d'acceptation runtime. La
+  > logique Application / frontière est prouvée **verte** contre une **doublure du PORT** (`IEnvoiMail`,
+  > `IFournisseurOAuth`, `IReferentielJetonsReset`) — **pas** un faux « runtime vert » de bout en bout — et le
+  > câblage réel est vérifié **manuellement** au gate. **DETTE DE CÂBLAGE ASSUMÉE, portée au backlog (P0, tête)** :
+  > adaptateurs concrets `IEnvoiMail` (SMTP), `IReferentielJetonsReset` (store durable), `IFournisseurOAuth`
+  > (providers réels) + endpoint `api/oauth/{provider}/demarrer` **non câblés** ; handlers `@preuve-doublure`
+  > **non enregistrés en DI** ; écrans IHM **mot-de-passe-oublié** et **inscription libre-service** **non
+  > construits** ; expiration du jeton reset **à confirmer** (défaut suggéré **60 min**). Mode opératoire OAuth :
+  > `docs/guides/auth-social-oauth-mode-operatoire.md`. **Tant que ces adaptateurs/écrans ne sont pas branchés,
+  > le login n'est pas opérationnel en runtime réel.**
 
 ## Risques
 
-- **Auth utilisable de bout en bout livrée (s22 fondation + s23 session + s24 activation & page login)** :
-  la boucle est **fonctionnelle E2E** (créer Inactif → activer → connexion réussit → session), la page
-  `/connexion` dédiée est la landing, le menu utilisateur donne accès config + logout. Le **prérequis
-  d'usabilité bloquant (activation) est levé** ; l'**UX auth jugée peu naturelle s23 est corrigée** (page
-  dédiée + retrait du bandeau inline). **Reste hors scope (palier 13, cf. backlog)** : **OAuth 2b** (Google
-  / Apple / Microsoft, 3 intégrations externes, secrets/callbacks, non testables runtime local — la session
-  s23 fournit le socle) ; **création de compte libre-service** ; **récupération de mot de passe par email**
-  (adaptateur de droite mail, facteur mot de passe distinct de l'email-only). *(Plus tard, non spécifié : le
-  PO envisage un **envoi de mail d'activation** — description à préciser ultérieurement.)*
-- **Bug ouvert s24 — rôle ≠ acteur du compte connecté** : « connecté en Mamie, j'ai le rôle Parent ».
-  L'identité effective / le rôle affiché ne suit pas toujours l'acteur du compte connecté (recoupe la
-  cohérence config → planning s21). À investiguer / corriger (backlog).
-- **Besoin ouvert s24 — protection d'accès aux routes** : « les pages sont toutes accessibles même sans
-  être loggé ». L'app pose la landing `/connexion` mais **ne garde pas** les routes (planning, config)
-  contre un accès non authentifié. Protection d'accès par route (guard / redirection) à poser (backlog).
+- **Login COMPLET livré (s22 fondation + s23 session + s24 activation/page login + s25 terminaison)** :
+  la boucle auth est **fonctionnelle E2E**, la page `/connexion` est la landing, le menu utilisateur donne
+  accès config + logout, et le s25 a fermé les volets restants — **protection des routes**, **mot de passe
+  local haché**, **inscription libre-service**, **récupération par jeton (mail)**, **OAuth 3 providers**
+  (cf. R14). Le **bug rôle ≠ acteur connecté** est **corrigé** (identité réelle ancrée sur l'acteur du compte).
+- **⚠️ DETTE DE CÂBLAGE ASSUMÉE (s25, entorse G2 de preuve, P0 tête de backlog)** — la logique auth des volets
+  OAuth / mail / jetons est **verte par doublure de port**, mais **rien n'est opérationnel en runtime réel**
+  tant que ne sont pas branchés : adaptateur `IEnvoiMail` **SMTP**, `IReferentielJetonsReset` **store durable**,
+  `IFournisseurOAuth` **providers réels** + endpoint `api/oauth/{provider}/demarrer`, **enregistrement DI** des
+  handlers `@preuve-doublure`, et les **écrans IHM** mot-de-passe-oublié + inscription libre-service (non
+  construits). **Expiration du jeton reset à confirmer** (défaut suggéré 60 min). Mode op OAuth :
+  `docs/guides/auth-social-oauth-mode-operatoire.md`. À câbler/vérifier manuellement (scope architecte ou
+  sprint dédié). *(Plus tard, non spécifié : le PO envisage un **envoi de mail d'activation** — description à
+  préciser ultérieurement.)*
 - **Auth tranche 1 livrée (fondation identité)** : la relation identité ↔ acteur posée en s22 a rendu le
   couplage « défaut = moi » trivial (concrétisé s23).
 - **Impersonation bornée lecture livrée — frontière avec l'auth réelle (palier 16) ; écriture « au nom

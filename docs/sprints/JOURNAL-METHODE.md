@@ -25,6 +25,14 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   `dev-team`, exiger un **re-run EN ISOLATION x2-3** AVANT tout étiquetage — **N/N rouge déterministe =
   régression** (STOP, jamais « flake », jamais continuer sur re-run) ; seul un rouge **intermittent**
   (vert ≥1/N isolé, ou rouge seulement sous charge de suite) reste flake catalogué.
+- 2026-07-02 — s25 : sous entorse G2 de preuve (doublure de port pour OAuth/mail/jetons non testables
+  runtime), le tableau a affiché **16/16 ✅** alors que le câblage réel (adaptateurs SMTP/store jetons/
+  providers OAuth + DI + écrans IHM) restait **en dette non branchée** → le login est vert en logique
+  mais **non opérationnel** ; un ✅ franc sur les scénarios `@preuve-doublure` surestime l'état et trompe
+  le PO. Fix : garde anti-✅-qui-ment dans le chapeau PLANNING du `scrum-master` — statut distinct
+  (`✅ logique / ⚠️ câblage`) sur les lignes `doublure+manuel` tant que le câblage réel n'est pas prouvé,
+  + ligne « dette de câblage » explicite au tableau, dette portée au backlog en `à faire` (P0 si non
+  opérationnel).
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake

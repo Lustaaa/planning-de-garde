@@ -127,7 +127,7 @@ public sealed class FrontWasmGrilleDeuxEcransCycleDerniereEcritureGagneTempsReel
     private static void ConfigurerCanal(Bunit.TestContext ctx, ApiDistanteFactory api)
     {
         ctx.Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
-        ctx.Services.AddSingleton(new SessionPlanning());
+        ctx.Services.AddSingleton(GrilleRuntimeHarness.SessionConnectee());
         ctx.Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(GrilleRuntimeHarness.Lundi_29_06_2026));
         ctx.Services.AddSingleton(new OptionsConnexionHub
         {
