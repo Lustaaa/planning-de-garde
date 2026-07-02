@@ -37,10 +37,32 @@ Parent** (agrégat `AdministrationFoyer`, `DesignerAdmin` **refuse un non-Parent
 le **cardinal des admins n'est pas borné** — quand les deux parents sont utilisateurs, **les deux peuvent
 être admins** (l'invariant borne le **type**, pas l'unicité). **Cycle de vie** : la **suppression d'un
 acteur désassocie** ses comptes (repli propre, `ActeurId = null`, **jamais de compte fantôme** référençant
-un acteur absent) ; la **désassociation est idempotente** (deux fois = no-op qui réussit). **Hors scope
-explicite** (auth tranche 2) : **OAuth Google / Apple / Microsoft**, **page de connexion custom**,
-**sessions HTTP / logout**, et le couplage **« acteur par défaut = utilisateur connecté »** (dépend d'une
-session). Cette tranche pose la **relation identité ↔ acteur** qui rendra ce couplage trivial ensuite.
+un acteur absent) ; la **désassociation est idempotente** (deux fois = no-op qui réussit).
+
+Une **connexion locale réelle** est **livrée** *(s23, auth tranche 2a)* : une **commande applicative**
+(canal requête/réponse, `SeConnecterCommand` / `SeConnecterHandler`, canal `POST /api/canal/se-connecter`)
+ouvre une **session serveur** par **email** d'un `CompteUtilisateur` **Actif** ; le **nom / l'acteur est
+résolu côté serveur** (l'appelant ne fournit que l'email). **Gardes de refus (aucune session, motif
+clair)** : **email inconnu** (aucun compte) ; **compte non activé** (statut `Inactif`, défaut de création
+s22). La **session serveur** (état d'**hôte / requête**, `SessionOuverte` — **pas** un agrégat durable de
+domaine, borne anti-cliquet respectée) ancre l'**identité réelle** de la session sur l'**acteur lié 1-1**
+au compte (relation s22) ; l'**impersonation bornée lecture** (s14) reste possible **au-dessus** de cette
+identité réelle (non contournée). Le **logout** = **destruction de la session** : l'identité effective
+retombe **exactement** sur le comportement **non connecté**, **aucune identité résiduelle**. L'**acteur
+par défaut** est résolu côté serveur (`ResoudreActeurParDefautQuery`) = l'**acteur du compte connecté**
+tant qu'une session existe ; **sans session**, le défaut retombe sur le **comportement actuel** (jamais
+l'acteur d'un compte) — **aucune régression** du chemin non connecté ni de l'impersonation bornée s14.
+**IHM** : un **bandeau de connexion custom** dans `PlanningPartage` (saisie email + « Se connecter » /
+« Se déconnecter » + état « Connecté : … » / motif de refus lisible), cohérent avec le bandeau
+d'impersonation ; une fois connecté, le **sélecteur d'acteur** (config / dialogs) est **pré-positionné**
+sur l'acteur du compte, via l'impersonation bornée s14. Le **temps réel SignalR lecture** (s20) est
+**préservé** : connexion / déconnexion n'altèrent pas la propagation (grille + légende + config convergent
+sur un 2ᵉ écran sans rechargement). **Store touché = comptes en lecture seule** (déjà Mongo config foyer
+s22), **aucune persistance neuve**. **Hors scope explicite** (auth tranche 2b / palier 13) : **OAuth
+Google / Apple / Microsoft** (3 intégrations externes, secrets, callbacks, non testables runtime local) ;
+l'**activation d'un compte** (`Inactif → Actif`, prise en main) — **prérequis d'usabilité non encore
+livré** : les comptes naissant `Inactif` (s22) et **aucun chemin d'activation** n'existant, **aucune
+connexion ne peut réussir sur des données réelles** aujourd'hui (à prioriser haut, cf. backlog).
 
 Les **acteurs fictifs de démo (« Parent A / Parent B ») sont éliminés partout** *(livré)* : aucune
 **constante de domaine** n'expose plus ces libellés, et **tout l'affichage** (sélecteurs des dialogs,
@@ -175,14 +197,43 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   Acteurs, gating Invité), temps réel SignalR. **Hors scope (tranche 2)** : OAuth Google/Apple/Microsoft,
   page de connexion custom, sessions HTTP/logout, acteur par défaut = utilisateur connecté.
 
+- **R12 — Connexion locale, session serveur & acteur par défaut = utilisateur connecté** *(livré s23,
+  auth tranche 2a)* : **connexion** par **email** d'un `CompteUtilisateur` **Actif** via commande
+  applicative (`SeConnecterCommand` / `SeConnecterHandler`, canal `POST /api/canal/se-connecter`) ; le
+  **nom / l'acteur est résolu côté serveur** (l'appelant ne fournit que l'email). **Refus (aucune session,
+  motif clair)** : **email inconnu** ; **compte non activé** (statut `Inactif`). La **session serveur**
+  (`SessionOuverte`, état d'**hôte / requête**, **pas** un agrégat durable) ancre l'**identité réelle** sur
+  l'**acteur lié 1-1** au compte (s22) ; l'**impersonation bornée s14** reste possible **au-dessus** (non
+  contournée). **Logout** = **destruction de session** → identité effective retombe **exactement** sur le
+  comportement **non connecté**, **aucune identité résiduelle**. **Acteur par défaut** résolu serveur
+  (`ResoudreActeurParDefautQuery`) = l'**acteur du compte connecté** tant qu'une session existe ; **sans
+  session**, défaut = **comportement actuel** (jamais l'acteur d'un compte) — **aucune régression** du
+  chemin non connecté ni de l'impersonation bornée s14. **IHM** : bandeau de connexion custom dans
+  `PlanningPartage` (email + connexion / déconnexion + état / motif) ; sélecteur d'acteur **pré-positionné**
+  sur l'acteur du compte via impersonation bornée s14. **Temps réel SignalR lecture préservé** (s20).
+  **Store = comptes en lecture seule** (Mongo config foyer s22), **aucune persistance neuve**. **Hors scope
+  (tranche 2b / palier 13)** : OAuth 3 providers ; **activation `Inactif → Actif`** (prise en main) —
+  **prérequis d'usabilité non livré** : sans chemin d'activation, aucune connexion ne réussit sur données
+  réelles (comptes nés `Inactif` s22).
+
 ## Risques
 
-- **Auth tranche 1 livrée (fondation identité) — frontière avec l'auth réelle (tranche 2, palier 13)** :
-  **OAuth 3 providers, page de connexion custom, sessions HTTP/logout, acteur par défaut = utilisateur
-  connecté** sont **explicitement hors scope** (non testables en runtime local, secrets/callbacks). La
-  relation identité ↔ acteur posée ici rend le couplage « défaut = moi » trivial dès qu'une session
-  existera. Statut du compte **Inactif par défaut** : l'**activation** (prise en main de compte) reste au
-  palier 13.
+- **Auth tranche 2a livrée (connexion locale, session, acteur par défaut = moi)** — **reste hors scope
+  (tranche 2b, palier 13)** : **OAuth Google / Apple / Microsoft** (3 intégrations externes,
+  secrets/callbacks, non testables runtime local). La session serveur livrée s23 fournit le socle sur
+  lequel la 2b brancherait un provider externe.
+- **PRÉREQUIS D'USABILITÉ BLOQUANT — activation `Inactif → Actif` non livrée** : les comptes naissent
+  `Inactif` (s22) et **aucun chemin d'activation** n'existe → en pratique **aucune connexion (s23) ne peut
+  réussir sur des données réelles** (elle est prouvée en runtime via un compte rendu Actif par bascule de
+  test). L'activation (prise en main de compte) doit être **priorisée haut** — elle débloque l'usage réel
+  de l'auth livrée (s22 + s23), probablement **avant ou avec la tranche 2b**. Cf. backlog.
+- **Retour PO s23 — l'UX auth actuelle est jugée peu naturelle** : bandeau de connexion sur l'écran
+  planning « n'a aucun sens » ; le PO veut une **page de connexion dédiée = page par défaut**, la
+  **création de compte** en libre-service, la **récupération de mot de passe par email** (adaptateur de
+  droite d'envoi de mail), et l'**accès à la config foyer depuis un menu utilisateur** une fois connecté.
+  À cadrer avec / autour de la tranche 2b (cf. backlog).
+- **Auth tranche 1 livrée (fondation identité)** : la relation identité ↔ acteur posée en s22 a rendu le
+  couplage « défaut = moi » trivial (concrétisé s23).
 - **Impersonation bornée lecture livrée — frontière avec l'auth réelle (palier 16) ; écriture « au nom
   de » = hors-cap** (décision PO explicite, candidat G1).
 - **Borne anti-cliquet** : la persistance reste **bornée à la config foyer** ; le reste du domaine en

@@ -99,6 +99,16 @@ public static class CanalEcriture
     /// (un acteur non-Parent est rejeté sans écriture, Sc.4) ; le motif de refus est renvoyé au front.</summary>
     public sealed record DesignerAdminRequete(string ActeurId);
 
+    /// <summary>Corps de la requête de connexion locale par email (s23) émise via le canal requête/réponse :
+    /// l'email d'un compte du référentiel. La connexion réussit ssi un compte de cet email existe ET est
+    /// Actif ; sinon refus avec motif clair (email inconnu / compte non activé), aucune session ouverte.</summary>
+    public sealed record SeConnecterRequete(string Email);
+
+    /// <summary>Corps de la réponse de succès d'une connexion (s23) : l'identité réelle de la session ouverte
+    /// (l'acteur lié 1-1 au compte connecté — id stable) et son nom d'affichage résolu côté serveur, pour que
+    /// le bandeau front affiche « Connecté : &lt;nom&gt; » sans règle métier côté UI.</summary>
+    public sealed record SeConnecterReponse(string ActeurId, string Nom);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
@@ -325,6 +335,22 @@ public static class CanalEcriture
 
             notificateur.NotifierMiseAJour();
             return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/se-connecter", (SeConnecterRequete requete, SeConnecterHandler handler, IReferentielResponsables referentiel) =>
+        {
+            var resultat = handler.Handle(new SeConnecterCommand(requete.Email));
+
+            // Connexion = commande applicative (canal requête/réponse) : réussit ssi un compte de cet email
+            // existe ET est Actif. Sur refus (email inconnu / compte non activé), aucune session — le motif
+            // clair est renvoyé au front. Sur succès, l'identité réelle de la session est l'acteur lié au
+            // compte ; son nom est résolu côté serveur (référentiel) pour le bandeau « Connecté : … ». La
+            // session est un état d'hôte/requête, PAS un agrégat durable (aucune persistance neuve, règle 30).
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            var acteurId = resultat.Valeur!.IdentiteReelle;
+            return Results.Ok(new SeConnecterReponse(acteurId, referentiel.NomDe(acteurId)));
         });
 
         return routes;

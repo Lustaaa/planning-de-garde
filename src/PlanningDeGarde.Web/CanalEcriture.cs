@@ -84,4 +84,14 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de désignation d'un acteur comme admin du foyer (s22) : l'id stable de
     /// l'acteur. L'invariant admin=parent est tranché côté Domain (non-Parent rejeté).</summary>
     public sealed record DesignerAdminRequete(string ActeurId);
+
+    /// <summary>Corps de la requête de connexion locale par email (s23) émise via le canal requête/réponse :
+    /// l'email saisi dans le bandeau de connexion. Aucune règle métier côté front — l'admission (compte
+    /// existant ET Actif) est tranchée côté handler ; le front n'émet que l'email.</summary>
+    public sealed record SeConnecterRequete(string Email);
+
+    /// <summary>Corps de la réponse de succès d'une connexion (s23) : l'id stable de l'acteur lié au compte
+    /// connecté et son nom d'affichage résolu côté serveur — le bandeau affiche « Connecté : &lt;Nom&gt; »
+    /// sans recalcul côté UI.</summary>
+    public sealed record SeConnecterReponse(string ActeurId, string Nom);
 }

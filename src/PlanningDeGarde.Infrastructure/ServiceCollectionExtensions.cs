@@ -128,6 +128,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<RetirerRoleActeurHandler>();
         services.AddScoped<CreerCompteHandler>();
         services.AddScoped<DesignerAdminHandler>();
+        services.AddScoped<SeConnecterHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();

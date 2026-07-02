@@ -78,6 +78,14 @@ public partial class PlanningPartage
     // restaurée), et la navigation échouée n'est NI mise en file NI rejouée (règle 28). Levé à part.
     private bool _echecNavigation;
 
+    // Bandeau de connexion custom (s23, Sc.7) : email saisi + état de connexion. La connexion passe par le
+    // canal requête/réponse (POST /api/canal/se-connecter) ; le front ne porte AUCUNE règle d'admission
+    // (compte existant ET Actif tranché côté handler). _compteConnecteNom = nom de l'acteur du compte
+    // connecté (« Connecté : … »), null hors connexion ; _motifConnexion = motif clair d'un refus, null sinon.
+    private string _emailConnexion = "";
+    private string? _compteConnecteNom;
+    private string? _motifConnexion;
+
     private RoleAuteur RoleSelectionne
     {
         get => Session.Role;
@@ -278,6 +286,58 @@ public partial class PlanningPartage
 
     /// <summary>Referme le bandeau d'échec de navigation (Sc.6, non bloquant).</summary>
     private void FermerEchecNavigation() => _echecNavigation = false;
+
+    /// <summary>
+    /// « Se connecter » (s23, Sc.7) : émet l'email saisi vers le canal requête/réponse
+    /// (POST /api/canal/se-connecter). Sur succès, le bandeau passe « Connecté : &lt;Nom&gt; » (nom résolu
+    /// côté serveur, jamais recalculé ici) et tout motif antérieur est effacé. Sur refus métier (email
+    /// inconnu / compte non activé), le motif clair renvoyé par le handler est surfacé et la vue reste
+    /// « non connecté ». Aucune règle d'admission côté front (tranchée par le handler). Le planning en
+    /// lecture n'est pas altéré (la connexion n'écrit pas dans le domaine).
+    /// </summary>
+    private async Task SeConnecterAsync()
+    {
+        _motifConnexion = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/se-connecter", new CanalEcriture.SeConnecterRequete(_emailConnexion));
+        }
+        catch (HttpRequestException)
+        {
+            _motifConnexion = "Service injoignable, réessayez.";
+            return;
+        }
+
+        if (reponse.IsSuccessStatusCode)
+        {
+            var session = await reponse.Content.ReadFromJsonAsync<CanalEcriture.SeConnecterReponse>();
+            _compteConnecteNom = session?.Nom;
+            // « Acteur par défaut = utilisateur connecté » (Sc.8) : pré-positionne le sélecteur d'acteur
+            // (source unique ActeursIncarnables, s20) sur l'acteur lié au compte connecté, via le mécanisme
+            // d'incarnation bornée s14 (lecture seule, aucune persistance neuve).
+            if (session is not null)
+                Session.Incarner(session.ActeurId);
+        }
+        else
+        {
+            _motifConnexion = await reponse.Content.ReadAsStringAsync();
+        }
+    }
+
+    /// <summary>« Se déconnecter » (Sc.8) : détruit l'état de connexion côté front (le bandeau repasse
+    /// « non connecté ») et fait retomber le sélecteur d'acteur sur le défaut non connecté — l'acteur par
+    /// défaut n'est plus celui du compte (retour à l'identité réelle via le mécanisme s14). Aucune identité
+    /// résiduelle. Aucune écriture (la déconnexion n'altère pas le domaine).</summary>
+    private void SeDeconnecter()
+    {
+        _compteConnecteNom = null;
+        _motifConnexion = null;
+        _emailConnexion = "";
+        Session.RevenirIdentiteReelle();
+    }
 
     /// <summary>Revient à l'identité réelle (bouton du bandeau d'incarnation, Sc.2) : l'incarnation est
     /// levée, la vue restaurée à l'identité réelle de l'utilisateur principal. Aucune écriture.</summary>
