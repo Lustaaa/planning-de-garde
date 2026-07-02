@@ -38,19 +38,31 @@ public sealed class SeConnecterHandler
         _hacheur = hacheur;
     }
 
+    /// <summary>Motif de refus NEUTRE (anti-énumération, Sc.8) : email inconnu et mauvais mot de passe
+    /// partagent le MÊME motif — un attaquant ne peut pas déduire de la réponse qu'un email existe.</summary>
+    private const string MotifIdentifiantsInvalides = "email ou mot de passe inconnu";
+
     public Result<SessionOuverte> Handle(SeConnecterCommand commande)
     {
-        // Garde « email inconnu » (Sc.2) : aucun compte ne porte cet email → refus avec motif clair,
-        // aucune session ouverte (le visiteur reste non connecté). Résolution sur l'email lu du référentiel.
+        // Garde « email inconnu » (Sc.2) : aucun compte ne porte cet email → refus avec motif NEUTRE
+        // (identique au mauvais mot de passe, Sc.8), aucune session ouverte. Résolution sur l'email lu.
         var compte = _comptes.EnumererComptes().FirstOrDefault(c => c.Email == commande.Email);
         if (compte is null)
-            return Result<SessionOuverte>.Echec("email inconnu");
+            return Result<SessionOuverte>.Echec(MotifIdentifiantsInvalides);
 
         // Garde « compte non activé » (Sc.3) : le statut Inactif (défaut de création s22) BORNE la
         // connexion → refus avec motif clair, aucune session. L'activation Inactif→Actif reste hors
         // scope (palier 13) : aucun chemin d'activation déclenché ici, le compte demeure Inactif.
         if (compte.Statut != StatutCompte.Actif)
             return Result<SessionOuverte>.Echec("compte non activé");
+
+        // Garde « mauvais mot de passe » (Sc.8) : quand le compte porte un mot de passe (facteur local
+        // s25), le couple email+mot de passe doit VÉRIFIER contre le condensat persisté (hacheur injecté
+        // Sc.7). Un mot de passe qui ne correspond pas → refus avec le MÊME motif neutre que l'email
+        // inconnu (anti-énumération) — aucune session. Un compte sans mot de passe (email-only s23 /
+        // OAuth) ne déclenche pas cette garde.
+        if (compte.MotDePasseHache is not null && !_hacheur.Verifier(commande.MotDePasse ?? string.Empty, compte.MotDePasseHache))
+            return Result<SessionOuverte>.Echec(MotifIdentifiantsInvalides);
 
         return Result<SessionOuverte>.Succes(new SessionOuverte(compte.ActeurId!));
     }

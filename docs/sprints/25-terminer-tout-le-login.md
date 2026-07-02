@@ -44,7 +44,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 7/16
+## Avancement — 8/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
@@ -55,7 +55,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 | 5 | Bug rôle : connexion « Mamie » (type Autre) → identité effective ET rôle = Mamie | @back | runtime | ✅ |
 | 6 | Bug rôle : non-régression impersonation bornée s14 au-dessus de la connexion | @back | runtime | ✅ |
 | 7 | Login email + **mot de passe** : bon couple → session ouverte | @back | runtime | ✅ |
-| 8 | Login email + mot de passe : mauvais mot de passe → refus, aucune session, motif clair | @back | runtime | ⏳ |
+| 8 | Login email + mot de passe : mauvais mot de passe → refus, aucune session, motif clair | @back | runtime | ✅ |
 | 9 | **Création de compte libre-service** : email neuf + mot de passe → compte créé (Inactif) | @back | runtime | ⏳ |
 | 10 | Libre-service : email déjà porteur → rejet sans écriture, motif clair | @back | runtime | ⏳ |
 | 11 | **Récupération mot de passe** : demande sur email connu → jeton + mail émis (port) | @back | doublure+manuel | ⏳ |
@@ -145,7 +145,7 @@ Scénario 7 — Login email + mot de passe : bon couple → session ouverte
   Alors une SessionOuverte est créée (identité réelle = acteur du compte, cf. Sc.5)
   Et le mot de passe n'est JAMAIS retourné ni exposé par le canal
 
-@back @pending
+@back @vert
 Scénario 8 — Login : mauvais mot de passe → refus, aucune session
   Étant donné un CompteUtilisateur Actif avec un mot de passe défini
   Quand je me connecte avec le bon email mais un mauvais mot de passe
