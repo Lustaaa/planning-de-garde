@@ -67,9 +67,10 @@ public partial class Connexion
         var session = await reponse.Content.ReadFromJsonAsync<SeConnecterReponse>();
         if (session is not null)
         {
-            // Pré-positionne le sélecteur d'acteur sur l'acteur lié au compte connecté (identité effective,
-            // incarnation bornée s14) puis redirige vers le planning (Sc.8).
-            Session.Incarner(session.ActeurId);
+            // Ouvre la session (nom résolu serveur, s23) et pré-positionne le sélecteur d'acteur sur l'acteur
+            // lié au compte connecté (identité effective, incarnation bornée s14) — état partagé de session
+            // qui surface le menu utilisateur (Sc.11) — puis redirige vers le planning (Sc.8).
+            Session.Connecter(session.Nom, session.ActeurId);
             Nav.NavigateTo("planning");
         }
     }
