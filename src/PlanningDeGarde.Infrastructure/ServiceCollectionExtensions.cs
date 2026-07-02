@@ -130,6 +130,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AffecterRoleActeurHandler>();
         services.AddScoped<RetirerRoleActeurHandler>();
         services.AddScoped<CreerCompteHandler>();
+        services.AddScoped<CreerCompteLibreServiceHandler>();
         services.AddScoped<ActiverCompteHandler>();
         services.AddScoped<DesignerAdminHandler>();
         services.AddScoped<SeConnecterHandler>();

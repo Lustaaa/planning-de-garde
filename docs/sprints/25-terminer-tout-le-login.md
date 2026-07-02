@@ -44,7 +44,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 8/16
+## Avancement — 9/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
@@ -56,7 +56,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 | 6 | Bug rôle : non-régression impersonation bornée s14 au-dessus de la connexion | @back | runtime | ✅ |
 | 7 | Login email + **mot de passe** : bon couple → session ouverte | @back | runtime | ✅ |
 | 8 | Login email + mot de passe : mauvais mot de passe → refus, aucune session, motif clair | @back | runtime | ✅ |
-| 9 | **Création de compte libre-service** : email neuf + mot de passe → compte créé (Inactif) | @back | runtime | ⏳ |
+| 9 | **Création de compte libre-service** : email neuf + mot de passe → compte créé (Inactif) | @back | runtime | ✅ |
 | 10 | Libre-service : email déjà porteur → rejet sans écriture, motif clair | @back | runtime | ⏳ |
 | 11 | **Récupération mot de passe** : demande sur email connu → jeton + mail émis (port) | @back | doublure+manuel | ⏳ |
 | 12 | Récupération : email inconnu → réponse neutre, aucun mail, aucune fuite | @back | doublure+manuel | ⏳ |
@@ -152,7 +152,7 @@ Scénario 8 — Login : mauvais mot de passe → refus, aucune session
   Alors aucune session n'est ouverte
   Et le motif est clair et NEUTRE (ne distingue pas "email inconnu" de "mauvais mot de passe" — anti-énumération)
 
-@back @pending
+@back @vert
 Scénario 9 — Création de compte libre-service : email neuf + mot de passe → compte Inactif
   Étant donné aucun compte pour l'email fourni
   Quand je crée un compte en libre-service (email + mot de passe, "si on en a pas encore")

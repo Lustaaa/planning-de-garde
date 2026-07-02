@@ -30,7 +30,7 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
         _cache = _comptes.Find(Builders<CompteDocument>.Filter.Empty).ToList().ToDictionary(d => d.Id);
     }
 
-    public void Creer(string compteId, string email, StatutCompte statut, string acteurId, string? motDePasseHache = null)
+    public void Creer(string compteId, string email, StatutCompte statut, string? acteurId, string? motDePasseHache = null)
     {
         // Écriture write-through : cache de session ET store durable (le compte réapparaît au
         // redémarrage). Le même id reste un unique document (jamais de doublon).
