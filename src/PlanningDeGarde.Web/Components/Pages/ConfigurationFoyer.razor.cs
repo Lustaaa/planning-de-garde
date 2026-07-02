@@ -612,6 +612,14 @@ public partial class ConfigurationFoyer
     /// supprimé » — D5) : affiché sans interrompre la consultation, effacé à l'activation suivante.</summary>
     private string? _accuseActivation;
 
+    /// <summary>Motif d'échec d'activation, par compte (clé = id stable du compte) : sur refus métier
+    /// (compte introuvable, Sc.3) ou service injoignable, ce motif clair est surfacé dans la ligne du compte,
+    /// sans faux positif — le statut affiché reste inchangé, aucun accusé « Compte activé » (Sc.6).</summary>
+    private readonly Dictionary<string, string> _motifEchecActivation = new();
+
+    private string? MotifEchecActivation(string compteId)
+        => _motifEchecActivation.TryGetValue(compteId, out var m) ? m : null;
+
     /// <summary>Vrai si le compte est de statut « inactif » (le statut est renvoyé en minuscules par le canal
     /// de lecture) — condition d'affichage de l'action « Activer » (Sc.5). Aucune règle métier dans l'UI :
     /// c'est une simple lecture du statut projeté ; l'activation est tranchée côté handler.</summary>
@@ -624,11 +632,11 @@ public partial class ConfigurationFoyer
     /// ré-énumère les comptes pour que le statut passe « actif » <b>sans rechargement</b> et que l'action
     /// « Activer » disparaisse (Sc.5). Sur succès, un accusé non bloquant « Compte activé » s'affiche. Sur
     /// refus métier (compte introuvable, Sc.3) ou <b>service injoignable</b> (échec de transport, règle 28),
-    /// un motif clair est surfacé et le statut affiché reste inchangé (aucun faux positif, Sc.6).
+    /// un motif clair est surfacé dans la ligne et le statut affiché reste inchangé (aucun faux positif, Sc.6).
     /// </summary>
     private async Task ActiverCompte(string compteId)
     {
-        _motifEchecCompte.Remove(compteId);
+        _motifEchecActivation.Remove(compteId);
 
         HttpResponseMessage reponse;
         try
@@ -639,13 +647,13 @@ public partial class ConfigurationFoyer
         }
         catch (HttpRequestException)
         {
-            _motifEchecCompte[compteId] = MessagesEcriture.ServiceInjoignable;
+            _motifEchecActivation[compteId] = MessagesEcriture.ServiceInjoignable;
             return;
         }
 
         if (!reponse.IsSuccessStatusCode)
         {
-            _motifEchecCompte[compteId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de l'activation du compte.";
+            _motifEchecActivation[compteId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de l'activation du compte.";
             return;
         }
 

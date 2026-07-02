@@ -1,6 +1,6 @@
 # Sprint 24 — Auth utilisable de bout en bout : activation (Inactif→Actif) + page de connexion dédiée (`auth-utilisable-activation-et-page-login`)
 
-> **Avancement : 5/11 ⏳**
+> **Avancement : 6/11 ⏳**
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -9,7 +9,7 @@
 | 3 | **Rejet : activer un compte inconnu** (id absent) → refus, motif clair, **aucune mutation** | @back | ✅ |
 | 4 | **Boucle auth complète (E2E back)** : créer compte (naît Inactif, s22) → connexion **refusée** (Inactif, s23) → **activer** → connexion **réussit** (session ouverte, s23) | @back | ✅ |
 | 5 | IHM **bouton « Activer » (onglet Acteurs, Parent-gated)** : un compte Inactif affiche « Activer » → clic → compte Actif + accusé non bloquant « Compte activé » ; un compte déjà Actif n'affiche plus l'action | 🖥️ @ihm | ✅ |
-| 6 | IHM **gating Invité + échec API** activation : l'Invité ne voit pas l'action ; échec transport → message clair, statut inchangé à l'écran | 🖥️ @ihm | ⏳ |
+| 6 | IHM **gating Invité + échec API** activation : l'Invité ne voit pas l'action ; échec transport → message clair, statut inchangé à l'écran | 🖥️ @ihm | ✅ |
 | 7 | IHM **temps réel SignalR** : l'activation d'un compte propage le nouveau statut à un 2ᵉ écran (onglet Acteurs) sans rechargement | 🖥️ @ihm | ⏳ |
 | 8 | IHM **page de connexion dédiée = landing par défaut** : app démarrée non connecté → **page login dédiée** (pas le planning) ; email valide (compte Actif) → connexion (`SeConnecterCommand` s23) → **redirection planning** | 🖥️ @ihm | ⏳ |
 | 9 | IHM **motif clair sur la page login** : email inconnu / compte Inactif → la page affiche un motif clair, reste sur la page login, aucune redirection | 🖥️ @ihm | ⏳ |
@@ -101,7 +101,7 @@ Scénario 5 : Bouton « Activer » dans l'onglet Acteurs (Parent-gated)
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 6 : Gating Invité + échec API à l'activation
   Étant donné un utilisateur en identité effective "Invité"
   Alors l'action « Activer » n'est pas offerte (gating effectif, non-régression s14/s20)

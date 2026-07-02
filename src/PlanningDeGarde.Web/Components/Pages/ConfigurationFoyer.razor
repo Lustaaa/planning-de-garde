@@ -264,6 +264,11 @@
                                         data-testid="bouton-activer-compte" data-compte-id="@compte.Id"
                                         @onclick="() => ActiverCompte(compte.Id)">Activer</button>
                             }
+                            @if (MotifEchecActivation(compte.Id) is { } motifActivation)
+                            {
+                                <span class="alert alert-danger py-1 px-2 mb-0 acteur-activer-motif"
+                                      data-testid="motif-echec-activation">@motifActivation</span>
+                            }
                         }
                         else
                         {
