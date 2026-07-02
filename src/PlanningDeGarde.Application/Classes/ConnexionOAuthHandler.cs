@@ -33,9 +33,15 @@ public sealed class ConnexionOAuthHandler
         // résolution vers un compte du foyer — même clé que la connexion locale s23.
         var identite = _fournisseur.ResoudreIdentite(commande.Callback);
 
+        // Garde « identité non résolue » (Sc.15) : un callback dont le provider ne restitue aucune
+        // identité exploitable est refusé, sans session — pas de délégation avec un email absent.
+        if (identite is null)
+            return Result<SessionOuverte>.Echec("identité OAuth non résolue");
+
         // Ouverture de session par le MÊME chemin s23 : le handler local résout le compte sur l'email,
         // contrôle son activation et ancre l'identité réelle sur son acteur (Sc.5). OAuth = facteur
-        // d'entrée, pas un nouveau chemin de session (aucun agrégat durable neuf).
-        return _seConnecter.Handle(new SeConnecterCommand(identite!.Email));
+        // d'entrée, pas un nouveau chemin de session (aucun agrégat durable neuf). Les refus « email
+        // inconnu » / « compte non activé » (Sc.15) sont ceux de s23/s24, propagés tels quels.
+        return _seConnecter.Handle(new SeConnecterCommand(identite.Email));
     }
 }

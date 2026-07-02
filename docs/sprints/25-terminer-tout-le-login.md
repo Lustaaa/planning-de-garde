@@ -44,7 +44,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 
 ---
 
-## Avancement — 14/16
+## Avancement — 15/16
 
 | # | Scénario | Type | Preuve | Statut |
 |--:|----------|:----:|:------:|:------:|
@@ -62,7 +62,7 @@ PO garde la main pour **scinder** (tranche 25a runtime / 25b OAuth+mail) si la v
 | 12 | Récupération : email inconnu → réponse neutre, aucun mail, aucune fuite | @back | doublure+manuel | ✅ |
 | 13 | Récupération : jeton valide → mot de passe redéfini ; jeton consommé | @back | runtime | ✅ |
 | 14 | **OAuth** : callback provider, compte lié Actif → `SessionOuverte` | @back | doublure+manuel | ✅ |
-| 15 | OAuth : identité provider inconnue / compte Inactif → refus, aucune session | @back | doublure+manuel | ⏳ |
+| 15 | OAuth : identité provider inconnue / compte Inactif → refus, aucune session | @back | doublure+manuel | ✅ |
 | 16 | **IHM login** : bouton « Se connecter avec Google/Microsoft/Apple » sur `/connexion` | 🖥️ IHM | doublure+manuel | ⏳ |
 
 ---
@@ -219,7 +219,7 @@ Scénario 14 — Callback OAuth, identité liée à un compte Actif → SessionO
   Alors une SessionOuverte est créée (identité réelle = acteur du compte, cf. Sc.5)
   Et le chemin de session est le MÊME que la connexion locale s23 (aucun agrégat durable neuf)
 
-@back @preuve-doublure @pending
+@back @preuve-doublure @vert
 Scénario 15 — Callback OAuth : identité inconnue ou compte Inactif → refus
   # PREUVE PAR DOUBLURE D'ADAPTATEUR ; câblage provider réel vérifié manuellement (G3)
   Étant donné un IFournisseurOAuth (doublure) restituant une identité externe SANS compte lié, OU liée à un compte Inactif
