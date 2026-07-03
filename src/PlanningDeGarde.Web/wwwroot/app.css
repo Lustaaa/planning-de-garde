@@ -1,23 +1,50 @@
-/* Thème métier « garde des enfants » (palier 3, règle 20) : identité douce et accueillante —
-   fond crème chaud, accent vert sauge apaisant, cartes arrondies. Choisi pour rester DISTINCT des
-   couleurs de responsabilité (parent-a → bleu, parent-b → orange) : l'accent n'emprunte ni le bleu
-   ni l'orange, et les teintes de responsabilité (appliquées en style inline sur les cases) priment.
-   Ergonomie de surface : aucune règle métier, aucun observable — purement CSS. */
+/* Système visuel « Cocon élevé » (sprint 26) : refonte graphique gouvernée par l'intuitivité.
+   Polices self-hosted (aucun CDN externe, offline-friendly WASM) — Fraunces pour les titres
+   (serif éditorial, chaleur + caractère), Inter pour le corps/UI. Déposées sous wwwroot/fonts/.
+   Sous-ensemble latin (couvre les accents français U+00C0-00FF), fichiers variables. */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('fonts/inter-latin.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Fraunces';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('fonts/fraunces-latin.woff2') format('woff2');
+}
+
+/* Design tokens --pdg-* (source de vérité : docs/superpowers/specs/2026-07-03-refonte-graphique-design.md).
+   Accent SAUGE, hors bleu / hors orange — ces teintes restent la DONNÉE « qui a les enfants »,
+   appliquées en style inline (priorité maximale) sur les cases. Ergonomie de surface : aucune règle
+   métier, aucun observable — purement CSS. Valeurs sombres [data-theme=sombre] : Sc.2. */
 :root {
-    --pdg-accent: #2f9e86;        /* vert sauge accueillant */
-    --pdg-accent-dark: #257e6b;
-    --pdg-accent-soft: #e6f4ef;   /* fond pâle des pastilles/badges */
-    --pdg-bg: #fbf6ee;            /* crème chaud */
-    --pdg-card: #fffdf9;          /* blanc chaud */
-    --pdg-border: #ece1d2;        /* sable doux */
-    --pdg-ink: #3c352b;           /* brun-charbon lisible */
-    --pdg-muted: #8c8273;
+    --pdg-font-titre: 'Fraunces', Georgia, 'Times New Roman', serif;
+    --pdg-font-corps: 'Inter', system-ui, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+
+    --pdg-accent: #2E6F5E;        /* vert sauge — marque, actions */
+    --pdg-accent-dark: #245A4C;   /* hover / focus */
+    --pdg-accent-soft: #E4F0EA;   /* fond pâle des pastilles/badges */
+    --pdg-bg: #F7F1E8;            /* crème chaud */
+    --pdg-card: #FFFDF9;          /* blanc chaud */
+    --pdg-border: #ECE1D2;        /* sable doux */
+    --pdg-ink: #2B2620;           /* brun-charbon lisible */
+    --pdg-muted: #8C8273;
 }
 
 html, body {
-    font-family: 'Segoe UI Rounded', 'SF Pro Rounded', system-ui, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: var(--pdg-font-corps);
     background-color: var(--pdg-bg);
     color: var(--pdg-ink);
+}
+
+/* Titres / affichage en Fraunces (serif éditorial) — hiérarchie chaleureuse, hors « Bootstrap brut ». */
+h1, h2, h3, h4, .content h1, .content section h2, .pdg-brand-titre {
+    font-family: var(--pdg-font-titre);
 }
 
 a, .btn-link {

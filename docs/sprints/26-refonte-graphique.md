@@ -38,11 +38,11 @@
 
 ---
 
-## Avancement — 0/14
+## Avancement — 1/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
-| 1 | Fondation : tokens `--pdg-*` + polices Fraunces/Inter self-hosted (offline) | 🖥️ IHM | ⏳ |
+| 1 | Fondation : tokens `--pdg-*` + polices Fraunces/Inter self-hosted (offline) | 🖥️ IHM | ✅ |
 | 2 | Fondation thème : défaut = préférence système, `data-theme` sur `<html>`, zéro flash | 🖥️ IHM | ⏳ |
 | 3 | Fondation switch clair/sombre : choix persisté `localStorage`, prime sur système | 🖥️ IHM | ⏳ |
 | 4 | Calendrier (cœur) : cases mini-cartes, responsable héroïque, « aujourd'hui » marqué | 🖥️ IHM | ⏳ |
@@ -61,7 +61,7 @@
 
 ## Scénarios
 
-### Sc.1 — Fondation : design tokens + polices self-hosted `@ihm @pending`
+### Sc.1 — Fondation : design tokens + polices self-hosted `@ihm @vert`
 
 ```gherkin
 Scénario: Les tokens --pdg-* et les polices web sont chargés sans appel réseau externe
