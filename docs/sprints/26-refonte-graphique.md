@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 8/14
+## Avancement — 9/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -50,7 +50,7 @@
 | 6 | Calendrier : barre nav + sélecteurs (vue / incarnation / rôle) regroupés | 🖥️ IHM | ✅ |
 | 7 | Connexion : page d'entrée soignée + boutons OAuth Google/Microsoft/Apple habillés | 🖥️ IHM | ✅ |
 | 8 | Accueil : point d'entrée / orientation refondu | 🖥️ IHM | ✅ |
-| 9 | Config foyer : acteurs + formulaires habillés, onglets si pertinent | 🖥️ IHM | ⏳ |
+| 9 | Config foyer : acteurs + formulaires habillés, onglets si pertinent | 🖥️ IHM | ✅ |
 | 10 | Layout : nav + marque + menu utilisateur + bandeaux d'alerte adoucis | 🖥️ IHM | ⏳ |
 | 11 | Dialogs (×6) : habillage cohérent + hiérarchie de boutons | 🖥️ IHM | ⏳ |
 | 12 | Légende : découvrable, cohérente avec les couleurs de responsabilité (clair + sombre) | 🖥️ IHM | ⏳ |
@@ -167,7 +167,7 @@ Scénario: L'accueil oriente clairement l'utilisateur
   Et l'écran rend correctement en clair et en sombre
 ```
 
-### Sc.9 — Config foyer : formulaires habillés `@ihm @pending`
+### Sc.9 — Config foyer : formulaires habillés `@ihm @vert`
 
 ```gherkin
 Scénario: La configuration du foyer est habillée et lisible

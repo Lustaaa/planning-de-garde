@@ -27,7 +27,7 @@
    Période de garde (cycle de fond), Slot récurrent (réservé, placeholder). Iso-fonctionnel : aucune
    règle métier ni écriture neuve, le contenu existant est simplement réparti et cloisonné. « Acteurs »
    est actif par défaut ; le gating d'écriture (identité effective, Sc.7) est préservé DANS chaque onglet. *@
-<ul class="nav nav-tabs mb-3" role="tablist" data-testid="onglets-config">
+<ul class="nav nav-tabs config-onglets mb-3" role="tablist" data-testid="onglets-config">
     <li class="nav-item" role="presentation">
         <button type="button" role="tab" data-testid="onglet-acteurs"
                 class="nav-link @(_ongletActif == "acteurs" ? "active" : "")"
@@ -372,9 +372,26 @@
 }
 
 <style>
-    .acteur-ligne { display: flex; align-items: center; gap: 8px; }
-    .acteur-pastille { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none;
-        border: 1px solid rgba(0, 0, 0, .15); }
-    .acteur-nom { color: #333; }
+    /* Configuration du foyer « Cocon élevé » (Sc.9) : onglets, listes et lignes tokenisés (clair ET sombre).
+       Les pastilles de couleur d'acteur restent INLINE (donnée, couleur de responsabilité), inchangées. */
+
+    /* Onglets tokenisés : soulignage d'accent sauge sur l'onglet actif, plus le look « nav-tabs Bootstrap ». */
+    .config-onglets { border-bottom: 1px solid var(--pdg-border); gap: .25rem; }
+    .config-onglets .nav-link { border: none; border-bottom: 2px solid transparent; border-radius: 10px 10px 0 0;
+        color: var(--pdg-muted); font-weight: 600; padding: .5rem .9rem; background: transparent; }
+    .config-onglets .nav-link:hover { color: var(--pdg-ink); background: var(--pdg-accent-soft); }
+    .config-onglets .nav-link.active { color: var(--pdg-accent); background: transparent;
+        border-bottom-color: var(--pdg-accent); }
+
+    /* Lignes d'acteur / de rôle = mini-cartes tokenisées, espacées et lisibles. */
+    .acteur-ligne, .role-ligne { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+        background: var(--pdg-card); border: 1px solid var(--pdg-border); border-radius: 12px;
+        padding: .65rem .85rem; margin-bottom: .5rem; }
+    .acteur-pastille { width: 16px; height: 16px; border-radius: 5px; display: inline-block; flex: none;
+        border: 1px solid rgba(0, 0, 0, .15); box-shadow: 0 1px 2px rgba(16,24,40,.10); }
+    .acteur-nom { color: var(--pdg-ink); font-weight: 600; }
+    .acteur-role { color: var(--pdg-muted); font-size: .82rem; }
+    .role-libelle { color: var(--pdg-ink); font-weight: 600; }
     .acteur-supprimer { margin-left: auto; }
+    .role-actions { display: inline-flex; align-items: center; gap: .4rem; margin-left: auto; flex-wrap: wrap; }
 </style>
