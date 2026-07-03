@@ -519,6 +519,17 @@ public partial class PlanningPartage
         _plageFin = null;
     }
 
+    /// <summary>Vrai si la case correspond à la date du jour (port d'horloge injecté) — sert au marquage
+    /// visuel « aujourd'hui » (Sc.4). Pur affichage : aucune règle métier, aucun observable de domaine.</summary>
+    private bool EstAujourdhui(DateOnly date) => date == Horloge.Aujourdhui;
+
+    /// <summary>Style inline de fond de la case (Sc.4) : la couleur de responsabilité (teinte pâle) est
+    /// appliquée INLINE (donnée, priorité maximale) quand la case a un responsable ; sans responsable,
+    /// aucun fond inline n'est émis → la case retombe sur la surface tokenisée <c>--pdg-card</c> (rendu
+    /// correct en clair ET en sombre). La teinte porteuse reste inchangée.</summary>
+    private static string? CaseStyle(string couleur)
+        => string.IsNullOrEmpty(couleur) ? null : $"background-color:{Teinte(couleur)};";
+
     /// <summary>Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible
     /// avec du texte sombre), via le thème couleur partagé.</summary>
     private static string Teinte(string couleur) => CouleursTheme.Claire(couleur);
