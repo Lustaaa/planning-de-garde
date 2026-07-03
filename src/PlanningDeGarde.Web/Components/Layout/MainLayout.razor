@@ -11,6 +11,9 @@
             @* Menu utilisateur connecté (Sc.11) : nom / acteur + accès config + Se déconnecter, une fois
                une session ouverte (page de connexion dédiée, Sc.8). Présent sur toutes les pages. *@
             <MenuUtilisateur />
+            @* Switch de thème clair/sombre (Sc.3) : visible dans le layout sur toutes les pages,
+               persiste le choix (localStorage, prioritaire sur le système) et l'applique sans rechargement. *@
+            <BasculeTheme />
             <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">À propos</a>
         </div>
 

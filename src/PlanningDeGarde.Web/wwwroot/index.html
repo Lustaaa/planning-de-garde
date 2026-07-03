@@ -24,6 +24,19 @@
                 document.documentElement.setAttribute('data-theme', 'clair');
             }
         })();
+
+        // Module de bascule du thème (Sc.3), consommé par le switch Blazor via JS interop.
+        // definir : persiste le choix explicite (prioritaire au chargement suivant, l'amorce lit
+        // localStorage en premier) ET l'applique immédiatement, sans rechargement. lire : thème appliqué.
+        window.pdgTheme = {
+            lire: function () {
+                return document.documentElement.getAttribute('data-theme') || 'clair';
+            },
+            definir: function (theme) {
+                try { localStorage.setItem('pdg-theme', theme); } catch (e) { }
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        };
     </script>
 </head>
 

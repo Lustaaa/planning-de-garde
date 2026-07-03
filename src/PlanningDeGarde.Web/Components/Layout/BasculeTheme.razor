@@ -1,0 +1,24 @@
+@inject PlanningDeGarde.Web.IPreferencesTheme Preferences
+
+@* Switch clair/sombre (sprint 26, Sc.3) : bascule le thème, persiste le choix (localStorage, prioritaire
+   sur la préférence système) et l'applique immédiatement via data-theme sur <html>, sans rechargement.
+   Aucune règle métier : ergonomie de surface. *@
+<button type="button" class="bascule-theme" data-testid="bascule-theme"
+        title="Basculer le thème clair / sombre" aria-label="Basculer le thème clair / sombre"
+        @onclick="Basculer">
+    <span class="bascule-theme-icone" aria-hidden="true">@(EstSombre ? "☾" : "☀")</span>
+</button>
+
+@code {
+    private string _theme = "clair";
+
+    private bool EstSombre => _theme == "sombre";
+
+    protected override async Task OnInitializedAsync() => _theme = await Preferences.ThemeCourantAsync();
+
+    private async Task Basculer()
+    {
+        _theme = EstSombre ? "clair" : "sombre";
+        await Preferences.DefinirAsync(_theme);
+    }
+}

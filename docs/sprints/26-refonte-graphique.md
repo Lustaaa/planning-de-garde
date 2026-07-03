@@ -38,13 +38,13 @@
 
 ---
 
-## Avancement — 2/14
+## Avancement — 3/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Fondation : tokens `--pdg-*` + polices Fraunces/Inter self-hosted (offline) | 🖥️ IHM | ✅ |
 | 2 | Fondation thème : défaut = préférence système, `data-theme` sur `<html>`, zéro flash | 🖥️ IHM | ✅ |
-| 3 | Fondation switch clair/sombre : choix persisté `localStorage`, prime sur système | 🖥️ IHM | ⏳ |
+| 3 | Fondation switch clair/sombre : choix persisté `localStorage`, prime sur système | 🖥️ IHM | ✅ |
 | 4 | Calendrier (cœur) : cases mini-cartes, responsable héroïque, « aujourd'hui » marqué | 🖥️ IHM | ⏳ |
 | 5 | Calendrier : menu clic-case restructuré (primaires / destructives) | 🖥️ IHM | ⏳ |
 | 6 | Calendrier : barre nav + sélecteurs (vue / incarnation / rôle) regroupés | 🖥️ IHM | ⏳ |
@@ -92,7 +92,7 @@ Scénario: Préférence système "clair" → thème clair par défaut
   Alors <html> porte data-theme="clair" et les tokens :root (clair) s'appliquent sans flash
 ```
 
-### Sc.3 — Fondation switch : choix persisté, prioritaire sur le système `@ihm @pending`
+### Sc.3 — Fondation switch : choix persisté, prioritaire sur le système `@ihm @vert`
 
 ```gherkin
 Scénario: Le switch clair/sombre persiste le choix et prime sur la préférence système
