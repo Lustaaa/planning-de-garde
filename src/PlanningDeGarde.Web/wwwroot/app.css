@@ -187,6 +187,16 @@ a, .btn-link {
 .dialog-panneau .btn-link { color: var(--pdg-muted); text-decoration: none; }
 .dialog-panneau .btn-link:hover { color: var(--pdg-ink); text-decoration: underline; }
 
+/* Safari iOS / WebKit — cibles tactiles confortables (sprint 26, Sc.13) : sur pointeur grossier (tactile),
+   les contrôles interactifs font au moins 44px de haut (recommandation d'accessibilité tactile Apple).
+   Sur pointeur fin (souris), la densité PC est préservée. */
+@media (pointer: coarse) {
+    .btn, .form-select, .form-control, .nav-link,
+    .bascule-theme, .oauth-bouton, .accueil-lien, .barre-nav-temporelle .btn {
+        min-height: 44px;
+    }
+}
+
 /* Boutons d'action arrondis */
 .content .btn {
     border-radius: 9px;

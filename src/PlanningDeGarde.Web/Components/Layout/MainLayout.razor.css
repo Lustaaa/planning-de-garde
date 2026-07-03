@@ -8,6 +8,11 @@ main {
     flex: 1;
 }
 
+/* Safari iOS / WebKit (Sc.13) : le contenu ne passe pas sous la barre home (env safe-area-inset-bottom). */
+article {
+    padding-bottom: env(safe-area-inset-bottom, 0);
+}
+
 .sidebar {
     background-image: linear-gradient(180deg, var(--pdg-accent) 0%, var(--pdg-accent-dark) 100%);
 }
@@ -16,9 +21,14 @@ main {
     background-color: var(--pdg-card);
     border-bottom: 1px solid var(--pdg-border);
     justify-content: space-between;
-    height: 3.5rem;
+    min-height: 3.5rem;
     display: flex;
     align-items: center;
+    /* Safari iOS / WebKit (Sc.13) : la barre supérieure sticky respecte l'encoche (env safe-area-inset-top)
+       et les côtés (paysage / barre latérale), sans passer sous la zone système. Repli 0 hors iOS. */
+    padding-top: env(safe-area-inset-top, 0);
+    padding-left: env(safe-area-inset-left, 0);
+    padding-right: env(safe-area-inset-right, 0);
 }
 
     .top-row ::deep a, .top-row ::deep .btn-link {
@@ -53,9 +63,13 @@ main {
 
     .sidebar {
         width: 250px;
+        /* Hauteur pleine robuste : dvh évite le piège 100vh (barre d'URL iOS qui masque du contenu) ;
+           100vh reste en repli pour les navigateurs sans dvh. La barre latérale sticky reste fiable. */
         height: 100vh;
+        height: 100dvh;
         position: sticky;
         top: 0;
+        padding-bottom: env(safe-area-inset-bottom, 0);
     }
 
     .top-row {

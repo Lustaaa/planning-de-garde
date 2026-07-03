@@ -98,8 +98,9 @@
         /* Never collapse the sidebar for wide screens */
         display: block;
 
-        /* Allow sidebar to scroll for tall menus */
+        /* Allow sidebar to scroll for tall menus — dvh évite le piège 100vh iOS (Sc.13). */
         height: calc(100vh - 3.5rem);
+        height: calc(100dvh - 3.5rem);
         overflow-y: auto;
     }
 }

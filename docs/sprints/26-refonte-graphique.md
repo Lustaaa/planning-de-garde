@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 12/14
+## Avancement — 13/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -54,7 +54,7 @@
 | 10 | Layout : nav + marque + menu utilisateur + bandeaux d'alerte adoucis | 🖥️ IHM | ✅ |
 | 11 | Dialogs (×6) : habillage cohérent + hiérarchie de boutons | 🖥️ IHM | ✅ |
 | 12 | Légende : découvrable, cohérente avec les couleurs de responsabilité (clair + sombre) | 🖥️ IHM | ✅ |
-| 13 | Transverse responsive : Safari iOS / WebKit (safe-areas, 100vh, sticky, polices web) | 🖥️ IHM | ⏳ |
+| 13 | Transverse responsive : Safari iOS / WebKit (safe-areas, 100vh, sticky, polices web) | 🖥️ IHM | ✅ |
 | 14 | Non-régression : suite complète 161/161 verte, `data-testid`/observables/flux intacts | @back | ⏳ |
 
 ---
