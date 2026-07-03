@@ -51,7 +51,7 @@ public sealed class FrontWasmDeconnexionReverrouilleRoutesRuntimeTests : TestCon
         Assert.True(session.EstConnecte);
 
         // When — je me déconnecte depuis le menu utilisateur (logout s23, MenuUtilisateur s24).
-        menu.Find("[data-testid='menu-se-deconnecter']").Click();
+        this.SurDispatcher(() => menu.Find("[data-testid='menu-se-deconnecter']").Click());
 
         // Then — la session est détruite : EstConnecte = faux, aucune identité résiduelle (repli sur
         // l'identité réelle, pas d'incarnation orpheline).

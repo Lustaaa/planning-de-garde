@@ -47,7 +47,7 @@ public sealed class FrontWasmIncarnerInconnuRefusTempsReelTests : TestContext
 
         // When — le configurateur tente d'incarner un identifiant absent du référentiel (valeur portée au
         // binding réel du sélecteur, comme si elle lui parvenait).
-        grille.Find("[data-testid='selecteur-incarnation']").Change("acteur-inexistant");
+        this.SurDispatcher(() => grille.Find("[data-testid='selecteur-incarnation']").Change("acteur-inexistant"));
 
         // Then — refus silencieux : aucun bandeau « Vous incarnez » n'est affiché …
         grille.WaitForAssertion(
@@ -58,7 +58,7 @@ public sealed class FrontWasmIncarnerInconnuRefusTempsReelTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='menu-actions-case']"));
             },
             TimeSpan.FromSeconds(10));

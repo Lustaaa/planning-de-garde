@@ -54,12 +54,12 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
             li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
         // … un parent a saisi « Carla » (rose) dans le formulaire d'ajout.
-        config.Find("[data-testid='champ-nom-ajout']").Change("Carla");
-        config.Find("[data-testid='champ-couleur-ajout']").Change("rose");
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
 
         // When — il valide l'ajout alors que le service de configuration est injoignable
         // (l'émission HTTP réelle se heurte à un échec de transport).
-        config.Find("#form-ajout").Submit();
+        this.SurDispatcher(() => config.Find("#form-ajout").Submit());
 
         // Then — un message d'échec clair s'affiche.
         var alerte = config.WaitForElement("[data-testid='motif-echec-ajout']", TimeSpan.FromSeconds(10));

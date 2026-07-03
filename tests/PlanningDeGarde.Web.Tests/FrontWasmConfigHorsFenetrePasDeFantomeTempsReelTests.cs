@@ -53,9 +53,9 @@ public sealed class FrontWasmConfigHorsFenetrePasDeFantomeTempsReelTests : TestC
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        config.Find("select.form-select").Change("parent-c");
-        config.Find("[data-testid='champ-nom']").Change("Mathilde");
-        config.Find("form").Submit();
+        this.SurDispatcher(() => config.Find("select.form-select").Change("parent-c"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("Mathilde"));
+        this.SurDispatcher(() => config.Find("form").Submit());
 
         // … re-diffusion de fond idempotente (le store est déjà muté) pour que le push SignalR tombe
         // après l'établissement de la connexion long polling vers le TestServer, sans dépendre du timing.

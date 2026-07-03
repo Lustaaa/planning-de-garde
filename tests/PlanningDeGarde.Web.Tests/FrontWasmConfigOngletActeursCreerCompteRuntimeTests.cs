@@ -48,8 +48,8 @@ public sealed class FrontWasmConfigOngletActeursCreerCompteRuntimeTests : TestCo
         Assert.Empty(LigneDe(config, "Alice").QuerySelectorAll("[data-testid='compte-acteur']"));
 
         // When — je saisis un email et crée le compte d'Alice (POST /api/canal/creer-compte réel).
-        LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']")!.Change("alice@foyer.fr");
-        LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-creer-compte']")!.Click();
+        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']")!.Change("alice@foyer.fr"));
+        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-creer-compte']")!.Click());
 
         // Then — sans rechargement, la ligne d'Alice relue depuis le store affiche son compte associé,
         // avec l'email et le statut « inactif ».
@@ -72,8 +72,8 @@ public sealed class FrontWasmConfigOngletActeursCreerCompteRuntimeTests : TestCo
         var config = RendreConfig(api);
 
         // When — je soumets un email VIDE pour Alice (le handler réel refuse « email requis »).
-        LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']")!.Change("");
-        LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-creer-compte']")!.Click();
+        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']")!.Change(""));
+        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-creer-compte']")!.Click());
 
         // Then — un motif clair est surfacé, le champ email reste présent (formulaire ouvert), et AUCUN
         // compte n'est associé à Alice (le store n'a rien écrit).

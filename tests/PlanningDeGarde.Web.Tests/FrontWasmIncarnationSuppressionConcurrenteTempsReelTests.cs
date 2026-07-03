@@ -49,7 +49,7 @@ public sealed class FrontWasmIncarnationSuppressionConcurrenteTempsReelTests : T
         grille2.WaitForState(
             () => grille2.FindAll("[data-testid='selecteur-incarnation'] option[value='nounou']").Count == 1,
             TimeSpan.FromSeconds(10));
-        grille2.Find("[data-testid='selecteur-incarnation']").Change("nounou");
+        grille2.SurDispatcher(() => grille2.Find("[data-testid='selecteur-incarnation']").Change("nounou"));
         grille2.WaitForAssertion(
             () => Assert.Contains("Vous incarnez Nina la nounou",
                 grille2.Find("[data-testid='bandeau-incarnation']").TextContent),
@@ -63,8 +63,8 @@ public sealed class FrontWasmIncarnationSuppressionConcurrenteTempsReelTests : T
         config.WaitForState(
             () => config.FindAll("[data-testid='acteur-foyer'][data-acteur-id='nounou']").Count == 1,
             TimeSpan.FromSeconds(10));
-        config.Find("[data-testid='acteur-foyer'][data-acteur-id='nounou'] [data-testid='bouton-supprimer']")
-            .Click();
+        this.SurDispatcher(() => config.Find("[data-testid='acteur-foyer'][data-acteur-id='nounou'] [data-testid='bouton-supprimer']")
+            .Click());
 
         // … re-diffusion de fond idempotente (le store est déjà muté) pour que le push SignalR tombe forcément
         // APRÈS l'établissement de la connexion long polling de l'écran 2, sans dépendre du timing.
@@ -105,7 +105,7 @@ public sealed class FrontWasmIncarnationSuppressionConcurrenteTempsReelTests : T
         grille2.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille2, "16/06").Click();
+                grille2.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille2, "16/06").Click());
                 Assert.NotEmpty(grille2.FindAll("[data-testid='menu-actions-case']"));
             },
             TimeSpan.FromSeconds(10));

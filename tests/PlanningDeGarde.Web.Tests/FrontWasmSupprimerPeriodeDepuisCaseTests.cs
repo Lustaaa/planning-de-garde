@@ -58,8 +58,8 @@ public sealed class FrontWasmSupprimerPeriodeDepuisCaseTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-supprimer-periode']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-supprimer-periode']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-supprimer-periode']"));
             },
             TimeSpan.FromSeconds(10));
@@ -72,9 +72,9 @@ public sealed class FrontWasmSupprimerPeriodeDepuisCaseTests : TestContext
             TimeSpan.FromSeconds(10));
 
         // … on supprime la période de « Nina la nounou » dans la dialog.
-        grille.FindAll("[data-testid='periode-supprimable']")
+        this.SurDispatcher(() => grille.FindAll("[data-testid='periode-supprimable']")
             .Single(l => l.TextContent.Contains("Nina la nounou"))
-            .QuerySelector("[data-testid='bouton-supprimer-periode']")!.Click();
+            .QuerySelector("[data-testid='bouton-supprimer-periode']")!.Click());
 
         // Then — un accusé « Période supprimée » s'affiche à part (non bloquant), la case du 16/06 retombe
         // sur « Alice » / « bleu » (repli surcharge > fond), et la légende ne fait plus apparaître Nounou.

@@ -56,8 +56,8 @@ public sealed class FrontWasmPageConnexionLandingRuntimeTests : TestContext
         var connexion = RenderComponent<Connexion>();
 
         // When — je saisis l'email d'un compte Actif et clique « Se connecter » (POST réel se-connecter).
-        connexion.Find("[data-testid='champ-email-connexion']").Change("alice@foyer.fr");
-        connexion.Find("[data-testid='bouton-se-connecter']").Click();
+        this.SurDispatcher(() => connexion.Find("[data-testid='champ-email-connexion']").Change("alice@foyer.fr"));
+        this.SurDispatcher(() => connexion.Find("[data-testid='bouton-se-connecter']").Click());
 
         // Then — la connexion réussit : redirection vers le planning, et le sélecteur d'acteur est
         // pré-positionné sur l'acteur du compte connecté (identité effective = Alice, s23 Sc.8).

@@ -53,7 +53,7 @@ public sealed class FrontWasmIncarnerRefleteRoleTempsReelTests : TestContext
         Assert.Empty(grille.FindAll("[data-testid='bandeau-incarnation']"));
 
         // When — le configurateur incarne l'acteur ciblé depuis le sélecteur d'incarnation réel.
-        grille.Find("[data-testid='selecteur-incarnation']").Change(acteurId);
+        this.SurDispatcher(() => grille.Find("[data-testid='selecteur-incarnation']").Change(acteurId));
 
         // Then — un bandeau « Vous incarnez <nom> » s'affiche …
         grille.WaitForAssertion(
@@ -70,7 +70,7 @@ public sealed class FrontWasmIncarnerRefleteRoleTempsReelTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click());
                 if (menuVisible)
                     Assert.NotEmpty(grille.FindAll("[data-testid='menu-actions-case']"));
                 else

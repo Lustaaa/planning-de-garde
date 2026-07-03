@@ -47,7 +47,7 @@ public sealed class FrontWasmConfigAjouterSansNomRefuseTempsReelTests : TestCont
             li => string.IsNullOrWhiteSpace(li.QuerySelector(".acteur-nom")?.TextContent));
 
         // When — un parent valide l'ajout en laissant le nom vide (émission via le canal d'écriture HTTP réel).
-        config.Find("#form-ajout").Submit();
+        this.SurDispatcher(() => config.Find("#form-ajout").Submit());
 
         // Then — l'ajout est refusé : le motif métier renvoyé par l'API est affiché clairement à l'écran.
         config.WaitForAssertion(

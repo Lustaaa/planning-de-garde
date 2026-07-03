@@ -84,9 +84,9 @@ public sealed class FrontWasmConfigSelecteurEditionTempsReelDeuxEcransTests : Te
 
         // When — un parent ajoute « Carla » (rose) depuis le SECOND écran (canal d'écriture HTTP réel :
         // POST /api/canal/ajouter-acteur → store partagé muté + diffusion temps réel déclenchée).
-        config2.Find("[data-testid='champ-nom-ajout']").Change("Carla");
-        config2.Find("[data-testid='champ-couleur-ajout']").Change("rose");
-        config2.Find("#form-ajout").Submit();
+        config2.SurDispatcher(() => config2.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
+        config2.SurDispatcher(() => config2.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
+        config2.SurDispatcher(() => config2.Find("#form-ajout").Submit());
         config2.WaitForAssertion(
             () => Assert.Contains(config2.FindAll("[data-testid='acteur-foyer']"),
                 li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla"),

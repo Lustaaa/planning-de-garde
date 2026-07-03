@@ -43,21 +43,21 @@ public sealed class FrontWasmEditerPeriodeGatingInviteTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='menu-actions-case']"));
                 Assert.NotEmpty(grille.FindAll("[data-testid='action-editer-periode']"));
             },
             TimeSpan.FromSeconds(10));
 
         // … on referme le menu (clic sur le fond) pour repartir d'un état neutre.
-        grille.Find("[data-testid='menu-actions-case']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='menu-actions-case']").Click());
         Assert.Empty(grille.FindAll("[data-testid='menu-actions-case']"));
 
         // When — le rôle bascule en Invité (consultation seule), la grille est re-rendue, puis l'Invité
         // clique la case du 16/06.
         session.Role = RoleAuteur.Invite;
         grille.Render();
-        GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
 
         // Then — aucun menu, aucune entrée « Éditer une période », aucune dialog d'édition, et la grille
         // reste en lecture seule (le déclencheur de la case n'est plus marqué cliquable).

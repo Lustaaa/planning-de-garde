@@ -53,13 +53,13 @@ public sealed class FrontWasmConfigCycleServiceInjoignableTempsReelTests : TestC
         GrilleRuntimeHarness.AllerOngletPeriodeGarde(config);
 
         // … un parent saisit un cycle de 2 semaines : index 0 → parent-a, index 1 → parent-b.
-        config.Find("[data-testid='champ-nombre-semaines']").Change("2");
-        config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a");
-        config.Find("[data-testid='champ-cycle-index-1']").Change("parent-b");
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nombre-semaines']").Change("2"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-1']").Change("parent-b"));
 
         // When — il valide la définition du cycle alors que le service de configuration est injoignable
         // (l'émission HTTP réelle se heurte à un échec de transport).
-        config.Find("#form-cycle").Submit();
+        this.SurDispatcher(() => config.Find("#form-cycle").Submit());
 
         // Then — un message d'échec clair s'affiche.
         var alerte = config.WaitForElement("[data-testid='motif-echec-cycle']", TimeSpan.FromSeconds(10));

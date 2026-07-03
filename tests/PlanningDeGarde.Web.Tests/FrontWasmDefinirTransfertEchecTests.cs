@@ -38,9 +38,9 @@ public sealed class FrontWasmDefinirTransfertEchecTests : TestContext
         // When — un Parent ouvre la dialog depuis la case du vendredi 19/06, saisit « Parent A » dépositaire
         // et lieu « École » MAIS SANS récupérateur (transfert incomplet), puis valide.
         OuvrirDialogTransfert(grille, "19/06");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-lieu']").Change("école");
-        grille.Find("[data-testid='dialog-definir-transfert'] form").Submit();
+        grille.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a"));
+        grille.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-lieu']").Change("école"));
+        grille.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] form").Submit());
 
         // Then — la dialog reste OUVERTE, le motif de refus du domaine s'affiche DANS la dialog (le motif
         // réel propagé par le canal porte « récupération »), aucun accusé de succès.
@@ -77,11 +77,11 @@ public sealed class FrontWasmDefinirTransfertEchecTests : TestContext
         // When — un Parent ouvre la dialog depuis la case du vendredi 19/06, saisit un transfert COMPLET
         // (Parent A → Parent B, École, 08:30), puis valide alors que le service est injoignable.
         OuvrirDialogTransfert(grille, "19/06");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-recupere']").Change("parent-b");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-lieu']").Change("école");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-heure']").Change("08:30");
-        grille.Find("[data-testid='dialog-definir-transfert'] form").Submit();
+        grille.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a"));
+        grille.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-recupere']").Change("parent-b"));
+        grille.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-lieu']").Change("école"));
+        grille.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-heure']").Change("08:30"));
+        grille.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] form").Submit());
 
         // Then — même issue unique : la dialog reste OUVERTE, le message « service injoignable » s'affiche
         // DANS la dialog, aucun accusé de succès.
@@ -111,8 +111,8 @@ public sealed class FrontWasmDefinirTransfertEchecTests : TestContext
         => grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, jjMM).Click();
-                grille.Find("[data-testid='action-definir-transfert']").Click();
+                grille.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, jjMM).Click());
+                grille.SurDispatcher(() => grille.Find("[data-testid='action-definir-transfert']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-definir-transfert']"));
             },
             TimeSpan.FromSeconds(10));

@@ -49,9 +49,9 @@ public sealed class FrontWasmConfigAjouterActeurTempsReelTests : TestContext
             li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
         // When — un parent ajoute « Carla » en rose et valide (émission via le canal d'écriture HTTP réel).
-        config.Find("[data-testid='champ-nom-ajout']").Change("Carla");
-        config.Find("[data-testid='champ-couleur-ajout']").Change("rose");
-        config.Find("#form-ajout").Submit();
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
+        this.SurDispatcher(() => config.Find("#form-ajout").Submit());
 
         // Then — sans rechargement (même instance rendue), la liste de l'écran de configuration contient
         // désormais « Carla » : preuve qu'elle est énumérée depuis le store durable après l'ajout HTTP.

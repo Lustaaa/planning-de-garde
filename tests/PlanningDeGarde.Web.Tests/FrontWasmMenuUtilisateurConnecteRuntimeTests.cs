@@ -42,8 +42,8 @@ public sealed class FrontWasmMenuUtilisateurConnecteRuntimeTests : TestContext
         Assert.Empty(menu.FindAll("[data-testid='menu-utilisateur']"));
 
         // When (connexion) — je saisis l'email d'un compte Actif et clique « Se connecter » (POST réel).
-        connexion.Find("[data-testid='champ-email-connexion']").Change("alice@foyer.fr");
-        connexion.Find("[data-testid='bouton-se-connecter']").Click();
+        this.SurDispatcher(() => connexion.Find("[data-testid='champ-email-connexion']").Change("alice@foyer.fr"));
+        this.SurDispatcher(() => connexion.Find("[data-testid='bouton-se-connecter']").Click());
 
         // Then — une fois connecté, le menu utilisateur affiche le nom (résolu serveur), un accès config foyer
         // et un bouton « Se déconnecter ».
@@ -58,7 +58,7 @@ public sealed class FrontWasmMenuUtilisateurConnecteRuntimeTests : TestContext
             TimeSpan.FromSeconds(10));
 
         // When (déconnexion) — je clique « Se déconnecter ».
-        menu.Find("[data-testid='menu-se-deconnecter']").Click();
+        this.SurDispatcher(() => menu.Find("[data-testid='menu-se-deconnecter']").Click());
 
         // Then — la session est détruite (le menu n'affiche plus l'identité) et on revient à la page de
         // connexion dédiée.

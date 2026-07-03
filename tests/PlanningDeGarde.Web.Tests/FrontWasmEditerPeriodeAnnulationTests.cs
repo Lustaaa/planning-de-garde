@@ -46,8 +46,8 @@ public sealed class FrontWasmEditerPeriodeAnnulationTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-editer-periode']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-editer-periode']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-editer-periode']"));
             },
             TimeSpan.FromSeconds(10));
@@ -59,14 +59,14 @@ public sealed class FrontWasmEditerPeriodeAnnulationTests : TestContext
             TimeSpan.FromSeconds(10));
 
         // … j'ouvre le formulaire pré-rempli et je MODIFIE le responsable (vers « Parent A ») sans enregistrer.
-        grille.FindAll("[data-testid='periode-editable']")
+        this.SurDispatcher(() => grille.FindAll("[data-testid='periode-editable']")
             .Single(l => l.TextContent.Contains("Nina la nounou"))
-            .QuerySelector("[data-testid='bouton-editer-periode']")!.Click();
+            .QuerySelector("[data-testid='bouton-editer-periode']")!.Click());
         var champResponsable = grille.WaitForElement("[data-testid='champ-responsable-edition']", TimeSpan.FromSeconds(10));
-        champResponsable.Change("parent-a");
+        this.SurDispatcher(() => champResponsable.Change("parent-a"));
 
         // … et je ferme la dialog SANS enregistrer (bouton « Fermer »).
-        grille.Find("[data-testid='dialog-editer-periode'] [data-testid='dialog-annuler']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-editer-periode'] [data-testid='dialog-annuler']").Click());
 
         // Then — la dialog est fermée, AUCUNE commande d'édition n'a été émise : aucun accusé « Période
         // modifiée », la case du 16/06 affiche toujours « Nina la nounou ».

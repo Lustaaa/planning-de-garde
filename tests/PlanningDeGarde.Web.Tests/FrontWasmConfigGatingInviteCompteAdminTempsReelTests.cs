@@ -55,8 +55,8 @@ public sealed class FrontWasmConfigGatingInviteCompteAdminTempsReelTests : TestC
         // Contrôle positif (anti faux-vert) — sous l'identité Parent, la création de compte ET la désignation
         // d'admin REDEVIENNENT proposées : preuve que le gating est bien le discriminant.
         session.Role = RoleAuteur.Parent;
-        config.Find("[data-testid='onglet-periode-garde']").Click();
-        config.Find("[data-testid='onglet-acteurs']").Click();
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-periode-garde']").Click());
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-acteurs']").Click());
         Assert.NotEmpty(config.FindAll("[data-testid='champ-email-compte']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-creer-compte']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-designer-admin']"));

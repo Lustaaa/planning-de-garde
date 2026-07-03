@@ -39,8 +39,8 @@ public sealed class FrontWasmDefinirTransfertDateContexteTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "25/06").Click();
-                grille.Find("[data-testid='action-definir-transfert']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "25/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-definir-transfert']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-definir-transfert']"));
             },
             TimeSpan.FromSeconds(10));
@@ -52,11 +52,11 @@ public sealed class FrontWasmDefinirTransfertDateContexteTests : TestContext
 
         // … et le transfert validé sans toucher la date pré-remplie transite réellement jusqu'au store
         // distant en portant la date de contexte (rempart anti vert-qui-ment : pipeline complet).
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-recupere']").Change("parent-b");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-lieu']").Change("école");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-heure']").Change("08:30");
-        grille.Find("[data-testid='dialog-definir-transfert'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-recupere']").Change("parent-b"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-lieu']").Change("école"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-heure']").Change("08:30"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] form").Submit());
 
         grille.WaitForAssertion(
             () => Assert.NotEmpty(grille.FindAll("[data-testid='accuse-transfert-defini']")),

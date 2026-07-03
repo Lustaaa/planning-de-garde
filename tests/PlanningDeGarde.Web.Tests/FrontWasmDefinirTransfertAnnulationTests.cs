@@ -50,17 +50,17 @@ public sealed class FrontWasmDefinirTransfertAnnulationTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "20/06").Click();
-                grille.Find("[data-testid='action-definir-transfert']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "20/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-definir-transfert']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-definir-transfert']"));
             },
             TimeSpan.FromSeconds(10));
 
         // … il choisit « Parent A » dépositaire et « Parent B » récupérateur (ids stables, règle 19), PUIS
         // annule sans valider.
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-recupere']").Change("parent-b");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='dialog-annuler']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-recupere']").Change("parent-b"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='dialog-annuler']").Click());
 
         // Then — la dialog se ferme ET aucun accusé « Transfert défini » ne s'affiche (l'annulation n'est pas
         // un succès).

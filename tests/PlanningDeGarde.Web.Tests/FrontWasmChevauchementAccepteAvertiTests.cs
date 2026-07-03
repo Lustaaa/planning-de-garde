@@ -45,13 +45,13 @@ public sealed class FrontWasmChevauchementAccepteAvertiTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "22/06").Click();
-                grille.Find("[data-testid='action-poser-slot']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "22/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-poser-slot']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-poser-slot']"));
             },
             TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='champ-lieu']").Change("nounou");
-        grille.Find("[data-testid='dialog-poser-slot'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='champ-lieu']").Change("nounou"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-poser-slot'] form").Submit());
 
         // Then — l'écriture aboutit : la dialog se ferme (caractérisation, test #1), « nounou »
         // réapparaît, « école » reste présent (ni refusé ni dédoublonné) …
@@ -93,13 +93,13 @@ public sealed class FrontWasmChevauchementAccepteAvertiTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "22/06").Click();
-                grille.Find("[data-testid='action-poser-slot']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "22/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-poser-slot']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-poser-slot']"));
             },
             TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='champ-lieu']").Change("école");
-        grille.Find("[data-testid='dialog-poser-slot'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='champ-lieu']").Change("école"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-poser-slot'] form").Submit());
 
         // Then — la dialog se ferme, le slot réapparaît, et AUCUN bandeau de chevauchement n'est affiché.
         grille.WaitForAssertion(

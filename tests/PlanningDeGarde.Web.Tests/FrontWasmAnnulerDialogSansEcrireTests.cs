@@ -68,13 +68,13 @@ public sealed class FrontWasmAnnulerDialogSansEcrireTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "20/06").Click();
-                grille.Find("[data-testid='action-affecter-periode']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "20/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-affecter-periode']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-affecter-periode']"));
             },
             TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='champ-responsable']").Change("parent-a");
-        grille.Find("[data-testid='dialog-affecter-periode'] [data-testid='dialog-annuler']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='champ-responsable']").Change("parent-a"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-affecter-periode'] [data-testid='dialog-annuler']").Click());
 
         // Then — la dialog se ferme, AUCUNE écriture n'a été émise sur le canal, et la case reste « Bruno ».
         grille.WaitForAssertion(

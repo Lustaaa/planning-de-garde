@@ -50,11 +50,11 @@ public sealed class FrontWasmConfigGatingInviteChaqueOngletTempsReelTests : Test
         Assert.NotEmpty(config.FindAll("[data-testid='acteur-foyer']"));
 
         // Then (onglet « Période de garde ») — aucune écriture du cycle de fond n'est proposée (gatée).
-        config.Find("[data-testid='onglet-periode-garde']").Click();
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-periode-garde']").Click());
         Assert.Empty(config.FindAll("[data-testid='champ-nombre-semaines']"));
 
         // Then (onglet « Slot récurrent ») — réservé : placeholder « à venir » et aucune affordance d'écriture.
-        config.Find("[data-testid='onglet-slot-recurrent']").Click();
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-slot-recurrent']").Click());
         Assert.NotEmpty(config.FindAll("[data-testid='placeholder-slot-recurrent']"));
         Assert.Empty(config.Find("[data-testid='panneau-slot-recurrent']").QuerySelectorAll("form"));
 
@@ -62,12 +62,12 @@ public sealed class FrontWasmConfigGatingInviteChaqueOngletTempsReelTests : Test
         // sur chaque onglet : preuve que le gating est bien le discriminant (les formulaires ne sont pas
         // cassés pour tous). Le changement de rôle est reflété au re-render déclenché par la navigation d'onglet.
         session.Role = RoleAuteur.Parent;
-        config.Find("[data-testid='onglet-acteurs']").Click();
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-acteurs']").Click());
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nom']"));
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nom-ajout']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-supprimer']"));
 
-        config.Find("[data-testid='onglet-periode-garde']").Click();
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-periode-garde']").Click());
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
     }
 }

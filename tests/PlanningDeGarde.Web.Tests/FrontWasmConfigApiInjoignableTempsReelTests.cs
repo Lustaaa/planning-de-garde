@@ -72,9 +72,9 @@ public sealed class FrontWasmConfigApiInjoignableTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        config.Find("select.form-select").Change("parent-a");
-        config.Find("[data-testid='champ-nom']").Change("Alicia");
-        config.Find("form").Submit();
+        config.SurDispatcher(() => config.Find("select.form-select").Change("parent-a"));
+        config.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("Alicia"));
+        config.SurDispatcher(() => config.Find("form").Submit());
 
         // Then — l'enregistrement échoue clairement : le message de service injoignable s'affiche.
         var alerte = config.WaitForElement("[data-testid='motif-echec']", TimeSpan.FromSeconds(10));

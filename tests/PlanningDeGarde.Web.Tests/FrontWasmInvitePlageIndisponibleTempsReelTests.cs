@@ -54,7 +54,7 @@ public sealed class FrontWasmInvitePlageIndisponibleTempsReelTests : TestContext
         Assert.Equal("08/06", PremiereCaseDate(grille));
 
         // When — l'utilisateur bascule en « Invité (consultation seule) » via le sélecteur de rôle réel.
-        grille.Find("select.form-select").Change("Invite");
+        this.SurDispatcher(() => grille.Find("select.form-select").Change("Invite"));
 
         // Then (1/3) — le déclencheur de plage DISPARAÎT (gate EstParent, le bouton n'est même plus rendu)
         // et le bandeau « lecture seule » est affiché. Sous WaitForAssertion pour laisser le re-render du
@@ -68,7 +68,7 @@ public sealed class FrontWasmInvitePlageIndisponibleTempsReelTests : TestContext
             TimeSpan.FromSeconds(10));
 
         // When — l'Invité NAVIGUE librement : « Semaine suivante » décale la fenêtre de +7 jours.
-        grille.Find("[data-testid='nav-semaine-suivante']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='nav-semaine-suivante']").Click());
 
         // Then (2/3) — la navigation FONCTIONNE en consultation seule : la fenêtre démarre au lundi 15/06
         // (re-projection à la date naviguée, lecture seule). La case mardi 16/06 et mercredi 17/06 sont visibles.
@@ -78,8 +78,8 @@ public sealed class FrontWasmInvitePlageIndisponibleTempsReelTests : TestContext
 
         // When — l'Invité TENTE de sélectionner la plage mardi 16/06 → mercredi 17/06. Le bouton de mode
         // plage étant absent, il clique directement les deux cases (le seul geste possible).
-        GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-        GrilleRuntimeHarness.CaseDuJour(grille, "17/06").Click();
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "17/06").Click());
 
         // Then (3/3) — toute tentative de plage est INERTE : aucun menu d'actions, aucune dialog
         // d'affectation ne s'ouvre, aucune case n'est sélectionnée (OuvrirMenu/BasculerModePlage sortent

@@ -51,9 +51,9 @@ public sealed class FrontWasmConfigNomVideRefuseTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        config.Find("select.form-select").Change("parent-b");
-        config.Find("[data-testid='champ-nom']").Change("   ");
-        config.Find("form").Submit();
+        this.SurDispatcher(() => config.Find("select.form-select").Change("parent-b"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("   "));
+        this.SurDispatcher(() => config.Find("form").Submit());
 
         // Then — l'édition est refusée : le motif métier renvoyé par l'API est affiché clairement à l'écran.
         config.WaitForAssertion(

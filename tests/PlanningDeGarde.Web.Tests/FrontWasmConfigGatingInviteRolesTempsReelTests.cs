@@ -59,8 +59,8 @@ public sealed class FrontWasmConfigGatingInviteRolesTempsReelTests : TestContext
         // Contrôle positif (anti faux-vert) — sous l'identité Parent, la gestion des rôles et le sélecteur
         // d'affectation REDEVIENNENT proposés : preuve que le gating est bien le discriminant.
         session.Role = RoleAuteur.Parent;
-        config.Find("[data-testid='onglet-periode-garde']").Click();
-        config.Find("[data-testid='onglet-acteurs']").Click();
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-periode-garde']").Click());
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-acteurs']").Click());
         Assert.NotEmpty(config.FindAll("[data-testid='champ-libelle-role']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-renommer-role']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-supprimer-role']"));

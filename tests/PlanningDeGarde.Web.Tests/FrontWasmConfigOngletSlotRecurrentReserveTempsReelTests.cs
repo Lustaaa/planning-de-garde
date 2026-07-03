@@ -36,7 +36,7 @@ public sealed class FrontWasmConfigOngletSlotRecurrentReserveTempsReelTests : Te
             TimeSpan.FromSeconds(10));
 
         // When — j'ouvre l'onglet « Slot récurrent ».
-        config.Find("[data-testid='onglet-slot-recurrent']").Click();
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-slot-recurrent']").Click());
 
         // Then — l'onglet est actif et les panneaux des autres thèmes ne sont plus rendus (cloisonnement).
         Assert.Equal("true", config.Find("[data-testid='onglet-slot-recurrent']").GetAttribute("aria-selected"));

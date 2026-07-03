@@ -50,9 +50,9 @@ public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests
 
         // When (édition) — je renomme parent-a en « Alicia » ET le recolorie en vert, puis j'enregistre
         // (canal d'écriture HTTP réel : POST /api/canal/editer-acteur).
-        config.Find("[data-testid='selecteur-acteur-edition']").Change("parent-a");
-        config.Find("[data-testid='champ-nom']").Change("Alicia");
-        config.Find("[data-testid='champ-couleur']").Change("vert");
+        this.SurDispatcher(() => config.Find("[data-testid='selecteur-acteur-edition']").Change("parent-a"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("Alicia"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("vert"));
         config.Find("form").Submit(); // le formulaire d'édition est le premier <form> du panneau Acteurs
 
         // Then (édition) — l'écran confirme l'enregistrement (le canal a accepté l'écriture, aucun handler neuf).
@@ -61,9 +61,9 @@ public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests
             TimeSpan.FromSeconds(10));
 
         // When (ajout) — j'ajoute « Carla » en rose (canal d'écriture réel : POST /api/canal/ajouter-acteur).
-        config.Find("[data-testid='champ-nom-ajout']").Change("Carla");
-        config.Find("[data-testid='champ-couleur-ajout']").Change("rose");
-        config.Find("#form-ajout").Submit();
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
+        this.SurDispatcher(() => config.Find("#form-ajout").Submit());
 
         // Then (ajout) — sans rechargement, la liste relue de l'écran contient désormais « Carla ».
         config.WaitForAssertion(
@@ -71,10 +71,10 @@ public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests
             TimeSpan.FromSeconds(10));
 
         // When (suppression) — je supprime « Carla » via son bouton supprimer (POST /api/canal/supprimer-acteur).
-        config.FindAll("[data-testid='acteur-foyer']")
+        this.SurDispatcher(() => config.FindAll("[data-testid='acteur-foyer']")
             .Single(li => NomLigne(li) == "Carla")
             .QuerySelector("[data-testid='bouton-supprimer']")!
-            .Click();
+            .Click());
 
         // Then (suppression) — sans rechargement, « Carla » quitte la liste relue, et un accusé s'affiche.
         config.WaitForAssertion(

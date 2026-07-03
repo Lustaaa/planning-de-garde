@@ -61,10 +61,10 @@ public sealed class FrontWasmGrilleCycleDeFondParPariteIsoTempsReelTests : TestC
 
         // When — un parent définit un cycle de 2 semaines : index pair (0) → parent-a, index impair
         // (1) → parent-b, et valide. L'écriture transite par le canal HTTP réel vers l'API distante.
-        config.Find("[data-testid='champ-nombre-semaines']").Change("2");
-        config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a");
-        config.Find("[data-testid='champ-cycle-index-1']").Change("parent-b");
-        config.Find("#form-cycle").Submit();
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nombre-semaines']").Change("2"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-1']").Change("parent-b"));
+        this.SurDispatcher(() => config.Find("#form-cycle").Submit());
 
         // … la définition aboutit (confirmation affichée) → le store cycle réel porte désormais le cycle.
         config.WaitForElement("[data-testid='confirmation-cycle']", TimeSpan.FromSeconds(10));

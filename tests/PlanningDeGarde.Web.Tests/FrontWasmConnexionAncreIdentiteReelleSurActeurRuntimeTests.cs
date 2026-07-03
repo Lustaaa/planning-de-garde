@@ -37,8 +37,8 @@ public sealed class FrontWasmConnexionAncreIdentiteReelleSurActeurRuntimeTests :
         var connexion = RenderComponent<Connexion>();
 
         // When — je me connecte avec cet email (POST /api/canal/se-connecter réel).
-        connexion.Find("[data-testid='champ-email-connexion']").Change("mamie@foyer.fr");
-        connexion.Find("[data-testid='bouton-se-connecter']").Click();
+        this.SurDispatcher(() => connexion.Find("[data-testid='champ-email-connexion']").Change("mamie@foyer.fr"));
+        this.SurDispatcher(() => connexion.Find("[data-testid='bouton-se-connecter']").Click());
 
         // Then — l'identité RÉELLE de la session est l'acteur du compte (id stable « nounou »), l'identité
         // effective la reflète, AUCUNE incarnation n'est active (la connexion n'est pas une impersonation)…

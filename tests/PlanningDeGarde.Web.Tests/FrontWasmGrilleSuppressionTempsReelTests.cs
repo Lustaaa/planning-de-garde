@@ -74,9 +74,9 @@ public sealed class FrontWasmGrilleSuppressionTempsReelTests : TestContext
         config.WaitForState(
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
-        config.FindAll("[data-testid='acteur-foyer']")
+        this.SurDispatcher(() => config.FindAll("[data-testid='acteur-foyer']")
             .Single(li => li.GetAttribute("data-acteur-id") == "grand-pere")
-            .QuerySelector("[data-testid='bouton-supprimer']")!.Click();
+            .QuerySelector("[data-testid='bouton-supprimer']")!.Click());
 
         // … re-diffusion de fond idempotente (le store est déjà muté) pour que le push SignalR tombe forcément
         // APRÈS l'établissement de la connexion long polling du second écran, sans dépendre du timing.

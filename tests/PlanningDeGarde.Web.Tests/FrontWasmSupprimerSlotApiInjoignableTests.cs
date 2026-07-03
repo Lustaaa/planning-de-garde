@@ -46,8 +46,8 @@ public sealed class FrontWasmSupprimerSlotApiInjoignableTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-supprimer-slot']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-supprimer-slot']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-supprimer-slot']"));
             },
             TimeSpan.FromSeconds(10));
@@ -57,9 +57,9 @@ public sealed class FrontWasmSupprimerSlotApiInjoignableTests : TestContext
             TimeSpan.FromSeconds(10));
 
         // … je supprime le slot École : le POST échoue (API injoignable au transport).
-        grille.FindAll("[data-testid='slot-supprimable']")
+        this.SurDispatcher(() => grille.FindAll("[data-testid='slot-supprimable']")
             .Single(l => l.TextContent.Contains("École"))
-            .QuerySelector("[data-testid='bouton-supprimer-slot']")!.Click();
+            .QuerySelector("[data-testid='bouton-supprimer-slot']")!.Click());
 
         // Then — un message d'échec clair s'affiche DANS la dialog, qui reste OUVERTE ; aucun accusé de
         // succès ; la case du 16/06 rend toujours le slot École.

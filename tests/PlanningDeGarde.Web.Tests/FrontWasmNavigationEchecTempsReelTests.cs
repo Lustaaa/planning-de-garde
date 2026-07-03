@@ -51,7 +51,7 @@ public sealed class FrontWasmNavigationEchecTempsReelTests : TestContext
         Assert.Equal("08/06", DatePremiereCase(grille));
 
         // When — clic « Semaine suivante » : la re-requête de la date naviguée (15/06) échoue (API injoignable).
-        grille.Find("[data-testid='nav-semaine-suivante']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='nav-semaine-suivante']").Click());
 
         // Then — un message d'échec clair s'affiche (le symptôme PO : l'écran signale l'échec, sans planter).
         grille.WaitForState(
@@ -62,7 +62,7 @@ public sealed class FrontWasmNavigationEchecTempsReelTests : TestContext
         Assert.Equal("08/06", DatePremiereCase(grille));
 
         // When — « Semaine précédente » (qui transite) depuis l'ancre conservée au 08/06.
-        grille.Find("[data-testid='nav-semaine-precedente']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='nav-semaine-precedente']").Click());
         grille.WaitForState(() => DatePremiereCase(grille) == "01/06", TimeSpan.FromSeconds(10));
 
         // Then — la fenêtre démarre au lundi 01/06 : la précédente est partie du 08/06, PAS du 15/06 — l'ancre

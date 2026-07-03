@@ -155,10 +155,10 @@ public sealed class FrontWasmGrilleDeuxEcransCycleDerniereEcritureGagneTempsReel
     /// identifiants stables donnés, puis soumet (canal d'écriture HTTP réel).</summary>
     private static void DefinirCycle(IRenderedComponent<ConfigurationFoyer> config, string indexPair, string indexImpair)
     {
-        config.Find("[data-testid='champ-nombre-semaines']").Change("2");
-        config.Find("[data-testid='champ-cycle-index-0']").Change(indexPair);
-        config.Find("[data-testid='champ-cycle-index-1']").Change(indexImpair);
-        config.Find("#form-cycle").Submit();
+        config.SurDispatcher(() => config.Find("[data-testid='champ-nombre-semaines']").Change("2"));
+        config.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-0']").Change(indexPair));
+        config.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-1']").Change(indexImpair));
+        config.SurDispatcher(() => config.Find("#form-cycle").Submit());
     }
 
     /// <summary>Asserte que la semaine ISO 28 (06/07, paire) ET la légende d'une grille portent
