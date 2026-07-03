@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 10/14
+## Avancement — 11/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -52,7 +52,7 @@
 | 8 | Accueil : point d'entrée / orientation refondu | 🖥️ IHM | ✅ |
 | 9 | Config foyer : acteurs + formulaires habillés, onglets si pertinent | 🖥️ IHM | ✅ |
 | 10 | Layout : nav + marque + menu utilisateur + bandeaux d'alerte adoucis | 🖥️ IHM | ✅ |
-| 11 | Dialogs (×6) : habillage cohérent + hiérarchie de boutons | 🖥️ IHM | ⏳ |
+| 11 | Dialogs (×6) : habillage cohérent + hiérarchie de boutons | 🖥️ IHM | ✅ |
 | 12 | Légende : découvrable, cohérente avec les couleurs de responsabilité (clair + sombre) | 🖥️ IHM | ⏳ |
 | 13 | Transverse responsive : Safari iOS / WebKit (safe-areas, 100vh, sticky, polices web) | 🖥️ IHM | ⏳ |
 | 14 | Non-régression : suite complète 161/161 verte, `data-testid`/observables/flux intacts | @back | ⏳ |
@@ -192,7 +192,7 @@ Scénario: Le layout porte la marque et adoucit les bandeaux, switch de thème i
   Et la coquille rend correctement en clair et en sombre
 ```
 
-### Sc.11 — Dialogs (×6) : cohérence + hiérarchie de boutons `@ihm @pending`
+### Sc.11 — Dialogs (×6) : cohérence + hiérarchie de boutons `@ihm @vert`
 
 ```gherkin
 Scénario: Les six dialogs partagent un habillage cohérent et une hiérarchie de boutons
