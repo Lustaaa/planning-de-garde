@@ -36,6 +36,21 @@
     --pdg-muted: #8C8273;
 }
 
+/* Thème sombre (sprint 26, Sc.2) : mêmes tokens, valeurs sombres du design doc. Appliqué via
+   data-theme="sombre" sur <html> (posé par l'amorce inline de index.html → zéro flash). L'accent
+   sauge est éclairci pour garder le contraste sur fond sombre. Les couleurs de responsabilité
+   (bleu/orange) restent de la DONNÉE inline, hors thème — leur lisibilité est garantie à Sc.4. */
+[data-theme="sombre"] {
+    --pdg-accent: #4FB89C;        /* sauge éclairci pour le contraste */
+    --pdg-accent-dark: #3C9E85;   /* hover / focus */
+    --pdg-accent-soft: #2C3A34;   /* badges, pastilles */
+    --pdg-bg: #1C1A17;            /* fond */
+    --pdg-card: #26231F;          /* surface carte */
+    --pdg-border: #38332C;        /* bordures */
+    --pdg-ink: #EDE7DC;           /* texte principal */
+    --pdg-muted: #9C9384;         /* texte secondaire */
+}
+
 html, body {
     font-family: var(--pdg-font-corps);
     background-color: var(--pdg-bg);

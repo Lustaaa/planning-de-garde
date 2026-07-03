@@ -38,12 +38,12 @@
 
 ---
 
-## Avancement — 1/14
+## Avancement — 2/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Fondation : tokens `--pdg-*` + polices Fraunces/Inter self-hosted (offline) | 🖥️ IHM | ✅ |
-| 2 | Fondation thème : défaut = préférence système, `data-theme` sur `<html>`, zéro flash | 🖥️ IHM | ⏳ |
+| 2 | Fondation thème : défaut = préférence système, `data-theme` sur `<html>`, zéro flash | 🖥️ IHM | ✅ |
 | 3 | Fondation switch clair/sombre : choix persisté `localStorage`, prime sur système | 🖥️ IHM | ⏳ |
 | 4 | Calendrier (cœur) : cases mini-cartes, responsable héroïque, « aujourd'hui » marqué | 🖥️ IHM | ⏳ |
 | 5 | Calendrier : menu clic-case restructuré (primaires / destructives) | 🖥️ IHM | ⏳ |
@@ -75,7 +75,7 @@ Scénario: Les tokens --pdg-* et les polices web sont chargés sans appel résea
   Et aucun écran ne présente le rendu « Bootstrap par défaut » (surfaces, rayons, ombres tendres)
 ```
 
-### Sc.2 — Fondation thème : défaut système + zéro flash `@ihm @pending`
+### Sc.2 — Fondation thème : défaut système + zéro flash `@ihm @vert`
 
 ```gherkin
 Scénario: Le thème par défaut suit la préférence système, sans flash au chargement
