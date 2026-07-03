@@ -12,16 +12,16 @@
    /connexion — on ne rend AUCUN contenu de la route protégée (pas de flash de grille agenda). *@
 @if (!_redirigeVersConnexion)
 {
-<div class="d-flex justify-content-between align-items-center mb-3">
+<div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <h1 class="m-0">Planning partagé du foyer</h1>
-    <div class="d-flex align-items-center gap-3">
+    <div class="d-flex align-items-center flex-wrap gap-3">
         @* Sélecteur d'incarnation (impersonation bornée, lecture seule — sprint 14) : COMPLÈTE le
            sélecteur de rôle démo sans le remplacer (préserve la consultation Invité existante). Incarner
            un acteur reflète son rôle dans la vue (bandeau + menu clic-case selon le type, règle 8) ; la
            valeur vide revient à l'identité réelle (Sc.2). Classe propre (PAS form-select) pour rester
            distinct du sélecteur de rôle. *@
-        <div class="d-flex align-items-center gap-2">
-            <span class="text-muted">Incarner :</span>
+        <label class="pdg-controle">
+            <span class="pdg-controle-label">Incarner</span>
             <select class="selecteur-incarnation form-select-sm w-auto" data-testid="selecteur-incarnation"
                     @bind="IncarnationSelectionnee" @bind:after="StateHasChanged">
                 <option value="">— Moi (identité réelle) —</option>
@@ -30,14 +30,14 @@
                     <option value="@acteur.Id">@acteur.Nom</option>
                 }
             </select>
-        </div>
-        <div class="d-flex align-items-center gap-2">
-            <span class="text-muted">Rôle :</span>
+        </label>
+        <label class="pdg-controle">
+            <span class="pdg-controle-label">Rôle</span>
             <select class="form-select form-select-sm w-auto" @bind="RoleSelectionne">
                 <option value="@RoleAuteur.Parent">Parent</option>
                 <option value="@RoleAuteur.Invite">Invité (consultation seule)</option>
             </select>
-        </div>
+        </label>
     </div>
 </div>
 
@@ -134,29 +134,33 @@
 @* Navigation du calendrier (Sc.1) : décale la fenêtre d'une semaine vers le passé / le futur et
    re-projette (re-requête de l'API distante à la date naviguée). L'état de navigation (ancre + vue)
    vit en session/mémoire ; la grille reste en LECTURE SEULE — la navigation ne fait que re-projeter. *@
-<div class="d-flex align-items-center gap-2 mb-3" data-testid="barre-navigation"
+<div class="barre-navigation d-flex align-items-center gap-2 mb-3" data-testid="barre-navigation"
      data-mode-plage="@(_modePlage ? "1" : "0")">
-    <button type="button" class="btn btn-outline-secondary" data-testid="nav-semaine-precedente"
-            @onclick="DemanderSemainePrecedente">&lsaquo; Semaine précédente</button>
-    <button type="button" class="btn btn-outline-secondary" data-testid="nav-semaine-suivante"
-            @onclick="DemanderSemaineSuivante">Semaine suivante &rsaquo;</button>
-    <button type="button" class="btn btn-outline-primary" data-testid="nav-aujourdhui"
-            @onclick="DemanderRetourAujourdhui">Aujourd'hui</button>
+    @* Navigation temporelle regroupée en un contrôle segmenté (Sc.6) : précédent / aujourd'hui / suivant
+       réunis, repérables d'un coup d'œil. data-testid et commandes inchangés (présentation seule). *@
+    <div class="barre-nav-temporelle" role="group" aria-label="Navigation temporelle">
+        <button type="button" class="btn btn-outline-secondary" data-testid="nav-semaine-precedente"
+                @onclick="DemanderSemainePrecedente">&lsaquo; Semaine précédente</button>
+        <button type="button" class="btn btn-outline-primary" data-testid="nav-aujourdhui"
+                @onclick="DemanderRetourAujourdhui">Aujourd'hui</button>
+        <button type="button" class="btn btn-outline-secondary" data-testid="nav-semaine-suivante"
+                @onclick="DemanderSemaineSuivante">Semaine suivante &rsaquo;</button>
+    </div>
 
     @* Sélecteur de vue (Sc.2/Sc.3) : choisit la vue prédéfinie de la fenêtre projetée (Semaine /
        4 semaines glissantes — défaut / Mois). Le changement re-projette en re-requêtant l'API distante
        avec le paramètre de vue (read model `GrilleAgendaQuery` vue/span, backend déjà livré). L'ancre
        lundi est conservée ; la grille reste LECTURE SEULE. Sur échec de la re-requête, la vue est
        restaurée et le bandeau d'échec levé (même pivot que la navigation, Sc.6). *@
-    <div class="d-flex align-items-center gap-2">
-        <span class="text-muted">Vue :</span>
+    <label class="pdg-controle">
+        <span class="pdg-controle-label">Vue</span>
         <select class="form-select form-select-sm w-auto" data-testid="selecteur-vue"
                 value="@CodeVue(Session.Vue)" @onchange="ChangerVueAsync">
             <option value="semaine">Semaine</option>
             <option value="4semaines">4 semaines glissantes</option>
             <option value="mois">Mois</option>
         </select>
-    </div>
+    </label>
 
     @* Sélection de plage (Sc.5) : déclencheur d'écriture par INTERVALLE, gardé EstParent (gating règle 9
        mutualisé avec le menu clic-case — c'est ce gate partagé que Sc.7 caractérise : l'Invité ne voit même
@@ -313,6 +317,19 @@
        ombre tendre via les tokens --pdg-*), fonctionnant en clair ET en sombre. La couleur de
        responsabilité (bleu/orange) reste appliquée INLINE en fond de case (donnée, priorité maximale) ;
        une case sans responsable retombe sur la surface tokenisée --pdg-card. */
+    /* Barre de navigation regroupée (Sc.6) : se replie proprement sur écran étroit sans casser la grille. */
+    .barre-navigation { flex-wrap: wrap; }
+    /* Navigation temporelle en contrôle segmenté : boutons jointifs, coins arrondis aux extrémités. */
+    .barre-nav-temporelle { display: inline-flex; align-items: stretch; }
+    .barre-nav-temporelle .btn { border-radius: 0; }
+    .barre-nav-temporelle .btn:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
+    .barre-nav-temporelle .btn:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
+    .barre-nav-temporelle .btn + .btn { margin-left: -1px; }
+    /* Contrôle étiqueté cohérent (vue / incarnation / rôle) : label discret tokenisé, clair ET sombre. */
+    .pdg-controle { display: inline-flex; align-items: center; gap: .4rem; margin: 0; }
+    .pdg-controle-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em;
+                          font-weight: 600; color: var(--pdg-muted); white-space: nowrap; }
+
     .grille-agenda { display: flex; flex-direction: column; gap: 6px; }
     .grille-entete, .grille-semaine { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
     .grille-entete-jour { font-weight: 600; text-align: center; color: var(--pdg-muted);

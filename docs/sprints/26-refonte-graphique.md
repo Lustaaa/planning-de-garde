@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 5/14
+## Avancement — 6/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -47,7 +47,7 @@
 | 3 | Fondation switch clair/sombre : choix persisté `localStorage`, prime sur système | 🖥️ IHM | ✅ |
 | 4 | Calendrier (cœur) : cases mini-cartes, responsable héroïque, « aujourd'hui » marqué | 🖥️ IHM | ✅ |
 | 5 | Calendrier : menu clic-case restructuré (primaires / destructives) | 🖥️ IHM | ✅ |
-| 6 | Calendrier : barre nav + sélecteurs (vue / incarnation / rôle) regroupés | 🖥️ IHM | ⏳ |
+| 6 | Calendrier : barre nav + sélecteurs (vue / incarnation / rôle) regroupés | 🖥️ IHM | ✅ |
 | 7 | Connexion : page d'entrée soignée + boutons OAuth Google/Microsoft/Apple habillés | 🖥️ IHM | ⏳ |
 | 8 | Accueil : point d'entrée / orientation refondu | 🖥️ IHM | ⏳ |
 | 9 | Config foyer : acteurs + formulaires habillés, onglets si pertinent | 🖥️ IHM | ⏳ |
@@ -133,7 +133,7 @@ Scénario: Le menu clic-case sépare visuellement actions primaires et destructi
   Et les libellés métier (« Incarner », « poser un slot »…) sont conservés (renommage hors périmètre)
 ```
 
-### Sc.6 — Calendrier : barre nav + sélecteurs regroupés `@ihm @pending`
+### Sc.6 — Calendrier : barre nav + sélecteurs regroupés `@ihm @vert`
 
 ```gherkin
 Scénario: La barre de navigation et les sélecteurs sont regroupés proprement
