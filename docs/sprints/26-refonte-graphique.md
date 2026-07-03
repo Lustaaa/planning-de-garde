@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 13/14
+## Avancement — 14/14 ✅
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -55,7 +55,7 @@
 | 11 | Dialogs (×6) : habillage cohérent + hiérarchie de boutons | 🖥️ IHM | ✅ |
 | 12 | Légende : découvrable, cohérente avec les couleurs de responsabilité (clair + sombre) | 🖥️ IHM | ✅ |
 | 13 | Transverse responsive : Safari iOS / WebKit (safe-areas, 100vh, sticky, polices web) | 🖥️ IHM | ✅ |
-| 14 | Non-régression : suite complète 161/161 verte, `data-testid`/observables/flux intacts | @back | ⏳ |
+| 14 | Non-régression : suite complète 458/458 verte, `data-testid`/observables/flux intacts | @back | ✅ |
 
 ---
 
