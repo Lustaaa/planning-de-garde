@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 4/14
+## Avancement — 5/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -46,7 +46,7 @@
 | 2 | Fondation thème : défaut = préférence système, `data-theme` sur `<html>`, zéro flash | 🖥️ IHM | ✅ |
 | 3 | Fondation switch clair/sombre : choix persisté `localStorage`, prime sur système | 🖥️ IHM | ✅ |
 | 4 | Calendrier (cœur) : cases mini-cartes, responsable héroïque, « aujourd'hui » marqué | 🖥️ IHM | ✅ |
-| 5 | Calendrier : menu clic-case restructuré (primaires / destructives) | 🖥️ IHM | ⏳ |
+| 5 | Calendrier : menu clic-case restructuré (primaires / destructives) | 🖥️ IHM | ✅ |
 | 6 | Calendrier : barre nav + sélecteurs (vue / incarnation / rôle) regroupés | 🖥️ IHM | ⏳ |
 | 7 | Connexion : page d'entrée soignée + boutons OAuth Google/Microsoft/Apple habillés | 🖥️ IHM | ⏳ |
 | 8 | Accueil : point d'entrée / orientation refondu | 🖥️ IHM | ⏳ |
@@ -121,7 +121,7 @@ Scénario: Sur le calendrier, « qui a les enfants » est identifiable en < 3 s
   Et les data-testid des cases / pastilles / slots sont inchangés (Sc.14 le prouve)
 ```
 
-### Sc.5 — Calendrier : menu clic-case restructuré `@ihm @pending`
+### Sc.5 — Calendrier : menu clic-case restructuré `@ihm @vert`
 
 ```gherkin
 Scénario: Le menu clic-case sépare visuellement actions primaires et destructives

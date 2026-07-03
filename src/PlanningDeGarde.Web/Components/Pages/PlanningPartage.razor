@@ -232,19 +232,30 @@
 {
     <div class="menu-backdrop" data-testid="menu-actions-case" @onclick="FermerMenu">
         <div class="menu-panneau" @onclick:stopPropagation="true">
-            <h2 class="h6 mb-3">@dateMenu.ToString("dd/MM/yyyy")</h2>
-            <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-poser-slot"
-                    @onclick="@(() => OuvrirPoserSlot(dateMenu))">Poser un slot</button>
-            <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-affecter-periode"
-                    @onclick="@(() => OuvrirAffecterPeriode(dateMenu))">Affecter une période</button>
-            <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-definir-transfert"
-                    @onclick="@(() => OuvrirDefinirTransfert(dateMenu))">Définir un transfert</button>
-            <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-editer-periode"
-                    @onclick="@(() => OuvrirEditerPeriode(dateMenu))">Éditer une période</button>
-            <button type="button" class="btn btn-outline-danger w-100 mb-2" data-testid="action-supprimer-periode"
-                    @onclick="@(() => OuvrirSupprimerPeriode(dateMenu))">Supprimer une période</button>
-            <button type="button" class="btn btn-outline-danger w-100" data-testid="action-supprimer-slot"
-                    @onclick="@(() => OuvrirSupprimerSlot(dateMenu))">Supprimer un slot</button>
+            <h2 class="menu-titre">@dateMenu.ToString("dd/MM/yyyy")</h2>
+
+            @* Actions primaires (poser / affecter / transfert / éditer) : regroupées et repérables sans
+               lire tout le menu. Libellés, data-testid et commandes INCHANGÉS (présentation seule, Sc.5). *@
+            <div class="menu-groupe menu-groupe-primaire" data-testid="menu-groupe-primaire">
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-poser-slot"
+                        @onclick="@(() => OuvrirPoserSlot(dateMenu))">Poser un slot</button>
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-affecter-periode"
+                        @onclick="@(() => OuvrirAffecterPeriode(dateMenu))">Affecter une période</button>
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-definir-transfert"
+                        @onclick="@(() => OuvrirDefinirTransfert(dateMenu))">Définir un transfert</button>
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-editer-periode"
+                        @onclick="@(() => OuvrirEditerPeriode(dateMenu))">Éditer une période</button>
+            </div>
+
+            @* Actions destructives (supprimer) : regroupées et visuellement distinctes (séparateur +
+               intitulé), pour lever l'hésitation. Mêmes commandes qu'avant (aucun flux modifié). *@
+            <div class="menu-groupe menu-groupe-destructif" data-testid="menu-groupe-destructif">
+                <span class="menu-groupe-label">Suppression</span>
+                <button type="button" class="btn btn-outline-danger w-100 mb-2" data-testid="action-supprimer-periode"
+                        @onclick="@(() => OuvrirSupprimerPeriode(dateMenu))">Supprimer une période</button>
+                <button type="button" class="btn btn-outline-danger w-100" data-testid="action-supprimer-slot"
+                        @onclick="@(() => OuvrirSupprimerSlot(dateMenu))">Supprimer un slot</button>
+            </div>
         </div>
     </div>
 }
@@ -323,6 +334,13 @@
     .menu-panneau { background: var(--pdg-card); color: var(--pdg-ink); border: 1px solid var(--pdg-border);
                     border-radius: 16px; padding: 18px; width: min(340px, 90vw);
                     box-shadow: 0 12px 40px rgba(16,24,40,.28); }
+    .menu-titre { font-family: var(--pdg-font-titre); font-size: 1.05rem; font-weight: 700;
+                  color: var(--pdg-ink); margin: 0 0 14px; }
+    /* Groupe destructif nettement séparé des actions primaires (séparateur tokenisé + intitulé discret)
+       pour hiérarchiser sans changer les commandes. */
+    .menu-groupe-destructif { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--pdg-border); }
+    .menu-groupe-label { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .06em;
+                         font-weight: 600; color: var(--pdg-muted); margin-bottom: 8px; }
     .grille-jour-date { font-size: .78rem; font-weight: 600; color: var(--pdg-muted); }
     /* Nom du responsable = information héroïque (Fraunces, poids fort). Sur une case token --pdg-card :
        couleur d'encre du thème (s'adapte clair/sombre). */
