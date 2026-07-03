@@ -201,14 +201,16 @@
                      data-testid="jour-case"
                      data-couleur="@jourCase.CouleurResponsable"
                      data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
-                     style="@CaseStyle(jourCase.CouleurResponsable)"
                      @onclick="@(() => OuvrirMenu(jourCase.Date))">
                     <div class="grille-jour-date">@jourCase.Date.ToString("dd/MM")</div>
                     @if (!string.IsNullOrEmpty(jourCase.NomResponsable))
                     {
-                        @* Lisibilité du nom long (Sc.6) : troncature visuelle (CSS) dans la case, nom
-                           complet accessible au survol (title). La donnée reste intègre (texte complet). *@
+                        @* Responsable en PASTILLE (façon événement d'agenda) : la couleur de responsabilité
+                           reste la donnée (fond de pastille INLINE, priorité max), la case reste NEUTRE
+                           (surface tokenisée) — lisible clair ET sombre, moins « tableur colorié ». Nom
+                           complet au survol (title) ; troncature CSS. *@
                         <div class="grille-jour-responsable nom-tronque" data-testid="nom-responsable"
+                             style="background-color:@Couleur(jourCase.CouleurResponsable);"
                              title="@jourCase.NomResponsable">@jourCase.NomResponsable</div>
                     }
                     <div class="grille-jour-slots">
@@ -358,15 +360,19 @@
     .menu-groupe-destructif { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--pdg-border); }
     .menu-groupe-label { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .06em;
                          font-weight: 600; color: var(--pdg-muted); margin-bottom: 8px; }
-    .grille-jour-date { font-size: .78rem; font-weight: 600; color: var(--pdg-muted); }
-    /* Nom du responsable = information héroïque (Fraunces, poids fort). Sur une case token --pdg-card :
-       couleur d'encre du thème (s'adapte clair/sombre). */
-    .grille-jour-responsable { font-size: .84rem; font-weight: 700; color: var(--pdg-ink);
-                               font-family: var(--pdg-font-titre); letter-spacing: -.01em; }
-    /* Case PORTANT une couleur de responsabilité : la teinte pâle est claire dans les DEUX thèmes →
-       texte foncé fixe pour garantir le contraste du nom en sombre (teinte porteuse inchangée). */
-    .grille-jour:not([data-couleur=""]) .grille-jour-date { color: #6b6455; }
-    .grille-jour:not([data-couleur=""]) .grille-jour-responsable { color: #2b2620; }
+    .grille-jour-date { font-size: .78rem; font-weight: 600; color: var(--pdg-muted); align-self: flex-start; }
+    /* « Aujourd'hui » : la date passe en pastille d'accent (repère immédiat, façon agenda). */
+    .grille-jour-aujourdhui .grille-jour-date { background: var(--pdg-accent); color: #fff;
+                               padding: 1px 8px; border-radius: 999px; font-weight: 700; }
+    /* Responsable = PASTILLE d'événement colorée de la couleur du responsable (fond INLINE, texte blanc).
+       Auto-suffisante et lisible dans les deux thèmes ; la case reste neutre. Troncature du nom long. */
+    /* Spécificité .grille-jour ... pour primer sur .nom-tronque (display:block) tout en gardant la
+       troncature : la pastille reste compacte (inline-block) et tronque le nom long (title au survol). */
+    .grille-jour .grille-jour-responsable { display: inline-block; align-self: flex-start; max-width: 100%;
+                               font-size: .8rem; font-weight: 600; color: #fff;
+                               padding: 2px 9px; border-radius: 999px;
+                               white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+                               box-shadow: 0 1px 2px rgba(16,24,40,.14); }
     .nom-tronque { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .grille-jour-slots { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
     .grille-slot { border-radius: 8px; padding: 3px 6px; font-size: .72rem; color: #fff; display: flex;

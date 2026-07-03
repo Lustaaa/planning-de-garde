@@ -27,17 +27,19 @@ Conséquences concrètes :
 
 **Palette** (accent **hors bleu / hors orange** — ces teintes restent la donnée « qui a les
 enfants »). Deux thèmes : **clair** (défaut) et **sombre**, mêmes tokens, valeurs différentes.
+Le sombre est un **slate froid net** (révision hors-sprint sur retour PO : le brun chaud initial,
+jugé terne, a été écarté au profit d'un neutre profond où l'accent sauge-menthe ressort).
 
 | Token | Clair | Sombre | Rôle |
 |---|---|---|---|
-| `--pdg-bg` | `#F7F1E8` | `#1C1A17` | Fond |
-| `--pdg-card` | `#FFFDF9` | `#26231F` | Surface carte |
-| `--pdg-accent` | `#2E6F5E` | `#4FB89C` | Sauge (marque, actions) — éclairci en sombre pour le contraste |
-| `--pdg-accent-dark` | `#245A4C` | `#3C9E85` | Hover / focus |
-| `--pdg-accent-soft` | `#E4F0EA` | `#2C3A34` | Badges, pastilles |
-| `--pdg-ink` | `#2B2620` | `#EDE7DC` | Texte principal |
-| `--pdg-muted` | `#8C8273` | `#9C9384` | Texte secondaire |
-| `--pdg-border` | `#ECE1D2` | `#38332C` | Bordures |
+| `--pdg-bg` | `#F7F1E8` | `#14161A` | Fond (slate profond, légèrement froid) |
+| `--pdg-card` | `#FFFDF9` | `#1E222A` | Surface carte (surélevée) |
+| `--pdg-accent` | `#2E6F5E` | `#5FC9AC` | Sauge (marque, actions) — sauge-menthe en sombre, ressort sur le slate |
+| `--pdg-accent-dark` | `#245A4C` | `#47AC90` | Hover / focus |
+| `--pdg-accent-soft` | `#E4F0EA` | `#1E2E29` | Badges, pastilles |
+| `--pdg-ink` | `#2B2620` | `#E9ECF1` | Texte principal (quasi-blanc froid) |
+| `--pdg-muted` | `#8C8273` | `#98A1AE` | Texte secondaire (gris-bleu) |
+| `--pdg-border` | `#ECE1D2` | `#2C313B` | Bordures |
 
 Les **couleurs de responsabilité** (parent bleu, parent orange, slots) restent **inline, priorité
 maximale**, inchangées : elles sont de la donnée, pas du thème. En sombre, on garantit leur

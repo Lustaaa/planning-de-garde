@@ -1,30 +1,6 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand pdg-brand" href="">
-            <span class="pdg-brand-titre">Planning du foyer</span>
-            <span class="pdg-brand-sous-titre">Garde des enfants</span>
-        </a>
-    </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="planning" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Planning partagé
-            </NavLink>
-        </div>
-
-        @* Palier 7 (referme É12) : toute saisie (pose de slot, affectation de période, transfert) se
-           fait en contexte (clic-case → menu → dialog) ; plus AUCUNE entrée de nav de saisie dédiée. *@
-
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="configuration">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Configuration du foyer
-            </NavLink>
-        </div>
-    </nav>
-</div>
-
+@* Navigation primaire (refonte nav hors-sprint) : horizontale dans la barre d'application. Une seule
+   destination primaire — le planning ; la configuration du foyer vit sous le menu utilisateur (évite le
+   doublon). Aucune entrée de saisie dédiée (palier 7 : toute saisie se fait en contexte, clic-case). *@
+<nav class="app-nav">
+    <NavLink class="app-nav-lien" href="planning" Match="NavLinkMatch.All">Planning</NavLink>
+</nav>

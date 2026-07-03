@@ -15,7 +15,8 @@ namespace PlanningDeGarde.Web.Tests;
 ///     persisté (<c>localStorage</c>, prime — Sc.3), puis pose <c>data-theme="clair|sombre"</c> sur
 ///     <c>document.documentElement</c> ;</item>
 ///   <item><c>app.css</c> expose un bloc <c>[data-theme=sombre]</c> avec les valeurs de tokens sombres
-///     du design doc (fond #1C1A17, carte #26231F, accent #4FB89C).</item>
+///     du design doc (slate froid : fond #14161A, carte #1E222A, accent sauge-menthe #5FC9AC —
+///     révision hors-sprint sur retour PO, l'ancien brun chaud ayant été écarté).</item>
 /// </list>
 /// Le rendu réel (fond sombre sans flash, contraste) est constaté au runtime + gate G3.
 /// </summary>
@@ -62,9 +63,9 @@ public sealed class FondationThemeDefautSystemeZeroFlashTests
     }
 
     [Theory]
-    [InlineData("--pdg-bg", "#1C1A17")]
-    [InlineData("--pdg-card", "#26231F")]
-    [InlineData("--pdg-accent", "#4FB89C")]
+    [InlineData("--pdg-bg", "#14161A")]
+    [InlineData("--pdg-card", "#1E222A")]
+    [InlineData("--pdg-accent", "#5FC9AC")]
     public void Le_bloc_data_theme_sombre_expose_les_tokens_du_design_doc(string token, string valeur)
     {
         var css = LireAppCss();

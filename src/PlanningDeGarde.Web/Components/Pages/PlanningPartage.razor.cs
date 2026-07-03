@@ -523,19 +523,9 @@ public partial class PlanningPartage
     /// visuel « aujourd'hui » (Sc.4). Pur affichage : aucune règle métier, aucun observable de domaine.</summary>
     private bool EstAujourdhui(DateOnly date) => date == Horloge.Aujourdhui;
 
-    /// <summary>Style inline de fond de la case (Sc.4) : la couleur de responsabilité (teinte pâle) est
-    /// appliquée INLINE (donnée, priorité maximale) quand la case a un responsable ; sans responsable,
-    /// aucun fond inline n'est émis → la case retombe sur la surface tokenisée <c>--pdg-card</c> (rendu
-    /// correct en clair ET en sombre). La teinte porteuse reste inchangée.</summary>
-    private static string? CaseStyle(string couleur)
-        => string.IsNullOrEmpty(couleur) ? null : $"background-color:{Teinte(couleur)};";
-
-    /// <summary>Teinte claire de la case-jour pour la couleur du responsable (fond pâle lisible
-    /// avec du texte sombre), via le thème couleur partagé.</summary>
-    private static string Teinte(string couleur) => CouleursTheme.Claire(couleur);
-
-    /// <summary>Couleur pleine du créneau pour la couleur propre de l'acteur du slot, via le
-    /// thème couleur partagé.</summary>
+    /// <summary>Couleur PLEINE d'un acteur (responsable de case en pastille, ou créneau) via le thème
+    /// couleur partagé. La pastille de responsable et le slot portent la couleur de la personne (donnée,
+    /// inline) ; la case elle-même reste neutre (surface tokenisée) — rendu correct clair ET sombre.</summary>
     private static string Couleur(string couleur) => CouleursTheme.Pleine(couleur);
 
     public async ValueTask DisposeAsync()

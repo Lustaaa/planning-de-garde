@@ -1,0 +1,57 @@
+.menu-utilisateur {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+/* Identité : chip discrète, nom lisible. */
+.menu-utilisateur-nom {
+    font-weight: 600;
+    color: var(--pdg-ink);
+    max-width: 12rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Accès Foyer (configuration) : lien secondaire sobre. */
+.menu-lien-config {
+    color: var(--pdg-muted);
+    font-weight: 600;
+    text-decoration: none;
+    padding: 0.35rem 0.6rem;
+    border-radius: 8px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.menu-lien-config:hover {
+    color: var(--pdg-accent);
+    background-color: var(--pdg-accent-soft);
+    text-decoration: none;
+}
+
+/* Se déconnecter : bouton discret bordé, jamais en concurrence avec l'accent. */
+.menu-se-deconnecter {
+    appearance: none;
+    background: transparent;
+    border: 1px solid var(--pdg-border);
+    color: var(--pdg-muted);
+    font-weight: 600;
+    padding: 0.4rem 0.8rem;
+    min-height: 44px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: border-color 0.15s ease, color 0.15s ease;
+}
+
+.menu-se-deconnecter:hover {
+    border-color: var(--pdg-muted);
+    color: var(--pdg-ink);
+}
+
+@media (max-width: 640.98px) {
+    .menu-utilisateur-nom { display: none; }   /* on garde l'essentiel : Foyer + déconnexion */
+}

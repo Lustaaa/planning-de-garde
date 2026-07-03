@@ -41,20 +41,38 @@
    sauge est éclairci pour garder le contraste sur fond sombre. Les couleurs de responsabilité
    (bleu/orange) restent de la DONNÉE inline, hors thème — leur lisibilité est garantie à Sc.4. */
 [data-theme="sombre"] {
-    --pdg-accent: #4FB89C;        /* sauge éclairci pour le contraste */
-    --pdg-accent-dark: #3C9E85;   /* hover / focus */
-    --pdg-accent-soft: #2C3A34;   /* badges, pastilles */
-    --pdg-bg: #1C1A17;            /* fond */
-    --pdg-card: #26231F;          /* surface carte */
-    --pdg-border: #38332C;        /* bordures */
-    --pdg-ink: #EDE7DC;           /* texte principal */
-    --pdg-muted: #9C9384;         /* texte secondaire */
+    --pdg-accent: #5FC9AC;        /* sauge-menthe éclairci — ressort franchement sur slate */
+    --pdg-accent-dark: #47AC90;   /* hover / focus */
+    --pdg-accent-soft: #1E2E29;   /* badges, pastilles (voile sauge très sombre) */
+    --pdg-bg: #14161A;            /* slate profond, légèrement froid — net, pas terne */
+    --pdg-card: #1E222A;          /* surface surélevée */
+    --pdg-border: #2C313B;        /* bordures discrètes */
+    --pdg-ink: #E9ECF1;           /* texte principal quasi-blanc froid */
+    --pdg-muted: #98A1AE;         /* texte secondaire gris-bleu */
 }
 
 html, body {
     font-family: var(--pdg-font-corps);
     background-color: var(--pdg-bg);
     color: var(--pdg-ink);
+}
+
+/* Champs de saisie tokenisés (refonte hors-sprint) : les form-control/form-select Bootstrap restaient
+   blanc pur en thème sombre (moche, illisible). On les aligne sur la surface + l'encre du thème → rendu
+   cohérent en clair ET sombre, sans toucher au comportement. */
+.form-control, .form-select {
+    background-color: var(--pdg-card);
+    color: var(--pdg-ink);
+    border-color: var(--pdg-border);
+}
+
+.form-control::placeholder { color: var(--pdg-muted); opacity: 1; }
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--pdg-card);
+    color: var(--pdg-ink);
+    border-color: var(--pdg-accent);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--pdg-accent) 22%, transparent);
 }
 
 /* Titres / affichage en Fraunces (serif éditorial) — hiérarchie chaleureuse, hors « Bootstrap brut ». */
