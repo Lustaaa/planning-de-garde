@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 6/14
+## Avancement — 7/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -48,7 +48,7 @@
 | 4 | Calendrier (cœur) : cases mini-cartes, responsable héroïque, « aujourd'hui » marqué | 🖥️ IHM | ✅ |
 | 5 | Calendrier : menu clic-case restructuré (primaires / destructives) | 🖥️ IHM | ✅ |
 | 6 | Calendrier : barre nav + sélecteurs (vue / incarnation / rôle) regroupés | 🖥️ IHM | ✅ |
-| 7 | Connexion : page d'entrée soignée + boutons OAuth Google/Microsoft/Apple habillés | 🖥️ IHM | ⏳ |
+| 7 | Connexion : page d'entrée soignée + boutons OAuth Google/Microsoft/Apple habillés | 🖥️ IHM | ✅ |
 | 8 | Accueil : point d'entrée / orientation refondu | 🖥️ IHM | ⏳ |
 | 9 | Config foyer : acteurs + formulaires habillés, onglets si pertinent | 🖥️ IHM | ⏳ |
 | 10 | Layout : nav + marque + menu utilisateur + bandeaux d'alerte adoucis | 🖥️ IHM | ⏳ |
@@ -144,7 +144,7 @@ Scénario: La barre de navigation et les sélecteurs sont regroupés proprement
   Et sur écran étroit, l'en-tête se replie proprement sans casser la lecture de la grille
 ```
 
-### Sc.7 — Connexion : page d'entrée + OAuth habillés `@ihm @pending`
+### Sc.7 — Connexion : page d'entrée + OAuth habillés `@ihm @vert`
 
 ```gherkin
 Scénario: La page de connexion est soignée et les boutons OAuth sont habillés

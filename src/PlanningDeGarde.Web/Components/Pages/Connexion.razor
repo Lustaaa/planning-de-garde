@@ -6,37 +6,90 @@
 <PageTitle>Connexion</PageTitle>
 
 <div class="connexion-page">
-    <h1 class="h3 mb-4">Se connecter</h1>
-
     @* Page de connexion dédiée (s24, Sc.8) : landing par défaut, SEUL chemin d'entrée (Sc.10). Emballe
        SeConnecterCommand (s23) via le canal requête/réponse (POST /api/canal/se-connecter) — aucune règle
        d'admission côté front (compte existant ET Actif tranché par le handler). Sur succès : redirection
        vers le planning, sélecteur d'acteur pré-positionné sur l'acteur du compte (incarnation bornée s14).
-       Sur refus : motif clair affiché, on reste sur la page (Sc.9). Login email-only (s23) : pas de mot de passe. *@
-    <div class="mb-3">
-        <label class="form-label" for="email-connexion">Adresse email</label>
-        <input type="email" id="email-connexion" class="form-control" placeholder="votre email"
-               data-testid="champ-email-connexion" @bind="_email" />
-    </div>
-    <button type="button" class="btn btn-primary" data-testid="bouton-se-connecter"
-            @onclick="SeConnecterAsync">Se connecter</button>
+       Sur refus : motif clair affiché, on reste sur la page (Sc.9). Login email-only (s23) : pas de mot de passe.
+       Refonte s26 (Sc.7) : page d'entrée « Cocon élevé » — carte centrée tokenisée, marque sauge (Fraunces),
+       boutons OAuth habillés. Aucun data-testid / flux d'auth modifié (présentation seule). *@
+    <div class="connexion-carte">
+        <div class="connexion-marque">
+            <span class="connexion-marque-pastille" aria-hidden="true">🏠</span>
+            <span class="connexion-marque-nom">Planning de garde</span>
+        </div>
+        <h1 class="connexion-titre">Se connecter</h1>
+        <p class="connexion-sous-titre">Retrouvez qui a les enfants, en un coup d'œil.</p>
 
-    @if (_motif is { } motif)
-    {
-        <div class="alert alert-danger mt-3" data-testid="motif-connexion" role="alert">@motif</div>
-    }
+        <div class="connexion-champ">
+            <label class="form-label" for="email-connexion">Adresse email</label>
+            <input type="email" id="email-connexion" class="form-control" placeholder="votre email"
+                   data-testid="champ-email-connexion" @bind="_email" />
+        </div>
+        <button type="button" class="btn btn-primary w-100 connexion-bouton" data-testid="bouton-se-connecter"
+                @onclick="SeConnecterAsync">Se connecter</button>
 
-    @* Connexion via un fournisseur OAuth externe (volet 4, s25) — À CÔTÉ du login local. Un clic
-       DÉCLENCHE le flux OAuth en naviguant vers l'endpoint de démarrage du provider côté serveur
-       (api/oauth/{provider}/demarrer), qui redirige vers l'authorize réel (secrets/callbacks vérifiés
-       manuellement au G3). Aucune règle métier côté UI : la vue ne fait que déclencher le flux. *@
-    <div class="oauth-providers mt-4">
-        <p class="text-muted mb-2">Ou se connecter avec</p>
-        <button type="button" class="btn btn-outline-secondary me-2" data-testid="bouton-oauth-google"
-                @onclick='() => DemarrerOAuth("google")'>Se connecter avec Google</button>
-        <button type="button" class="btn btn-outline-secondary me-2" data-testid="bouton-oauth-microsoft"
-                @onclick='() => DemarrerOAuth("microsoft")'>Se connecter avec Microsoft</button>
-        <button type="button" class="btn btn-outline-secondary" data-testid="bouton-oauth-apple"
-                @onclick='() => DemarrerOAuth("apple")'>Se connecter avec Apple</button>
+        @if (_motif is { } motif)
+        {
+            <div class="alert alert-danger mt-3" data-testid="motif-connexion" role="alert">@motif</div>
+        }
+
+        @* Connexion via un fournisseur OAuth externe (volet 4, s25) — À CÔTÉ du login local. Un clic
+           DÉCLENCHE le flux OAuth en naviguant vers l'endpoint de démarrage du provider côté serveur
+           (api/oauth/{provider}/demarrer), qui redirige vers l'authorize réel (secrets/callbacks vérifiés
+           manuellement au G3). Aucune règle métier côté UI : la vue ne fait que déclencher le flux. *@
+        <div class="oauth-providers" data-testid="oauth-providers">
+            <div class="oauth-separateur"><span>ou continuer avec</span></div>
+            <button type="button" class="oauth-bouton oauth-google" data-testid="bouton-oauth-google"
+                    @onclick='() => DemarrerOAuth("google")'>
+                <span class="oauth-marque" aria-hidden="true">G</span>Google
+            </button>
+            <button type="button" class="oauth-bouton oauth-microsoft" data-testid="bouton-oauth-microsoft"
+                    @onclick='() => DemarrerOAuth("microsoft")'>
+                <span class="oauth-marque" aria-hidden="true">⊞</span>Microsoft
+            </button>
+            <button type="button" class="oauth-bouton oauth-apple" data-testid="bouton-oauth-apple"
+                    @onclick='() => DemarrerOAuth("apple")'>
+                <span class="oauth-marque" aria-hidden="true"></span>Apple
+            </button>
+        </div>
     </div>
 </div>
+
+<style>
+    /* Page d'entrée « Cocon élevé » (Sc.7) : centrée, calme, tokenisée (clair ET sombre). */
+    .connexion-page { min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .connexion-carte { width: min(420px, 100%); background: var(--pdg-card); border: 1px solid var(--pdg-border);
+                       border-radius: 18px; padding: 2rem 1.75rem;
+                       box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 12px 40px rgba(16,24,40,.10); }
+    /* Marque : pastille d'accent sauge + nom en Fraunces (identité de marque, hors bleu/orange). */
+    .connexion-marque { display: flex; align-items: center; gap: .55rem; margin-bottom: 1.5rem; }
+    .connexion-marque-pastille { display: inline-flex; align-items: center; justify-content: center;
+                                 width: 2.1rem; height: 2.1rem; border-radius: 12px;
+                                 background: var(--pdg-accent-soft); font-size: 1.1rem; }
+    .connexion-marque-nom { font-family: var(--pdg-font-titre); font-weight: 700; font-size: 1.1rem;
+                            color: var(--pdg-accent); letter-spacing: -.01em; }
+    .connexion-titre { font-family: var(--pdg-font-titre); font-weight: 700; font-size: 1.6rem;
+                       color: var(--pdg-ink); margin: 0 0 .25rem; letter-spacing: -.02em; }
+    .connexion-sous-titre { color: var(--pdg-muted); font-size: .92rem; margin: 0 0 1.5rem; }
+    .connexion-champ { margin-bottom: 1rem; }
+    .connexion-bouton { border-radius: 12px; padding: .55rem; font-weight: 600; }
+
+    /* Séparateur « ou continuer avec » : trait tokenisé + intitulé discret. */
+    .oauth-providers { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .6rem; }
+    .oauth-separateur { display: flex; align-items: center; gap: .75rem; color: var(--pdg-muted);
+                        font-size: .78rem; margin-bottom: .3rem; }
+    .oauth-separateur::before, .oauth-separateur::after { content: ""; flex: 1; height: 1px; background: var(--pdg-border); }
+    /* Boutons providers : cohérents avec le thème (surface carte, bordure tokenisée), reconnaissables
+       par une pastille de marque colorée à gauche. Cible tactile ≥ 44px. */
+    .oauth-bouton { display: flex; align-items: center; gap: .65rem; width: 100%; min-height: 44px;
+                    padding: .5rem .9rem; border-radius: 12px; border: 1px solid var(--pdg-border);
+                    background: var(--pdg-card); color: var(--pdg-ink); font-weight: 600; cursor: pointer;
+                    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+    .oauth-bouton:hover { border-color: var(--pdg-accent); box-shadow: 0 2px 8px rgba(16,24,40,.08); transform: translateY(-1px); }
+    .oauth-marque { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem;
+                    border-radius: 8px; font-weight: 700; color: #fff; font-size: .95rem; }
+    .oauth-google .oauth-marque { background: #4285F4; }
+    .oauth-microsoft .oauth-marque { background: #2F2F2F; }
+    .oauth-apple .oauth-marque { background: #111; }
+</style>
