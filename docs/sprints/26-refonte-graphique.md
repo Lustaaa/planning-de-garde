@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 7/14
+## Avancement — 8/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -49,7 +49,7 @@
 | 5 | Calendrier : menu clic-case restructuré (primaires / destructives) | 🖥️ IHM | ✅ |
 | 6 | Calendrier : barre nav + sélecteurs (vue / incarnation / rôle) regroupés | 🖥️ IHM | ✅ |
 | 7 | Connexion : page d'entrée soignée + boutons OAuth Google/Microsoft/Apple habillés | 🖥️ IHM | ✅ |
-| 8 | Accueil : point d'entrée / orientation refondu | 🖥️ IHM | ⏳ |
+| 8 | Accueil : point d'entrée / orientation refondu | 🖥️ IHM | ✅ |
 | 9 | Config foyer : acteurs + formulaires habillés, onglets si pertinent | 🖥️ IHM | ⏳ |
 | 10 | Layout : nav + marque + menu utilisateur + bandeaux d'alerte adoucis | 🖥️ IHM | ⏳ |
 | 11 | Dialogs (×6) : habillage cohérent + hiérarchie de boutons | 🖥️ IHM | ⏳ |
@@ -156,7 +156,7 @@ Scénario: La page de connexion est soignée et les boutons OAuth sont habillés
   Et la page rend correctement en clair et en sombre
 ```
 
-### Sc.8 — Accueil : orientation refondue `@ihm @pending`
+### Sc.8 — Accueil : orientation refondue `@ihm @vert`
 
 ```gherkin
 Scénario: L'accueil oriente clairement l'utilisateur

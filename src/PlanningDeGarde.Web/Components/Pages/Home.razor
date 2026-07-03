@@ -3,8 +3,41 @@
 
 <PageTitle>Planning de garde</PageTitle>
 
+@* Landing par défaut (s24, Sc.8) : un utilisateur non connecté atterrit sur la PAGE DE CONNEXION
+   DÉDIÉE (un seul chemin d'entrée, Sc.10), jamais directement sur le planning — la redirection reste
+   le flux d'orientation. Refonte s26 (Sc.8) : pendant la redirection, un point d'entrée « Cocon élevé »
+   oriente clairement (marque sauge en Fraunces + lien vers la connexion, MÊME destination qu'avant).
+   Aucun flux modifié : présentation seule. *@
+<div class="accueil-page">
+    <div class="accueil-orientation" data-testid="accueil-orientation">
+        <span class="accueil-marque-pastille" aria-hidden="true">🏠</span>
+        <h1 class="accueil-titre">Planning de garde</h1>
+        <p class="accueil-sous-titre">Qui a les enfants, en un coup d'œil.</p>
+        <a class="accueil-lien" href="connexion" data-testid="accueil-lien-connexion">Aller à la connexion</a>
+    </div>
+</div>
+
+<style>
+    /* Point d'entrée « Cocon élevé » (Sc.8) : centré, calme, tokenisé (clair ET sombre). */
+    .accueil-page { min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .accueil-orientation { width: min(460px, 100%); text-align: center; background: var(--pdg-card);
+                           border: 1px solid var(--pdg-border); border-radius: 20px; padding: 2.5rem 2rem;
+                           box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 12px 40px rgba(16,24,40,.10); }
+    .accueil-marque-pastille { display: inline-flex; align-items: center; justify-content: center;
+                               width: 3rem; height: 3rem; border-radius: 16px; background: var(--pdg-accent-soft);
+                               font-size: 1.5rem; margin-bottom: 1rem; }
+    .accueil-titre { font-family: var(--pdg-font-titre); font-weight: 700; font-size: 1.8rem;
+                     color: var(--pdg-accent); margin: 0 0 .35rem; letter-spacing: -.02em; }
+    .accueil-sous-titre { color: var(--pdg-muted); font-size: 1rem; margin: 0 0 1.75rem; }
+    .accueil-lien { display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+                    padding: .55rem 1.5rem; border-radius: 12px; background: var(--pdg-accent); color: #fff;
+                    font-weight: 600; text-decoration: none;
+                    transition: background-color .15s ease, transform .15s ease; }
+    .accueil-lien:hover { background: var(--pdg-accent-dark); transform: translateY(-1px); color: #fff; }
+</style>
+
 @code {
     // Landing par défaut (s24, Sc.8) : un utilisateur non connecté atterrit sur la PAGE DE CONNEXION
-    // DÉDIÉE (un seul chemin d'entrée, Sc.10), jamais directement sur le planning.
+    // DÉDIÉE (un seul chemin d'entrée, Sc.10), jamais directement sur le planning. Flux INCHANGÉ.
     protected override void OnInitialized() => Nav.NavigateTo("connexion");
 }
