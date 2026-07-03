@@ -57,8 +57,8 @@ public sealed class FrontWasmStoreVideInviteTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click();
-                grille.Find("[data-testid='action-affecter-periode']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-affecter-periode']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-affecter-periode']"));
             },
             TimeSpan.FromSeconds(10));
@@ -89,8 +89,8 @@ public sealed class FrontWasmStoreVideInviteTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click();
-                grille.Find("[data-testid='action-definir-transfert']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-definir-transfert']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-definir-transfert']"));
             },
             TimeSpan.FromSeconds(10));

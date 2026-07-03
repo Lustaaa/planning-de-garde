@@ -7,10 +7,10 @@
    ramène à la page de connexion dédiée. Aucune règle métier dans l'UI. *@
 @if (Session.EstConnecte)
 {
-    <div class="menu-utilisateur d-flex align-items-center gap-2" data-testid="menu-utilisateur">
+    <div class="menu-utilisateur" data-testid="menu-utilisateur">
         <span class="menu-utilisateur-nom" data-testid="menu-nom">@Session.CompteConnecteNom</span>
-        <a class="menu-lien-config" href="configuration" data-testid="menu-lien-config">Configuration du foyer</a>
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-testid="menu-se-deconnecter"
+        <a class="menu-lien-config" href="configuration" data-testid="menu-lien-config">Foyer</a>
+        <button type="button" class="menu-se-deconnecter" data-testid="menu-se-deconnecter"
                 @onclick="SeDeconnecter">Se déconnecter</button>
     </div>
 }

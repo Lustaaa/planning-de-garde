@@ -56,21 +56,21 @@ public sealed class FrontWasmAffecterPeriodePlageContigueTempsReelTests : TestCo
 
         // When — un Parent active la sélection de plage, clique la case de début (mardi 09/06) puis la case
         // de fin (mercredi 10/06) : la dialog d'affectation s'ouvre pré-remplie sur l'intervalle [09/06, 10/06].
-        grille.Find("[data-testid='mode-plage']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='mode-plage']").Click());
         grille.WaitForState(
             () => grille.Find("[data-testid='barre-navigation']").GetAttribute("data-mode-plage") == "1",
             TimeSpan.FromSeconds(10));
 
-        GrilleRuntimeHarness.CaseDuJour(grille, "09/06").Click();
-        GrilleRuntimeHarness.CaseDuJour(grille, "10/06").Click();
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").Click());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "10/06").Click());
         grille.WaitForState(
             () => grille.FindAll("[data-testid='dialog-affecter-periode']").Count == 1,
             TimeSpan.FromSeconds(10));
 
         // … il choisit « Bruno » (id stable parent-b) et valide : UNE commande AffecterPeriode est émise
         // sur l'intervalle pré-rempli.
-        grille.Find("[data-testid='champ-responsable']").Change("parent-b");
-        grille.Find("[data-testid='dialog-affecter-periode'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='champ-responsable']").Change("parent-b"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-affecter-periode'] form").Submit());
 
         // Then — la dialog se ferme, les 2 cases 09/06 et 10/06 réapparaissent « Bruno »/orange (surcharge
         // primant le fond Alice), et la case hors plage 11/06 reste Alice/bleu — le tout relu depuis le store

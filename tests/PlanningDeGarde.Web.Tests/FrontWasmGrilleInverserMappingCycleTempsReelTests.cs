@@ -64,10 +64,10 @@ public sealed class FrontWasmGrilleInverserMappingCycleTempsReelTests : TestCont
 
         // … un parent définit un cycle de 2 semaines : index pair (0) → parent-a, index impair (1) → parent-b,
         // et valide. L'écriture transite par le canal HTTP réel vers l'API distante (store cycle réel écrit).
-        config.Find("[data-testid='champ-nombre-semaines']").Change("2");
-        config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a");
-        config.Find("[data-testid='champ-cycle-index-1']").Change("parent-b");
-        config.Find("#form-cycle").Submit();
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nombre-semaines']").Change("2"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-1']").Change("parent-b"));
+        this.SurDispatcher(() => config.Find("#form-cycle").Submit());
         config.WaitForElement("[data-testid='confirmation-cycle']", TimeSpan.FromSeconds(10));
 
         // … la grille réellement câblée à la MÊME API distante est affichée à la date de référence lundi
@@ -87,9 +87,9 @@ public sealed class FrontWasmGrilleInverserMappingCycleTempsReelTests : TestCont
         // When — un parent inverse le mapping depuis la configuration : index pair (0) → parent-b, index
         // impair (1) → parent-a, et valide (ré-définition complète, dernière écriture gagne). Émission via le
         // canal d'écriture HTTP réel → le handler écrase le store cycle ET déclenche la diffusion temps réel.
-        config.Find("[data-testid='champ-cycle-index-0']").Change("parent-b");
-        config.Find("[data-testid='champ-cycle-index-1']").Change("parent-a");
-        config.Find("#form-cycle").Submit();
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-0']").Change("parent-b"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-1']").Change("parent-a"));
+        this.SurDispatcher(() => config.Find("#form-cycle").Submit());
         config.WaitForElement("[data-testid='confirmation-cycle']", TimeSpan.FromSeconds(10));
 
         // … la connexion SignalR du front (long polling vers le TestServer) s'établit de façon asynchrone : on

@@ -1,23 +1,84 @@
-/* Thème métier « garde des enfants » (palier 3, règle 20) : identité douce et accueillante —
-   fond crème chaud, accent vert sauge apaisant, cartes arrondies. Choisi pour rester DISTINCT des
-   couleurs de responsabilité (parent-a → bleu, parent-b → orange) : l'accent n'emprunte ni le bleu
-   ni l'orange, et les teintes de responsabilité (appliquées en style inline sur les cases) priment.
-   Ergonomie de surface : aucune règle métier, aucun observable — purement CSS. */
+/* Système visuel « Studio » (refonte graphique 2026-07) : identité neuve, sans-serif intégrale,
+   chrome INDIGO distinct des 5 couleurs-données (bleu/orange/vert/violet/rose = « qui a les
+   enfants / qui garde »). Police Inter self-hostée (aucun CDN externe, offline-friendly WASM),
+   sous-ensemble latin (accents français U+00C0-00FF), fichier variable, déposée sous wwwroot/fonts/. */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 100 900;
+    font-display: swap;
+    src: url('fonts/inter-latin.woff2') format('woff2');
+}
+
+/* Design tokens --pdg-* (source de vérité : docs/superpowers/specs/2026-07-03-refonte-graphique-design.md).
+   Chrome INDIGO, hors des 5 teintes-données — ces dernières restent la DONNÉE « qui a les enfants /
+   qui garde », appliquées en style inline (priorité maximale) sur pastilles et slots. Surface pure
+   CSS : aucune règle métier, aucun observable. Thème sombre = même jeu de tokens, valeurs sombres.
+   Titres ET corps en sans-serif (le caractère vient du poids et du tracking, pas d'un serif). */
 :root {
-    --pdg-accent: #2f9e86;        /* vert sauge accueillant */
-    --pdg-accent-dark: #257e6b;
-    --pdg-accent-soft: #e6f4ef;   /* fond pâle des pastilles/badges */
-    --pdg-bg: #fbf6ee;            /* crème chaud */
-    --pdg-card: #fffdf9;          /* blanc chaud */
-    --pdg-border: #ece1d2;        /* sable doux */
-    --pdg-ink: #3c352b;           /* brun-charbon lisible */
-    --pdg-muted: #8c8273;
+    --pdg-font-titre: 'Inter', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    --pdg-font-corps: 'Inter', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+
+    --pdg-accent: #4F46E5;        /* indigo — marque, actions, liens */
+    --pdg-accent-dark: #4338CA;   /* hover / focus */
+    --pdg-accent-soft: #ECEBFF;   /* fond pâle des pastilles/badges/onglet actif */
+    --pdg-on-accent: #FFFFFF;     /* texte sur aplat d'accent */
+    --pdg-bg: #EEF1F5;            /* papier gris-bleu froid */
+    --pdg-card: #FFFFFF;          /* surface principale */
+    --pdg-surface-2: #F5F7FA;     /* surface secondaire (entêtes, champs, puces) */
+    --pdg-border: #DCE1E8;        /* bordures nettes */
+    --pdg-ink: #111318;           /* encre quasi-noire froide */
+    --pdg-muted: #5B6572;         /* texte secondaire */
+
+    /* Largeurs de contenu : planning respire large, config resserrée (formulaires lisibles). */
+    --pdg-w-large: 1440px;
+    --pdg-w-etroite: 960px;
+}
+
+/* Thème sombre soigné et UTILISABLE : les ombres ne portent pas sur fond sombre → la hiérarchie
+   passe par des surfaces étagées (bg < card < surface-2) et des bordures visibles, pas une simple
+   inversion. Encre haute-contraste, indigo éclairci pour ressortir sur l'ardoise. Appliqué via
+   data-theme="sombre" sur <html> (amorce inline de index.html → zéro flash au chargement). */
+[data-theme="sombre"] {
+    --pdg-accent: #8B84FF;        /* indigo éclairci — ressort franchement sur l'ardoise */
+    --pdg-accent-dark: #6E66E8;   /* hover / focus */
+    --pdg-accent-soft: #201F3A;   /* voile indigo très sombre (badges, onglet actif) */
+    --pdg-on-accent: #0E1116;     /* texte sur aplat d'accent clair */
+    --pdg-bg: #0E1116;            /* ardoise profonde, légèrement froide */
+    --pdg-card: #171B22;          /* surface surélevée */
+    --pdg-surface-2: #1E242D;     /* surface secondaire */
+    --pdg-border: #2A313B;        /* bordures discrètes mais lisibles */
+    --pdg-ink: #E6E9EE;           /* texte principal quasi-blanc froid */
+    --pdg-muted: #93A0B0;         /* texte secondaire gris-bleu */
 }
 
 html, body {
-    font-family: 'Segoe UI Rounded', 'SF Pro Rounded', system-ui, 'Segoe UI', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: var(--pdg-font-corps);
     background-color: var(--pdg-bg);
     color: var(--pdg-ink);
+}
+
+/* Champs de saisie tokenisés (refonte hors-sprint) : les form-control/form-select Bootstrap restaient
+   blanc pur en thème sombre (moche, illisible). On les aligne sur la surface + l'encre du thème → rendu
+   cohérent en clair ET sombre, sans toucher au comportement. */
+.form-control, .form-select {
+    background-color: var(--pdg-card);
+    color: var(--pdg-ink);
+    border-color: var(--pdg-border);
+}
+
+.form-control::placeholder { color: var(--pdg-muted); opacity: 1; }
+
+.form-control:focus, .form-select:focus {
+    background-color: var(--pdg-card);
+    color: var(--pdg-ink);
+    border-color: var(--pdg-accent);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--pdg-accent) 22%, transparent);
+}
+
+/* Titres / affichage en Fraunces (serif éditorial) — hiérarchie chaleureuse, hors « Bootstrap brut ». */
+h1, h2, h3, h4, .content h1, .content section h2, .pdg-brand-titre {
+    font-family: var(--pdg-font-titre);
 }
 
 a, .btn-link {
@@ -68,7 +129,7 @@ a, .btn-link {
 }
 
 .content .table tbody tr:hover {
-    background-color: #fafaff;
+    background-color: var(--pdg-surface-2);
 }
 
 /* Listes (périodes, transferts) */
@@ -107,10 +168,52 @@ a, .btn-link {
 /* Bandeau de domaine de la barre supérieure. */
 .pdg-domaine { font-weight: 600; color: var(--pdg-accent-dark); }
 
-/* Alertes plus douces */
+/* Bandeaux d'alerte adoucis (sprint 26, Sc.10) : teintes tendres — plus le rouge/jaune/vert Bootstrap
+   brut. Tints semi-transparents + texte en encre du thème → lisibles en clair ET en sombre, cohérents
+   avec le système « Cocon élevé ». Les couleurs de responsabilité (bleu/orange, inline) restent hors sujet. */
 .content .alert {
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid transparent;
+    color: var(--pdg-ink);
+}
+.content .alert-success   { background: rgba(46, 111, 94, .10);  border-color: rgba(46, 111, 94, .28); }
+.content .alert-danger    { background: rgba(197, 74, 60, .10);  border-color: rgba(197, 74, 60, .30); }
+.content .alert-warning   { background: rgba(184, 134, 40, .12); border-color: rgba(184, 134, 40, .30); }
+.content .alert-info      { background: var(--pdg-accent-soft);  border-color: rgba(46, 111, 94, .22); }
+.content .alert-secondary { background: var(--pdg-accent-soft);  border-color: var(--pdg-border); }
+
+/* Switch de thème clair/sombre (Sc.3) intégré à la barre supérieure : bouton icône discret tokenisé. */
+.bascule-theme {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.2rem; height: 2.2rem; padding: 0;
+    background: transparent; color: var(--pdg-ink);
+    border: 1px solid var(--pdg-border); border-radius: 10px;
+    font-size: 1rem; line-height: 1; cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, transform .15s ease;
+}
+.bascule-theme:hover { background: var(--pdg-accent-soft); border-color: var(--pdg-accent); transform: translateY(-1px); }
+
+/* Surface de dialog partagée par les six dialogs (sprint 26, Sc.11) : habillage cohérent tokenisé —
+   carte --pdg-card, rayon généreux, ombre tendre, encre du thème → rendu correct clair ET sombre.
+   Centralisée ici (fin des blocs <style> dupliqués et codés en dur #fff dans chaque dialog). */
+.dialog-backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, .45); display: flex;
+    align-items: center; justify-content: center; z-index: 1050; padding: 1rem; }
+.dialog-panneau { background: var(--pdg-card); color: var(--pdg-ink); border: 1px solid var(--pdg-border);
+    border-radius: 16px; padding: 22px; width: min(520px, 94vw); max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 12px 40px rgba(16, 24, 40, .28); }
+/* Hiérarchie de boutons : primaire dominant (btn-primary = accent, déjà tokenisé), annulation discrète
+   (btn-link muté), destructive distincte (btn-outline-danger, inchangée). */
+.dialog-panneau .btn-link { color: var(--pdg-muted); text-decoration: none; }
+.dialog-panneau .btn-link:hover { color: var(--pdg-ink); text-decoration: underline; }
+
+/* Safari iOS / WebKit — cibles tactiles confortables (sprint 26, Sc.13) : sur pointeur grossier (tactile),
+   les contrôles interactifs font au moins 44px de haut (recommandation d'accessibilité tactile Apple).
+   Sur pointeur fin (souris), la densité PC est préservée. */
+@media (pointer: coarse) {
+    .btn, .form-select, .form-control, .nav-link,
+    .bascule-theme, .oauth-bouton, .accueil-lien, .barre-nav-temporelle .btn {
+        min-height: 44px;
+    }
 }
 
 /* Boutons d'action arrondis */
@@ -123,8 +226,19 @@ a, .btn-link {
   box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
+/* Marges : le contenu ne colle plus aux bords (fini le 100 % de largeur). Conteneur centré, large
+   par défaut (planning) ; la page de config le resserre via .pdg-etroite. Gouttières latérales
+   confortables, préservées sur mobile. */
 .content {
-    padding-top: 1.1rem;
+    max-width: var(--pdg-w-large);
+    margin-inline: auto;
+    padding: 1.4rem 1.5rem 3rem;
+}
+
+/* Wrapper de page resserré (config foyer) : formulaires et réglages lisibles, façon page de settings. */
+.pdg-etroite {
+    max-width: var(--pdg-w-etroite);
+    margin-inline: auto;
 }
 
 h1:focus {

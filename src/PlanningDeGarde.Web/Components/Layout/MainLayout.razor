@@ -1,27 +1,34 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar">
+    @* Barre d'application unique (refonte nav hors-sprint) : plus de barre latérale — 2 destinations
+       seulement. La marque ramène au planning ; la navigation primaire et les actions (identité, thème)
+       tiennent sur une seule ligne, ce qui rend le calendrier (héros) pleine largeur et simplifie iOS. *@
+    <header class="app-bar">
+        <a class="app-brand" href="planning">
+            <span class="app-brand-pastille" aria-hidden="true"></span>
+            <span class="pdg-brand-titre">Planning du foyer</span>
+        </a>
+
         <NavMenu />
-    </div>
 
-    <main>
-        <div class="top-row px-4">
-            <span class="pdg-domaine">Le planning de garde des enfants du foyer</span>
-            @* Menu utilisateur connecté (Sc.11) : nom / acteur + accès config + Se déconnecter, une fois
-               une session ouverte (page de connexion dédiée, Sc.8). Présent sur toutes les pages. *@
+        <div class="app-bar-actions">
+            @* Menu utilisateur : identité + accès Foyer + Se déconnecter, une fois connecté (sinon rien). *@
             <MenuUtilisateur />
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">À propos</a>
+            @* Bascule de thème clair/sombre : persiste le choix (localStorage), applique sans rechargement. *@
+            <BasculeTheme />
         </div>
+    </header>
 
-        <article class="content px-4">
+    <main class="app-main">
+        <article class="content">
             @Body
         </article>
     </main>
 </div>
 
 <div id="blazor-error-ui" data-nosnippet>
-    An unhandled error has occurred.
-    <a href="." class="reload">Reload</a>
+    Une erreur inattendue s'est produite.
+    <a href="." class="reload">Recharger</a>
     <span class="dismiss">🗙</span>
 </div>

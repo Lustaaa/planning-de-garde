@@ -43,8 +43,8 @@ public sealed class FrontWasmSupprimerPeriodeApiInjoignableTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-supprimer-periode']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-supprimer-periode']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-supprimer-periode']"));
             },
             TimeSpan.FromSeconds(10));
@@ -54,9 +54,9 @@ public sealed class FrontWasmSupprimerPeriodeApiInjoignableTests : TestContext
             TimeSpan.FromSeconds(10));
 
         // … je supprime la période de Nina : le POST échoue (API injoignable au transport).
-        grille.FindAll("[data-testid='periode-supprimable']")
+        this.SurDispatcher(() => grille.FindAll("[data-testid='periode-supprimable']")
             .Single(l => l.TextContent.Contains("Nina la nounou"))
-            .QuerySelector("[data-testid='bouton-supprimer-periode']")!.Click();
+            .QuerySelector("[data-testid='bouton-supprimer-periode']")!.Click());
 
         // Then — un message d'échec clair s'affiche DANS la dialog, qui reste OUVERTE ; aucun accusé de
         // succès ; la case du 16/06 reste « Nina la nounou ».

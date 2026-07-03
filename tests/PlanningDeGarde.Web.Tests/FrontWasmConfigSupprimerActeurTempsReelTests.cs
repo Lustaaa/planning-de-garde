@@ -64,7 +64,7 @@ public sealed class FrontWasmConfigSupprimerActeurTempsReelTests : TestContext
         // d'écriture HTTP réel de l'API distante : POST /api/canal/supprimer-acteur).
         var ligneGrandPere = config.FindAll("[data-testid='acteur-foyer']")
             .Single(li => li.GetAttribute("data-acteur-id") == "grand-pere");
-        ligneGrandPere.QuerySelector("[data-testid='bouton-supprimer']")!.Click();
+        this.SurDispatcher(() => ligneGrandPere.QuerySelector("[data-testid='bouton-supprimer']")!.Click());
 
         // Then (1) — sans rechargement (même instance rendue), grand-père quitte la liste relue.
         config.WaitForAssertion(

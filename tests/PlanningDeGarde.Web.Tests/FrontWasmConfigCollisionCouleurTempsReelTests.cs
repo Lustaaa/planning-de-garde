@@ -59,9 +59,9 @@ public sealed class FrontWasmConfigCollisionCouleurTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        config.Find("select.form-select").Change("parent-b");
-        config.Find("[data-testid='champ-couleur']").Change("bleu");
-        config.Find("form").Submit();
+        this.SurDispatcher(() => config.Find("select.form-select").Change("parent-b"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("bleu"));
+        this.SurDispatcher(() => config.Find("form").Submit());
 
         // … re-diffusion de fond idempotente (le store est déjà muté) pour que le push SignalR tombe
         // après l'établissement de la connexion long polling vers le TestServer, sans dépendre du timing.

@@ -3,13 +3,41 @@
 
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Planning de garde</title>
     <base href="/" />
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="app.css" />
     <link rel="stylesheet" href="PlanningDeGarde.Web.styles.css" />
     <link rel="icon" type="image/png" href="favicon.png" />
+    <!-- Amorce du thème « Cocon élevé » (sprint 26, Sc.2/Sc.3) : posée en <head>, AVANT le rendu du
+         <body> et de Blazor → zéro flash. Priorité : choix explicite persisté (localStorage) puis
+         préférence système (prefers-color-scheme). data-theme sur <html> pilote les tokens --pdg-*. -->
+    <script>
+        (function () {
+            try {
+                var choix = localStorage.getItem('pdg-theme');
+                var systemeSombre = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                var theme = (choix === 'clair' || choix === 'sombre') ? choix : (systemeSombre ? 'sombre' : 'clair');
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'clair');
+            }
+        })();
+
+        // Module de bascule du thème (Sc.3), consommé par le switch Blazor via JS interop.
+        // definir : persiste le choix explicite (prioritaire au chargement suivant, l'amorce lit
+        // localStorage en premier) ET l'applique immédiatement, sans rechargement. lire : thème appliqué.
+        window.pdgTheme = {
+            lire: function () {
+                return document.documentElement.getAttribute('data-theme') || 'clair';
+            },
+            definir: function (theme) {
+                try { localStorage.setItem('pdg-theme', theme); } catch (e) { }
+                document.documentElement.setAttribute('data-theme', theme);
+            }
+        };
+    </script>
 </head>
 
 <body>

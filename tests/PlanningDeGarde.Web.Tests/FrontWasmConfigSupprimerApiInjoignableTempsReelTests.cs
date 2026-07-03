@@ -60,9 +60,9 @@ public sealed class FrontWasmConfigSupprimerApiInjoignableTempsReelTests : TestC
 
         // When — je clique le bouton supprimer de grand-père alors que le canal de suppression est injoignable
         // (l'émission HTTP réelle se heurte à une HttpRequestException).
-        config.FindAll("[data-testid='acteur-foyer']")
+        this.SurDispatcher(() => config.FindAll("[data-testid='acteur-foyer']")
             .Single(li => li.GetAttribute("data-acteur-id") == "grand-pere")
-            .QuerySelector("[data-testid='bouton-supprimer']")!.Click();
+            .QuerySelector("[data-testid='bouton-supprimer']")!.Click());
 
         // Then — un message d'échec clair s'affiche (surface distincte de l'accusé succès).
         var alerte = config.WaitForElement("[data-testid='motif-echec-suppression']", TimeSpan.FromSeconds(10));

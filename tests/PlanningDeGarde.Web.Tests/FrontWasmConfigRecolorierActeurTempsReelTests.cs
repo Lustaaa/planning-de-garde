@@ -59,9 +59,9 @@ public sealed class FrontWasmConfigRecolorierActeurTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        config.Find("select.form-select").Change("parent-b");
-        config.Find("[data-testid='champ-couleur']").Change("violet");
-        config.Find("form").Submit();
+        this.SurDispatcher(() => config.Find("select.form-select").Change("parent-b"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("violet"));
+        this.SurDispatcher(() => config.Find("form").Submit());
 
         // … la connexion SignalR du front (long polling vers le TestServer) s'établit de façon
         // asynchrone : on ré-émet la diffusion en boucle de fond (idempotente — le store est déjà muté)

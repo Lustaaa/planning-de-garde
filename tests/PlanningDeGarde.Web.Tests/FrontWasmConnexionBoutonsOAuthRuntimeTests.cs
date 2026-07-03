@@ -69,7 +69,7 @@ public sealed class FrontWasmConnexionBoutonsOAuthRuntimeTests : TestContext
         var connexion = RenderComponent<Connexion>();
 
         // When — je clique « Se connecter avec Google ».
-        connexion.Find("[data-testid='bouton-oauth-google']").Click();
+        this.SurDispatcher(() => connexion.Find("[data-testid='bouton-oauth-google']").Click());
 
         // Then — le flux OAuth du provider est déclenché : navigation vers l'endpoint de démarrage OAuth
         // « google » (l'authorize réel du provider est vérifié manuellement au G3 — ici court-circuité).

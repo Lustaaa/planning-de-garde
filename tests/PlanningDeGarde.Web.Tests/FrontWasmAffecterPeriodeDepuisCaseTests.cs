@@ -47,15 +47,15 @@ public sealed class FrontWasmAffecterPeriodeDepuisCaseTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "17/06").Click();
-                grille.Find("[data-testid='action-affecter-periode']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "17/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-affecter-periode']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-affecter-periode']"));
             },
             TimeSpan.FromSeconds(10));
 
         // … il choisit « Alice » (id stable parent-a, pré-rempli sur la date de la case) et valide.
-        grille.Find("[data-testid='champ-responsable']").Change("parent-a");
-        grille.Find("[data-testid='dialog-affecter-periode'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='champ-responsable']").Change("parent-a"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-affecter-periode'] form").Submit());
 
         // Then — la dialog se ferme ET la case du 17/06 affiche « Alice », prend sa couleur propre (bleu),
         // et la légende agrège « Alice » avec sa couleur — relu depuis le store réel de l'API distante.

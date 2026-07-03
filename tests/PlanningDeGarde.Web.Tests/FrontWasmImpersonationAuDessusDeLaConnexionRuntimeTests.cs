@@ -38,8 +38,8 @@ public sealed class FrontWasmImpersonationAuDessusDeLaConnexionRuntimeTests : Te
         Services.AddSingleton(session);
 
         var connexion = RenderComponent<Connexion>();
-        connexion.Find("[data-testid='champ-email-connexion']").Change("alice@foyer.fr");
-        connexion.Find("[data-testid='bouton-se-connecter']").Click();
+        this.SurDispatcher(() => connexion.Find("[data-testid='champ-email-connexion']").Change("alice@foyer.fr"));
+        this.SurDispatcher(() => connexion.Find("[data-testid='bouton-se-connecter']").Click());
         connexion.WaitForAssertion(
             () =>
             {

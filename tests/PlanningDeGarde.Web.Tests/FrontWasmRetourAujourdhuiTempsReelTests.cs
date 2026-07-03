@@ -59,14 +59,14 @@ public sealed class FrontWasmRetourAujourdhuiTempsReelTests : TestContext
         Assert.Equal("08/06", DatePremiereCase(grille));
 
         // When — deux clics « Semaine suivante » portent la fenêtre au lundi 22/06 (08/06 → 15/06 → 22/06).
-        grille.Find("[data-testid='nav-semaine-suivante']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='nav-semaine-suivante']").Click());
         grille.WaitForState(() => DatePremiereCase(grille) == "15/06", TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='nav-semaine-suivante']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='nav-semaine-suivante']").Click());
         grille.WaitForState(() => DatePremiereCase(grille) == "22/06", TimeSpan.FromSeconds(10));
 
         // When — clic « Aujourd'hui » : l'ancre est réinitialisée au lundi de la date du jour et l'API
         // distante est re-requêtée à cette ancre (GET réel). On attend le retour de la première case au 08/06.
-        grille.Find("[data-testid='nav-aujourdhui']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='nav-aujourdhui']").Click());
         grille.WaitForState(() => DatePremiereCase(grille) == "08/06", TimeSpan.FromSeconds(10));
 
         // Then — la fenêtre redémarre au lundi 08/06 (ISO 24 paire) et le fond s'y re-résout sur Alice bleu.

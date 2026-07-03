@@ -61,8 +61,8 @@ public sealed class FrontWasmConfigOngletActeursAffecterRoleRuntimeTests : TestC
 
         // When (affectation) — j'affecte « Nounou » à Alice via son sélecteur (POST /api/canal/affecter-role,
         // la valeur émise est l'id de rôle du référentiel, jamais un libellé en dur).
-        config.FindAll("[data-testid='acteur-foyer']").Single(li => NomLigne(li) == "Alice")
-            .QuerySelector("[data-testid='selecteur-role-acteur']")!.Change(idNounou);
+        this.SurDispatcher(() => config.FindAll("[data-testid='acteur-foyer']").Single(li => NomLigne(li) == "Alice")
+            .QuerySelector("[data-testid='selecteur-role-acteur']")!.Change(idNounou));
 
         // Then (affectation persistée) — sans rechargement, la ligne d'Alice relue depuis le store affiche
         // « Nounou », tandis qu'un acteur sans rôle (Bruno) reste « sans rôle » (neutre).

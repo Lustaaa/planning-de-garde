@@ -63,10 +63,10 @@ public sealed class FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests : TestCo
         // index 0 → parent-a, index 1 → parent-b. L'écriture transite par le canal HTTP réel et aboutit.
         // … le cycle de fond est désormais sous l'onglet « Période de garde » (Sc.2, s20) : on l'active.
         GrilleRuntimeHarness.AllerOngletPeriodeGarde(config);
-        config.Find("[data-testid='champ-nombre-semaines']").Change("2");
-        config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a");
-        config.Find("[data-testid='champ-cycle-index-1']").Change("parent-b");
-        config.Find("#form-cycle").Submit();
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nombre-semaines']").Change("2"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-1']").Change("parent-b"));
+        this.SurDispatcher(() => config.Find("#form-cycle").Submit());
         config.WaitForElement("[data-testid='confirmation-cycle']", TimeSpan.FromSeconds(10));
 
         // … le store cycle réel porte bien le cycle N = 2 (baseline du « cycle précédent »).
@@ -75,8 +75,8 @@ public sealed class FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests : TestCo
 
         // When — le parent tente d'enregistrer un cycle de ZÉRO semaine : il porte le nombre de semaines à 0
         // (le min HTML est contournable côté navigateur — le serveur est le gardien) et valide.
-        config.Find("[data-testid='champ-nombre-semaines']").Change("0");
-        config.Find("#form-cycle").Submit();
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nombre-semaines']").Change("0"));
+        this.SurDispatcher(() => config.Find("#form-cycle").Submit());
 
         // Then — l'édition est refusée avec le message métier affiché à l'écran (motif propagé par le canal,
         // jamais un message technique) ; la confirmation précédente a disparu.

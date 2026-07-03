@@ -38,13 +38,13 @@ public sealed class FrontWasmEchecDialogResteOuverteTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "19/06").Click();
-                grille.Find("[data-testid='action-poser-slot']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "19/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-poser-slot']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-poser-slot']"));
             },
             TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='champ-lieu']").Change("école");
-        grille.Find("[data-testid='dialog-poser-slot'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='champ-lieu']").Change("école"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-poser-slot'] form").Submit());
 
         // Then — observable unique (règle 28) : dialog ouverte + message dans la dialog + saisie
         // conservée (« école ») + grille inchangée.
@@ -78,12 +78,12 @@ public sealed class FrontWasmEchecDialogResteOuverteTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "19/06").Click();
-                grille.Find("[data-testid='action-poser-slot']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "19/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-poser-slot']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-poser-slot']"));
             },
             TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='dialog-poser-slot'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-poser-slot'] form").Submit());
 
         // Then — même observable : dialog ouverte + message dans la dialog + grille inchangée.
         grille.WaitForAssertion(

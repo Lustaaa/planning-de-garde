@@ -39,8 +39,8 @@ public sealed class FrontWasmPageConnexionMotifClairRuntimeTests : TestContext
         var uriAvant = nav.Uri;
 
         // When — je tente de me connecter avec un email inconnu (le handler réel refuse « email inconnu »).
-        connexion.Find("[data-testid='champ-email-connexion']").Change("inconnu@foyer.fr");
-        connexion.Find("[data-testid='bouton-se-connecter']").Click();
+        this.SurDispatcher(() => connexion.Find("[data-testid='champ-email-connexion']").Change("inconnu@foyer.fr"));
+        this.SurDispatcher(() => connexion.Find("[data-testid='bouton-se-connecter']").Click());
 
         // Then — un motif clair s'affiche sur la page, on reste sur la page de connexion (aucune
         // redirection), et aucune session n'est ouverte (identité effective = réelle, pas incarnée).
@@ -67,8 +67,8 @@ public sealed class FrontWasmPageConnexionMotifClairRuntimeTests : TestContext
         var uriAvant = nav.Uri;
 
         // When — je tente de me connecter (le handler réel refuse « compte non activé »).
-        connexion.Find("[data-testid='champ-email-connexion']").Change("bob@foyer.fr");
-        connexion.Find("[data-testid='bouton-se-connecter']").Click();
+        this.SurDispatcher(() => connexion.Find("[data-testid='champ-email-connexion']").Change("bob@foyer.fr"));
+        this.SurDispatcher(() => connexion.Find("[data-testid='bouton-se-connecter']").Click());
 
         // Then — motif clair, on reste sur la page, aucune session ouverte.
         connexion.WaitForAssertion(

@@ -56,10 +56,10 @@ public sealed class FrontWasmConfigOngletPeriodeGardeCycleIsoFonctionnelTempsRee
         // index pair (0) → parent-a (Alice), index impair (1) LAISSÉ NON MAPPÉ (— aucun —, teinte neutre).
         var config = RenderComponent<ConfigurationFoyer>();
         GrilleRuntimeHarness.AllerOngletPeriodeGarde(config);
-        config.Find("[data-testid='champ-nombre-semaines']").Change("2");
-        config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a");
+        this.SurDispatcher(() => config.Find("[data-testid='champ-nombre-semaines']").Change("2"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-0']").Change("parent-a"));
         // index 1 non touché → reste « — aucun (teinte neutre) — » : les semaines ISO impaires seront neutres.
-        config.Find("#form-cycle").Submit();
+        this.SurDispatcher(() => config.Find("#form-cycle").Submit());
         config.WaitForElement("[data-testid='confirmation-cycle']", TimeSpan.FromSeconds(10));
 
         // When — la grille réellement câblée à la MÊME API est affichée à la date de référence lundi

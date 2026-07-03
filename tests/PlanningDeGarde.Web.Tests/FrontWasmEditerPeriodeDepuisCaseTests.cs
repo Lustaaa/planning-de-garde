@@ -50,8 +50,8 @@ public sealed class FrontWasmEditerPeriodeDepuisCaseTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-editer-periode']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-editer-periode']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-editer-periode']"));
             },
             TimeSpan.FromSeconds(10));
@@ -67,14 +67,14 @@ public sealed class FrontWasmEditerPeriodeDepuisCaseTests : TestContext
         // le responsable courant (l'identifiant stable « nounou » sélectionné).
         var ligneNounou = grille.FindAll("[data-testid='periode-editable']")
             .Single(l => l.TextContent.Contains("Nina la nounou"));
-        ligneNounou.QuerySelector("[data-testid='bouton-editer-periode']")!.Click();
+        this.SurDispatcher(() => ligneNounou.QuerySelector("[data-testid='bouton-editer-periode']")!.Click());
 
         var champResponsable = grille.WaitForElement("[data-testid='champ-responsable-edition']", TimeSpan.FromSeconds(10));
         Assert.Equal("nounou", ((AngleSharp.Html.Dom.IHtmlSelectElement)champResponsable).Value);
 
         // … je réaffecte la période à « Parent A » (identifiant stable parent-a) et j'enregistre.
-        champResponsable.Change("parent-a");
-        grille.Find("[data-testid='bouton-enregistrer-edition']").Click();
+        this.SurDispatcher(() => champResponsable.Change("parent-a"));
+        this.SurDispatcher(() => grille.Find("[data-testid='bouton-enregistrer-edition']").Click());
 
         // Then — un accusé « Période modifiée » s'affiche à part (non bloquant), la case du 16/06 affiche
         // « Alice » / « bleu » (parent-a résolu par le référentiel réel), et la légende ne fait plus

@@ -58,8 +58,7 @@ public sealed class FrontWasmConfigActiverCompteGatingEtEchecRuntimeTests : Test
 
         // Contrôle positif (anti faux-vert) — sous « Parent », l'action REDEVIENT offerte pour le compte inactif.
         session.Role = RoleAuteur.Parent;
-        config.Find("[data-testid='onglet-periode-garde']").Click();
-        config.Find("[data-testid='onglet-acteurs']").Click();
+        config.Render();
         config.WaitForAssertion(
             () => Assert.NotNull(LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")),
             TimeSpan.FromSeconds(10));
@@ -82,7 +81,7 @@ public sealed class FrontWasmConfigActiverCompteGatingEtEchecRuntimeTests : Test
             TimeSpan.FromSeconds(10));
 
         // When — je clique « Activer » alors que le canal d'activation est injoignable.
-        LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")!.Click();
+        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")!.Click());
 
         // Then — un message d'échec clair s'affiche dans la ligne, le statut affiché reste « inactif »
         // (aucun faux positif), et aucun accusé « Compte activé » n'apparaît.

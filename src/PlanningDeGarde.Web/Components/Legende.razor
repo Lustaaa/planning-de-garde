@@ -27,10 +27,17 @@
 }
 
 <style>
-    .legende { margin-top: 12px; border: 1px solid #dee2e6; border-radius: 4px; padding: 8px 12px; }
-    .legende-titre { font-size: .9rem; font-weight: 600; color: #555; margin: 0 0 6px; }
-    .legende-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 12px; }
-    .legende-entree { display: flex; align-items: center; gap: 6px; font-size: .85rem; }
-    .legende-pastille { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none; }
-    .legende-nom { color: #333; }
+    /* Légende « Cocon élevé » (Sc.12) : découvrable et cohérente avec les couleurs de responsabilité.
+       Surface/bordure/titre tokenisés via app.css (.content .legende / .legende-titre). Ici : entrées en
+       CHIPS repérables (pastille de couleur + nom), tokenisées, lisibles en clair ET en sombre. La pastille
+       garde sa couleur de responsabilité INLINE (CouleursTheme.Pleine) — inchangée. */
+    .legende { margin-top: 12px; padding: 10px 14px; }
+    .legende-titre { margin: 0 0 8px; }
+    .legende-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .legende-entree { display: inline-flex; align-items: center; gap: 8px; font-size: .82rem;
+                      background: var(--pdg-bg); border: 1px solid var(--pdg-border);
+                      border-radius: 999px; padding: 3px 12px 3px 8px; }
+    .legende-pastille { width: 15px; height: 15px; border-radius: 5px; display: inline-block; flex: none;
+                        border: 1px solid rgba(0, 0, 0, .15); box-shadow: 0 1px 2px rgba(16, 24, 40, .12); }
+    .legende-nom { color: var(--pdg-ink); font-weight: 600; }
 </style>

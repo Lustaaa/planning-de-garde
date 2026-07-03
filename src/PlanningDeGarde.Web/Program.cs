@@ -33,6 +33,10 @@ builder.Services.AddScoped<SessionPlanning>();
 // lecture s'en sert aussi comme date de référence de la fenêtre projetée (jamais DateTime.Now).
 builder.Services.AddSingleton<IDateTimeProvider, HorlogeNavigateur>();
 
+// Préférence de thème clair/sombre (Sc.3) : le switch persiste le choix et l'applique via le module JS
+// window.pdgTheme (localStorage + data-theme). Adaptateur de bord, aucune règle métier.
+builder.Services.AddScoped<IPreferencesTheme, PreferencesThemeJs>();
+
 // Câblage de la connexion au hub SignalR de lecture. Neutre en WASM réel (le navigateur négocie
 // en WebSocket vers l'API distante) ; surchargeable par un hôte de test pour pointer son TestServer.
 builder.Services.AddSingleton(new OptionsConnexionHub());

@@ -49,7 +49,7 @@ public sealed class FrontWasmEcritureSousIdentiteReelleTempsReelTests : TestCont
         grille.WaitForState(
             () => grille.FindAll("[data-testid='selecteur-incarnation'] option[value='parent-b']").Count == 1,
             TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='selecteur-incarnation']").Change("parent-b");
+        this.SurDispatcher(() => grille.Find("[data-testid='selecteur-incarnation']").Change("parent-b"));
         grille.WaitForAssertion(
             () => Assert.Contains("Vous incarnez Bruno",
                 grille.Find("[data-testid='bandeau-incarnation']").TextContent),
@@ -59,13 +59,13 @@ public sealed class FrontWasmEcritureSousIdentiteReelleTempsReelTests : TestCont
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-poser-slot']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-poser-slot']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-poser-slot']"));
             },
             TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='champ-lieu']").Change("école");
-        grille.Find("[data-testid='dialog-poser-slot'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='champ-lieu']").Change("école"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-poser-slot'] form").Submit());
 
         // Then — le slot est enregistré : il réapparaît dans la case du 16/06 (relu du store réel) …
         grille.WaitForAssertion(

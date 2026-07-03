@@ -45,8 +45,8 @@ public sealed class FrontWasmSupprimerSlotAnnulationTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-supprimer-slot']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-supprimer-slot']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-supprimer-slot']"));
             },
             TimeSpan.FromSeconds(10));
@@ -58,7 +58,7 @@ public sealed class FrontWasmSupprimerSlotAnnulationTests : TestContext
             TimeSpan.FromSeconds(10));
 
         // … et je ferme la dialog SANS supprimer (bouton « Fermer »).
-        grille.Find("[data-testid='dialog-supprimer-slot'] [data-testid='dialog-annuler']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-supprimer-slot'] [data-testid='dialog-annuler']").Click());
 
         // Then — la dialog est fermée, AUCUNE commande de suppression n'a été émise : aucun accusé
         // « Slot supprimé », la case du 16/06 affiche toujours le slot « École ».

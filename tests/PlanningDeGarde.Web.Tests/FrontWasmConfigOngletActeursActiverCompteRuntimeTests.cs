@@ -44,8 +44,8 @@ public sealed class FrontWasmConfigOngletActeursActiverCompteRuntimeTests : Test
         using var api = new ApiDistanteFactory();
         var config = RendreConfig(api);
 
-        LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']")!.Change("alice@foyer.fr");
-        LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-creer-compte']")!.Click();
+        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']")!.Change("alice@foyer.fr"));
+        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-creer-compte']")!.Click());
 
         // ... et on attend que le compte inactif soit affiché avec son action « Activer ».
         config.WaitForAssertion(
@@ -59,7 +59,7 @@ public sealed class FrontWasmConfigOngletActeursActiverCompteRuntimeTests : Test
             TimeSpan.FromSeconds(10));
 
         // When — je clique « Activer » sur le compte d'Alice (POST /api/canal/activer-compte réel).
-        LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")!.Click();
+        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")!.Click());
 
         // Then — sans rechargement, le compte relu depuis le store passe « actif », un accusé non bloquant
         // « Compte activé » s'affiche, et l'action « Activer » disparaît (déjà Actif).

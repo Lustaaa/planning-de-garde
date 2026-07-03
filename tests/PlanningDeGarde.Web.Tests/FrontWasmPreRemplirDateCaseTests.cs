@@ -40,15 +40,15 @@ public sealed class FrontWasmPreRemplirDateCaseTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "25/06").Click();
-                grille.Find("[data-testid='action-poser-slot']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "25/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-poser-slot']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-poser-slot']"));
             },
             TimeSpan.FromSeconds(10));
 
         // … il choisit un lieu et valide SANS toucher la date pré-remplie (ancrée sur la date de la case).
-        grille.Find("[data-testid='champ-lieu']").Change("domicile A");
-        grille.Find("[data-testid='dialog-poser-slot'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='champ-lieu']").Change("domicile A"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-poser-slot'] form").Submit());
 
         // Then — la dialog se ferme ET le slot réapparaît dans la case du 25/06 (date de contexte),
         // pas dans celle du 15/06 (« aujourd'hui ») : l'ancrage case a primé sur le défaut horloge.

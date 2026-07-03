@@ -58,7 +58,7 @@ public sealed class FrontWasmNavigationSemaineTempsReelTests : TestContext
 
         // When — clic « Semaine suivante » : la fenêtre se décale et l'API distante est re-requêtée à
         // la date naviguée (GET réel). On attend que la première case devienne le lundi 15/06.
-        grille.Find("[data-testid='nav-semaine-suivante']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='nav-semaine-suivante']").Click());
         grille.WaitForState(() => DatePremiereCase(grille) == "15/06", TimeSpan.FromSeconds(10));
 
         // Then — la fenêtre démarre au lundi 15/06 (ISO 25 impaire) et le fond s'y re-résout sur Bruno.
@@ -67,9 +67,9 @@ public sealed class FrontWasmNavigationSemaineTempsReelTests : TestContext
         Assert.Equal("orange", premiere.GetAttribute("data-couleur"));
 
         // When — deux pas « Semaine précédente » depuis le 15/06 ramènent au lundi 01/06 (08/06 puis 01/06).
-        grille.Find("[data-testid='nav-semaine-precedente']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='nav-semaine-precedente']").Click());
         grille.WaitForState(() => DatePremiereCase(grille) == "08/06", TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='nav-semaine-precedente']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='nav-semaine-precedente']").Click());
         grille.WaitForState(() => DatePremiereCase(grille) == "01/06", TimeSpan.FromSeconds(10));
 
         // Then — la fenêtre démarre au lundi 01/06 (ISO 23 impaire) et le fond s'y re-résout sur Bruno.

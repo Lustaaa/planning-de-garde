@@ -46,19 +46,19 @@ public sealed class FrontWasmDefinirTransfertDepuisCaseTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-definir-transfert']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-definir-transfert']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-definir-transfert']"));
             },
             TimeSpan.FromSeconds(10));
 
         // … il choisit « Parent A » dépositaire, « Parent B » récupérateur (ids stables, règle 19), lieu
         // « École » à 08:30, sans toucher la date pré-remplie sur la case (16/06), puis valide.
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-recupere']").Change("parent-b");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-lieu']").Change("école");
-        grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-heure']").Change("08:30");
-        grille.Find("[data-testid='dialog-definir-transfert'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-depose']").Change("parent-a"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-recupere']").Change("parent-b"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-lieu']").Change("école"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] [data-testid='champ-heure']").Change("08:30"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-definir-transfert'] form").Submit());
 
         // Then — la dialog se ferme ET un accusé « Transfert défini » s'affiche à part (non bloquant),
         // relu depuis l'app réellement câblée.

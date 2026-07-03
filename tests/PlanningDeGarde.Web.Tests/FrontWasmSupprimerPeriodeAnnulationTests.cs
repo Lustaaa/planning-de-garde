@@ -43,8 +43,8 @@ public sealed class FrontWasmSupprimerPeriodeAnnulationTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-supprimer-periode']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-supprimer-periode']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-supprimer-periode']"));
             },
             TimeSpan.FromSeconds(10));
@@ -56,7 +56,7 @@ public sealed class FrontWasmSupprimerPeriodeAnnulationTests : TestContext
             TimeSpan.FromSeconds(10));
 
         // … et je ferme la dialog SANS supprimer (bouton « Fermer »).
-        grille.Find("[data-testid='dialog-supprimer-periode'] [data-testid='dialog-annuler']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-supprimer-periode'] [data-testid='dialog-annuler']").Click());
 
         // Then — la dialog est fermée, AUCUNE commande de suppression n'a été émise : aucun accusé
         // « Période supprimée », la case du 16/06 affiche toujours « Nina la nounou ».

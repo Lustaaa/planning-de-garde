@@ -24,6 +24,14 @@ namespace PlanningDeGarde.Web.Components.Pages;
 /// </summary>
 public partial class ConfigurationFoyer
 {
+    // Onglet actif de la page de configuration (présentation façon settings GitHub : barre latérale
+    // gauche + panneau). « acteurs » (défaut) / « roles » / « cycles ». Les trois panneaux restent
+    // TOUJOURS rendus (masqués par CSS quand inactifs) : aucune règle métier, aucun gating porté ici —
+    // le gating d'écriture reste sur l'identité effective, dans chaque panneau.
+    private string _onglet = "acteurs";
+
+    private void ChoisirOnglet(string onglet) => _onglet = onglet;
+
     private sealed class Formulaire
     {
         public string ActeurId { get; set; } = "";
@@ -36,15 +44,6 @@ public partial class ConfigurationFoyer
         public string Nom { get; set; } = "";
         public string Couleur { get; set; } = "";
     }
-
-    /// <summary>Onglet de thème actuellement affiché (Sc.2). L'écran est réorganisé en trois onglets par
-    /// thème — <c>acteurs</c> (CRUD acteurs), <c>periode-garde</c> (cycle de fond), <c>slot-recurrent</c>
-    /// (réservé, placeholder) — <b>sans</b> fonctionnalité neuve : c'est un simple cloisonnement de
-    /// surface du contenu existant. « Acteurs » est actif par défaut ; changer d'onglet ne perd pas
-    /// l'état de saisie et ne déclenche aucune écriture.</summary>
-    private string _ongletActif = "acteurs";
-
-    private void ActiverOnglet(string onglet) => _ongletActif = onglet;
 
     private readonly Formulaire _form = new();
     private string? _confirmation;

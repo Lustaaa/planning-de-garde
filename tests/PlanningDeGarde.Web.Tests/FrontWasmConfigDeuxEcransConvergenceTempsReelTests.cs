@@ -54,16 +54,16 @@ public sealed class FrontWasmConfigDeuxEcransConvergenceTempsReelTests : TestCon
         // When — le premier écran renomme parent-b en « Bruno M. » et enregistre (canal d'écriture HTTP réel)…
         var config1 = RenderComponent<ConfigurationFoyer>();
         AttendreChargementEcranConfig(config1);
-        config1.Find("select.form-select").Change("parent-b");
-        config1.Find("[data-testid='champ-nom']").Change("Bruno M.");
-        config1.Find("form").Submit();
+        this.SurDispatcher(() => config1.Find("select.form-select").Change("parent-b"));
+        this.SurDispatcher(() => config1.Find("[data-testid='champ-nom']").Change("Bruno M."));
+        this.SurDispatcher(() => config1.Find("form").Submit());
 
         // … puis, juste après, le second écran le renomme en « Bruno Martin » et enregistre (même store).
         var config2 = ecran2.RenderComponent<ConfigurationFoyer>();
         AttendreChargementEcranConfig(config2);
-        config2.Find("select.form-select").Change("parent-b");
-        config2.Find("[data-testid='champ-nom']").Change("Bruno Martin");
-        config2.Find("form").Submit();
+        config2.SurDispatcher(() => config2.Find("select.form-select").Change("parent-b"));
+        config2.SurDispatcher(() => config2.Find("[data-testid='champ-nom']").Change("Bruno Martin"));
+        config2.SurDispatcher(() => config2.Find("form").Submit());
 
         // … re-diffusion de fond idempotente (le store est déjà muté à « Bruno Martin ») pour que le push
         // SignalR tombe forcément APRÈS l'établissement des deux connexions long polling, sans dépendre du

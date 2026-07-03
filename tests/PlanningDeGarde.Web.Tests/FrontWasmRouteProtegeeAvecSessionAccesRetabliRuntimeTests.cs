@@ -56,7 +56,7 @@ public sealed class FrontWasmRouteProtegeeAvecSessionAccesRetabliRuntimeTests : 
 
         // And — une re-projection (navigation d'une semaine) ne redéclenche aucune redirection : la session
         // reste ouverte, la grille reste affichée.
-        planning.Find("[data-testid='nav-semaine-suivante']").Click();
+        this.SurDispatcher(() => planning.Find("[data-testid='nav-semaine-suivante']").Click());
         planning.WaitForState(
             () => planning.FindAll("[data-testid='jour-case']").Count == 28,
             TimeSpan.FromSeconds(10));

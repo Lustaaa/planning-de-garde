@@ -6,375 +6,446 @@
 
 <PageTitle>Configuration du foyer</PageTitle>
 
-<h1 class="h3 mb-3">Configuration du foyer</h1>
+@* Configuration du foyer façon « settings » : barre latérale gauche (Acteurs / Rôles / Cycles) +
+   panneau de contenu resserré (.pdg-etroite). Les trois panneaux restent TOUJOURS rendus (masqués
+   par CSS quand inactifs) : le gating d'écriture (identité effective) demeure DANS chaque panneau,
+   la navigation par onglet n'est que de la présentation. *@
+<div class="pdg-etroite">
 
-@* Bandeau d'incarnation (sprint 14, cohérence inter-écrans) : sous incarnation, l'écran de configuration
-   affiche « Vous incarnez X » et l'affordance de retour — en miroir de la grille — pour expliquer pourquoi
-   les écritures sont masquées (gating sur l'identité effective, Sc.7) et permettre de revenir d'ici même.
-   L'état d'incarnation est partagé (SessionPlanning scoped = toute la session WASM) : il est posé depuis le
-   sélecteur de la grille et persiste à la navigation. Il reste HORS des onglets (bandeau global). *@
-@if (Session.LibelleBandeau is { } libelleBandeau)
-{
-    <div class="alert alert-secondary d-flex justify-content-between align-items-center py-2"
-         data-testid="bandeau-incarnation" role="status">
-        <span>@libelleBandeau</span>
-        <button type="button" class="btn btn-sm btn-outline-secondary" data-testid="revenir-identite-reelle"
-                @onclick="RevenirIdentiteReelle">Revenir à mon identité</button>
+    <div class="config-entete">
+        <h1 class="config-titre">Configuration du foyer</h1>
+        <p class="config-sous">Acteurs, rôles et cycle de responsabilité par défaut du foyer.</p>
     </div>
-}
 
-@* Sprint 20 (Sc.2) : réorganisation de surface en TROIS onglets par thème — Acteurs (CRUD acteurs),
-   Période de garde (cycle de fond), Slot récurrent (réservé, placeholder). Iso-fonctionnel : aucune
-   règle métier ni écriture neuve, le contenu existant est simplement réparti et cloisonné. « Acteurs »
-   est actif par défaut ; le gating d'écriture (identité effective, Sc.7) est préservé DANS chaque onglet. *@
-<ul class="nav nav-tabs mb-3" role="tablist" data-testid="onglets-config">
-    <li class="nav-item" role="presentation">
-        <button type="button" role="tab" data-testid="onglet-acteurs"
-                class="nav-link @(_ongletActif == "acteurs" ? "active" : "")"
-                aria-selected="@(_ongletActif == "acteurs" ? "true" : "false")"
-                @onclick='() => ActiverOnglet("acteurs")'>Acteurs</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button type="button" role="tab" data-testid="onglet-periode-garde"
-                class="nav-link @(_ongletActif == "periode-garde" ? "active" : "")"
-                aria-selected="@(_ongletActif == "periode-garde" ? "true" : "false")"
-                @onclick='() => ActiverOnglet("periode-garde")'>Période de garde</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button type="button" role="tab" data-testid="onglet-slot-recurrent"
-                class="nav-link @(_ongletActif == "slot-recurrent" ? "active" : "")"
-                aria-selected="@(_ongletActif == "slot-recurrent" ? "true" : "false")"
-                @onclick='() => ActiverOnglet("slot-recurrent")'>Slot récurrent</button>
-    </li>
-</ul>
+    @* Bandeau d'incarnation (global, hors onglets) : sous incarnation, « Vous incarnez X » + retour —
+       explique pourquoi les écritures sont masquées (gating identité effective, Sc.7). *@
+    @if (Session.LibelleBandeau is { } libelleBandeau)
+    {
+        <div class="alert alert-secondary d-flex justify-content-between align-items-center py-2"
+             data-testid="bandeau-incarnation" role="status">
+            <span>@libelleBandeau</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-testid="revenir-identite-reelle"
+                    @onclick="RevenirIdentiteReelle">Revenir à mon identité</button>
+        </div>
+    }
 
-@* ───────────────────────────── Onglet « Acteurs » : CRUD acteurs (Sc.3) ───────────────────────────── *@
-@if (_ongletActif == "acteurs")
-{
-    <div role="tabpanel" data-testid="panneau-acteurs">
-        @* Durcissement du gating règle 9 (Sc.7, D1) : les écritures de configuration (édition d'acteur,
-           ajout) sont gardées sur l'identité EFFECTIVE — un Invité ou un acteur « Autre » incarné ne les
-           voit pas. La LECTURE (liste des acteurs en bas) reste visible. Le bouton supprimer est gaté plus bas. *@
-        @if (Session.EstParent)
-        {
-            <p class="text-muted">Renommer et/ou recolorier un acteur du foyer. La grille (case datée et
-                légende) suit immédiatement, sans recharger la page. L'identifiant stable de l'acteur ne change
-                jamais ; choisissez un acteur — son nom courant est pré-rempli — puis ajustez le nom et/ou la couleur.</p>
+    <div class="config-layout">
+        <nav class="config-nav" aria-label="Sections de configuration">
+            <button type="button" class="config-nav-item @(_onglet == "acteurs" ? "actif" : null)"
+                    data-testid="onglet-acteurs" @onclick='() => ChoisirOnglet("acteurs")'>
+                <span class="config-nav-ic" aria-hidden="true">👤</span>Acteurs
+            </button>
+            <button type="button" class="config-nav-item @(_onglet == "roles" ? "actif" : null)"
+                    data-testid="onglet-roles" @onclick='() => ChoisirOnglet("roles")'>
+                <span class="config-nav-ic" aria-hidden="true">🏷️</span>Rôles
+            </button>
+            <button type="button" class="config-nav-item @(_onglet == "cycles" ? "actif" : null)"
+                    data-testid="onglet-cycles" @onclick='() => ChoisirOnglet("cycles")'>
+                <span class="config-nav-ic" aria-hidden="true">🔁</span>Cycles
+            </button>
+        </nav>
 
-            <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="editer-acteur">
-                <div class="mb-3">
-                    <label class="form-label">Acteur du foyer</label>
-                    <InputSelect class="form-select" data-testid="selecteur-acteur-edition"
-                                 @bind-Value="_form.ActeurId" @bind-Value:after="PreRemplirNom">
-                        <option value="">— choisir —</option>
-                        @* Convergence s20 (Sc.1) : le sélecteur d'édition énumère les acteurs DEPUIS LE STORE
-                           VIVANT UNIFIÉ (_acteurs, chargés via GET /api/foyer/acteurs = IEnumerationActeursFoyer),
-                           même source que les sélecteurs des dialogs et la grille — plus la liste statique
-                           Foyer.ActeursEditables. Un acteur ajouté est aussitôt éditable, sur son id stable. *@
-                        @foreach (var a in _acteurs)
-                        {
-                            <option value="@a.Id">@a.Nom</option>
-                        }
-                    </InputSelect>
-                    @if (NomActuel is not null)
-                    {
-                        <div class="form-text" data-testid="nom-actuel">Nom actuel : <strong>@NomActuel</strong></div>
-                    }
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Nom</label>
-                    <InputText class="form-control" @bind-Value="_form.Nom" data-testid="champ-nom"
-                               placeholder="Nom affiché de l'acteur" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Couleur</label>
-                    <InputSelect class="form-select" @bind-Value="_form.Couleur" data-testid="champ-couleur">
-                        <option value="">— inchangée —</option>
-                        <option value="bleu">Bleu</option>
-                        <option value="orange">Orange</option>
-                        <option value="vert">Vert</option>
-                        <option value="violet">Violet</option>
-                    </InputSelect>
-                </div>
-                <button type="submit" class="btn btn-primary">Enregistrer</button>
-                <a href="planning" class="btn btn-link">Retour au planning</a>
-            </EditForm>
+        <div class="config-panneaux">
 
-            @if (_confirmation is not null)
-            {
-                <div class="alert alert-success mt-3" data-testid="confirmation-edition">@_confirmation</div>
-            }
+            @* ══════════════ Panneau ACTEURS ══════════════ *@
+            <section class="config-panneau @(_onglet == "acteurs" ? null : "cacher")"
+                     data-testid="panneau-acteurs" aria-label="Acteurs">
 
-            @if (_motifEchec is not null)
-            {
-                <div class="alert alert-danger mt-3" data-testid="motif-echec">@_motifEchec</div>
-            }
-
-            <hr class="my-4" />
-
-            <h2 class="h5 mb-3">Ajouter un acteur au foyer</h2>
-            <p class="text-muted">Le nouvel acteur reçoit un identifiant stable neuf (jamais dérivé du nom) et
-                apparaît aussitôt dans la liste ci-dessous, sans recharger la page.</p>
-
-            <EditForm Model="_ajout" OnValidSubmit="Ajouter" FormName="ajouter-acteur" id="form-ajout">
-                <div class="mb-3">
-                    <label class="form-label">Nom</label>
-                    <InputText class="form-control" @bind-Value="_ajout.Nom" data-testid="champ-nom-ajout"
-                               placeholder="Nom du nouvel acteur" />
-                </div>
-                <div class="mb-3">
-                    <label class="form-label">Couleur</label>
-                    <InputSelect class="form-select" @bind-Value="_ajout.Couleur" data-testid="champ-couleur-ajout">
-                        <option value="">— neutre —</option>
-                        <option value="rose">Rose</option>
-                        <option value="bleu">Bleu</option>
-                        <option value="orange">Orange</option>
-                        <option value="vert">Vert</option>
-                        <option value="violet">Violet</option>
-                    </InputSelect>
-                </div>
-                <button type="submit" class="btn btn-primary">Ajouter</button>
-            </EditForm>
-
-            @if (_motifEchecAjout is not null)
-            {
-                <div class="alert alert-danger mt-3" data-testid="motif-echec-ajout">@_motifEchecAjout</div>
-            }
-
-            <hr class="my-4" />
-
-            @* ── Référentiel de rôles du foyer (Sc.7) : créer / renommer / supprimer. Les rôles créés
-                 apparaissent dans la liste ci-dessous (relue depuis le store durable, GET /api/foyer/roles) ;
-                 la valeur d'un rôle affectable à un acteur provient EXCLUSIVEMENT de ce référentiel (jamais
-                 un libellé en dur). Écritures via le canal HTTP (POST /api/canal/{creer,renommer,supprimer}-role). ── *@
-            <h2 class="h5 mb-3">Rôles du foyer</h2>
-            <p class="text-muted">Gérer le référentiel de rôles (Nounou, Grand-parent…). Un rôle reçoit un
-                identifiant stable neuf (jamais dérivé du libellé) ; il peut ensuite être affecté à un acteur.
-                Créer, renommer ou supprimer un rôle met la liste à jour sans recharger la page.</p>
-
-            <EditForm Model="_role" OnValidSubmit="CreerRole" FormName="creer-role" id="form-creer-role">
-                <div class="input-group mb-3">
-                    <InputText class="form-control" @bind-Value="_role.Libelle" data-testid="champ-libelle-role"
-                               placeholder="Libellé du rôle (ex. Nounou)" />
-                    <button type="submit" class="btn btn-primary">Créer le rôle</button>
-                </div>
-            </EditForm>
-
-            @if (_motifEchecRole is not null)
-            {
-                <div class="alert alert-danger mt-3" data-testid="motif-echec-role">@_motifEchecRole</div>
-            }
-
-            <ul class="list-group mb-3" data-testid="liste-roles">
-                @foreach (var r in _roles)
+                @* Écritures d'acteur gardées sur l'identité EFFECTIVE (règle 9, Sc.7). La LECTURE (table)
+                   reste visible pour tous ; les affordances d'écriture sont gatées Parent. *@
+                @if (Session.EstParent)
                 {
-                    <li class="list-group-item role-ligne" data-testid="role-foyer" data-role-id="@r.Id">
-                        <span class="role-libelle">@r.Libelle</span>
-                        <span class="role-actions">
-                            <input type="text" class="form-control form-control-sm role-champ-renommer"
-                                   data-testid="champ-renommer-role"
-                                   @bind:get="LibelleRenommage(r.Id, r.Libelle)"
-                                   @bind:set="v => SaisirRenommage(r.Id, v)" @bind:event="onchange" />
-                            <button type="button" class="btn btn-outline-secondary btn-sm"
-                                    data-testid="bouton-renommer-role"
-                                    @onclick="() => RenommerRole(r.Id)">Renommer</button>
-                            <button type="button" class="btn btn-outline-danger btn-sm"
-                                    data-testid="bouton-supprimer-role"
-                                    @onclick="() => SupprimerRole(r.Id)" aria-label="Supprimer @r.Libelle">Supprimer</button>
-                        </span>
-                    </li>
-                }
-            </ul>
-
-            <hr class="my-4" />
-        }
-
-        <h2 class="h5 mt-4 mb-3">Acteurs du foyer</h2>
-        <p class="text-muted">Chaque acteur est listé avec sa pastille de couleur — la même teinte que sur la
-            grille et la légende. Un acteur sans couleur retombe sur le gris neutre. Le bouton supprimer retire
-            l'acteur du foyer ; ses cases orphelines retombent sur le fond (ou le neutre), sans nom fantôme, et
-            la grille partagée suit sans recharger la page.</p>
-
-        @if (_accuseSuppression is not null)
-        {
-            <div class="alert alert-warning" role="status" data-testid="accuse-suppression">@_accuseSuppression</div>
-        }
-
-        @if (_accuseActivation is not null)
-        {
-            <div class="alert alert-success" role="status" data-testid="accuse-activation">@_accuseActivation</div>
-        }
-
-        @if (_motifEchecSuppression is not null)
-        {
-            <div class="alert alert-danger" data-testid="motif-echec-suppression">@_motifEchecSuppression</div>
-        }
-
-        <ul class="list-group" data-testid="liste-acteurs">
-            @foreach (var a in _acteurs)
-            {
-                <li class="list-group-item acteur-ligne" data-testid="acteur-foyer"
-                    data-acteur-id="@a.Id" data-couleur="@a.Couleur">
-                    <span class="acteur-pastille" style="background-color:@CouleursTheme.Pleine(a.Couleur);"
-                          aria-hidden="true"></span><span class="acteur-nom">@a.Nom</span>
-                    @* Rôle courant de l'acteur (Sc.8) : libellé du rôle du référentiel porté (résolu sur son id
-                       stable, jamais en dur), ou « sans rôle » (neutre). Affiché en lecture pour tous. *@
-                    <span class="acteur-role" data-testid="role-acteur-courant">@LibelleRoleActeur(a.RoleId)</span>
-                    @* Marqueur d'admin du foyer (Sc.9) : affiché en lecture pour tous quand l'acteur est admin
-                       (énuméré depuis le store) ; suit une désignation aboutie ailleurs sans rechargement (SignalR). *@
-                    @if (EstAdmin(a.Id))
-                    {
-                        <span class="badge bg-secondary acteur-admin" data-testid="acteur-admin-marqueur">admin</span>
-                    }
-                    @* Gating règle 9 : le sélecteur de rôle et le bouton supprimer (actions d'écriture) ne sont
-                       rendus que pour un Parent — un Invité en consultation seule n'émet aucune commande (Sc.7/9). *@
-                    @if (Session.EstParent)
-                    {
-                        @* Sélecteur de rôle BORNÉ AU RÉFÉRENTIEL (Sc.8) : exactement les rôles du foyer (_roles,
-                           relus depuis le store) plus « sans rôle ». La valeur bindée est l'id de rôle (jamais le
-                           libellé) ; le choix vide = retrait (retombe « sans rôle »). Aucun rôle en dur. *@
-                        <select class="form-select form-select-sm acteur-selecteur-role" data-testid="selecteur-role-acteur"
-                                value="@(a.RoleId ?? "")"
-                                @onchange="e => AffecterRole(a.Id, e.Value?.ToString())">
-                            <option value="">sans rôle</option>
-                            @foreach (var r in _roles)
+                    @* Le formulaire d'ÉDITION est rendu EN PREMIER (premier <form> et premier select.form-select
+                       de la page) : plusieurs acceptations runtime pilotent l'édition via `Find("form")` /
+                       `Find("select.form-select")` — ordre significatif, à préserver. *@
+                    <div class="config-formulaires">
+                        @* Modification d'un acteur — l'identifiant stable ne change jamais ; choisir un acteur
+                           pré-remplit son nom courant, puis on ajuste nom et/ou couleur. La table suit sans reload. *@
+                        <div class="config-carte">
+                            <h2 class="config-carte-titre">Modifier un acteur</h2>
+                            <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="editer-acteur">
+                                <div class="config-ligne-form">
+                                    <InputSelect class="form-select" data-testid="selecteur-acteur-edition"
+                                                 @bind-Value="_form.ActeurId" @bind-Value:after="PreRemplirNom">
+                                        <option value="">— choisir —</option>
+                                        @foreach (var a in _acteurs)
+                                        {
+                                            <option value="@a.Id">@a.Nom</option>
+                                        }
+                                    </InputSelect>
+                                    <InputText class="form-control" @bind-Value="_form.Nom" data-testid="champ-nom"
+                                               placeholder="Nouveau nom" />
+                                    <InputSelect class="form-select" @bind-Value="_form.Couleur" data-testid="champ-couleur">
+                                        <option value="">— inchangée —</option>
+                                        <option value="bleu">Bleu</option>
+                                        <option value="orange">Orange</option>
+                                        <option value="vert">Vert</option>
+                                        <option value="violet">Violet</option>
+                                    </InputSelect>
+                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                </div>
+                                @if (NomActuel is not null)
+                                {
+                                    <div class="form-text" data-testid="nom-actuel">Nom actuel : <strong>@NomActuel</strong></div>
+                                }
+                            </EditForm>
+                            @if (_confirmation is not null)
                             {
-                                <option value="@r.Id">@r.Libelle</option>
+                                <div class="alert alert-success mt-2 mb-0" data-testid="confirmation-edition">@_confirmation</div>
                             }
-                        </select>
-                        <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
-                                data-testid="bouton-supprimer" data-acteur-id="@a.Id"
-                                @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer</button>
-
-                        @* Compte utilisateur associé à l'acteur (Sc.7) : soit le compte existant (email +
-                           statut « inactif »), soit un mini-formulaire de création/association (email
-                           obligatoire). L'écriture passe par le canal HTTP (POST /api/canal/creer-compte) ;
-                           sur refus, le motif reste affiché dans la ligne, sans compte créé. *@
-                        @if (CompteDe(a.Id) is { } compte)
-                        {
-                            <span class="acteur-compte" data-testid="compte-acteur">
-                                @compte.Email — <span class="acteur-compte-statut">@compte.Statut</span>
-                            </span>
-                            @* Activation du compte (Sc.5) : un compte « inactif » offre l'action « Activer »
-                               (Parent-gated). Le clic transite par le canal HTTP (POST /api/canal/activer-compte) ;
-                               relu depuis le store, le statut passe « actif » et l'action disparaît (déjà Actif). *@
-                            @if (EstInactif(compte))
+                            @if (_motifEchec is not null)
                             {
-                                <button type="button" class="btn btn-outline-success btn-sm acteur-activer-compte"
-                                        data-testid="bouton-activer-compte" data-compte-id="@compte.Id"
-                                        @onclick="() => ActiverCompte(compte.Id)">Activer</button>
+                                <div class="alert alert-danger mt-2 mb-0" data-testid="motif-echec">@_motifEchec</div>
                             }
-                            @if (MotifEchecActivation(compte.Id) is { } motifActivation)
-                            {
-                                <span class="alert alert-danger py-1 px-2 mb-0 acteur-activer-motif"
-                                      data-testid="motif-echec-activation">@motifActivation</span>
-                            }
-                        }
-                        else
-                        {
-                            <span class="acteur-compte-form">
-                                <input type="email" class="form-control form-control-sm acteur-champ-email"
-                                       data-testid="champ-email-compte" placeholder="email du compte"
-                                       @bind:get="EmailCompte(a.Id)" @bind:set="v => SaisirEmailCompte(a.Id, v)"
-                                       @bind:event="onchange" />
-                                <button type="button" class="btn btn-outline-primary btn-sm"
-                                        data-testid="bouton-creer-compte"
-                                        @onclick="() => CreerCompte(a.Id)">Créer le compte</button>
-                            </span>
-                            @if (MotifEchecCompte(a.Id) is { } motifCompte)
-                            {
-                                <span class="alert alert-danger py-1 px-2 mb-0 acteur-compte-motif"
-                                      data-testid="motif-echec-compte">@motifCompte</span>
-                            }
-                        }
+                        </div>
 
-                        @* Désignation de l'admin du foyer (Sc.8/Sc.9) : affordance gatée Parent (un Invité ne
-                           la voit pas). L'invariant admin=parent est tranché côté Domain (POST /api/canal/designer-admin) ;
-                           sur refus (acteur non-Parent), le motif reste affiché dans la ligne. *@
-                        <button type="button" class="btn btn-outline-secondary btn-sm acteur-designer-admin"
-                                data-testid="bouton-designer-admin" data-acteur-id="@a.Id"
-                                @onclick="() => DesignerAdmin(a.Id)">Désigner admin</button>
-                        @if (MotifEchecAdmin(a.Id) is { } motifAdmin)
-                        {
-                            <span class="alert alert-danger py-1 px-2 mb-0 acteur-admin-motif"
-                                  data-testid="motif-echec-admin">@motifAdmin</span>
-                        }
-                    }
-                </li>
-            }
-        </ul>
-    </div>
-}
-
-@* ────────────────────── Onglet « Période de garde » : cycle de fond (Sc.4) ────────────────────── *@
-@if (_ongletActif == "periode-garde")
-{
-    <div role="tabpanel" data-testid="panneau-periode-garde">
-        @* Gating (Sc.7) : la définition/édition du cycle est une écriture, gardée sur l'identité effective. *@
-        @if (Session.EstParent)
-        {
-            <h2 class="h5 mb-3">Cycle de fond (responsabilité par défaut)</h2>
-            <p class="text-muted">Définir le nombre de semaines du cycle et, pour chaque semaine (index ISO),
-                le responsable de fond. Les jours sans période explicite suivent ce cycle ; la grille se met à jour
-                sans recharger la page. Une nouvelle définition remplace le cycle courant.</p>
-
-            <EditForm Model="_cycle" OnValidSubmit="DefinirCycle" FormName="definir-cycle" id="form-cycle">
-                <div class="mb-3">
-                    <label class="form-label">Nombre de semaines du cycle</label>
-                    <InputNumber class="form-control" @bind-Value="_cycle.NombreSemaines"
-                                 @bind-Value:after="StateHasChanged" data-testid="champ-nombre-semaines" min="1" />
-                </div>
-                @for (var i = 0; i < _cycle.NombreSemaines && i < 12; i++)
-                {
-                    var index = i;
-                    <div class="mb-2">
-                        <label class="form-label">Responsable de la semaine d'index @index</label>
-                        <select class="form-select" data-testid="champ-cycle-index-@index"
-                                value="@(_cycle.Affectations.TryGetValue(index, out var r) ? r : "")"
-                                @onchange="e => AffecterIndex(index, e.Value?.ToString())">
-                            <option value="">— aucun (teinte neutre) —</option>
-                            @* Mapping index→responsable alimenté par les acteurs PERSISTÉS du foyer (énumérés
-                               depuis le store via api/foyer/acteurs, comme la liste des acteurs) : un acteur
-                               renommé ou fraîchement ajouté est aussitôt sélectionnable comme responsable de
-                               fond, sur son identifiant stable (règle 19 — jamais le libellé). *@
-                            @foreach (var a in _acteurs)
+                        @* Ajout d'un acteur — l'acteur reçoit un identifiant stable neuf, apparaît aussitôt
+                           dans la table (relecture du store), sans recharger la page. *@
+                        <div class="config-carte">
+                            <h2 class="config-carte-titre">Ajouter un acteur</h2>
+                            <EditForm Model="_ajout" OnValidSubmit="Ajouter" FormName="ajouter-acteur" id="form-ajout">
+                                <div class="config-ligne-form">
+                                    <InputText class="form-control" @bind-Value="_ajout.Nom" data-testid="champ-nom-ajout"
+                                               placeholder="Nom du nouvel acteur" />
+                                    <InputSelect class="form-select" @bind-Value="_ajout.Couleur" data-testid="champ-couleur-ajout">
+                                        <option value="">— neutre —</option>
+                                        <option value="rose">Rose</option>
+                                        <option value="bleu">Bleu</option>
+                                        <option value="orange">Orange</option>
+                                        <option value="vert">Vert</option>
+                                        <option value="violet">Violet</option>
+                                    </InputSelect>
+                                    <button type="submit" class="btn btn-primary">Ajouter</button>
+                                </div>
+                            </EditForm>
+                            @if (_motifEchecAjout is not null)
                             {
-                                <option value="@a.Id">@a.Nom</option>
+                                <div class="alert alert-danger mt-2 mb-0" data-testid="motif-echec-ajout">@_motifEchecAjout</div>
                             }
-                        </select>
+                        </div>
                     </div>
                 }
-                <button type="submit" class="btn btn-primary">Définir le cycle</button>
-            </EditForm>
 
-            @if (_confirmationCycle is not null)
-            {
-                <div class="alert alert-success mt-3" data-testid="confirmation-cycle">@_confirmationCycle</div>
-            }
+                @if (_accuseSuppression is not null)
+                {
+                    <div class="alert alert-warning" role="status" data-testid="accuse-suppression">@_accuseSuppression</div>
+                }
+                @if (_accuseActivation is not null)
+                {
+                    <div class="alert alert-success" role="status" data-testid="accuse-activation">@_accuseActivation</div>
+                }
+                @if (_motifEchecSuppression is not null)
+                {
+                    <div class="alert alert-danger" data-testid="motif-echec-suppression">@_motifEchecSuppression</div>
+                }
 
-            @if (_motifEchecCycle is not null)
-            {
-                <div class="alert alert-danger mt-3" data-testid="motif-echec-cycle">@_motifEchecCycle</div>
-            }
-        }
+                @* Table des acteurs (fusion des surfaces acteur en un seul tableau) : pastille + nom, rôle
+                   (affecté depuis le référentiel), compte, admin et actions sur une ligne. Chaque case porte
+                   la même teinte que la grille et la légende ; un acteur sans couleur retombe sur le neutre.
+                   La suppression retire l'acteur (ses cases orphelines retombent sur le fond/neutre, sans nom
+                   fantôme) et la grille partagée suit sans recharger la page. *@
+                <div class="acteurs-defilement">
+                    <table class="acteurs-table" data-testid="liste-acteurs">
+                        <thead>
+                            <tr>
+                                <th>Acteur</th>
+                                <th>Rôle</th>
+                                <th>Compte</th>
+                                <th>Admin</th>
+                                @if (Session.EstParent)
+                                {
+                                    <th class="acteurs-col-actions">Actions</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in _acteurs)
+                            {
+                                <tr class="acteur-ligne" data-testid="acteur-foyer"
+                                    data-acteur-id="@a.Id" data-couleur="@a.Couleur">
+                                    <td>
+                                        <span class="acteur-cell">
+                                            <span class="acteur-pastille" style="background-color:@CouleursTheme.Pleine(a.Couleur);"
+                                                  aria-hidden="true"></span>
+                                            <span class="acteur-nom">@a.Nom</span>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @* Rôle courant (lecture pour tous) : libellé résolu sur l'id stable du référentiel. *@
+                                        <div class="acteur-role" data-testid="role-acteur-courant">@LibelleRoleActeur(a.RoleId)</div>
+                                        @if (Session.EstParent)
+                                        {
+                                            @* Sélecteur BORNÉ AU RÉFÉRENTIEL : exactement les rôles du foyer + « sans rôle ».
+                                               La valeur bindée est l'id de rôle (jamais le libellé) ; vide = retrait. *@
+                                            <select class="form-select form-select-sm acteur-selecteur-role" data-testid="selecteur-role-acteur"
+                                                    value="@(a.RoleId ?? "")"
+                                                    @onchange="e => AffecterRole(a.Id, e.Value?.ToString())">
+                                                <option value="">sans rôle</option>
+                                                @foreach (var r in _roles)
+                                                {
+                                                    <option value="@r.Id">@r.Libelle</option>
+                                                }
+                                            </select>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (Session.EstParent)
+                                        {
+                                            @* Compte associé : compte existant (email + statut), ou mini-formulaire de
+                                               création (email obligatoire). Écriture via le canal HTTP ; sur refus, le
+                                               motif reste dans la ligne, sans compte créé. *@
+                                            @if (CompteDe(a.Id) is { } compte)
+                                            {
+                                                <span class="acteur-compte" data-testid="compte-acteur">
+                                                    @compte.Email — <span class="acteur-compte-statut">@compte.Statut</span>
+                                                </span>
+                                                @if (EstInactif(compte))
+                                                {
+                                                    <button type="button" class="btn btn-outline-success btn-sm acteur-activer-compte"
+                                                            data-testid="bouton-activer-compte" data-compte-id="@compte.Id"
+                                                            @onclick="() => ActiverCompte(compte.Id)">Activer</button>
+                                                }
+                                                @if (MotifEchecActivation(compte.Id) is { } motifActivation)
+                                                {
+                                                    <span class="alert alert-danger py-1 px-2 mb-0 acteur-activer-motif"
+                                                          data-testid="motif-echec-activation">@motifActivation</span>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <span class="acteur-compte-form">
+                                                    <input type="email" class="form-control form-control-sm acteur-champ-email"
+                                                           data-testid="champ-email-compte" placeholder="email du compte"
+                                                           @bind:get="EmailCompte(a.Id)" @bind:set="v => SaisirEmailCompte(a.Id, v)"
+                                                           @bind:event="onchange" />
+                                                    <button type="button" class="btn btn-outline-primary btn-sm"
+                                                            data-testid="bouton-creer-compte"
+                                                            @onclick="() => CreerCompte(a.Id)">Créer le compte</button>
+                                                </span>
+                                                @if (MotifEchecCompte(a.Id) is { } motifCompte)
+                                                {
+                                                    <span class="alert alert-danger py-1 px-2 mb-0 acteur-compte-motif"
+                                                          data-testid="motif-echec-compte">@motifCompte</span>
+                                                }
+                                            }
+                                        }
+                                    </td>
+                                    <td>
+                                        @* Marqueur admin (lecture pour tous) : suit une désignation aboutie ailleurs (SignalR). *@
+                                        @if (EstAdmin(a.Id))
+                                        {
+                                            <span class="badge bg-secondary acteur-admin" data-testid="acteur-admin-marqueur">admin</span>
+                                        }
+                                        @if (Session.EstParent)
+                                        {
+                                            <button type="button" class="btn btn-outline-secondary btn-sm acteur-designer-admin"
+                                                    data-testid="bouton-designer-admin" data-acteur-id="@a.Id"
+                                                    @onclick="() => DesignerAdmin(a.Id)">Désigner admin</button>
+                                            @if (MotifEchecAdmin(a.Id) is { } motifAdmin)
+                                            {
+                                                <span class="alert alert-danger py-1 px-2 mb-0 acteur-admin-motif"
+                                                      data-testid="motif-echec-admin">@motifAdmin</span>
+                                            }
+                                        }
+                                    </td>
+                                    @if (Session.EstParent)
+                                    {
+                                        <td class="acteurs-col-actions">
+                                            <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
+                                                    data-testid="bouton-supprimer" data-acteur-id="@a.Id"
+                                                    @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer</button>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            @* ══════════════ Panneau RÔLES ══════════════ *@
+            <section class="config-panneau @(_onglet == "roles" ? null : "cacher")"
+                     data-testid="panneau-roles" aria-label="Rôles">
+                @* Référentiel de rôles (Sc.7) : créer / renommer / supprimer. La valeur d'un rôle affectable à
+                   un acteur provient EXCLUSIVEMENT de ce référentiel (jamais un libellé en dur). Écritures via
+                   le canal HTTP (POST /api/canal/{creer,renommer,supprimer}-role). Gating Parent. *@
+                @if (Session.EstParent)
+                {
+                    <h2 class="config-panneau-titre">Rôles du foyer</h2>
+                    <p class="text-muted">Gérer le référentiel de rôles (Nounou, Grand-parent…). Un rôle reçoit un
+                        identifiant stable neuf (jamais dérivé du libellé) ; il peut ensuite être affecté à un acteur.
+                        Créer, renommer ou supprimer un rôle met la liste à jour sans recharger la page.</p>
+
+                    <EditForm Model="_role" OnValidSubmit="CreerRole" FormName="creer-role" id="form-creer-role">
+                        <div class="input-group mb-3">
+                            <InputText class="form-control" @bind-Value="_role.Libelle" data-testid="champ-libelle-role"
+                                       placeholder="Libellé du rôle (ex. Nounou)" />
+                            <button type="submit" class="btn btn-primary">Créer le rôle</button>
+                        </div>
+                    </EditForm>
+
+                    @if (_motifEchecRole is not null)
+                    {
+                        <div class="alert alert-danger mb-3" data-testid="motif-echec-role">@_motifEchecRole</div>
+                    }
+
+                    <ul class="list-group" data-testid="liste-roles">
+                        @foreach (var r in _roles)
+                        {
+                            <li class="list-group-item role-ligne" data-testid="role-foyer" data-role-id="@r.Id">
+                                <span class="role-libelle">@r.Libelle</span>
+                                <span class="role-actions">
+                                    <input type="text" class="form-control form-control-sm role-champ-renommer"
+                                           data-testid="champ-renommer-role"
+                                           @bind:get="LibelleRenommage(r.Id, r.Libelle)"
+                                           @bind:set="v => SaisirRenommage(r.Id, v)" @bind:event="onchange" />
+                                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                                            data-testid="bouton-renommer-role"
+                                            @onclick="() => RenommerRole(r.Id)">Renommer</button>
+                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                            data-testid="bouton-supprimer-role"
+                                            @onclick="() => SupprimerRole(r.Id)" aria-label="Supprimer @r.Libelle">Supprimer</button>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">La gestion des rôles est réservée aux parents du foyer.</p>
+                }
+            </section>
+
+            @* ══════════════ Panneau CYCLES ══════════════ *@
+            <section class="config-panneau @(_onglet == "cycles" ? null : "cacher")"
+                     data-testid="panneau-periode-garde" aria-label="Cycle de fond">
+                @* Cycle de fond (responsabilité par défaut) : écriture gardée sur l'identité effective (Sc.7). *@
+                @if (Session.EstParent)
+                {
+                    <h2 class="config-panneau-titre">Cycle de fond (responsabilité par défaut)</h2>
+                    <p class="text-muted">Définir le nombre de semaines du cycle et, pour chaque semaine (index ISO),
+                        le responsable de fond. Les jours sans période explicite suivent ce cycle ; la grille se met à jour
+                        sans recharger la page. Une nouvelle définition remplace le cycle courant.</p>
+
+                    <EditForm Model="_cycle" OnValidSubmit="DefinirCycle" FormName="definir-cycle" id="form-cycle">
+                        <div class="mb-3">
+                            <label class="form-label">Nombre de semaines du cycle</label>
+                            <InputNumber class="form-control" @bind-Value="_cycle.NombreSemaines"
+                                         @bind-Value:after="StateHasChanged" data-testid="champ-nombre-semaines" min="1" />
+                        </div>
+                        <div class="cycle-semaines">
+                            @for (var i = 0; i < _cycle.NombreSemaines && i < 12; i++)
+                            {
+                                var index = i;
+                                <div class="cycle-carte">
+                                    <label class="cycle-carte-label">Semaine d'index @index</label>
+                                    <select class="form-select" data-testid="champ-cycle-index-@index"
+                                            value="@(_cycle.Affectations.TryGetValue(index, out var r) ? r : "")"
+                                            @onchange="e => AffecterIndex(index, e.Value?.ToString())">
+                                        <option value="">— aucun (teinte neutre) —</option>
+                                        @foreach (var a in _acteurs)
+                                        {
+                                            <option value="@a.Id">@a.Nom</option>
+                                        }
+                                    </select>
+                                </div>
+                            }
+                        </div>
+                        <button type="submit" class="btn btn-primary mt-3">Définir le cycle</button>
+                    </EditForm>
+
+                    @if (_confirmationCycle is not null)
+                    {
+                        <div class="alert alert-success mt-3" data-testid="confirmation-cycle">@_confirmationCycle</div>
+                    }
+                    @if (_motifEchecCycle is not null)
+                    {
+                        <div class="alert alert-danger mt-3" data-testid="motif-echec-cycle">@_motifEchecCycle</div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">La définition du cycle de fond est réservée aux parents du foyer.</p>
+                }
+            </section>
+
+        </div>
     </div>
-}
-
-@* ──────────────── Onglet « Slot récurrent » : RÉSERVÉ — placeholder « à venir » (Sc.5) ──────────────── *@
-@if (_ongletActif == "slot-recurrent")
-{
-    <div role="tabpanel" data-testid="panneau-slot-recurrent">
-        @* Onglet réservé pour tenir la structure proposée par le PO (retour s17 #6) SANS fonctionnalité neuve :
-           le slot récurrent n'existe pas encore. Aucun formulaire, aucune écriture, aucune persistance ici. *@
-        <p class="text-muted" data-testid="placeholder-slot-recurrent">À venir : la définition de slots
-            récurrents (créneaux de localisation répétés) n'est pas encore disponible.</p>
-    </div>
-}
+</div>
 
 <style>
-    .acteur-ligne { display: flex; align-items: center; gap: 8px; }
-    .acteur-pastille { width: 14px; height: 14px; border-radius: 3px; display: inline-block; flex: none;
-        border: 1px solid rgba(0, 0, 0, .15); }
-    .acteur-nom { color: #333; }
-    .acteur-supprimer { margin-left: auto; }
+    /* Configuration « Studio » : mise en page façon settings (barre latérale gauche + panneau), tokenisée
+       (clair ET sombre). Les pastilles de couleur d'acteur restent INLINE (donnée). */
+
+    .config-entete { margin-bottom: 1.5rem; }
+    .config-titre { font-size: 1.55rem; font-weight: 800; letter-spacing: -.025em; }
+    .config-sous { color: var(--pdg-muted); font-size: .92rem; margin: .2rem 0 0; }
+
+    /* Grille sidebar + panneau. La barre latérale colle sous la barre d'app. */
+    .config-layout { display: grid; grid-template-columns: 220px 1fr; gap: 1.75rem; align-items: start; }
+    .config-nav { display: flex; flex-direction: column; gap: 2px; position: sticky; top: 4.6rem; }
+    .config-nav-item { display: flex; align-items: center; gap: .6rem; text-align: left; width: 100%;
+        background: transparent; border: none; color: var(--pdg-ink); padding: .55rem .8rem;
+        border-radius: 9px; font-weight: 600; font-size: .92rem; cursor: pointer; }
+    .config-nav-item:hover { background: var(--pdg-surface-2); }
+    .config-nav-item.actif { background: var(--pdg-accent-soft); color: var(--pdg-accent);
+        box-shadow: inset 3px 0 0 var(--pdg-accent); }
+    .config-nav-ic { width: 1.1rem; text-align: center; opacity: .85; }
+
+    .config-panneau { background: var(--pdg-card); border: 1px solid var(--pdg-border); border-radius: 16px;
+        padding: 1.35rem 1.5rem; box-shadow: 0 1px 2px rgba(16,24,40,.05); }
+    .config-panneau-titre { font-size: 1.15rem; font-weight: 800; letter-spacing: -.01em; margin: 0 0 .4rem; }
+
+    /* Formulaires ajout / modification en deux cartes compactes. */
+    .config-formulaires { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 1rem; margin-bottom: 1.25rem; }
+    .config-carte { background: var(--pdg-surface-2); border: 1px solid var(--pdg-border); border-radius: 12px;
+        padding: .9rem 1rem; }
+    .config-carte-titre { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+        color: var(--pdg-muted); margin: 0 0 .7rem; }
+    .config-ligne-form { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
+    .config-ligne-form .form-control, .config-ligne-form .form-select { flex: 1 1 8rem; min-width: 7rem; }
+
+    /* Table des acteurs fusionnée. */
+    .acteurs-defilement { overflow-x: auto; }
+    .acteurs-table { width: 100%; border-collapse: collapse; }
+    .acteurs-table th { text-align: left; font-size: .66rem; text-transform: uppercase; letter-spacing: .08em;
+        color: var(--pdg-muted); font-weight: 700; padding: .6rem .7rem; border-bottom: 2px solid var(--pdg-border);
+        white-space: nowrap; }
+    .acteurs-table td { padding: .7rem; border-bottom: 1px solid var(--pdg-border); vertical-align: top; font-size: .9rem; }
+    .acteurs-table tbody tr:last-child td { border-bottom: none; }
+    .acteurs-table tbody tr:hover { background: var(--pdg-surface-2); }
+    .acteurs-col-actions { text-align: right; white-space: nowrap; }
+    .acteur-cell { display: inline-flex; align-items: center; gap: .55rem; }
+    .acteur-pastille { width: 16px; height: 16px; border-radius: 5px; display: inline-block; flex: none;
+        border: 1px solid rgba(0,0,0,.15); box-shadow: 0 1px 2px rgba(16,24,40,.10); }
+    .acteur-nom { color: var(--pdg-ink); font-weight: 700; }
+    .acteur-role { color: var(--pdg-muted); font-size: .82rem; margin-bottom: .35rem; }
+    .acteur-selecteur-role { max-width: 12rem; }
+    .acteur-compte { font-size: .82rem; color: var(--pdg-muted); display: block; margin-bottom: .3rem; }
+    .acteur-compte-statut { font-weight: 700; }
+    .acteur-compte-form { display: flex; gap: .4rem; flex-wrap: wrap; align-items: center; }
+    .acteur-admin { display: inline-block; margin-bottom: .35rem; }
+    .acteur-designer-admin { display: inline-block; }
+    .acteur-activer-compte { margin-left: .4rem; }
+
+    /* Rôles (liste). */
+    .role-ligne { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .role-libelle { color: var(--pdg-ink); font-weight: 700; }
+    .role-actions { display: inline-flex; align-items: center; gap: .4rem; margin-left: auto; flex-wrap: wrap; }
+    .role-champ-renommer { max-width: 12rem; }
+
+    /* Cycle : grille de cartes-semaine. */
+    .cycle-semaines { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: .7rem; }
+    .cycle-carte { background: var(--pdg-surface-2); border: 1px solid var(--pdg-border); border-radius: 10px;
+        padding: .7rem .85rem; }
+    .cycle-carte-label { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em;
+        color: var(--pdg-muted); font-weight: 700; margin-bottom: .4rem; }
+
+    .cacher { display: none; }
+
+    @@media (max-width: 720px) {
+        .config-layout { grid-template-columns: 1fr; }
+        .config-nav { position: static; flex-direction: row; overflow-x: auto; }
+    }
 </style>

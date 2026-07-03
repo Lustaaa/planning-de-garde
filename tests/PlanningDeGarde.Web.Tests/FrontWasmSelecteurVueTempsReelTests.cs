@@ -50,13 +50,13 @@ public sealed class FrontWasmSelecteurVueTempsReelTests : TestContext
         Assert.Equal("4semaines", selecteur.GetAttribute("value"));
 
         // When — vue « Semaine » : re-requête réelle ?vue=semaine. Then — la fenêtre se réduit à 7 cases.
-        grille.Find("[data-testid='selecteur-vue']").Change("semaine");
+        this.SurDispatcher(() => grille.Find("[data-testid='selecteur-vue']").Change("semaine"));
         grille.WaitForState(() => grille.FindAll("[data-testid='jour-case']").Count == 7, TimeSpan.FromSeconds(10));
         Assert.Equal("08/06", DatePremiereCase(grille));
 
         // When — vue « Mois » : re-requête réelle ?vue=mois. Then — semaines ISO entières de juin 2026,
         // 35 cases (5 lignes), première case au lundi 01/06.
-        grille.Find("[data-testid='selecteur-vue']").Change("mois");
+        this.SurDispatcher(() => grille.Find("[data-testid='selecteur-vue']").Change("mois"));
         grille.WaitForState(() => grille.FindAll("[data-testid='jour-case']").Count == 35, TimeSpan.FromSeconds(10));
         Assert.Equal("01/06", DatePremiereCase(grille));
 

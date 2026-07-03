@@ -32,7 +32,7 @@ public sealed class FrontWasmInviteNePeutPasOuvrirDialogTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='menu-actions-case']"));
             },
             TimeSpan.FromSeconds(10));
@@ -44,13 +44,13 @@ public sealed class FrontWasmInviteNePeutPasOuvrirDialogTests : TestContext
             () =>
             {
                 if (grille.FindAll("[data-testid='menu-actions-case']").Count > 0)
-                    grille.Find("[data-testid='menu-actions-case']").Click();
+                    this.SurDispatcher(() => grille.Find("[data-testid='menu-actions-case']").Click());
                 Assert.Empty(grille.FindAll("[data-testid='menu-actions-case']"));
             },
             TimeSpan.FromSeconds(10));
 
         // When — l'utilisateur bascule en « Invité (consultation seule) » via le sélecteur de rôle réel.
-        grille.Find("select.form-select").Change("Invite");
+        this.SurDispatcher(() => grille.Find("select.form-select").Change("Invite"));
 
         // Then — en Invité, cliquer la case n'ouvre NI menu NI dialog (gating règle 9), le déclencheur de
         // la case est désactivé (plus de classe cliquable). Sous WaitForAssertion pour laisser le
@@ -59,7 +59,7 @@ public sealed class FrontWasmInviteNePeutPasOuvrirDialogTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
                 Assert.Empty(grille.FindAll("[data-testid='menu-actions-case']"));
                 Assert.Empty(grille.FindAll("[data-testid='dialog-poser-slot']"));
                 Assert.Empty(grille.FindAll("[data-testid='dialog-affecter-periode']"));

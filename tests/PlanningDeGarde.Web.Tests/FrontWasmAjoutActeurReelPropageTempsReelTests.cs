@@ -119,8 +119,8 @@ public sealed class FrontWasmAjoutActeurReelPropageTempsReelTests : TestContext
         grille2.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille2, "14/07").Click();
-                grille2.Find("[data-testid='action-affecter-periode']").Click();
+                grille2.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille2, "14/07").Click());
+                grille2.SurDispatcher(() => grille2.Find("[data-testid='action-affecter-periode']").Click());
                 Assert.NotEmpty(grille2.FindAll("[data-testid='dialog-affecter-periode']"));
             },
             TimeSpan.FromSeconds(10));

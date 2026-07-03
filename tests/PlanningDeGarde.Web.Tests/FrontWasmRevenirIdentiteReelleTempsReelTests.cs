@@ -36,7 +36,7 @@ public sealed class FrontWasmRevenirIdentiteReelleTempsReelTests : TestContext
         grille.WaitForState(
             () => grille.FindAll("[data-testid='selecteur-incarnation'] option[value='parent-b']").Count == 1,
             TimeSpan.FromSeconds(10));
-        grille.Find("[data-testid='selecteur-incarnation']").Change("parent-b");
+        this.SurDispatcher(() => grille.Find("[data-testid='selecteur-incarnation']").Change("parent-b"));
 
         // CONTRÔLE POSITIF — sous l'incarnation : bandeau « Vous incarnez Bruno » affiché ET menu visible
         // au clic (l'incarnation est bien active avant qu'on en sorte).
@@ -45,7 +45,7 @@ public sealed class FrontWasmRevenirIdentiteReelleTempsReelTests : TestContext
             {
                 Assert.Contains("Vous incarnez Bruno",
                     grille.Find("[data-testid='bandeau-incarnation']").TextContent);
-                GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='menu-actions-case']"));
             },
             TimeSpan.FromSeconds(10));
@@ -54,13 +54,13 @@ public sealed class FrontWasmRevenirIdentiteReelleTempsReelTests : TestContext
             () =>
             {
                 if (grille.FindAll("[data-testid='menu-actions-case']").Count > 0)
-                    grille.Find("[data-testid='menu-actions-case']").Click();
+                    this.SurDispatcher(() => grille.Find("[data-testid='menu-actions-case']").Click());
                 Assert.Empty(grille.FindAll("[data-testid='menu-actions-case']"));
             },
             TimeSpan.FromSeconds(10));
 
         // When — le configurateur revient à son identité réelle via l'affordance du bandeau.
-        grille.Find("[data-testid='revenir-identite-reelle']").Click();
+        this.SurDispatcher(() => grille.Find("[data-testid='revenir-identite-reelle']").Click());
 
         // Then — le bandeau « Vous incarnez Bruno » n'est plus affiché …
         grille.WaitForAssertion(
@@ -71,7 +71,7 @@ public sealed class FrontWasmRevenirIdentiteReelleTempsReelTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='menu-actions-case']"));
             },
             TimeSpan.FromSeconds(10));

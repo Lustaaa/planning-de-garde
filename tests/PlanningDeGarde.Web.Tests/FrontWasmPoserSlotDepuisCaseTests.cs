@@ -47,15 +47,15 @@ public sealed class FrontWasmPoserSlotDepuisCaseTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-poser-slot']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-poser-slot']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-poser-slot']"));
             },
             TimeSpan.FromSeconds(10));
 
         // … il choisit le lieu « école » (08:30 → 16:30 pré-remplis sur la date de la case) et valide.
-        grille.Find("[data-testid='champ-lieu']").Change("école");
-        grille.Find("[data-testid='dialog-poser-slot'] form").Submit();
+        this.SurDispatcher(() => grille.Find("[data-testid='champ-lieu']").Change("école"));
+        this.SurDispatcher(() => grille.Find("[data-testid='dialog-poser-slot'] form").Submit());
 
         // Then — la dialog se ferme ET le slot « école » 08h30→16h30 réapparaît, positionné dans la case
         // du 16/06, relu depuis le store réel de l'API distante (relecture sur succès), pas une mutation

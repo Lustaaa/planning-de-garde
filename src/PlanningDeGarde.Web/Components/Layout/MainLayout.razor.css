@@ -1,78 +1,77 @@
 .page {
-    position: relative;
     display: flex;
     flex-direction: column;
+    /* Hauteur pleine robuste : 100dvh évite le piège 100vh (barre d'URL iOS qui masque du contenu) ;
+       100vh reste en repli pour les navigateurs sans dvh. */
+    min-height: 100vh;
+    min-height: 100dvh;
 }
 
-main {
+/* Barre d'application : sticky en tête, surface tokenisée, respecte l'encoche iOS (safe-area). */
+.app-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    min-height: 3.5rem;
+    padding: 0.4rem 1.25rem;
+    background-color: var(--pdg-card);
+    border-bottom: 1px solid var(--pdg-border);
+    /* Safari iOS / WebKit : la barre sticky respecte l'encoche (haut) et les côtés (paysage). Repli 0 hors iOS. */
+    padding-top: calc(0.4rem + env(safe-area-inset-top, 0));
+    padding-left: calc(1.25rem + env(safe-area-inset-left, 0));
+    padding-right: calc(1.25rem + env(safe-area-inset-right, 0));
+}
+
+/* Marque : ramène au planning. Pastille d'accent + titre en Fraunces (via .pdg-brand-titre global). */
+.app-brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    color: var(--pdg-ink);
+    white-space: nowrap;
+}
+
+.app-brand:hover { text-decoration: none; }
+
+.app-brand-pastille {
+    width: 0.85rem;
+    height: 0.85rem;
+    border-radius: 999px;
+    background: var(--pdg-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--pdg-accent) 22%, transparent);
+    flex: 0 0 auto;
+}
+
+/* Le groupe d'actions (identité + thème) est poussé à droite. */
+.app-bar-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.app-main {
     flex: 1;
 }
 
-.sidebar {
-    background-image: linear-gradient(180deg, #34a890 0%, #1f7d70 100%);
+/* Le contenu ne passe pas sous la barre home iOS. */
+article {
+    padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
-.top-row {
-    background-color: #fffdf9;
-    border-bottom: 1px solid #ece1d2;
-    justify-content: space-between;
-    height: 3.5rem;
-    display: flex;
-    align-items: center;
-}
-
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        white-space: nowrap;
-        margin-left: 1.5rem;
-        text-decoration: none;
-    }
-
-    .top-row ::deep a:hover, .top-row ::deep .btn-link:hover {
-        text-decoration: underline;
-    }
-
-    .top-row ::deep a:first-child {
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
+/* Sur petit écran, la marque se resserre et la nav peut se replier proprement. */
 @media (max-width: 640.98px) {
-    .top-row {
-        justify-content: space-between;
+    .app-bar {
+        gap: 0.75rem;
+        flex-wrap: wrap;
     }
 
-    .top-row ::deep a, .top-row ::deep .btn-link {
-        margin-left: 0;
-    }
-}
-
-@media (min-width: 641px) {
-    .page {
-        flex-direction: row;
-    }
-
-    .sidebar {
-        width: 250px;
-        height: 100vh;
-        position: sticky;
-        top: 0;
-    }
-
-    .top-row {
-        position: sticky;
-        top: 0;
-        z-index: 1;
-    }
-
-    .top-row.auth ::deep a:first-child {
-        flex: 1;
-        text-align: right;
-        width: 0;
-    }
-
-    .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
+    .pdg-brand-titre {
+        font-size: 1rem;
     }
 }
 

@@ -43,8 +43,8 @@ public sealed class FrontWasmEditerPeriodeApiInjoignableTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click();
-                grille.Find("[data-testid='action-editer-periode']").Click();
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "16/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='action-editer-periode']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-editer-periode']"));
             },
             TimeSpan.FromSeconds(10));
@@ -54,12 +54,12 @@ public sealed class FrontWasmEditerPeriodeApiInjoignableTests : TestContext
             TimeSpan.FromSeconds(10));
 
         // … j'ouvre le formulaire, réaffecte à « Parent A » et j'enregistre : le POST échoue (transport).
-        grille.FindAll("[data-testid='periode-editable']")
+        this.SurDispatcher(() => grille.FindAll("[data-testid='periode-editable']")
             .Single(l => l.TextContent.Contains("Nina la nounou"))
-            .QuerySelector("[data-testid='bouton-editer-periode']")!.Click();
+            .QuerySelector("[data-testid='bouton-editer-periode']")!.Click());
         var champResponsable = grille.WaitForElement("[data-testid='champ-responsable-edition']", TimeSpan.FromSeconds(10));
-        champResponsable.Change("parent-a");
-        grille.Find("[data-testid='bouton-enregistrer-edition']").Click();
+        this.SurDispatcher(() => champResponsable.Change("parent-a"));
+        this.SurDispatcher(() => grille.Find("[data-testid='bouton-enregistrer-edition']").Click());
 
         // Then — un message d'échec clair s'affiche DANS la dialog, qui reste OUVERTE ; aucun accusé de
         // succès ; la case du 16/06 reste « Nina la nounou ».
