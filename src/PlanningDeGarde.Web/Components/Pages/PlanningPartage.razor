@@ -184,50 +184,119 @@
     </div>
 }
 
-<section class="grille-agenda" data-testid="grille-agenda">
-    <div class="grille-entete">
-        @foreach (var jour in JoursDeLaSemaine)
-        {
-            <div class="grille-entete-jour">@jour</div>
-        }
-    </div>
-
-    @foreach (var semaine in _grille.Semaines)
-    {
-        <div class="grille-semaine">
-            @foreach (var jourCase in semaine.Jours)
-            {
-                <div class="grille-jour @(Session.EstParent ? "grille-jour-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-jour-selectionnee" : null) @(EstAujourdhui(jourCase.Date) ? "grille-jour-aujourdhui" : null)"
-                     data-testid="jour-case"
-                     data-couleur="@jourCase.CouleurResponsable"
-                     data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
-                     @onclick="@(() => OuvrirMenu(jourCase.Date))">
-                    <div class="grille-jour-date">@jourCase.Date.ToString("dd/MM")</div>
-                    @if (!string.IsNullOrEmpty(jourCase.NomResponsable))
+@if (VueHoraire)
+{
+    @* ── Vue SEMAINE : grille horaire (façon agenda hebdomadaire) ──
+       Colonnes = 7 jours, lignes = heures. Le N° de jour est une PASTILLE de la couleur du parent
+       RESPONSABLE (donnée inline) ; chaque slot est un bloc positionné à son heure, de la couleur de
+       son ACTEUR / LIEU (donnée inline). La grille reste lecture seule : cliquer une colonne ouvre le
+       menu d'actions de ce jour (mutualise le gating Invité). Structure préservant les repères de test
+       (jour-case ×7, grille-jour-date, nom-responsable, slot-case). *@
+    var (heureDebut, heureFin) = PlageHoraire();
+    var nbHeures = heureFin - heureDebut;
+    <section class="grille-horaire" data-testid="grille-agenda" data-vue="semaine">
+        <div class="grille-horaire-defilement">
+            <div class="grille-horaire-corps" style="--pdg-h-heure:@(HauteurHeurePx)px;">
+                @* Colonne des graduations horaires (gouttière gauche). *@
+                <div class="grille-horaire-heures">
+                    <div class="grille-horaire-coin"></div>
+                    @for (var h = heureDebut; h < heureFin; h++)
                     {
-                        @* Responsable en PASTILLE (façon événement d'agenda) : la couleur de responsabilité
-                           reste la donnée (fond de pastille INLINE, priorité max), la case reste NEUTRE
-                           (surface tokenisée) — lisible clair ET sombre, moins « tableur colorié ». Nom
-                           complet au survol (title) ; troncature CSS. *@
-                        <div class="grille-jour-responsable nom-tronque" data-testid="nom-responsable"
-                             style="background-color:@Couleur(jourCase.CouleurResponsable);"
-                             title="@jourCase.NomResponsable">@jourCase.NomResponsable</div>
+                        <div class="grille-horaire-heure">@h h</div>
                     }
-                    <div class="grille-jour-slots">
-                        @foreach (var slot in jourCase.Slots)
-                        {
-                            <div class="grille-slot" data-testid="slot-case"
-                                 style="background-color:@Couleur(slot.CouleurActeur);">
-                                <span class="grille-slot-libelle">@slot.Libelle</span>
-                                <span class="grille-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
-                            </div>
-                        }
-                    </div>
                 </div>
+
+                @for (var i = 0; i < _grille.Jours.Count; i++)
+                {
+                    var jourCase = _grille.Jours[i];
+                    var nomJour = JoursDeLaSemaine[i % 7];
+                    <div class="grille-horaire-col @(Session.EstParent ? "grille-horaire-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-horaire-selectionnee" : null) @(EstAujourdhui(jourCase.Date) ? "grille-horaire-aujourdhui" : null)"
+                         data-testid="jour-case"
+                         data-couleur="@jourCase.CouleurResponsable"
+                         data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
+                         @onclick="@(() => OuvrirMenu(jourCase.Date))">
+                        <div class="grille-horaire-entete">
+                            <span class="grille-horaire-jour-nom">@nomJour</span>
+                            @* N° de jour en pastille couleur du responsable (garde le libellé dd/MM pour les repères). *@
+                            <span class="grille-jour-date grille-jour-date-pastille"
+                                  style="background-color:@Couleur(jourCase.CouleurResponsable);"
+                                  title="@jourCase.NomResponsable">@jourCase.Date.ToString("dd/MM")</span>
+                            @if (!string.IsNullOrEmpty(jourCase.NomResponsable))
+                            {
+                                <span class="grille-horaire-resp nom-tronque" data-testid="nom-responsable"
+                                      title="@jourCase.NomResponsable">@jourCase.NomResponsable</span>
+                            }
+                        </div>
+                        <div class="grille-horaire-piste" style="height:@(nbHeures * HauteurHeurePx)px;">
+                            @for (var h = 0; h < nbHeures; h++)
+                            {
+                                <div class="grille-horaire-ligne"></div>
+                            }
+                            @foreach (var slot in jourCase.Slots)
+                            {
+                                <div class="grille-slot grille-slot-bloc" data-testid="slot-case"
+                                     style="background-color:@Couleur(slot.CouleurActeur); top:@(HautSlotPx(slot, heureDebut))px; height:@(HauteurSlotPx(slot))px;">
+                                    <span class="grille-slot-libelle nom-tronque">@slot.Libelle</span>
+                                    <span class="grille-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+}
+else
+{
+    @* ── Vues MOIS / 4 SEMAINES : cartes-jour (façon mois d'agenda) ──
+       Le N° de jour (dd/MM) est une PASTILLE de la couleur du parent RESPONSABLE (donnée inline) ; les
+       slots sont des puces de la couleur de leur ACTEUR / LIEU. La case reste une surface neutre
+       tokenisée (lisible clair ET sombre). Cliquer une case ouvre le menu d'actions (lecture seule). *@
+    <section class="grille-agenda" data-testid="grille-agenda" data-vue="cartes">
+        <div class="grille-entete">
+            @foreach (var jour in JoursDeLaSemaine)
+            {
+                <div class="grille-entete-jour">@jour</div>
             }
         </div>
-    }
-</section>
+
+        @foreach (var semaine in _grille.Semaines)
+        {
+            <div class="grille-semaine">
+                @foreach (var jourCase in semaine.Jours)
+                {
+                    <div class="grille-jour @(Session.EstParent ? "grille-jour-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-jour-selectionnee" : null) @(EstAujourdhui(jourCase.Date) ? "grille-jour-aujourdhui" : null)"
+                         data-testid="jour-case"
+                         data-couleur="@jourCase.CouleurResponsable"
+                         data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
+                         @onclick="@(() => OuvrirMenu(jourCase.Date))">
+                        <div class="grille-jour-entete">
+                            <span class="grille-jour-date grille-jour-date-pastille"
+                                  style="background-color:@Couleur(jourCase.CouleurResponsable);"
+                                  title="@jourCase.NomResponsable">@jourCase.Date.ToString("dd/MM")</span>
+                            @if (!string.IsNullOrEmpty(jourCase.NomResponsable))
+                            {
+                                <span class="grille-jour-responsable nom-tronque" data-testid="nom-responsable"
+                                      title="@jourCase.NomResponsable">@jourCase.NomResponsable</span>
+                            }
+                        </div>
+                        <div class="grille-jour-slots">
+                            @foreach (var slot in jourCase.Slots)
+                            {
+                                <div class="grille-slot" data-testid="slot-case"
+                                     style="background-color:@Couleur(slot.CouleurActeur);">
+                                    <span class="grille-slot-libelle">@slot.Libelle</span>
+                                    <span class="grille-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+            </div>
+        }
+    </section>
+}
 
 <Legende Entrees="_grille.Légende" />
 
@@ -332,51 +401,77 @@
     .pdg-controle-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em;
                           font-weight: 600; color: var(--pdg-muted); white-space: nowrap; }
 
-    .grille-agenda { display: flex; flex-direction: column; gap: 6px; }
-    .grille-entete, .grille-semaine { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
-    .grille-entete-jour { font-weight: 600; text-align: center; color: var(--pdg-muted);
-                          text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; padding: 2px 0; }
-    .grille-jour { min-height: 96px; background: var(--pdg-card); border: 1px solid var(--pdg-border);
+    /* ════════ Vues MOIS / 4 SEMAINES : cartes-jour ════════ */
+    .grille-agenda { display: flex; flex-direction: column; gap: 8px; }
+    .grille-entete, .grille-semaine { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; }
+    .grille-entete-jour { font-weight: 700; text-align: center; color: var(--pdg-muted);
+                          text-transform: uppercase; font-size: .68rem; letter-spacing: .08em; padding: 2px 0; }
+    .grille-jour { min-height: 104px; background: var(--pdg-card); border: 1px solid var(--pdg-border);
                    border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 6px;
-                   box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 2px 6px rgba(16,24,40,.05);
-                   transition: box-shadow .15s ease, transform .15s ease; }
+                   box-shadow: var(--pdg-ombre-sm, 0 1px 2px rgba(16,24,40,.05));
+                   transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease; }
     .grille-jour-cliquable { cursor: pointer; }
-    .grille-jour-cliquable:hover { box-shadow: 0 2px 6px rgba(16,24,40,.08), 0 8px 18px rgba(16,24,40,.10);
-                                   transform: translateY(-1px); }
+    .grille-jour-cliquable:hover { border-color: var(--pdg-accent); transform: translateY(-2px);
+                                   box-shadow: 0 6px 16px rgba(16,24,40,.10); }
     .grille-jour-selectionnee { outline: 3px solid var(--pdg-accent); outline-offset: -3px; }
-    /* « Aujourd'hui » repérable d'un coup d'œil : liseré + halo d'accent sauge, sans écraser la couleur
-       de responsabilité porteuse de la case. */
+    /* « Aujourd'hui » : liseré + halo d'accent indigo, sans écraser la pastille de responsabilité. */
     .grille-jour-aujourdhui { border-color: var(--pdg-accent);
-                              box-shadow: 0 0 0 2px var(--pdg-accent-soft), 0 2px 6px rgba(16,24,40,.06); }
+                              box-shadow: 0 0 0 2px var(--pdg-accent-soft); }
+    /* En-tête de carte : pastille date (couleur du responsable, fond INLINE) + nom du responsable en légende. */
+    .grille-jour-entete { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    /* N° de jour en PASTILLE de la couleur du parent RESPONSABLE (fond INLINE, priorité max). Texte blanc,
+       forme de pilule — auto-suffisant et lisible clair ET sombre. Une case sans responsable → teinte neutre. */
+    .grille-jour-date-pastille { display: inline-flex; align-items: center; justify-content: center;
+                   color: #fff; font-weight: 700; font-size: .74rem; padding: 2px 9px; border-radius: 999px;
+                   box-shadow: 0 1px 2px rgba(16,24,40,.16); font-variant-numeric: tabular-nums; }
+    /* Nom du responsable = légende discrète (la couleur vit désormais sur la pastille de date). */
+    .grille-jour-responsable { font-size: .78rem; font-weight: 600; color: var(--pdg-muted); }
+    .nom-tronque { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .grille-jour-slots { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
+    .grille-slot { border-radius: 8px; padding: 3px 7px; font-size: .72rem; color: #fff; display: flex;
+                   flex-direction: column; line-height: 1.18; box-shadow: 0 1px 2px rgba(16,24,40,.14); }
+    .grille-slot-libelle { font-weight: 700; }
+    .grille-slot-horaire { opacity: .92; font-variant-numeric: tabular-nums; }
+
+    /* ════════ Vue SEMAINE : grille horaire ════════ */
+    .grille-horaire-defilement { overflow-x: auto; border: 1px solid var(--pdg-border); border-radius: 16px;
+                                 background: var(--pdg-card); box-shadow: var(--pdg-ombre-sm, 0 1px 2px rgba(16,24,40,.05)); }
+    .grille-horaire-corps { display: grid; grid-template-columns: 60px repeat(7, 1fr); min-width: 900px; }
+    /* Gouttière des graduations horaires. */
+    .grille-horaire-heures { display: flex; flex-direction: column; border-right: 1px solid var(--pdg-border); }
+    .grille-horaire-coin { height: 64px; border-bottom: 1px solid var(--pdg-border); }
+    .grille-horaire-heure { height: var(--pdg-h-heure, 48px); box-sizing: border-box; text-align: right;
+                            padding: 2px 6px 0 0; font-size: .66rem; color: var(--pdg-muted);
+                            font-variant-numeric: tabular-nums; }
+    /* Colonne d'un jour : en-tête (fixe, aligne les pistes) + piste des heures. */
+    .grille-horaire-col { border-right: 1px solid var(--pdg-border); }
+    .grille-horaire-col:last-child { border-right: none; }
+    .grille-horaire-cliquable { cursor: pointer; }
+    .grille-horaire-cliquable:hover { background: color-mix(in srgb, var(--pdg-accent) 5%, transparent); }
+    .grille-horaire-selectionnee { outline: 3px solid var(--pdg-accent); outline-offset: -3px; }
+    .grille-horaire-aujourdhui { background: var(--pdg-accent-soft); }
+    .grille-horaire-entete { height: 64px; box-sizing: border-box; border-bottom: 1px solid var(--pdg-border);
+                             display: flex; flex-direction: column; align-items: center; justify-content: center;
+                             gap: 3px; padding: 4px 6px; overflow: hidden; }
+    .grille-horaire-jour-nom { font-size: .64rem; text-transform: uppercase; letter-spacing: .08em;
+                               font-weight: 700; color: var(--pdg-muted); }
+    .grille-horaire-resp { max-width: 100%; font-size: .68rem; font-weight: 600; color: var(--pdg-muted); }
+    .grille-horaire-piste { position: relative; }
+    .grille-horaire-ligne { height: var(--pdg-h-heure, 48px); box-sizing: border-box;
+                            border-bottom: 1px solid color-mix(in srgb, var(--pdg-border) 55%, transparent); }
+    /* Bloc de slot positionné à son heure (top/height INLINE), couleur de l'acteur/lieu (fond INLINE). */
+    .grille-slot-bloc { position: absolute; left: 4px; right: 4px; overflow: hidden; padding: 3px 6px;
+                        border: 1px solid rgba(255,255,255,.22); box-shadow: 0 1px 4px rgba(16,24,40,.24); }
+
+    /* ════════ Menu d'actions de la case ════════ */
     .menu-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,.35); display: flex;
                      align-items: center; justify-content: center; z-index: 1040; }
     .menu-panneau { background: var(--pdg-card); color: var(--pdg-ink); border: 1px solid var(--pdg-border);
                     border-radius: 16px; padding: 18px; width: min(340px, 90vw);
                     box-shadow: 0 12px 40px rgba(16,24,40,.28); }
-    .menu-titre { font-family: var(--pdg-font-titre); font-size: 1.05rem; font-weight: 700;
-                  color: var(--pdg-ink); margin: 0 0 14px; }
-    /* Groupe destructif nettement séparé des actions primaires (séparateur tokenisé + intitulé discret)
-       pour hiérarchiser sans changer les commandes. */
+    .menu-titre { font-family: var(--pdg-font-titre); font-size: 1.05rem; font-weight: 800;
+                  color: var(--pdg-ink); margin: 0 0 14px; letter-spacing: -.01em; }
     .menu-groupe-destructif { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--pdg-border); }
     .menu-groupe-label { display: block; font-size: .68rem; text-transform: uppercase; letter-spacing: .06em;
-                         font-weight: 600; color: var(--pdg-muted); margin-bottom: 8px; }
-    .grille-jour-date { font-size: .78rem; font-weight: 600; color: var(--pdg-muted); align-self: flex-start; }
-    /* « Aujourd'hui » : la date passe en pastille d'accent (repère immédiat, façon agenda). */
-    .grille-jour-aujourdhui .grille-jour-date { background: var(--pdg-accent); color: #fff;
-                               padding: 1px 8px; border-radius: 999px; font-weight: 700; }
-    /* Responsable = PASTILLE d'événement colorée de la couleur du responsable (fond INLINE, texte blanc).
-       Auto-suffisante et lisible dans les deux thèmes ; la case reste neutre. Troncature du nom long. */
-    /* Spécificité .grille-jour ... pour primer sur .nom-tronque (display:block) tout en gardant la
-       troncature : la pastille reste compacte (inline-block) et tronque le nom long (title au survol). */
-    .grille-jour .grille-jour-responsable { display: inline-block; align-self: flex-start; max-width: 100%;
-                               font-size: .8rem; font-weight: 600; color: #fff;
-                               padding: 2px 9px; border-radius: 999px;
-                               white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-                               box-shadow: 0 1px 2px rgba(16,24,40,.14); }
-    .nom-tronque { display: block; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .grille-jour-slots { display: flex; flex-direction: column; gap: 3px; margin-top: auto; }
-    .grille-slot { border-radius: 8px; padding: 3px 6px; font-size: .72rem; color: #fff; display: flex;
-                   flex-direction: column; line-height: 1.15; box-shadow: 0 1px 2px rgba(16,24,40,.12); }
-    .grille-slot-libelle { font-weight: 600; }
-    .grille-slot-horaire { opacity: .9; }
+                         font-weight: 700; color: var(--pdg-muted); margin-bottom: 8px; }
 </style>

@@ -528,6 +528,41 @@ public partial class PlanningPartage
     /// inline) ; la case elle-même reste neutre (surface tokenisée) — rendu correct clair ET sombre.</summary>
     private static string Couleur(string couleur) => CouleursTheme.Pleine(couleur);
 
+    /// <summary>Vrai en vue « Semaine » : la grille bascule alors du format cartes-jour (Mois / 4 semaines)
+    /// vers la <b>grille horaire</b> (colonnes = jours, lignes = heures), façon agenda hebdomadaire.</summary>
+    private bool VueHoraire => Session.Vue == VuePlanning.Semaine;
+
+    // Grille horaire : hauteur d'une heure (px). Le placement d'un slot est purement dérivé de ses bornes
+    // horaires (donnée), aucune règle métier — pure présentation.
+    private const int HauteurHeurePx = 48;
+
+    /// <summary>Position fractionnaire d'une heure (ex. 8h30 → 8.5) pour placer un slot sur l'axe vertical.</summary>
+    private static double FractionHeure(TimeOnly t) => t.Hour + t.Minute / 60.0;
+
+    /// <summary>Plage horaire [début, fin[ couverte par la grille horaire : englobe tous les slots de la
+    /// fenêtre, élargie à un socle 8h→20h lisible (et jamais vide). Bornes entières d'heures.</summary>
+    private (int Debut, int Fin) PlageHoraire()
+    {
+        var slots = _grille.Jours.SelectMany(j => j.Slots).ToList();
+        var debut = 8;
+        var fin = 20;
+        foreach (var s in slots)
+        {
+            debut = Math.Min(debut, s.Debut.Hour);
+            fin = Math.Max(fin, s.Fin.Minute > 0 ? s.Fin.Hour + 1 : s.Fin.Hour);
+        }
+        return (debut, Math.Max(fin, debut + 1));
+    }
+
+    /// <summary>Décalage vertical (px, entier) du haut d'un slot dans sa colonne, relatif au début de la
+    /// plage. Entier → sérialisation CSS insensible à la culture (pas de virgule décimale en WASM).</summary>
+    private static int HautSlotPx(SlotCase slot, int heureDebut)
+        => (int)Math.Round((FractionHeure(slot.Debut) - heureDebut) * HauteurHeurePx);
+
+    /// <summary>Hauteur (px, entier) d'un slot d'après sa durée, avec un minimum lisible (libellé + horaire).</summary>
+    private static int HauteurSlotPx(SlotCase slot)
+        => (int)Math.Round(Math.Max(20, (FractionHeure(slot.Fin) - FractionHeure(slot.Debut)) * HauteurHeurePx - 4));
+
     public async ValueTask DisposeAsync()
     {
         if (_hub is not null)

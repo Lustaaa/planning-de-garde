@@ -24,6 +24,14 @@ namespace PlanningDeGarde.Web.Components.Pages;
 /// </summary>
 public partial class ConfigurationFoyer
 {
+    // Onglet actif de la page de configuration (présentation façon settings GitHub : barre latérale
+    // gauche + panneau). « acteurs » (défaut) / « roles » / « cycles ». Les trois panneaux restent
+    // TOUJOURS rendus (masqués par CSS quand inactifs) : aucune règle métier, aucun gating porté ici —
+    // le gating d'écriture reste sur l'identité effective, dans chaque panneau.
+    private string _onglet = "acteurs";
+
+    private void ChoisirOnglet(string onglet) => _onglet = onglet;
+
     private sealed class Formulaire
     {
         public string ActeurId { get; set; } = "";

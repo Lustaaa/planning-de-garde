@@ -9,25 +9,24 @@ using Xunit;
 namespace PlanningDeGarde.Web.Tests;
 
 /// <summary>
-/// Sprint 20 — Sc.2 (🖥️ @ihm — acceptation de NIVEAU RUNTIME) : l'écran de configuration réellement
-/// câblé (<see cref="ConfigurationFoyer"/>, API distante réelle) présente <b>trois onglets par thème</b>
-/// — « Acteurs », « Période de garde », « Slot récurrent » — avec l'onglet « Acteurs » <b>actif par
-/// défaut</b>. Le contenu existant est <b>réparti</b> dans ces onglets (rien de perdu, rien de
-/// dupliqué) : à l'ouverture, seul le panneau « Acteurs » est affiché (sélecteur d'édition + liste des
-/// acteurs), tandis que le contenu d'un autre thème (le cycle de fond) n'est PAS visible sous l'onglet
-/// actif — preuve que le contenu est bien cloisonné par onglet et non tout empilé sur un seul écran.
+/// Refonte « Studio » (2026-07) — l'écran de configuration réellement câblé
+/// (<see cref="ConfigurationFoyer"/>, API distante réelle) présente une <b>barre latérale d'onglets</b>
+/// façon settings — « Acteurs », « Rôles », « Cycles » — avec l'onglet « Acteurs » <b>actif par
+/// défaut</b>. Les trois panneaux (Acteurs, Rôles, Cycle de fond) restent rendus dans le DOM (navigation
+/// par onglet purement présentationnelle, masquage CSS) : le contenu existant est réparti dans les trois
+/// sections, rien de perdu, rien de dupliqué.
 ///
-/// Rempart anti « vert qui ment » : tant que l'écran empile tout son contenu sans onglets, les
-/// contrôles d'onglet manquent (rouge) ; si le cycle restait affiché sous l'onglet Acteurs, la
-/// répartition serait factice (rouge). Un bUnit à doublure ne prouverait pas le rendu réellement câblé.
+/// Rempart anti « vert qui ment » : les contrôles d'onglet doivent exister et « Acteurs » doit être actif
+/// par défaut (sinon rouge) ; le sélecteur d'édition + la liste + le cycle doivent tous être présents.
+/// Un bUnit à doublure ne prouverait pas le rendu réellement câblé.
 /// </summary>
 public sealed class FrontWasmConfigOngletsParThemeTempsReelTests : TestContext
 {
     [Fact]
-    public void L_ecran_de_configuration_empile_ses_sections_sur_une_seule_page_sans_onglets()
+    public void L_ecran_de_configuration_presente_une_barre_laterale_d_onglets_Acteurs_actif_par_defaut()
     {
         // Given — l'écran de configuration réellement câblé à l'API distante réelle (store réel seedé),
-        // avec une identité Parent (le contenu d'écriture des onglets est visible, gating Sc.7).
+        // avec une identité Parent (le contenu d'écriture des sections est visible, gating Sc.7).
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
         Services.AddSingleton(new SessionPlanning());
@@ -39,23 +38,20 @@ public sealed class FrontWasmConfigOngletsParThemeTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        // Then — fusion des sections (hors-sprint, retour PO) : PLUS d'onglets ; les sections sont
-        // empilées sur une seule page. La barre d'onglets et les onglets ont disparu.
-        Assert.Empty(config.FindAll("[data-testid='onglets-config']"));
-        Assert.Empty(config.FindAll("[data-testid='onglet-acteurs']"));
+        // Then — la barre latérale expose les trois onglets, « Acteurs » actif par défaut.
+        var ongletActeurs = config.Find("[data-testid='onglet-acteurs']");
+        Assert.Contains("actif", ongletActeurs.GetAttribute("class"));
+        Assert.NotEmpty(config.FindAll("[data-testid='onglet-roles']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='onglet-cycles']"));
 
-        // … les deux sections (Acteurs & rôles, Cycle de fond) sont présentes SIMULTANÉMENT sur la page.
+        // … les trois panneaux sont rendus (navigation par onglet = présentation, masquage CSS).
         Assert.NotEmpty(config.FindAll("[data-testid='panneau-acteurs']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='panneau-roles']"));
         Assert.NotEmpty(config.FindAll("[data-testid='panneau-periode-garde']"));
 
-        // … la section « Slot récurrent » (placeholder « à venir ») a été retirée.
-        Assert.Empty(config.FindAll("[data-testid='panneau-slot-recurrent']"));
-
-        // … le contenu du thème Acteurs (sélecteur d'édition + liste) est présent.
+        // … le contenu du panneau Acteurs (sélecteur d'édition + table) et le cycle de fond sont présents.
         Assert.NotEmpty(config.FindAll("[data-testid='selecteur-acteur-edition']"));
         Assert.NotEmpty(config.FindAll("[data-testid='liste-acteurs']"));
-
-        // … et le cycle de fond est désormais visible sur la MÊME page (empilé, plus cloisonné).
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
     }
 }

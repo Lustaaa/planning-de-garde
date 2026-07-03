@@ -30,9 +30,9 @@ public sealed class FrontWasmConfigFoyerHabilleTests : TestContext
         var config = RenderComponent<ConfigurationFoyer>();
         config.WaitForElement("[data-testid='panneau-acteurs']", TimeSpan.FromSeconds(10));
 
-        // Then — fusion des sections (hors-sprint) : chaque section porte la classe carte tokenisée dédiée.
+        // Then — refonte « Studio » : chaque panneau porte la classe carte tokenisée dédiée.
         var section = config.Find("[data-testid='panneau-acteurs']");
-        Assert.Contains("config-section", section.GetAttribute("class"));
+        Assert.Contains("config-panneau", section.GetAttribute("class"));
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class FrontWasmConfigFoyerHabilleTests : TestContext
             dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Pages", "ConfigurationFoyer.razor"));
 
         Assert.Contains("var(--pdg-ink)", razor, StringComparison.Ordinal);
-        Assert.Contains("config-section", razor, StringComparison.Ordinal);
+        Assert.Contains("config-panneau", razor, StringComparison.Ordinal);
         // La couleur de texte codée en dur cassait le thème sombre.
         Assert.DoesNotContain("#333", razor, StringComparison.OrdinalIgnoreCase);
     }

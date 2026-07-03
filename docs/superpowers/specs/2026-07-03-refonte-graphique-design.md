@@ -4,6 +4,19 @@
 > créative, décision PO). Périmètre = **tous les écrans** du front Blazor WASM. Bootstrap
 > **conservé sous le capot** (habillage réécrit, grille utilitaire gardée).
 
+> **Révision 2026-07 — identité « Studio » (retour PO : le style « Cocon élevé » crème/sauge ne
+> convenait pas, le sombre était inutilisable).** Nouvelle direction : **chrome indigo** (`#4F46E5`,
+> hors des 5 couleurs-données), **neutres froids**, **sans-serif intégrale** (Inter, titres *et*
+> corps — plus de serif Fraunces), **thème sombre retravaillé** (hiérarchie par surfaces étagées +
+> bordures, pas une inversion). Les noms de tokens `--pdg-*` sont conservés (seules les valeurs
+> changent) ; le mécanisme de bascule clair/sombre et l'amorce zéro-flash sont inchangés. La
+> section « Système visuel » ci-dessous reflète cette révision ; les sous-sections d'ergonomie
+> (hiérarchie, actions, vues) restent valides. **Ajouts** : marges (conteneur centré, planning
+> large 1440 / config étroite 960), planning **hybride** (vue Semaine = grille horaire façon
+> agenda ; Mois / 4 sem = cartes-jour, n° de jour en pastille couleur du responsable, slots en
+> couleur de l'acteur/lieu), config foyer **façon settings GitHub** (barre latérale Acteurs /
+> Rôles / Cycles + table acteurs fusionnée).
+
 ## Principe directeur : l'intuitivité prime
 
 Contrainte n°1 posée par le PO : **l'IHM doit être intuitive**. L'esthétique sert cet objectif,
@@ -25,21 +38,24 @@ Conséquences concrètes :
 
 ## Système visuel
 
-**Palette** (accent **hors bleu / hors orange** — ces teintes restent la donnée « qui a les
-enfants »). Deux thèmes : **clair** (défaut) et **sombre**, mêmes tokens, valeurs différentes.
-Le sombre est un **slate froid net** (révision hors-sprint sur retour PO : le brun chaud initial,
-jugé terne, a été écarté au profit d'un neutre profond où l'accent sauge-menthe ressort).
+**Palette « Studio »** (accent **indigo**, hors des 5 couleurs-données bleu/orange/vert/violet/rose
+— ces teintes restent la donnée « qui a les enfants / qui garde »). Deux thèmes : **clair** (défaut)
+et **sombre**, mêmes tokens, valeurs différentes. Le sombre est une **ardoise froide** : la
+hiérarchie passe par des surfaces étagées (`bg` < `card` < `surface-2`) et des bordures visibles
+(les ombres ne portent pas sur fond sombre), pas une inversion.
 
 | Token | Clair | Sombre | Rôle |
 |---|---|---|---|
-| `--pdg-bg` | `#F7F1E8` | `#14161A` | Fond (slate profond, légèrement froid) |
-| `--pdg-card` | `#FFFDF9` | `#1E222A` | Surface carte (surélevée) |
-| `--pdg-accent` | `#2E6F5E` | `#5FC9AC` | Sauge (marque, actions) — sauge-menthe en sombre, ressort sur le slate |
-| `--pdg-accent-dark` | `#245A4C` | `#47AC90` | Hover / focus |
-| `--pdg-accent-soft` | `#E4F0EA` | `#1E2E29` | Badges, pastilles |
-| `--pdg-ink` | `#2B2620` | `#E9ECF1` | Texte principal (quasi-blanc froid) |
-| `--pdg-muted` | `#8C8273` | `#98A1AE` | Texte secondaire (gris-bleu) |
-| `--pdg-border` | `#ECE1D2` | `#2C313B` | Bordures |
+| `--pdg-bg` | `#EEF1F5` | `#0E1116` | Fond (papier gris-bleu / ardoise profonde) |
+| `--pdg-card` | `#FFFFFF` | `#171B22` | Surface carte (surélevée) |
+| `--pdg-surface-2` | `#F5F7FA` | `#1E242D` | Surface secondaire (entêtes, champs, puces) |
+| `--pdg-accent` | `#4F46E5` | `#8B84FF` | Indigo (marque, actions) — éclairci en sombre |
+| `--pdg-accent-dark` | `#4338CA` | `#6E66E8` | Hover / focus |
+| `--pdg-accent-soft` | `#ECEBFF` | `#201F3A` | Badges, pastilles, onglet actif |
+| `--pdg-on-accent` | `#FFFFFF` | `#0E1116` | Texte sur aplat d'accent |
+| `--pdg-ink` | `#111318` | `#E6E9EE` | Texte principal |
+| `--pdg-muted` | `#5B6572` | `#93A0B0` | Texte secondaire |
+| `--pdg-border` | `#DCE1E8` | `#2A313B` | Bordures |
 
 Les **couleurs de responsabilité** (parent bleu, parent orange, slots) restent **inline, priorité
 maximale**, inchangées : elles sont de la donnée, pas du thème. En sombre, on garantit leur
@@ -52,10 +68,10 @@ utilisateur). Comportement :
 - Appliqué via un attribut sur `<html>` (`data-theme="clair|sombre"`) → tokens `:root` /
   `[data-theme=sombre]`. Aucun flash au chargement (script inline très court avant le rendu Blazor).
 
-**Typographie**
-- Titres / affichage : **Fraunces** (serif éditorial, chaleur + caractère).
-- Corps / UI : **Inter**.
-- Chargement des polices : self-hosted (`wwwroot/fonts/`), aucun CDN externe.
+**Typographie** — **sans-serif intégrale** (retour PO)
+- Titres **et** corps / UI : **Inter**. Le caractère vient du poids (titres 800) et du tracking
+  serré, plus d'un serif éditorial. Un seul token de police utile (`--pdg-font-titre` = `--pdg-font-corps`).
+- Chargement : self-hosted (`wwwroot/fonts/inter-latin.woff2`), aucun CDN externe.
 
 **Formes & profondeur**
 - Rayons : 14–16px cartes, 10–12px contrôles.

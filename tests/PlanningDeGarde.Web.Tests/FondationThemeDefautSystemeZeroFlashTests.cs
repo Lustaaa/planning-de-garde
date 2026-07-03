@@ -63,9 +63,9 @@ public sealed class FondationThemeDefautSystemeZeroFlashTests
     }
 
     [Theory]
-    [InlineData("--pdg-bg", "#14161A")]
-    [InlineData("--pdg-card", "#1E222A")]
-    [InlineData("--pdg-accent", "#5FC9AC")]
+    [InlineData("--pdg-bg", "#0E1116")]
+    [InlineData("--pdg-card", "#171B22")]
+    [InlineData("--pdg-accent", "#8B84FF")]
     public void Le_bloc_data_theme_sombre_expose_les_tokens_du_design_doc(string token, string valeur)
     {
         var css = LireAppCss();

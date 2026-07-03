@@ -61,7 +61,6 @@ public sealed class FondationTokensEtPolicesSelfHostedTests
     }
 
     [Theory]
-    [InlineData("Fraunces")]
     [InlineData("Inter")]
     public void La_police_est_declaree_font_face_avec_source_locale(string famille)
     {
@@ -71,12 +70,13 @@ public sealed class FondationTokensEtPolicesSelfHostedTests
     }
 
     [Fact]
-    public void Les_titres_utilisent_Fraunces_et_le_corps_utilise_Inter()
+    public void Les_titres_et_le_corps_utilisent_Inter()
     {
         var css = LireAppCss().Replace(" ", string.Empty).Replace("\r", string.Empty).Replace("\n", string.Empty);
-        // Corps/UI = Inter appliqué globalement (html/body) ; titres = Fraunces via un token/déclaration dédiée.
+        // Identité « Studio » (refonte 2026-07) : sans-serif intégrale — titres ET corps sur Inter (le
+        // caractère vient du poids et du tracking, plus d'un serif éditorial). Un seul token de police utile.
         Assert.Contains("--pdg-font-corps:'Inter'", css, StringComparison.Ordinal);
-        Assert.Contains("--pdg-font-titre:'Fraunces'", css, StringComparison.Ordinal);
+        Assert.Contains("--pdg-font-titre:'Inter'", css, StringComparison.Ordinal);
     }
 
     [Fact]
