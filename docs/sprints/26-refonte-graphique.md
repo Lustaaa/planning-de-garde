@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 11/14
+## Avancement — 12/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -53,7 +53,7 @@
 | 9 | Config foyer : acteurs + formulaires habillés, onglets si pertinent | 🖥️ IHM | ✅ |
 | 10 | Layout : nav + marque + menu utilisateur + bandeaux d'alerte adoucis | 🖥️ IHM | ✅ |
 | 11 | Dialogs (×6) : habillage cohérent + hiérarchie de boutons | 🖥️ IHM | ✅ |
-| 12 | Légende : découvrable, cohérente avec les couleurs de responsabilité (clair + sombre) | 🖥️ IHM | ⏳ |
+| 12 | Légende : découvrable, cohérente avec les couleurs de responsabilité (clair + sombre) | 🖥️ IHM | ✅ |
 | 13 | Transverse responsive : Safari iOS / WebKit (safe-areas, 100vh, sticky, polices web) | 🖥️ IHM | ⏳ |
 | 14 | Non-régression : suite complète 161/161 verte, `data-testid`/observables/flux intacts | @back | ⏳ |
 
@@ -206,7 +206,7 @@ Scénario: Les six dialogs partagent un habillage cohérent et une hiérarchie d
   Et les couleurs de responsabilité affichées dans les dialogs restent inline et lisibles (clair + sombre)
 ```
 
-### Sc.12 — Légende : découvrable et cohérente `@ihm @pending`
+### Sc.12 — Légende : découvrable et cohérente `@ihm @vert`
 
 ```gherkin
 Scénario: La légende reste découvrable et cohérente avec les couleurs de responsabilité
