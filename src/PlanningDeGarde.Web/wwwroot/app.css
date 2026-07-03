@@ -149,11 +149,30 @@ a, .btn-link {
 /* Bandeau de domaine de la barre supérieure. */
 .pdg-domaine { font-weight: 600; color: var(--pdg-accent-dark); }
 
-/* Alertes plus douces */
+/* Bandeaux d'alerte adoucis (sprint 26, Sc.10) : teintes tendres — plus le rouge/jaune/vert Bootstrap
+   brut. Tints semi-transparents + texte en encre du thème → lisibles en clair ET en sombre, cohérents
+   avec le système « Cocon élevé ». Les couleurs de responsabilité (bleu/orange, inline) restent hors sujet. */
 .content .alert {
-    border-radius: 10px;
+    border-radius: 12px;
     border: 1px solid transparent;
+    color: var(--pdg-ink);
 }
+.content .alert-success   { background: rgba(46, 111, 94, .10);  border-color: rgba(46, 111, 94, .28); }
+.content .alert-danger    { background: rgba(197, 74, 60, .10);  border-color: rgba(197, 74, 60, .30); }
+.content .alert-warning   { background: rgba(184, 134, 40, .12); border-color: rgba(184, 134, 40, .30); }
+.content .alert-info      { background: var(--pdg-accent-soft);  border-color: rgba(46, 111, 94, .22); }
+.content .alert-secondary { background: var(--pdg-accent-soft);  border-color: var(--pdg-border); }
+
+/* Switch de thème clair/sombre (Sc.3) intégré à la barre supérieure : bouton icône discret tokenisé. */
+.bascule-theme {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 2.2rem; height: 2.2rem; padding: 0;
+    background: transparent; color: var(--pdg-ink);
+    border: 1px solid var(--pdg-border); border-radius: 10px;
+    font-size: 1rem; line-height: 1; cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, transform .15s ease;
+}
+.bascule-theme:hover { background: var(--pdg-accent-soft); border-color: var(--pdg-accent); transform: translateY(-1px); }
 
 /* Boutons d'action arrondis */
 .content .btn {

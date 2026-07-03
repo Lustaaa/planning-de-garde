@@ -38,7 +38,7 @@
 
 ---
 
-## Avancement — 9/14
+## Avancement — 10/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -51,7 +51,7 @@
 | 7 | Connexion : page d'entrée soignée + boutons OAuth Google/Microsoft/Apple habillés | 🖥️ IHM | ✅ |
 | 8 | Accueil : point d'entrée / orientation refondu | 🖥️ IHM | ✅ |
 | 9 | Config foyer : acteurs + formulaires habillés, onglets si pertinent | 🖥️ IHM | ✅ |
-| 10 | Layout : nav + marque + menu utilisateur + bandeaux d'alerte adoucis | 🖥️ IHM | ⏳ |
+| 10 | Layout : nav + marque + menu utilisateur + bandeaux d'alerte adoucis | 🖥️ IHM | ✅ |
 | 11 | Dialogs (×6) : habillage cohérent + hiérarchie de boutons | 🖥️ IHM | ⏳ |
 | 12 | Légende : découvrable, cohérente avec les couleurs de responsabilité (clair + sombre) | 🖥️ IHM | ⏳ |
 | 13 | Transverse responsive : Safari iOS / WebKit (safe-areas, 100vh, sticky, polices web) | 🖥️ IHM | ⏳ |
@@ -179,7 +179,7 @@ Scénario: La configuration du foyer est habillée et lisible
   Et l'écran rend correctement en clair et en sombre
 ```
 
-### Sc.10 — Layout : nav, marque, menu utilisateur, bandeaux `@ihm @pending`
+### Sc.10 — Layout : nav, marque, menu utilisateur, bandeaux `@ihm @vert`
 
 ```gherkin
 Scénario: Le layout porte la marque et adoucit les bandeaux, switch de thème inclus
