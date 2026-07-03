@@ -46,7 +46,7 @@ public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests
             TimeSpan.FromSeconds(10));
 
         // … l'onglet « Acteurs » est actif par défaut : tout le CRUD s'y exerce sans changer d'onglet.
-        Assert.Equal("true", config.Find("[data-testid='onglet-acteurs']").GetAttribute("aria-selected"));
+        // Fusion des sections (hors-sprint) : plus d'onglets — le CRUD acteurs s'exerce sur la page unique.
 
         // When (édition) — je renomme parent-a en « Alicia » ET le recolorie en vert, puis j'enregistre
         // (canal d'écriture HTTP réel : POST /api/canal/editer-acteur).

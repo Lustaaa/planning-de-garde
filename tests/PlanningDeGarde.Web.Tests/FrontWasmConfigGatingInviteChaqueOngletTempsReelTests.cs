@@ -49,25 +49,17 @@ public sealed class FrontWasmConfigGatingInviteChaqueOngletTempsReelTests : Test
         Assert.NotEmpty(config.FindAll("[data-testid='liste-acteurs']"));
         Assert.NotEmpty(config.FindAll("[data-testid='acteur-foyer']"));
 
-        // Then (onglet « Période de garde ») — aucune écriture du cycle de fond n'est proposée (gatée).
-        this.SurDispatcher(() => config.Find("[data-testid='onglet-periode-garde']").Click());
+        // Then (section « Cycle de fond ») — aucune écriture du cycle de fond n'est proposée (gatée).
         Assert.Empty(config.FindAll("[data-testid='champ-nombre-semaines']"));
 
-        // Then (onglet « Slot récurrent ») — réservé : placeholder « à venir » et aucune affordance d'écriture.
-        this.SurDispatcher(() => config.Find("[data-testid='onglet-slot-recurrent']").Click());
-        Assert.NotEmpty(config.FindAll("[data-testid='placeholder-slot-recurrent']"));
-        Assert.Empty(config.Find("[data-testid='panneau-slot-recurrent']").QuerySelectorAll("form"));
-
         // Contrôle positif (anti faux-vert) — sous l'identité Parent, les écritures REDEVIENNENT proposées
-        // sur chaque onglet : preuve que le gating est bien le discriminant (les formulaires ne sont pas
-        // cassés pour tous). Le changement de rôle est reflété au re-render déclenché par la navigation d'onglet.
+        // sur chaque section (page unique) : preuve que le gating est bien le discriminant (les formulaires
+        // ne sont pas cassés pour tous). Le changement de rôle est reflété au re-render forcé.
         session.Role = RoleAuteur.Parent;
-        this.SurDispatcher(() => config.Find("[data-testid='onglet-acteurs']").Click());
+        config.Render();
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nom']"));
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nom-ajout']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-supprimer']"));
-
-        this.SurDispatcher(() => config.Find("[data-testid='onglet-periode-garde']").Click());
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
     }
 }

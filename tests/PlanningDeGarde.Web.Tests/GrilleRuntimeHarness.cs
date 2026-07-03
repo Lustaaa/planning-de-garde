@@ -43,7 +43,8 @@ internal static class GrilleRuntimeHarness
         config.WaitForState(
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
-        config.Find("[data-testid='onglet-periode-garde']").Click();
+        // Fusion des sections (hors-sprint) : plus d'onglets — la section « Cycle de fond » est toujours
+        // rendue. On attend simplement que son formulaire soit présent (garde déterministe anti-flake).
         config.WaitForElement("[data-testid='champ-cycle-index-1']", TimeSpan.FromSeconds(10));
     }
 

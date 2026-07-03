@@ -59,8 +59,7 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
         // (les formulaires ne sont pas cassés pour tous), sur chacun de leurs onglets respectifs.
         foreach (var ecriture in EcrituresOngletActeurs)
             Assert.NotEmpty(config.FindAll(ecriture)); // onglet « Acteurs », actif par défaut
-        this.SurDispatcher(() => config.Find("[data-testid='onglet-periode-garde']").Click());
-        Assert.NotEmpty(config.FindAll(EcritureOngletPeriodeGarde)); // onglet « Période de garde »
+        Assert.NotEmpty(config.FindAll(EcritureOngletPeriodeGarde)); // section « Cycle de fond », visible sur la même page
 
         // When — le configurateur incarne Nina la nounou (type Autre) ; l'écran est re-rendu.
         session.ActeursIncarnables = new List<IdentiteActeur>
@@ -74,8 +73,7 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
         // Then — en incarnant un Autre, AUCUNE écriture config n'est proposée sur AUCUN onglet (Sc.7, s20) :
         // le cycle est masqué sous « Période de garde » (onglet actif), et l'ajout/édition/suppression sous
         // « Acteurs ».
-        Assert.Empty(config.FindAll(EcritureOngletPeriodeGarde)); // onglet « Période de garde » encore actif
-        this.SurDispatcher(() => config.Find("[data-testid='onglet-acteurs']").Click());
+        Assert.Empty(config.FindAll(EcritureOngletPeriodeGarde)); // section « Cycle de fond »
         foreach (var ecriture in EcrituresOngletActeurs)
             Assert.Empty(config.FindAll(ecriture));
 
@@ -122,7 +120,6 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
         Assert.Empty(config.FindAll("[data-testid='bandeau-incarnation']"));
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nom']"));
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nom-ajout']"));
-        this.SurDispatcher(() => config.Find("[data-testid='onglet-periode-garde']").Click());
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
     }
 }

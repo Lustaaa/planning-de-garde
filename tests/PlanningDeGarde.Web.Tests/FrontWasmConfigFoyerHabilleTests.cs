@@ -19,7 +19,7 @@ namespace PlanningDeGarde.Web.Tests;
 public sealed class FrontWasmConfigFoyerHabilleTests : TestContext
 {
     [Fact]
-    public void Les_onglets_de_config_portent_un_habillage_tokenise_dedie()
+    public void Les_sections_de_config_portent_un_habillage_tokenise_dedie()
     {
         // Given — la vraie page de configuration câblée à l'API distante réelle (store réel).
         using var api = new ApiDistanteFactory();
@@ -28,11 +28,11 @@ public sealed class FrontWasmConfigFoyerHabilleTests : TestContext
 
         // When — l'écran s'affiche.
         var config = RenderComponent<ConfigurationFoyer>();
-        config.WaitForElement("[data-testid='onglets-config']", TimeSpan.FromSeconds(10));
+        config.WaitForElement("[data-testid='panneau-acteurs']", TimeSpan.FromSeconds(10));
 
-        // Then — la barre d'onglets porte la classe d'habillage tokenisée dédiée.
-        var onglets = config.Find("[data-testid='onglets-config']");
-        Assert.Contains("config-onglets", onglets.GetAttribute("class"));
+        // Then — fusion des sections (hors-sprint) : chaque section porte la classe carte tokenisée dédiée.
+        var section = config.Find("[data-testid='panneau-acteurs']");
+        Assert.Contains("config-section", section.GetAttribute("class"));
     }
 
     [Fact]
@@ -49,7 +49,7 @@ public sealed class FrontWasmConfigFoyerHabilleTests : TestContext
             dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Pages", "ConfigurationFoyer.razor"));
 
         Assert.Contains("var(--pdg-ink)", razor, StringComparison.Ordinal);
-        Assert.Contains("config-onglets", razor, StringComparison.Ordinal);
+        Assert.Contains("config-section", razor, StringComparison.Ordinal);
         // La couleur de texte codée en dur cassait le thème sombre.
         Assert.DoesNotContain("#333", razor, StringComparison.OrdinalIgnoreCase);
     }

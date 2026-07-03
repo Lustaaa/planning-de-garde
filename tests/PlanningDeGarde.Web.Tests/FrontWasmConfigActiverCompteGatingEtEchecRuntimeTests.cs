@@ -58,8 +58,7 @@ public sealed class FrontWasmConfigActiverCompteGatingEtEchecRuntimeTests : Test
 
         // Contrôle positif (anti faux-vert) — sous « Parent », l'action REDEVIENT offerte pour le compte inactif.
         session.Role = RoleAuteur.Parent;
-        this.SurDispatcher(() => config.Find("[data-testid='onglet-periode-garde']").Click());
-        this.SurDispatcher(() => config.Find("[data-testid='onglet-acteurs']").Click());
+        config.Render();
         config.WaitForAssertion(
             () => Assert.NotNull(LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")),
             TimeSpan.FromSeconds(10));

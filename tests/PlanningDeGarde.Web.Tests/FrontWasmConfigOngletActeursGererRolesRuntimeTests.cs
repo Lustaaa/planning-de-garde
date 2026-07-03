@@ -36,7 +36,7 @@ public sealed class FrontWasmConfigOngletActeursGererRolesRuntimeTests : TestCon
         config.WaitForState(
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
-        Assert.Equal("true", config.Find("[data-testid='onglet-acteurs']").GetAttribute("aria-selected"));
+        // Fusion des sections (hors-sprint) : plus d'onglets — la gestion des rôles est sur la page unique.
 
         // When (création) — je crée un rôle « Nounou » (canal d'écriture HTTP réel : POST /api/canal/creer-role).
         config.Find("[data-testid='champ-libelle-role']").Change("Nounou");

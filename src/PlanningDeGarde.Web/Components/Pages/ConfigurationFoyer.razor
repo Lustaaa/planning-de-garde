@@ -23,35 +23,14 @@
     </div>
 }
 
-@* Sprint 20 (Sc.2) : réorganisation de surface en TROIS onglets par thème — Acteurs (CRUD acteurs),
-   Période de garde (cycle de fond), Slot récurrent (réservé, placeholder). Iso-fonctionnel : aucune
-   règle métier ni écriture neuve, le contenu existant est simplement réparti et cloisonné. « Acteurs »
-   est actif par défaut ; le gating d'écriture (identité effective, Sc.7) est préservé DANS chaque onglet. *@
-<ul class="nav nav-tabs config-onglets mb-3" role="tablist" data-testid="onglets-config">
-    <li class="nav-item" role="presentation">
-        <button type="button" role="tab" data-testid="onglet-acteurs"
-                class="nav-link @(_ongletActif == "acteurs" ? "active" : "")"
-                aria-selected="@(_ongletActif == "acteurs" ? "true" : "false")"
-                @onclick='() => ActiverOnglet("acteurs")'>Acteurs</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button type="button" role="tab" data-testid="onglet-periode-garde"
-                class="nav-link @(_ongletActif == "periode-garde" ? "active" : "")"
-                aria-selected="@(_ongletActif == "periode-garde" ? "true" : "false")"
-                @onclick='() => ActiverOnglet("periode-garde")'>Période de garde</button>
-    </li>
-    <li class="nav-item" role="presentation">
-        <button type="button" role="tab" data-testid="onglet-slot-recurrent"
-                class="nav-link @(_ongletActif == "slot-recurrent" ? "active" : "")"
-                aria-selected="@(_ongletActif == "slot-recurrent" ? "true" : "false")"
-                @onclick='() => ActiverOnglet("slot-recurrent")'>Slot récurrent</button>
-    </li>
-</ul>
+@* Fusion des sections (refonte hors-sprint, retour PO) : plus d'onglets — les sections de la
+   configuration sont empilées sur une seule page. L'onglet vide « Slot récurrent » (placeholder
+   « à venir ») est retiré. Le gating d'écriture (identité effective) reste préservé DANS chaque section. *@
+<div class="config-sections">
 
-@* ───────────────────────────── Onglet « Acteurs » : CRUD acteurs (Sc.3) ───────────────────────────── *@
-@if (_ongletActif == "acteurs")
-{
-    <div role="tabpanel" data-testid="panneau-acteurs">
+@* ── Section « Acteurs & rôles » : CRUD acteurs + référentiel de rôles + comptes ── *@
+    <section class="config-section" data-testid="panneau-acteurs" aria-label="Acteurs et rôles">
+        <h2 class="config-section-titre">Acteurs &amp; rôles</h2>
         @* Durcissement du gating règle 9 (Sc.7, D1) : les écritures de configuration (édition d'acteur,
            ajout) sont gardées sur l'identité EFFECTIVE — un Invité ou un acteur « Autre » incarné ne les
            voit pas. La LECTURE (liste des acteurs en bas) reste visible. Le bouton supprimer est gaté plus bas. *@
@@ -303,13 +282,10 @@
                 </li>
             }
         </ul>
-    </div>
-}
+    </section>
 
-@* ────────────────────── Onglet « Période de garde » : cycle de fond (Sc.4) ────────────────────── *@
-@if (_ongletActif == "periode-garde")
-{
-    <div role="tabpanel" data-testid="panneau-periode-garde">
+@* ── Section « Cycle de fond » : responsabilité par défaut ── *@
+    <section class="config-section" data-testid="panneau-periode-garde" aria-label="Cycle de fond">
         @* Gating (Sc.7) : la définition/édition du cycle est une écriture, gardée sur l'identité effective. *@
         @if (Session.EstParent)
         {
@@ -357,31 +333,21 @@
                 <div class="alert alert-danger mt-3" data-testid="motif-echec-cycle">@_motifEchecCycle</div>
             }
         }
-    </div>
-}
-
-@* ──────────────── Onglet « Slot récurrent » : RÉSERVÉ — placeholder « à venir » (Sc.5) ──────────────── *@
-@if (_ongletActif == "slot-recurrent")
-{
-    <div role="tabpanel" data-testid="panneau-slot-recurrent">
-        @* Onglet réservé pour tenir la structure proposée par le PO (retour s17 #6) SANS fonctionnalité neuve :
-           le slot récurrent n'existe pas encore. Aucun formulaire, aucune écriture, aucune persistance ici. *@
-        <p class="text-muted" data-testid="placeholder-slot-recurrent">À venir : la définition de slots
-            récurrents (créneaux de localisation répétés) n'est pas encore disponible.</p>
-    </div>
-}
+    </section>
+</div>
 
 <style>
-    /* Configuration du foyer « Cocon élevé » (Sc.9) : onglets, listes et lignes tokenisés (clair ET sombre).
-       Les pastilles de couleur d'acteur restent INLINE (donnée, couleur de responsabilité), inchangées. */
+    /* Configuration du foyer « Cocon élevé » : sections empilées, listes et lignes tokenisées (clair ET
+       sombre). Les pastilles de couleur d'acteur restent INLINE (donnée, couleur de responsabilité). */
 
-    /* Onglets tokenisés : soulignage d'accent sauge sur l'onglet actif, plus le look « nav-tabs Bootstrap ». */
-    .config-onglets { border-bottom: 1px solid var(--pdg-border); gap: .25rem; }
-    .config-onglets .nav-link { border: none; border-bottom: 2px solid transparent; border-radius: 10px 10px 0 0;
-        color: var(--pdg-muted); font-weight: 600; padding: .5rem .9rem; background: transparent; }
-    .config-onglets .nav-link:hover { color: var(--pdg-ink); background: var(--pdg-accent-soft); }
-    .config-onglets .nav-link.active { color: var(--pdg-accent); background: transparent;
-        border-bottom-color: var(--pdg-accent); }
+    /* Sections empilées (fusion hors-sprint) : chaque section = une carte tokenisée, titre en Fraunces. */
+    .config-sections { display: flex; flex-direction: column; gap: 1.25rem; }
+    .config-section { background: var(--pdg-card); border: 1px solid var(--pdg-border);
+        border-radius: 16px; padding: 1.25rem 1.4rem;
+        box-shadow: 0 1px 2px rgba(16,24,40,.04), 0 2px 6px rgba(16,24,40,.05); }
+    .config-section-titre { font-family: var(--pdg-font-titre); font-weight: 700; color: var(--pdg-ink);
+        font-size: 1.15rem; letter-spacing: -.01em; margin: 0 0 1rem; padding-bottom: .6rem;
+        border-bottom: 1px solid var(--pdg-border); }
 
     /* Lignes d'acteur / de rôle = mini-cartes tokenisées, espacées et lisibles. */
     .acteur-ligne, .role-ligne { display: flex; align-items: center; gap: 10px; flex-wrap: wrap;

@@ -24,7 +24,7 @@ namespace PlanningDeGarde.Web.Tests;
 public sealed class FrontWasmConfigOngletsParThemeTempsReelTests : TestContext
 {
     [Fact]
-    public void L_ecran_de_configuration_presente_trois_onglets_par_theme_avec_l_onglet_Acteurs_actif_par_defaut_et_le_contenu_reparti()
+    public void L_ecran_de_configuration_empile_ses_sections_sur_une_seule_page_sans_onglets()
     {
         // Given — l'écran de configuration réellement câblé à l'API distante réelle (store réel seedé),
         // avec une identité Parent (le contenu d'écriture des onglets est visible, gating Sc.7).
@@ -39,25 +39,23 @@ public sealed class FrontWasmConfigOngletsParThemeTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        // Then — trois onglets par thème, avec les libellés attendus.
-        Assert.Equal("Acteurs",
-            config.Find("[data-testid='onglet-acteurs']").TextContent.Trim());
-        Assert.Equal("Période de garde",
-            config.Find("[data-testid='onglet-periode-garde']").TextContent.Trim());
-        Assert.Equal("Slot récurrent",
-            config.Find("[data-testid='onglet-slot-recurrent']").TextContent.Trim());
+        // Then — fusion des sections (hors-sprint, retour PO) : PLUS d'onglets ; les sections sont
+        // empilées sur une seule page. La barre d'onglets et les onglets ont disparu.
+        Assert.Empty(config.FindAll("[data-testid='onglets-config']"));
+        Assert.Empty(config.FindAll("[data-testid='onglet-acteurs']"));
 
-        // … l'onglet « Acteurs » est actif par défaut ; les deux autres ne le sont pas.
-        Assert.Equal("true", config.Find("[data-testid='onglet-acteurs']").GetAttribute("aria-selected"));
-        Assert.Equal("false", config.Find("[data-testid='onglet-periode-garde']").GetAttribute("aria-selected"));
-        Assert.Equal("false", config.Find("[data-testid='onglet-slot-recurrent']").GetAttribute("aria-selected"));
+        // … les deux sections (Acteurs & rôles, Cycle de fond) sont présentes SIMULTANÉMENT sur la page.
+        Assert.NotEmpty(config.FindAll("[data-testid='panneau-acteurs']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='panneau-periode-garde']"));
 
-        // … le contenu du thème Acteurs (sélecteur d'édition + liste des acteurs) est présent sous l'onglet actif.
+        // … la section « Slot récurrent » (placeholder « à venir ») a été retirée.
+        Assert.Empty(config.FindAll("[data-testid='panneau-slot-recurrent']"));
+
+        // … le contenu du thème Acteurs (sélecteur d'édition + liste) est présent.
         Assert.NotEmpty(config.FindAll("[data-testid='selecteur-acteur-edition']"));
         Assert.NotEmpty(config.FindAll("[data-testid='liste-acteurs']"));
 
-        // … et le contenu d'un AUTRE thème (le cycle de fond) n'est PAS empilé sous l'onglet Acteurs :
-        // preuve de répartition cloisonnée par onglet (rien de dupliqué sur un écran unique).
-        Assert.Empty(config.FindAll("[data-testid='champ-nombre-semaines']"));
+        // … et le cycle de fond est désormais visible sur la MÊME page (empilé, plus cloisonné).
+        Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
     }
 }
