@@ -81,12 +81,12 @@ Tous les besoins comptent, mais ils sont **livrés par étapes** : chaque phase
 doit être adoptée avant la suivante. **L'usage réel tranche** : si ça n'aide
 pas le quotidien, c'est coupé.
 
-1. 🧱 **Mémoire partagée fiable** — une seule source de vérité commune, à la place des SMS éparpillés *(socle)*
-2. ⏰ **Immédiat & rappels** — « qui récupère ce soir », où est l'enfant maintenant, rappels de transfert
-3. 👪 **Modèle d'acteurs & foyer** — déclarer les vraies personnes du foyer (Admin, Parents, Autres), prérequis de l'ouverture de l'accès
-4. 🔁 **Anticipation & cycle** — cycle multi-semaines récurrent, projeté sur un calendrier navigable
-5. 🤝 **Imprévu & échange** — gérer malade / retard / échange de dernière minute, avec accord entre parents
-6. 🔐 **Ouverture de l'accès** — landing page et connexion des acteurs réels (email via Gmail / Apple / Microsoft)
+1. ✅ 🧱 **Mémoire partagée fiable** — une seule source de vérité commune, à la place des SMS éparpillés *(socle, persisté Mongo)*
+2. ⬜ ⏰ **Immédiat & rappels** — « qui récupère ce soir », où est l'enfant maintenant, rappels de transfert *(panneau cloche à venir)*
+3. ✅ 👪 **Modèle d'acteurs & foyer** — déclarer les vraies personnes du foyer (Admin, Parents, Autres), CRUD acteurs + rôles éditables
+4. ✅ 🔁 **Anticipation & cycle** — cycle multi-semaines récurrent, projeté sur un calendrier navigable
+5. ⬜ 🤝 **Imprévu & échange** — gérer malade / retard / échange de dernière minute, avec accord entre parents
+6. ✅ 🔐 **Ouverture de l'accès** — landing page et connexion des acteurs réels (email + mot de passe, OAuth Google / Apple / Microsoft) *(logique livrée ; câblage providers/SMTP réels en dette)*
 
 Plus tard, si le besoin se confirme : permissions fines, notifications push &
 email, suivi des heures de la nounou.
@@ -95,10 +95,19 @@ email, suivi des heures de la nounou.
 
 ## 📌 Statut
 
-🚧 **En développement itératif.** Le 1ᵉʳ sprint (semaine de garde : créneaux,
-périodes, transferts) est livré côté back + IHM ; les retours d'usage nourrissent
-le sprint suivant. La spec est une **documentation vivante**, éclatée par sujet et
-éditée en diff à chaque itération.
+🚧 **En développement itératif — 26 sprints livrés** (back + IHM, suite complète
+**458/458** verte). L'app couvre aujourd'hui : calendrier navigable (semaine / 4 semaines
+glissantes / mois) façon agenda, saisie en contexte par dialogs (slot / période / transfert,
+créer / éditer / supprimer), cycle de fond récurrent (alternance parité ISO), config foyer
+en onglets (acteurs CRUD + rôles éditables), **persistance Mongo de tout le domaine**,
+diffusion temps réel SignalR, **authentification complète** (compte ↔ acteur, connexion
+locale email + mot de passe haché, inscription libre-service, récupération par jeton, OAuth
+Google / Microsoft / Apple, protection d'accès aux routes) et une **refonte graphique
+« Studio »** (thème clair / sombre persisté, typo Fraunces + Inter).
+
+Les retours d'usage nourrissent le sprint suivant. La spec est une **documentation vivante**,
+éclatée par sujet et éditée en diff à chaque itération.
 
 📄 Spec courante : [`docs/specs/`](docs/specs/index.md) (index navigable par sujet)
 *(les anciens monolithes `docs/NN-specification.md` sont archivés sous [`docs/_archive/`](docs/_archive/) ; `docs/01-specification.md` reste à la racine comme spec d'origine)*
+📋 Ce qui reste : [`docs/BACKLOG.md`](docs/BACKLOG.md) · ce qui est fait : [`docs/BACKLOG-Done.md`](docs/BACKLOG-Done.md)

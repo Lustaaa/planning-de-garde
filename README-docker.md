@@ -16,7 +16,7 @@ rapide, moins reproductible qu'une image figée).
 |---|---|---|---|
 | `web` | `dotnet/sdk:10.0` | **5292** | front Blazor WASM (dev server) — l'app dans le navigateur |
 | `api` | `dotnet/sdk:10.0` | **5180** | hôte d'API détaché : écriture + lecture + hub SignalR |
-| `mongo` | `mongo:7` | **27017** | store config foyer durable (acteurs) |
+| `mongo` | `mongo:7` | **27017** | store durable du domaine (acteurs, comptes, rôles, slots, périodes, transferts, cycle) |
 | `mongo-express` | `mongo-express:1.0.2` | **8081** | IHM web d'inspection des collections Mongo |
 | `build` | `dotnet/sdk:10.0` | — | étape one-shot : restore + build Api puis Web (séquentiel) |
 
@@ -111,11 +111,14 @@ partagé dans le volume `nuget-cache`.
 
 ## Inspecter les données (mongo-express)
 
-http://localhost:8081 → base **`planning_de_garde`** → collections de la config foyer (acteurs :
-noms, couleurs, ajouts). Auth basique désactivée (`ME_CONFIG_BASICAUTH=false`, usage local).
+http://localhost:8081 → base **`planning_de_garde`** → collections du domaine (acteurs, comptes,
+rôles, **slots / périodes / transferts / cycle de fond**). Auth basique désactivée
+(`ME_CONFIG_BASICAUTH=false`, usage local).
 
-> Rappel borne anti-cliquet (règle 30) : SEULE la config foyer est persistée. Slots / périodes /
-> transferts restent InMemory → absents de Mongo, normal.
+> **Persistance généralisée depuis s15** : la borne anti-cliquet (règle 30) a été **levée**.
+> Tout le domaine durable est désormais en Mongo (plus seulement la config foyer). En mode Mongo,
+> **aucun seed** au 1er lancement (app vide, durable ensuite) ; le seed InMemory est conservé pour
+> les tests. Voir `docs/BACKLOG-Done.md` (palier 14, sprint 15).
 
 ---
 
