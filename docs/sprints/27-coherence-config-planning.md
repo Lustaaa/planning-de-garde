@@ -16,7 +16,7 @@
 > **Preuve = runtime réel** (store Mongo, Docker actif) pour la persistance ; **aucune doublure
 > de port** dans ce sprint → pas de dette de câblage, `✅` francs autorisés une fois prouvés.
 
-## Avancement — 4/6
+## Avancement — 5/6
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -24,7 +24,7 @@
 | S2 | Un lieu supprimé quitte le référentiel et la validation de saisie | @back | ✅ |
 | S3 | Rejets d'écriture d'un lieu — libellé vide ou en doublon | @back | ✅ |
 | S4 | Un lieu configuré survit au redémarrage (Mongo durable) | @back | ✅ |
-| S5 | Une couleur recoloriée en config est effective sur grille + légende | @back | ⏳ |
+| S5 | Une couleur recoloriée en config est effective sur grille + légende | @back | ✅ |
 | S6 | Le sélecteur de lieu des dialogs reflète la config, sans rechargement | 🖥️ IHM | ⏳ |
 
 ## Scénarios
@@ -70,7 +70,7 @@ Scénario: Un lieu configuré survit au redémarrage (persistance Mongo durable)
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario: Une couleur recoloriée en config est effective sur la grille et la légende
   Étant donné l'acteur « parent-a » colorié « bleu » et une garde qui lui est affectée
   Quand un parent recolorie « parent-a » en « rouge » depuis l'écran de config
