@@ -45,6 +45,8 @@ public sealed class SupprimerSlotMongoIntegrationTests : IDisposable
         using (var serveur1 = NouveauServeur())
         {
             var c1 = serveur1.CreateClient();
+            // Mongo config foyer sans seed (s27) : on établit le lieu « école » avant la pose.
+            serveur1.Services.GetRequiredService<IEditeurLieux>().Ajouter("école", "école");
             var pose = await c1.PostAsJsonAsync("/api/canal/poser-slot",
                 new { EnfantId = "Léa", LieuId = "école", Debut = debut, Fin = fin });
             Assert.True(pose.IsSuccessStatusCode, $"la pose du slot doit aboutir, statut {(int)pose.StatusCode}.");

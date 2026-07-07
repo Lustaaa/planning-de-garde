@@ -61,6 +61,15 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IEnumerationRoles>(sp => sp.GetRequiredService<ReferentielRolesMongo>());
             services.AddSingleton<IEditeurReferentielRoles>(sp => sp.GetRequiredService<ReferentielRolesMongo>());
 
+            // Référentiel de lieux (petit agrégat de config foyer, s27) durable Mongo, borné à la config
+            // foyer (même socle Mongo, collection dédiée « lieux ») : lecture IEnumerationLieux (validation
+            // de pose + sélecteurs) + écriture IEditeurLieux, un lieu ajouté/supprimé survit au redémarrage.
+            // Aucun seed Mongo (parité asymétrie seed s15) — SURCHARGE l'enregistrement InMemory seedé posé
+            // plus haut (dernière inscription gagne à la résolution).
+            services.AddSingleton(_ => new ReferentielLieuxMongo(connectionString, baseDeDonnees));
+            services.AddSingleton<IEnumerationLieux>(sp => sp.GetRequiredService<ReferentielLieuxMongo>());
+            services.AddSingleton<IEditeurLieux>(sp => sp.GetRequiredService<ReferentielLieuxMongo>());
+
             // Référentiel des comptes utilisateurs (petit agrégat de config foyer, s22) durable Mongo,
             // borné à la config foyer (même socle Mongo, collection dédiée « comptes ») : lecture
             // IEnumerationComptes + écriture IEditeurComptes, un compte créé survit au redémarrage.
