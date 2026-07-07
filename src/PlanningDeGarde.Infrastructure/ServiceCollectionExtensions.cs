@@ -127,6 +127,14 @@ public static class ServiceCollectionExtensions
         // Facteur mot de passe local (volet 3, s25) : hachage PBKDF2 salé réel, réalise IHacheurMotDePasse.
         services.AddSingleton<IHacheurMotDePasse, HacheurMotDePassePbkdf2>();
 
+        // Canal mail réel (s28, volet 1) : adaptateur SMTP concret réalisant IEnvoiMail — remet un VRAI
+        // mail de récupération au serveur SMTP configuré (Smtp4dev en dev, Docker). Remplace la doublure
+        // s25 ; l'hôte/port/expéditeur sont pilotés par configuration (défauts alignés sur le run local).
+        var smtpHote = configuration?["Mail:Smtp:Hote"] ?? "localhost";
+        var smtpPort = int.TryParse(configuration?["Mail:Smtp:Port"], out var p) ? p : 2525;
+        var smtpExpediteur = configuration?["Mail:Smtp:Expediteur"] ?? "no-reply@planning-de-garde.fr";
+        services.AddSingleton<IEnvoiMail>(_ => new EnvoiMailSmtp(smtpHote, smtpPort, smtpExpediteur));
+
         // Use cases (handlers) et read models.
         services.AddScoped<PoserSlotHandler>();
         services.AddScoped<AjouterLieuHandler>();
@@ -152,6 +160,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActiverCompteHandler>();
         services.AddScoped<DesignerAdminHandler>();
         services.AddScoped<SeConnecterHandler>();
+        services.AddScoped<DemanderRecuperationMotDePasseHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();

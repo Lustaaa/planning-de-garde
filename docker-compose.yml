@@ -40,6 +40,19 @@ services:
     volumes:
       - mongo-data:/data/db
 
+  # Serveur SMTP de DÉVELOPPEMENT (s28, volet 1 — reset mot de passe réel). L'adaptateur SMTP concret
+  # (EnvoiMailSmtp, port IEnvoiMail) remet ici de VRAIS mails de récupération : le port 25 (publié 2525)
+  # capte l'envoi, l'API/UI web (port 80, publiée 5081 — 5080 souvent pris localement) permet de relire
+  # les messages (http://localhost:5081). Preuve runtime réelle du canal mail (aucune doublure), miroir
+  # de Mongo pour la config foyer. Non persisté (boîte volatile — mails de dev jetables).
+  smtp4dev:
+    image: rnwood/smtp4dev:v3
+    container_name: planning-de-garde-smtp4dev
+    ports:
+      - "2525:25"     # SMTP — l'adaptateur EnvoiMailSmtp y remet les mails (défaut Mail:Smtp:Port)
+      - "5081:80"     # UI + API HTTP de relecture des messages captés
+    restart: unless-stopped
+
   # IHM d'inspection des collections Mongo (config foyer durable). Web UI sur http://localhost:8081.
   # Auth basique désactivée (usage local). Atlas n'est PAS conteneurisable (service cloud) → mongo-express.
   mongo-express:

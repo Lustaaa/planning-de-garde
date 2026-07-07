@@ -126,6 +126,12 @@ public static class CanalEcriture
     /// son type — le gating d'écriture suit le type RÉEL, jamais un rôle Parent hérité du configurateur en dur.</summary>
     public sealed record SeConnecterReponse(string ActeurId, string Nom, TypeActeur Type);
 
+    /// <summary>Corps de la requête de demande de récupération de mot de passe (s28, volet 1) émise via le
+    /// canal d'écriture : l'email pour lequel on demande la réinitialisation. La réponse est TOUJOURS un
+    /// succès NEUTRE (aucun jeton, aucun indice d'existence — anti-énumération) ; si l'email est porté par
+    /// un compte, un jeton de réinitialisation est généré côté serveur et remis par mail (canal réel SMTP).</summary>
+    public sealed record DemanderRecuperationRequete(string Email);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
@@ -417,6 +423,18 @@ public static class CanalEcriture
             // RÉEL (Autre → pas les droits Parent), et non un rôle Parent hérité du configurateur en dur (Sc.5).
             var acteurId = resultat.Valeur!.IdentiteReelle;
             return Results.Ok(new SeConnecterReponse(acteurId, referentiel.NomDe(acteurId), acteurs.TypeDe(acteurId)));
+        });
+
+        routes.MapPost("/api/canal/demander-recuperation", (DemanderRecuperationRequete requete, DemanderRecuperationMotDePasseHandler handler) =>
+        {
+            // Demande de récupération = commande applicative (canal requête/réponse). Le handler résout le
+            // compte sur l'email ; s'il existe, un jeton de réinitialisation est généré côté serveur et remis
+            // au canal mail RÉEL (adaptateur SMTP). La RÉPONSE au client est TOUJOURS un succès NEUTRE (le
+            // handler renvoie systématiquement un succès), qu'un compte existe ou non : aucun jeton, aucun
+            // indice d'existence ne transite par la réponse (anti-énumération, S4). Le jeton ne voyage QUE
+            // par le mail. Aucune session, aucune diffusion : lecture d'existence + envoi, rien d'autre.
+            handler.Handle(new DemanderRecuperationMotDePasseCommand(requete.Email));
+            return Results.Ok();
         });
 
         return routes;
