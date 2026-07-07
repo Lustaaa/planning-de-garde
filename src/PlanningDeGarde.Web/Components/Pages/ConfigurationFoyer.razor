@@ -43,6 +43,10 @@
                     data-testid="onglet-cycles" @onclick='() => ChoisirOnglet("cycles")'>
                 <span class="config-nav-ic" aria-hidden="true">🔁</span>Cycles
             </button>
+            <button type="button" class="config-nav-item @(_onglet == "lieux" ? "actif" : null)"
+                    data-testid="onglet-lieux" @onclick='() => ChoisirOnglet("lieux")'>
+                <span class="config-nav-ic" aria-hidden="true">📍</span>Lieux
+            </button>
         </nav>
 
         <div class="config-panneaux">
@@ -366,6 +370,53 @@
                 else
                 {
                     <p class="text-muted">La définition du cycle de fond est réservée aux parents du foyer.</p>
+                }
+            </section>
+
+            @* ══════════════ Panneau LIEUX ══════════════ *@
+            <section class="config-panneau @(_onglet == "lieux" ? null : "cacher")"
+                     data-testid="panneau-lieux" aria-label="Lieux">
+                @* Référentiel de lieux du foyer (s27) : ajouter / supprimer. Les lieux disponibles à la saisie
+                   (sélecteurs des dialogs Poser un slot / Définir un transfert) proviennent EXCLUSIVEMENT de ce
+                   référentiel vivant (jamais un lieu en dur). Écritures via le canal HTTP
+                   (POST /api/canal/{ajouter,supprimer}-lieu). Gating Parent. *@
+                @if (Session.EstParent)
+                {
+                    <h2 class="config-panneau-titre">Lieux du foyer</h2>
+                    <p class="text-muted">Gérer le référentiel de lieux (école, domicile, nounou, piscine…). Un lieu
+                        ajouté devient aussitôt disponible à la saisie d'un slot ou d'un transfert ; un lieu supprimé
+                        n'est plus proposé. La liste et les sélecteurs suivent sans recharger la page.</p>
+
+                    <EditForm Model="_lieu" OnValidSubmit="AjouterLieu" FormName="ajouter-lieu" id="form-ajouter-lieu">
+                        <div class="input-group mb-3">
+                            <InputText class="form-control" @bind-Value="_lieu.Libelle" data-testid="champ-libelle-lieu"
+                                       placeholder="Libellé du lieu (ex. piscine)" />
+                            <button type="submit" class="btn btn-primary">Ajouter le lieu</button>
+                        </div>
+                    </EditForm>
+
+                    @if (_motifEchecLieu is not null)
+                    {
+                        <div class="alert alert-danger mb-3" data-testid="motif-echec-lieu">@_motifEchecLieu</div>
+                    }
+
+                    <ul class="list-group" data-testid="liste-lieux">
+                        @foreach (var l in _lieux)
+                        {
+                            <li class="list-group-item role-ligne" data-testid="lieu-foyer" data-lieu-id="@l.Id">
+                                <span class="role-libelle">@l.Libelle</span>
+                                <span class="role-actions">
+                                    <button type="button" class="btn btn-outline-danger btn-sm"
+                                            data-testid="bouton-supprimer-lieu"
+                                            @onclick="() => SupprimerLieu(l.Id)" aria-label="Supprimer @l.Libelle">Supprimer</button>
+                                </span>
+                            </li>
+                        }
+                    </ul>
+                }
+                else
+                {
+                    <p class="text-muted">La gestion des lieux est réservée aux parents du foyer.</p>
                 }
             </section>
 

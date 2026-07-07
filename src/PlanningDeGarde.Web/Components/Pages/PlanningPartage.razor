@@ -338,6 +338,7 @@ else
 @if (_dateDialogPoserSlot is { } datePoserSlot)
 {
     <PoserSlotDialog DateContexte="datePoserSlot"
+                     Lieux="_lieuxFoyer"
                      OnValide="FermerPoserSlotEtRecharger"
                      OnAnnule="FermerDialog" />
 }
@@ -357,6 +358,7 @@ else
     <DefinirTransfertDialog DateContexte="dateTransfert"
                             Acteurs="_acteursFoyer"
                             ActeursCharges="_acteursFoyerCharges"
+                            Lieux="_lieuxFoyer"
                             OnValide="FermerTransfertEtAccuser"
                             OnAnnule="FermerDialog" />
 }

@@ -16,7 +16,7 @@
 > **Preuve = runtime réel** (store Mongo, Docker actif) pour la persistance ; **aucune doublure
 > de port** dans ce sprint → pas de dette de câblage, `✅` francs autorisés une fois prouvés.
 
-## Avancement — 5/6
+## Avancement — 6/6
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -25,7 +25,7 @@
 | S3 | Rejets d'écriture d'un lieu — libellé vide ou en doublon | @back | ✅ |
 | S4 | Un lieu configuré survit au redémarrage (Mongo durable) | @back | ✅ |
 | S5 | Une couleur recoloriée en config est effective sur grille + légende | @back | ✅ |
-| S6 | Le sélecteur de lieu des dialogs reflète la config, sans rechargement | 🖥️ IHM | ⏳ |
+| S6 | Le sélecteur de lieu des dialogs reflète la config, sans rechargement | 🖥️ IHM | ✅ |
 
 ## Scénarios
 
@@ -80,7 +80,7 @@ Scénario: Une couleur recoloriée en config est effective sur la grille et la l
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: Le sélecteur de lieu des dialogs reflète le référentiel configuré, sans rechargement
   Étant donné l'écran de planning avec la dialog « Poser un slot » ouverte
   Quand un parent ajoute le lieu « piscine » depuis l'écran de config

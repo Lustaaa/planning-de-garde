@@ -23,6 +23,14 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
 
+    /// <summary>Corps de la requête d'ajout d'un lieu au référentiel du foyer (s27) : le front n'émet que le
+    /// libellé ; l'identifiant stable est posé côté handler. Refus métier (libellé vide / doublon) renvoyé.</summary>
+    public sealed record AjouterLieuRequete(string Libelle);
+
+    /// <summary>Corps de la requête de suppression d'un lieu du référentiel (s27) : la clé est l'identifiant
+    /// stable du lieu. Idempotente côté handler ; les slots déjà posés sur ce lieu conservent leur lieu.</summary>
+    public sealed record SupprimerLieuRequete(string LieuId);
+
     /// <summary>Corps de la requête d'édition d'un acteur émise via le canal d'écriture. Le nom et la
     /// couleur sont deux champs optionnels et indépendants : un champ absent (null) n'est pas appliqué
     /// (renommage seul au Sc.1, recoloriage seul au Sc.2). L'identifiant stable n'est jamais éditable.</summary>

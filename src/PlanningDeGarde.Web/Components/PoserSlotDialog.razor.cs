@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -37,6 +38,13 @@ public partial class PoserSlotDialog
     /// d'entrée hors-contexte, réintroduire ici le repli <c>IDateTimeProvider.Aujourdhui</c> par défaut.</para></summary>
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
+
+    /// <summary>Lieux du référentiel du foyer (id stable + libellé), fournis par le parent depuis le store
+    /// vivant (GET /api/foyer/lieux) : le sélecteur de lieu ne propose que ces lieux réels (jamais la liste
+    /// en dur <c>Foyer.Lieux</c>), y compris un lieu fraîchement ajouté / privé d'un lieu supprimé, propagé
+    /// en temps réel par le parent (S6).</summary>
+    [Parameter]
+    public IReadOnlyList<LieuFoyer> Lieux { get; set; } = Array.Empty<LieuFoyer>();
 
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et relit la grille.
     /// L'argument <c>bool</c> = un <b>chevauchement</b> a été signalé par l'outcome de la commande (règle 16,

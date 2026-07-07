@@ -35,6 +35,12 @@ public partial class PlanningPartage
     private List<ActeurFoyer> _acteursFoyer = new();
     private bool _acteursFoyerCharges;
 
+    // Lieux du référentiel du foyer (énumérés depuis le store vivant via api/foyer/lieux) : source UNIQUE
+    // des sélecteurs de lieu des dialogs Poser un slot / Définir un transfert, passée en paramètre (les
+    // dialogs ne lisent plus la liste en dur Foyer.Lieux). Rafraîchie à l'init, à l'ouverture de dialog et à
+    // chaque diffusion temps réel — un lieu ajouté / supprimé en config suit sans rechargement (S6).
+    private List<LieuFoyer> _lieuxFoyer = new();
+
     private HubConnection? _hub;
 
     // Écriture en contexte (palier 7) — la grille reste en LECTURE SEULE (règle 14) : la case ouvre un
@@ -127,7 +133,26 @@ public partial class PlanningPartage
         // acteurs est déjà chargée et STABLE — les dialogs ouverts ensuite reçoivent leur sélecteur peuplé
         // d'emblée, sans re-render async pendant la saisie (robustesse runtime + parité tests).
         await ChargerActeursIncarnablesAsync();
+        await ChargerLieuxAsync();
         await ChargerAsync();
+    }
+
+    /// <summary>Charge les lieux du référentiel du foyer depuis le store vivant via le canal de lecture HTTP
+    /// (<c>GET /api/foyer/lieux</c>) : alimente le sélecteur de lieu des dialogs (jamais la liste en dur
+    /// Foyer.Lieux). Lecture seule ; sur référentiel distant injoignable, la liste reste inchangée.</summary>
+    private async Task ChargerLieuxAsync()
+    {
+        try
+        {
+            var lieux = await Canal.GetFromJsonAsync<List<LieuFoyer>>("api/foyer/lieux");
+            if (lieux is not null)
+                _lieuxFoyer = lieux;
+        }
+        catch (HttpRequestException)
+        {
+            // Référentiel distant injoignable : le sélecteur de lieu conserve son dernier état plutôt que
+            // de planter la vue (le planning en lecture reste consultable).
+        }
     }
 
     /// <summary>Charge le catalogue des acteurs incarnables depuis le <b>référentiel réel</b> via le
@@ -179,6 +204,10 @@ public partial class PlanningPartage
                 // D2) : on rafraîchit le catalogue d'incarnables depuis le référentiel réel, puis on replie
                 // automatiquement sur l'identité réelle si l'acteur incarné n'y figure plus (sans nom fantôme).
                 await ChargerActeursIncarnablesAsync();
+                // Le référentiel de lieux peut avoir changé en config (ajout / suppression d'un lieu) : on le
+                // ré-énumère depuis le store vivant, si bien que le sélecteur de lieu des dialogs suit sans
+                // rechargement (temps réel SignalR lecture, S6).
+                await ChargerLieuxAsync();
                 Session.ReplierSiActeurIncarneAbsent();
                 await InvokeAsync(StateHasChanged);
             });

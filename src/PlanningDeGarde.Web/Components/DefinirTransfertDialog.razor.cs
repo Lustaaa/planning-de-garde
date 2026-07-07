@@ -49,6 +49,12 @@ public partial class DefinirTransfertDialog
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
+    /// <summary>Lieux du référentiel du foyer (id stable + libellé), fournis par le parent depuis le store
+    /// vivant (GET /api/foyer/lieux) : le sélecteur de lieu ne propose que ces lieux réels (jamais la liste
+    /// en dur <c>Foyer.Lieux</c>), suivant en temps réel un ajout / une suppression en config (S6).</summary>
+    [Parameter]
+    public IReadOnlyList<LieuFoyer> Lieux { get; set; } = Array.Empty<LieuFoyer>();
+
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et lève l'accusé
     /// « Transfert défini » à part, non bloquant.</summary>
     [Parameter]
