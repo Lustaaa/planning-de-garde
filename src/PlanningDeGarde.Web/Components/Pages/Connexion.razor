@@ -26,6 +26,13 @@
             <input type="email" id="email-connexion" class="form-control" placeholder="votre email"
                    data-testid="champ-email-connexion" @bind="_email" />
         </div>
+        @* Champ mot de passe (s28, volet 2) : la connexion émet désormais le COUPLE email + mot de passe.
+           Un compte sans mot de passe (email-only s23) reste connectable en laissant ce champ vide. *@
+        <div class="connexion-champ">
+            <label class="form-label" for="mot-de-passe-connexion">Mot de passe</label>
+            <input type="password" id="mot-de-passe-connexion" class="form-control" placeholder="votre mot de passe"
+                   data-testid="champ-mot-de-passe-connexion" @bind="_motDePasse" />
+        </div>
         <button type="button" class="btn btn-primary w-100 connexion-bouton" data-testid="bouton-se-connecter"
                 @onclick="SeConnecterAsync">Se connecter</button>
 

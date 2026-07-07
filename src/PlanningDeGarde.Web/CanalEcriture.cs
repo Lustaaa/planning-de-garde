@@ -100,7 +100,7 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de connexion locale par email (s23) émise via le canal requête/réponse :
     /// l'email saisi dans le bandeau de connexion. Aucune règle métier côté front — l'admission (compte
     /// existant ET Actif) est tranchée côté handler ; le front n'émet que l'email.</summary>
-    public sealed record SeConnecterRequete(string Email);
+    public sealed record SeConnecterRequete(string Email, string? MotDePasse = null);
 
     /// <summary>Corps de la requête de demande de récupération de mot de passe (s28, volet 1) émise via le
     /// canal requête/réponse : l'email saisi sur l'écran « mot de passe oublié ». Aucune règle métier côté

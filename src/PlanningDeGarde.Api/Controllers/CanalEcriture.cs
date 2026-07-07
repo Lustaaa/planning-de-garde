@@ -117,7 +117,7 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de connexion locale par email (s23) émise via le canal requête/réponse :
     /// l'email d'un compte du référentiel. La connexion réussit ssi un compte de cet email existe ET est
     /// Actif ; sinon refus avec motif clair (email inconnu / compte non activé), aucune session ouverte.</summary>
-    public sealed record SeConnecterRequete(string Email);
+    public sealed record SeConnecterRequete(string Email, string? MotDePasse = null);
 
     /// <summary>Corps de la réponse de succès d'une connexion (s23 ; type ancré s25 Sc.5) : l'identité réelle
     /// de la session ouverte (l'acteur lié 1-1 au compte connecté — id stable), son nom d'affichage résolu côté
@@ -419,7 +419,7 @@ public static class CanalEcriture
 
         routes.MapPost("/api/canal/se-connecter", (SeConnecterRequete requete, SeConnecterHandler handler, IReferentielResponsables referentiel, IEnumerationActeursFoyer acteurs) =>
         {
-            var resultat = handler.Handle(new SeConnecterCommand(requete.Email));
+            var resultat = handler.Handle(new SeConnecterCommand(requete.Email, requete.MotDePasse));
 
             // Connexion = commande applicative (canal requête/réponse) : réussit ssi un compte de cet email
             // existe ET est Actif. Sur refus (email inconnu / compte non activé), aucune session — le motif

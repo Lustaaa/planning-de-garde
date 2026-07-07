@@ -40,7 +40,7 @@
 > actif) → `✅` **francs autorisés** une fois prouvés — ces volets **soldent** la part correspondante
 > de la dette P0 s25.
 
-## Avancement — 7/10
+## Avancement — 8/10
 
 | # | Scénario | Type | Preuve | Statut |
 |---|----------|------|--------|--------|
@@ -51,7 +51,7 @@
 | S5 | Écran « mot de passe oublié » — demande envoyée, message neutre | 🖥️ IHM | runtime réel | ✅ |
 | S6 | Écran « redéfinir par jeton » — nouveau mot de passe posé, connexion réussit | 🖥️ IHM | runtime réel | ✅ |
 | S7 | Poser un mot de passe sur un compte → login email+mot de passe (bon/mauvais couple) | @back | runtime réel (PBKDF2) | ✅ |
-| S8 | Écran de connexion — champ mot de passe, login email+mot de passe | 🖥️ IHM | runtime réel | ⏳ |
+| S8 | Écran de connexion — champ mot de passe, login email+mot de passe | 🖥️ IHM | runtime réel | ✅ |
 | S9 | Rapprochement Google — callback (email connu) ouvre la session sur le compte local existant | @back | **doublure + manuel** | ⏳ |
 | S10 | Endpoint `api/oauth/google/demarrer` + DI du handler OAuth branchés | @back | **doublure + manuel** | ⏳ |
 
@@ -148,7 +148,7 @@ Scénario: Poser un mot de passe sur un compte permet la connexion email + mot d
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: L'écran de connexion accepte un mot de passe et connecte sur le bon couple
   Étant donné la page de connexion « /connexion »
   Quand l'utilisateur saisit email + mot de passe et valide
