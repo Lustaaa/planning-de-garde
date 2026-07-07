@@ -138,6 +138,11 @@ public static class CanalEcriture
     /// sans mutation ; sur succès, le mot de passe est redéfini (haché PBKDF2) et le jeton consommé (usage unique).</summary>
     public sealed record RedefinirMotDePasseRequete(string Jeton, string NouveauMotDePasse);
 
+    /// <summary>Corps de la requête de définition d'un mot de passe sur un compte (s28, volet 2) émise via
+    /// le canal d'écriture : l'identifiant stable du compte et le mot de passe (clair, haché côté serveur).
+    /// Pose le condensat sur le compte (jamais le clair) → le compte devient connectable email + mot de passe.</summary>
+    public sealed record DefinirMotDePasseRequete(string CompteId, string MotDePasse);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
@@ -450,6 +455,17 @@ public static class CanalEcriture
             // Même convention que les autres écritures : succès acquitté (le mot de passe est redéfini haché
             // et le jeton consommé — usage unique), refus métier (jeton inconnu / consommé / expiré) renvoyé
             // avec son motif, sans mutation. Aucune session ni diffusion : c'est une écriture de compte.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/definir-mot-de-passe", (DefinirMotDePasseRequete requete, DefinirMotDePasseHandler handler) =>
+        {
+            var resultat = handler.Handle(new DefinirMotDePasseCommand(requete.CompteId, requete.MotDePasse));
+
+            // Même convention que les autres écritures : succès acquitté (le mot de passe haché est posé sur
+            // le compte, qui devient connectable email + mot de passe), refus métier renvoyé avec son motif.
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);

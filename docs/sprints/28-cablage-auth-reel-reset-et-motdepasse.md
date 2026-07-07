@@ -40,7 +40,7 @@
 > actif) → `✅` **francs autorisés** une fois prouvés — ces volets **soldent** la part correspondante
 > de la dette P0 s25.
 
-## Avancement — 6/10
+## Avancement — 7/10
 
 | # | Scénario | Type | Preuve | Statut |
 |---|----------|------|--------|--------|
@@ -50,7 +50,7 @@
 | S4 | Réponse NEUTRE anti-énumération — email inconnu : aucun mail, aucun jeton | @back | runtime réel (Smtp4dev) | ✅ |
 | S5 | Écran « mot de passe oublié » — demande envoyée, message neutre | 🖥️ IHM | runtime réel | ✅ |
 | S6 | Écran « redéfinir par jeton » — nouveau mot de passe posé, connexion réussit | 🖥️ IHM | runtime réel | ✅ |
-| S7 | Poser un mot de passe sur un compte → login email+mot de passe (bon/mauvais couple) | @back | runtime réel (PBKDF2) | ⏳ |
+| S7 | Poser un mot de passe sur un compte → login email+mot de passe (bon/mauvais couple) | @back | runtime réel (PBKDF2) | ✅ |
 | S8 | Écran de connexion — champ mot de passe, login email+mot de passe | 🖥️ IHM | runtime réel | ⏳ |
 | S9 | Rapprochement Google — callback (email connu) ouvre la session sur le compte local existant | @back | **doublure + manuel** | ⏳ |
 | S10 | Endpoint `api/oauth/google/demarrer` + DI du handler OAuth branchés | @back | **doublure + manuel** | ⏳ |
@@ -136,7 +136,7 @@ Scénario: L'écran « redéfinir par jeton » pose un nouveau mot de passe et l
 ### Volet 2 — Mot de passe pour la connexion locale
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario: Poser un mot de passe sur un compte permet la connexion email + mot de passe
   Étant donné un compte utilisateur Actif d'email « maman@foyer.fr » sans mot de passe (email-only s23)
   Quand un mot de passe est posé sur ce compte (haché PBKDF2, port IEditeurComptes.RedefinirMotDePasse)
