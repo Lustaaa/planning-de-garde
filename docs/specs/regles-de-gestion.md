@@ -139,8 +139,15 @@
     saisie prime** sur le fond (surcharge > fond > neutre) ; le cycle reprend ensuite. Une surcharge
     **orpheline** (acteur supprimé, R6) cesse de primer → fond ou neutre (R15).
 
-13. **Lieux éditables** — La liste des lieux (domicile A/B, école, nounou, activité…) est librement
-    modifiable et sert de référentiel aux sélecteurs de saisie.
+13. **Lieux éditables** *(livré s27)* — La liste des lieux (domicile A/B, école, nounou, activité…) est
+    un **référentiel foyer éditable + persisté** (miroir des acteurs / rôles, cf.
+    [`acteurs-et-config-foyer.md`](acteurs-et-config-foyer.md)) : lecture `IEnumerationLieux` / écriture
+    `IEditeurLieux` (id stable + libellé), InMemory seedé + Mongo durable **sans seed**. **Canal vivant
+    unique** pilotant **à la fois** la **validation de pose** (slot sur lieu inconnu refusé sans écriture)
+    **et** les **sélecteurs** des dialogs `PoserSlot` / `DefinirTransfert` (temps réel SignalR). Rejets sans
+    écriture : libellé vide ou en doublon ; un slot déjà posé sur un lieu supprimé conserve son lieu.
+    `Foyer.Lieux` static + `ILieuRepository` en dur retirés. **Parité seed s15** : mode Mongo sans lieux au
+    départ ⇒ aucun slot posable tant qu'aucun lieu n'est configuré.
 
 14. **Grille en lecture seule, écriture en dialog contextuelle** — *Texte canonique :*
     [`periodes-et-cycle-de-fond.md` § R14](periodes-et-cycle-de-fond.md). Résumé : la grille consomme

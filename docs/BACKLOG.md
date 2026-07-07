@@ -11,8 +11,10 @@
 
 ## En cours
 
-*(Aucun sprint en cours.)* Dernier livré = **s26 `refonte-graphique`** (« Studio », thème
-clair/sombre persisté, 14/14, suite **458/458**). Prochain = `/planning`.
+*(Aucun sprint en cours.)* Dernier livré = **s27 `coherence-config-planning`** (lieux hissés
+en **référentiel foyer éditable + persisté**, pilotant validation de pose ET sélecteurs des
+dialogs ; ancien `ILieuRepository`/`FoyerLieuRepository` en dur retiré ; couleur config→grille
+confirmée en non-régression, 6/6, suite **466/466**). Prochain = `/planning`.
 
 ## Prochains sprints envisagés
 
@@ -40,7 +42,7 @@ clair/sombre persisté, 14/14, suite **458/458**). Prochain = `/planning`.
 | Familles recomposées (enfants de parents différents, même planning) | ⬜ | Palier 5-6 | spec règle 2 · retours s07 |
 | Parents liés entre eux via leur(s) enfant(s) (graphe foyer) | ⬜ | Palier 5-6 | retours s07 · spec règles 2-3 |
 | Deux parents (toujours exactement 2 ; le 1er saisit l'autre) | ⬜ | Palier 5 | retours s01 · spec règle 3 |
-| Lieux éditables et persistés (référentiel des sélecteurs) | 🟡 | Palier 10 | spec règle 11 |
+| ~~Lieux éditables et persistés (référentiel des sélecteurs)~~ **livré s27** | ✅ | Palier 10 | spec règle 11 · retours s21 |
 | Set de couleurs par défaut persisté (acteur → couleur) | 🟡 | Palier 10 | spec règle 15 |
 
 ### Épic 2 — Modèle & configuration d'acteurs
@@ -51,7 +53,8 @@ clair/sombre persisté, 14/14, suite **458/458**). Prochain = `/planning`.
 | Écran de configuration du foyer complet (acteurs + cycle + couleurs, persisté) | ⬜ | Palier 10 | retours s01 (#7) · spec p5 |
 | Affichage/actions adaptés au type d'acteur | ⬜ | Palier 5 | retours s01 (#3) · spec règles 6-7 |
 | Création d'acteurs par le parent configurateur (email obligatoire → compte inactif) | ⬜ | Palier 5-6 | retours s08 · spec règles 4/6-7 |
-| **Cohérence config foyer → planning** : ce qui est configuré doit être **effectif** pour le planning (de bout en bout) | ⬜ | à séquencer | retours s21 |
+| **Cohérence config foyer → planning** : ce qui est configuré doit être **effectif** pour le planning (de bout en bout) | 🟡 | à séquencer | retours s21 |
+| ↳ *Volets tenus* : **couleurs** (config→grille/légende, s20 + non-régression s27), **acteurs/rôles/cycle** (store vivant), **lieux** (référentiel éditable+persisté pilotant validation ET sélecteurs, s27). Reste à cadrer : autres réglages non propagés (ex. set couleurs par défaut). | 🟡 | à séquencer | retours s21 |
 
 ### Épic 3 — Fondations techniques (architecture & API)
 
@@ -129,7 +132,7 @@ clair/sombre persisté, 14/14, suite **458/458**). Prochain = `/planning`.
 | Palier | Besoin | Épics | Origine |
 |-------:|--------|-------|---------|
 | 9bis | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 |
-| 10 | **Config foyer durable restante** (lieux, set couleurs) + Admin/Parent/Autre + écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 |
+| 10 | **Config foyer durable restante** (~~lieux~~ **livré s27** · set couleurs par défaut) + Admin/Parent/Autre + écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 |
 | 11 | **Immédiat & événements à venir** — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 |
 | 12 | **Imprévu & échange** — malade/retard/échange + transferts dérivés automatiquement | É8, É11 | spec v05 p8 · spec règles 19-20 |
 | 13 | **Ouverture de l'accès (reste)** — câblage adaptateurs auth réels + comptes inactifs (droits) + prise en main par rôle + personnalisation des couleurs *(auth logique + landing + thème sombre déjà livrés s22-s26)* | É10, É2, É5 | spec v05 p9 · retours s01/s07/s08 |
@@ -155,12 +158,12 @@ clair/sombre persisté, 14/14, suite **458/458**). Prochain = `/planning`.
 
 ## Dettes ouvertes
 
-- **Données en dur restantes dans `Foyer.cs`** (É1) — à persister (lieux, set couleurs) — retours s03 (#11). *(config foyer acteurs déjà persistée s09/s15.)*
+- **Données en dur restantes dans `Foyer.cs`** (É1) — à persister : **set couleurs par défaut** (reste). *(config foyer acteurs persistée s09/s15 ; **lieux hissés en référentiel éditable + persisté s27**, `Foyer.Lieux` static + `FoyerLieuRepository` retirés.)* — retours s03 (#11).
 - **Flakes temps-réel SignalR** (É3, `FrontWasm*TempsReel*`) — verts en isolation, **intermittents sous charge parallèle** (timing SignalR/Docker), **dette de test** (pas un bug `src/`). Chaque sprint ajoutant un client SignalR (config, auth) a **aggravé** le flake : au **s24** jusqu'à **6 flakes simultanés** sous charge `Web.Tests`, la suite exige **souvent un 2ᵉ run**. **Triage durci (rétro s21) tient** : re-run EN ISOLATION x2-3 AVANT tout étiquetage — **N/N rouge déterministe = régression** (STOP, jamais « flake »), seul un rouge **intermittent** reste flake catalogué (cf. `JOURNAL-METHODE.md`). **Rétrofit complet = candidat de TÊTE** (helper bUnit partagé + audit, +1 ci-dessus), prérequis de l'édition concurrente (+4).
 - **Risque d'adoption du second parent** (É10) — le login est livré mais le câblage réel (SMTP/OAuth) et les écrans manquent → à ne pas laisser glisser (dette P0 ci-dessus).
 - **Cycle de fond riche réclamé** (É7) — au-delà du plus petit incrément livré s10 : ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only. Sujet plein (+5).
 - **Vulnérabilités transitives du driver Mongo** (`SharpCompress` 0.30.1 NU1902 modéré, `Snappier` 1.0.0 NU1903 élevé) — warnings depuis le pivot Mongo généralisé (s15). À traiter par une montée de `MongoDB.Driver`. Non bloquant.
 - **Variantes de plage reportées tranche 2 (s15)** — drag riche, plage vide, chevauchement, plage à cheval sur vue/mois : seul le geste clic-début+clic-fin sur cases contiguës est livré.
-- **Cohérence config foyer → planning (retours s21)** — le PO demande que ce qui est configuré soit **effectif** pour le planning. Une part est tenue (acteurs / cycle résolus depuis le store vivant) ; à cadrer : quels réglages ne se propagent pas encore ?
+- **Cohérence config foyer → planning (retours s21)** — le PO demande que ce qui est configuré soit **effectif** pour le planning. Tenu : acteurs / rôles / cycle (store vivant), **couleurs** (config→grille/légende, filet non-régression s27), **lieux** (référentiel éditable + persisté pilotant validation de pose ET sélecteurs des dialogs, **s27**). À cadrer : réglages restants non propagés (set couleurs par défaut, cycle de fond riche).
 - **Rôle livré comme caractéristique sans droits attachés (s21)** — le modèle de rôles (référentiel + affectation) n'a pas encore de comportements/droits ; le couplage rôle → droits vit dans É10 (palier 13), après la prise en main de compte. Invariant tenu : le rôle **n'intervient pas** dans la résolution grille/légende.
-- **Asymétrie seed runtime/tests (s15)** — mode Mongo : **aucun seed** (app vide au 1er lancement, durable ensuite) ; InMemory : seed conservé pour la non-régression. Décision PO assumée.
+- **Asymétrie seed runtime/tests (s15)** — mode Mongo : **aucun seed** (app vide au 1er lancement, durable ensuite) ; InMemory : seed conservé pour la non-régression. Décision PO assumée. **Étendue aux lieux (s27)** : en mode Mongo le foyer **part sans lieux** (aucun seed), donc **aucun slot posable tant qu'un lieu n'est pas configuré** — parité stricte avec l'asymétrie seed acteurs.
