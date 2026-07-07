@@ -16,13 +16,13 @@
 > **Preuve = runtime réel** (store Mongo, Docker actif) pour la persistance ; **aucune doublure
 > de port** dans ce sprint → pas de dette de câblage, `✅` francs autorisés une fois prouvés.
 
-## Avancement — 2/6
+## Avancement — 3/6
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | S1 | Un lieu ajouté au foyer devient disponible à la saisie | @back | ✅ |
 | S2 | Un lieu supprimé quitte le référentiel et la validation de saisie | @back | ✅ |
-| S3 | Rejets d'écriture d'un lieu — libellé vide ou en doublon | @back | ⏳ |
+| S3 | Rejets d'écriture d'un lieu — libellé vide ou en doublon | @back | ✅ |
 | S4 | Un lieu configuré survit au redémarrage (Mongo durable) | @back | ⏳ |
 | S5 | Une couleur recoloriée en config est effective sur grille + légende | @back | ⏳ |
 | S6 | Le sélecteur de lieu des dialogs reflète la config, sans rechargement | 🖥️ IHM | ⏳ |
@@ -49,7 +49,7 @@ Scénario: Un lieu supprimé quitte le référentiel et la validation de saisie
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario: Rejets d'écriture d'un lieu — libellé vide ou en doublon
   Étant donné le lieu « école » présent au référentiel du foyer
   Quand un parent ajoute un lieu au libellé vide

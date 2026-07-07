@@ -24,7 +24,7 @@ public class Scenario1_LieuAjouteDisponible
     public void Acceptation_Should_Enumerer_piscine_et_accepter_la_pose_d_un_slot_a_ce_lieu_When_le_parent_ajoute_le_lieu_piscine()
     {
         var referentiel = new ReferentielLieuxEnMemoire();
-        var ajouter = new AjouterLieuHandler(referentiel);
+        var ajouter = new AjouterLieuHandler(referentiel, referentiel);
         var poser = new PoserSlotHandler(new FakeSlotRepository(), referentiel, new FakeNotificateurPlanning());
 
         var ajout = ajouter.Handle(new AjouterLieuCommand(Piscine));
@@ -48,7 +48,7 @@ public class Scenario1_LieuAjouteDisponible
     public void Should_Faire_exister_le_lieu_ajoute_a_l_enumeration_When_le_parent_ajoute_un_lieu()
     {
         var referentiel = new FakeReferentielLieux();
-        var handler = new AjouterLieuHandler(referentiel);
+        var handler = new AjouterLieuHandler(referentiel, referentiel);
 
         var resultat = handler.Handle(new AjouterLieuCommand(Piscine));
 
