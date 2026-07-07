@@ -102,6 +102,12 @@ public static class CanalEcriture
     /// existant ET Actif) est tranchée côté handler ; le front n'émet que l'email.</summary>
     public sealed record SeConnecterRequete(string Email);
 
+    /// <summary>Corps de la requête de demande de récupération de mot de passe (s28, volet 1) émise via le
+    /// canal requête/réponse : l'email saisi sur l'écran « mot de passe oublié ». Aucune règle métier côté
+    /// front — la réponse est toujours un succès neutre (anti-énumération, tranché côté handler) ; le front
+    /// n'émet que l'email et affiche un message neutre fixe.</summary>
+    public sealed record DemanderRecuperationRequete(string Email);
+
     /// <summary>Corps de la réponse de succès d'une connexion (s23 ; type ancré s25 Sc.5) : l'id stable de
     /// l'acteur lié au compte connecté, son nom d'affichage résolu côté serveur (« Connecté : &lt;Nom&gt; »
     /// sans recalcul côté UI), et son <b>type</b> (Admin / Parent / Autre) résolu côté serveur — le front
