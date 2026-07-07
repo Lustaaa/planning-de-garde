@@ -11,4 +11,10 @@ public interface IEditeurLieux
     /// <summary>Enregistre un lieu <b>neuf</b> dans le référentiel : persiste son libellé sur
     /// l'identifiant stable fourni.</summary>
     void Ajouter(string lieuId, string libelle);
+
+    /// <summary>Retire le lieu identifié de façon stable du référentiel : il cesse d'être énuméré et
+    /// n'est plus acceptable à la saisie. Tolérant à l'absence (un lieu déjà absent = no-op qui
+    /// réussit — idempotence). Aucune réécriture rétroactive : un slot déjà posé sur ce lieu conserve
+    /// son lieu (borne s27).</summary>
+    void Supprimer(string lieuId);
 }

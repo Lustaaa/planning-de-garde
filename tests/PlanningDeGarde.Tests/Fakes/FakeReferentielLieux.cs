@@ -19,6 +19,8 @@ public sealed class FakeReferentielLieux : IEnumerationLieux, IEditeurLieux
 
     public void Ajouter(string lieuId, string libelle) => _libelles[lieuId] = libelle;
 
+    public void Supprimer(string lieuId) => _libelles.Remove(lieuId); // tolérant à l'absence (idempotence)
+
     public IReadOnlyCollection<LieuFoyer> EnumererLieux()
         => _libelles.Select(kv => new LieuFoyer(kv.Key, kv.Value)).ToList();
 }

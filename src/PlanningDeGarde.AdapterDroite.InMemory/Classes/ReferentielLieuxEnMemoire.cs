@@ -23,6 +23,9 @@ public sealed class ReferentielLieuxEnMemoire : IEnumerationLieux, IEditeurLieux
     public void Ajouter(string lieuId, string libelle)
         => _libelles[lieuId] = libelle; // le lieu neuf existe désormais sur son id stable
 
+    public void Supprimer(string lieuId)
+        => _libelles.Remove(lieuId); // cesse d'être énuméré ; tolérant à l'absence (idempotence)
+
     public IReadOnlyCollection<LieuFoyer> EnumererLieux()
         => _libelles.Select(kv => new LieuFoyer(kv.Key, kv.Value)).ToList();
 }
