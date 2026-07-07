@@ -40,7 +40,7 @@
 > actif) → `✅` **francs autorisés** une fois prouvés — ces volets **soldent** la part correspondante
 > de la dette P0 s25.
 
-## Avancement — 9/10
+## Avancement — 10/10
 
 | # | Scénario | Type | Preuve | Statut |
 |---|----------|------|--------|--------|
@@ -53,7 +53,7 @@
 | S7 | Poser un mot de passe sur un compte → login email+mot de passe (bon/mauvais couple) | @back | runtime réel (PBKDF2) | ✅ |
 | S8 | Écran de connexion — champ mot de passe, login email+mot de passe | 🖥️ IHM | runtime réel | ✅ |
 | S9 | Rapprochement Google — callback (email connu) ouvre la session sur le compte local existant | @back | **doublure + manuel** | ✅ logique / ⚠️ câblage |
-| S10 | Endpoint `api/oauth/google/demarrer` + DI du handler OAuth branchés | @back | **doublure + manuel** | ⏳ |
+| S10 | Endpoint `api/oauth/google/demarrer` + DI du handler OAuth branchés | @back | **doublure + manuel** | ✅ logique / ⚠️ câblage |
 
 > **Dette de câblage explicite (volet 3, à brancher/prouver manuellement au G3 ; le reste → backlog
 > P0 à la clôture)** : (a) **adaptateur `IFournisseurOAuth` Google réel** (échange client secret /
@@ -174,7 +174,7 @@ Scénario: Le callback Google d'un email connu ouvre la session sur le compte lo
 ```
 
 ```gherkin
-@back @pending @preuve-doublure
+@back @vert @preuve-doublure
 Scénario: L'endpoint de démarrage OAuth Google et le handler de callback sont branchés en DI
   Étant donné le port IFournisseurOAuth enregistré en DI et ConnexionOAuthHandler résolvable
   Quand le navigateur atteint « api/oauth/google/demarrer »

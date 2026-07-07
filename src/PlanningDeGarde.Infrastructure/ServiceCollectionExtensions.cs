@@ -138,6 +138,12 @@ public static class ServiceCollectionExtensions
         // de réinitialisation (60 min) est datée contre l'horloge réelle. Doublée (figée) dans les tests.
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 
+        // Fournisseur OAuth externe (s28, volet 3) : port enregistré en DI pour rendre ConnexionOAuthHandler
+        // résolvable et le callback routable. L'adaptateur Google RÉEL (secrets / token endpoint) reste une
+        // DETTE DE CÂBLAGE (backlog P0, vérif manuelle G3) → placeholder qui ne résout aucune identité tant
+        // que le provider réel n'est pas branché. La logique de rapprochement est prouvée par doublure (S9).
+        services.AddSingleton<IFournisseurOAuth, FournisseurOAuthGoogleNonCable>();
+
         // Canal mail réel (s28, volet 1) : adaptateur SMTP concret réalisant IEnvoiMail — remet un VRAI
         // mail de récupération au serveur SMTP configuré (Smtp4dev en dev, Docker). Remplace la doublure
         // s25 ; l'hôte/port/expéditeur sont pilotés par configuration (défauts alignés sur le run local).
@@ -174,6 +180,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DemanderRecuperationMotDePasseHandler>();
         services.AddScoped<RedefinirMotDePasseHandler>();
         services.AddScoped<DefinirMotDePasseHandler>();
+        services.AddScoped<ConnexionOAuthHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();

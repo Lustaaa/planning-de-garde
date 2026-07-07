@@ -40,6 +40,10 @@ app.MapperCanalEcriture();
 // le front WASM (le navigateur n'a pas la projection en DI directe : il lit la grille via HTTP).
 app.MapperCanalLecture();
 
+// Flux OAuth externe (s28, volet 3) — démarrage (redirection authorize Google) + callback routé vers
+// ConnexionOAuthHandler. Provider Google réel = dette de câblage (G3) ; logique prouvée par doublure (S9).
+app.MapperOAuth();
+
 // Canal de diffusion (lecture seule) — le front WASM s'y abonne dans le navigateur ; déclenché
 // par une écriture aboutie, jamais l'inverse.
 app.MapHub<PlanningHub>("/hubs/planning");
