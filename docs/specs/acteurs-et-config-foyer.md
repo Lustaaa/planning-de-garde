@@ -28,6 +28,21 @@ majeur** : le rôle est une **caractéristique d'acteur, PAS une responsabilité
 dans la résolution grille / légende (ni teinte, ni nom de case, ni légende ne dépendent du rôle ;
 priorité **surcharge > fond > neutre** strictement inchangée).
 
+Un **référentiel de lieux éditable + persisté** est **livré** *(s27)* : miroir strict du référentiel
+des acteurs / rôles. Les **lieux** — jusque-là **codés en dur en double** (`Foyer.Lieux` static lu par
+`ILieuRepository.Existe`, ET la même liste itérée par les sélecteurs des dialogs côté Web) — sont hissés
+en **référentiel foyer** (lecture `IEnumerationLieux` + écriture `IEditeurLieux`, **id stable** + libellé),
+réalisé par les **mêmes stores** que les acteurs (`ConfigurationFoyerEnMemoire` **seedé** / `ConfigurationFoyerMongo`
+**durable sans seed**). Ce **canal vivant unique** pilote **à la fois** la **validation de pose** (poser un
+slot sur un lieu **inconnu** est refusé sans écriture) **et** les **sélecteurs** des dialogs `PoserSlot` **et**
+`DefinirTransfert` (temps réel SignalR lecture : ajout/suppression convergent **sans rechargement**).
+**Rejets sans écriture** : libellé **vide** ou **doublon** de libellé (miroir des rejets acteurs R5/R6 et
+rôles R10). **Borne** : un slot **déjà posé** sur un lieu supprimé **conserve** son lieu (aucune réécriture
+rétroactive). L'ancien `ILieuRepository` / `FoyerLieuRepository` **en dur est retiré** — **un seul chemin de
+lecture** du référentiel des lieux. **Conséquence de parité (asymétrie seed s15)** : en mode **Mongo** le foyer
+**part sans lieux** (aucun seed), donc **aucun slot n'est posable tant qu'un lieu n'est pas configuré** ;
+l'InMemory des tests conserve son seed pour la non-régression.
+
 Une **fondation d'identité** est **livrée** *(s22, auth tranche 1)* : un agrégat **`CompteUtilisateur`**
 (identifiant **stable opaque**, **email**, **statut** `Actif`/`Inactif` — défaut **Inactif**, un `ActeurId`
 **nullable**) **lié 1-1 à un acteur déclaré**, **persisté Mongo** dans la config foyer (mêmes bornes que
@@ -158,6 +173,16 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   2ᵉ écran **convergent sans rechargement**. **Invariant** : le rôle **n'intervient pas** dans la
   résolution grille / légende (caractéristique d'acteur, pas responsabilité).
 
+- **Référentiel de lieux éditable + persisté** *(livré s27)* : ports dédiés (lecture `IEnumerationLieux`,
+  écriture `IEditeurLieux` — ajouter / supprimer), **deux adaptateurs** (InMemory **seedé** / Mongo **durable
+  sans seed**), **bornés à la config foyer** (miroir acteurs / rôles / comptes). **Canal vivant unique** qui
+  pilote **la validation de pose** (slot sur lieu inconnu refusé sans écriture) **et** les **sélecteurs** de
+  `PoserSlotDialog` **et** `DefinirTransfertDialog` (temps réel SignalR lecture, convergence sans rechargement).
+  **Rejets sans écriture** : libellé vide ou en doublon. **Borne** : un slot déjà posé sur un lieu supprimé
+  **conserve** son lieu. `Foyer.Lieux` static + `ILieuRepository` / `FoyerLieuRepository` en dur **retirés** →
+  un seul chemin de lecture. **Parité seed s15** : mode Mongo sans lieux au départ ⇒ aucun slot posable tant
+  qu'aucun lieu n'est configuré.
+
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
   rôles), doté d'un **id stable opaque** + **email** + **statut** (`Actif`/`Inactif`, défaut **Inactif** —
@@ -194,7 +219,8 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   (cf. [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md), R15bis). **Convergence achevée
   s20** : le **sélecteur d'édition de l'écran config** lit lui aussi `IEnumerationActeursFoyer`
   (`Foyer.ActeursEditables` retirée) → **un seul chemin de lecture** du référentiel, temps réel SignalR
-  compris.
+  compris. **Non-régression couleur reconfirmée s27** : une couleur recoloriée en config reste effective
+  sur la case de garde ET la légende (la palette relit la dernière écriture, config → planning tenu).
 - **R6 — Ajout & suppression d'acteur, neutralisation par repli (cases ET incarnation), persistance
   bornée** : id stable neuf, persistance Mongo bornée, suppression autorisée & idempotente, repli des
   cases orphelines + de l'incarnation, accusé « Acteur supprimé », pas de réaffectation auto.

@@ -19,7 +19,7 @@ public class Scenario2_SlotDureeNulle
     {
         // Given
         var slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu("ecole");
+        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotHandler(slots, lieux, notificateur);
         var instant = new System.DateTime(2025, 7, 15, 16, 30, 0);
@@ -47,7 +47,7 @@ public class Scenario2_SlotDureeNulle
         out FakeNotificateurPlanning notificateur)
     {
         slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu("ecole");
+        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         notificateur = new FakeNotificateurPlanning();
         return new PoserSlotHandler(slots, lieux, notificateur);
     }

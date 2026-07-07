@@ -43,9 +43,9 @@
                     <label class="form-label">Lieu</label>
                     <InputSelect class="form-select" data-testid="champ-lieu" @bind-Value="_form.LieuId">
                         <option value="">— choisir —</option>
-                        @foreach (var lieu in Foyer.Lieux)
+                        @foreach (var lieu in Lieux)
                         {
-                            <option value="@lieu">@lieu</option>
+                            <option value="@lieu.Id">@lieu.Libelle</option>
                         }
                     </InputSelect>
                 </div>

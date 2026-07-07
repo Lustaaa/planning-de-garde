@@ -28,6 +28,16 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
 
+    /// <summary>Corps de la requête d'ajout d'un lieu au référentiel du foyer (s27) émise via le canal
+    /// d'écriture : le front ne fournit que le libellé (l'identifiant stable est posé côté handler). Refus
+    /// métier (libellé vide / doublon) renvoyé avec son motif.</summary>
+    public sealed record AjouterLieuRequete(string Libelle);
+
+    /// <summary>Corps de la requête de suppression d'un lieu du référentiel du foyer (s27) émise via le
+    /// canal d'écriture : la clé est l'identifiant stable du lieu. Idempotente côté handler (id absent /
+    /// déjà supprimé = no-op qui réussit). Borne : les slots déjà posés sur ce lieu conservent leur lieu.</summary>
+    public sealed record SupprimerLieuRequete(string LieuId);
+
     /// <summary>Corps de la requête d'édition d'un acteur émise via le canal d'écriture. Le nom et la
     /// couleur sont deux champs optionnels et indépendants : un champ absent (null) n'est pas appliqué
     /// (renommage seul au Sc.1, recoloriage seul au Sc.2). L'identifiant stable n'est jamais éditable.</summary>
@@ -154,6 +164,37 @@ public static class CanalEcriture
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/ajouter-lieu",
+            (AjouterLieuRequete requete, AjouterLieuHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new AjouterLieuCommand(requete.Libelle));
+
+            // Même convention que les autres écritures : succès acquitté (le lieu ajouté est désormais énuméré
+            // depuis le store, disponible à la saisie), refus métier renvoyé avec son motif (libellé vide /
+            // doublon, S3). Sur succès, l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture
+            // seule) : les sélecteurs de lieu des dialogs des autres écrans suivent sans rechargement (S6).
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/supprimer-lieu",
+            (SupprimerLieuRequete requete, SupprimerLieuHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new SupprimerLieuCommand(requete.LieuId));
+
+            // Même convention : succès acquitté (le lieu quitte le référentiel, plus proposé à la saisie),
+            // refus métier renvoyé avec son motif. Idempotent côté handler. Sur succès, diffusion temps réel :
+            // les sélecteurs de lieu des dialogs ne proposent plus le lieu supprimé sans rechargement (S6).
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
         });
 
         routes.MapPost("/api/canal/editer-acteur", (EditerActeurRequete requete, EditerActeurHandler handler) =>

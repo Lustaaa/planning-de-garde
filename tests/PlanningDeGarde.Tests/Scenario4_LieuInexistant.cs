@@ -20,7 +20,7 @@ public class Scenario4_LieuInexistant
     {
         // Given — aucun lieu enregistré : « ancienne crèche » n'existe pas
         var slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository();
+        var lieux = new FakeReferentielLieux();
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotHandler(slots, lieux, notificateur);
         var commande = new SlotBuilder()
@@ -42,7 +42,7 @@ public class Scenario4_LieuInexistant
 
     // ---------- Tests unitaires (boucle interne, TDD) ----------
 
-    private static PoserSlotHandler Handler(FakeLieuRepository lieux, out FakeSlotRepository slots)
+    private static PoserSlotHandler Handler(FakeReferentielLieux lieux, out FakeSlotRepository slots)
     {
         slots = new FakeSlotRepository();
         var notificateur = new FakeNotificateurPlanning();
@@ -54,7 +54,7 @@ public class Scenario4_LieuInexistant
     [Fact]
     public void Should_refuser_la_pose_au_motif_de_lieu_inexistant_When_le_lieu_vise_n_est_pas_dans_les_lieux_du_foyer()
     {
-        var handler = Handler(new FakeLieuRepository(), out _);
+        var handler = Handler(new FakeReferentielLieux(), out _);
         var commande = new SlotBuilder().DansLieu("ancienne-creche").Build();
 
         var resultat = handler.Handle(commande);
@@ -67,7 +67,7 @@ public class Scenario4_LieuInexistant
     [Fact]
     public void Should_poser_le_slot_au_lieu_designe_When_le_lieu_vise_existe_dans_les_lieux_du_foyer()
     {
-        var handler = Handler(new FakeLieuRepository().AvecLieu("ecole"), out _);
+        var handler = Handler(new FakeReferentielLieux().AvecLieu("ecole"), out _);
         var commande = new SlotBuilder().DansLieu("ecole").Build();
 
         var resultat = handler.Handle(commande);
@@ -81,7 +81,7 @@ public class Scenario4_LieuInexistant
     [Fact]
     public void Should_n_inscrire_aucun_slot_dans_le_planning_partage_When_la_pose_est_refusee_pour_lieu_inexistant()
     {
-        var handler = Handler(new FakeLieuRepository(), out var slots);
+        var handler = Handler(new FakeReferentielLieux(), out var slots);
         var commande = new SlotBuilder().DansLieu("ancienne-creche").Build();
 
         handler.Handle(commande);

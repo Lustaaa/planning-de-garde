@@ -55,6 +55,13 @@ public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris",
 /// Alimente la liste des rôles de l'onglet Acteurs et le sélecteur de rôle borné au référentiel.</summary>
 public sealed record RoleFoyer(string Id, string Libelle);
 
+/// <summary>Un lieu du référentiel du foyer <b>énuméré depuis le store vivant</b> via le canal de lecture
+/// (s27, GET /api/foyer/lieux) : identifiant stable (clé, bindé par les sélecteurs) + libellé d'affichage.
+/// Remplace la liste en dur <see cref="Foyer.Lieux"/> — alimente l'onglet Lieux de la config ET les
+/// sélecteurs de lieu des dialogs « Poser un slot » / « Définir un transfert » (un lieu ajouté / supprimé
+/// suit sans rechargement, temps réel SignalR lecture).</summary>
+public sealed record LieuFoyer(string Id, string Libelle);
+
 /// <summary>Un compte utilisateur du foyer <b>énuméré depuis le store durable</b> via le canal de lecture
 /// (s22) : identifiant stable opaque (clé, jamais l'email) + email + statut (« inactif » / « actif ») +
 /// id stable de l'acteur associé (ou <c>null</c> = désassocié). Alimente l'affichage du compte associé à

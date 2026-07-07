@@ -16,8 +16,15 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISlotRepository>(sp => sp.GetRequiredService<InMemorySlotRepository>());
         services.AddSingleton<IPeriodeRepository>(sp => sp.GetRequiredService<InMemoryPeriodeRepository>());
         services.AddSingleton<ITransfertRepository>(sp => sp.GetRequiredService<InMemoryTransfertRepository>());
-        services.AddSingleton<ILieuRepository, FoyerLieuRepository>();
         services.AddSingleton<IResponsableRepository, FoyerResponsableRepository>();
+
+        // Référentiel de lieux du foyer (petit agrégat de config foyer, s27) : store mutable seedé
+        // depuis Foyer.Lieux, réalise la lecture IEnumerationLieux (validation de pose + sélecteurs)
+        // et l'écriture IEditeurLieux (ajouter). Remplace la liste en dur Foyer.Lieux lue par
+        // l'ancien FoyerLieuRepository (trou s27). Le remplaçant durable Mongo est branché en S4.
+        services.AddSingleton<ReferentielLieuxEnMemoire>();
+        services.AddSingleton<IEnumerationLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
+        services.AddSingleton<IEditeurLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
 
         // Configuration des acteurs (noms ET couleurs) : un store mutable singleton réalise À LA FOIS
         // les ports de LECTURE IReferentielResponsables (nom) et IPaletteCouleurs (couleur) — la grille
@@ -53,6 +60,15 @@ public static class ServiceCollectionExtensions
             services.AddSingleton(_ => new ReferentielRolesMongo(connectionString, baseDeDonnees));
             services.AddSingleton<IEnumerationRoles>(sp => sp.GetRequiredService<ReferentielRolesMongo>());
             services.AddSingleton<IEditeurReferentielRoles>(sp => sp.GetRequiredService<ReferentielRolesMongo>());
+
+            // Référentiel de lieux (petit agrégat de config foyer, s27) durable Mongo, borné à la config
+            // foyer (même socle Mongo, collection dédiée « lieux ») : lecture IEnumerationLieux (validation
+            // de pose + sélecteurs) + écriture IEditeurLieux, un lieu ajouté/supprimé survit au redémarrage.
+            // Aucun seed Mongo (parité asymétrie seed s15) — SURCHARGE l'enregistrement InMemory seedé posé
+            // plus haut (dernière inscription gagne à la résolution).
+            services.AddSingleton(_ => new ReferentielLieuxMongo(connectionString, baseDeDonnees));
+            services.AddSingleton<IEnumerationLieux>(sp => sp.GetRequiredService<ReferentielLieuxMongo>());
+            services.AddSingleton<IEditeurLieux>(sp => sp.GetRequiredService<ReferentielLieuxMongo>());
 
             // Référentiel des comptes utilisateurs (petit agrégat de config foyer, s22) durable Mongo,
             // borné à la config foyer (même socle Mongo, collection dédiée « comptes ») : lecture
@@ -113,6 +129,8 @@ public static class ServiceCollectionExtensions
 
         // Use cases (handlers) et read models.
         services.AddScoped<PoserSlotHandler>();
+        services.AddScoped<AjouterLieuHandler>();
+        services.AddScoped<SupprimerLieuHandler>();
         services.AddScoped<DeplacerSlotHandler>();
         services.AddScoped<SupprimerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();

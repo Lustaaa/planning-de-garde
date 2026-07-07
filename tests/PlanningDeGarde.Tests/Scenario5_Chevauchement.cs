@@ -24,7 +24,7 @@ public class Scenario5_Chevauchement
     {
         // Given — un slot Léa à l'école 8h30–16h30 le 15/07 existe déjà
         var slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu("ecole").AvecLieu("nounou");
+        var lieux = new FakeReferentielLieux().AvecLieu("ecole").AvecLieu("nounou");
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotHandler(slots, lieux, notificateur);
         handler.Handle(new SlotBuilder()
@@ -55,7 +55,7 @@ public class Scenario5_Chevauchement
     private static PoserSlotHandler Handler(out FakeSlotRepository slots)
     {
         slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu("ecole").AvecLieu("nounou");
+        var lieux = new FakeReferentielLieux().AvecLieu("ecole").AvecLieu("nounou");
         var notificateur = new FakeNotificateurPlanning();
         return new PoserSlotHandler(slots, lieux, notificateur);
     }

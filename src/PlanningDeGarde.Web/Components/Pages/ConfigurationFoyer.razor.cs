@@ -123,6 +123,21 @@ public partial class ConfigurationFoyer
     /// aboutie ailleurs sans rechargement (temps réel SignalR, Sc.9).</summary>
     private IReadOnlyList<string> _admins = Array.Empty<string>();
 
+    /// <summary>Formulaire de saisie du libellé d'un lieu à ajouter (référentiel du foyer, s27). Le front
+    /// n'émet que le libellé ; l'identifiant stable est posé côté handler.</summary>
+    private sealed class FormulaireLieu
+    {
+        public string Libelle { get; set; } = "";
+    }
+
+    private readonly FormulaireLieu _lieu = new();
+    private string? _motifEchecLieu;
+
+    /// <summary>Lieux du référentiel du foyer énumérés <b>depuis le store vivant</b> (GET /api/foyer/lieux),
+    /// jamais un lieu en dur : alimente la liste de l'onglet Lieux (ajoutés / supprimés suivent sans
+    /// rechargement, S6) — même source que les sélecteurs de lieu des dialogs.</summary>
+    private IReadOnlyList<LieuFoyer> _lieux = Array.Empty<LieuFoyer>();
+
     /// <summary>Fournisseur de services pour résoudre <see cref="OptionsConnexionHub"/> de façon
     /// <b>optionnelle</b> : présent, il redirige la connexion au hub vers le TestServer (acceptation runtime
     /// Sc.6) ; absent (écrans de config qui n'observent pas le temps réel), la connexion reste neutre et son
@@ -138,7 +153,14 @@ public partial class ConfigurationFoyer
         await RechargerRoles();
         await RechargerComptes();
         await RechargerAdmins();
+        await RechargerLieux();
     }
+
+    /// <summary>Ré-énumère les lieux du référentiel depuis le store vivant (GET /api/foyer/lieux) : c'est
+    /// cette relecture qui fait suivre la liste des lieux après ajout / suppression (S6), sans rechargement.</summary>
+    private async Task RechargerLieux()
+        => _lieux = await Canal.GetFromJsonAsync<List<LieuFoyer>>("api/foyer/lieux")
+            ?? new List<LieuFoyer>();
 
     private async Task RechargerActeurs()
         => _acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs")
@@ -196,6 +218,9 @@ public partial class ConfigurationFoyer
                 await RechargerRoles();
                 await RechargerComptes();
                 await RechargerAdmins();
+                // Un ajout / une suppression de lieu abouti sur un autre écran (store partagé) fait suivre la
+                // liste des lieux sans rechargement — cohérence temps réel du référentiel de lieux (S6).
+                await RechargerLieux();
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -548,6 +573,70 @@ public partial class ConfigurationFoyer
             _confirmationCycle = "Cycle de fond enregistré.";
         else
             _motifEchecCycle = await reponse.Content.ReadFromJsonAsync<string>();
+    }
+
+    /// <summary>
+    /// Ajoute un lieu au référentiel du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/ajouter-lieu</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
+    /// ré-énumère le référentiel pour faire apparaître le lieu ajouté <b>sans rechargement</b> (S6). Le front
+    /// n'émet que le libellé ; l'identifiant stable est posé côté handler. Sur refus métier (libellé vide /
+    /// doublon, S3) ou service injoignable, le motif est surfacé sans muter la liste.
+    /// </summary>
+    private async Task AjouterLieu()
+    {
+        _motifEchecLieu = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/ajouter-lieu",
+                new AjouterLieuRequete(_lieu.Libelle));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecLieu = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecLieu = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        await RechargerLieux();
+        _lieu.Libelle = "";
+    }
+
+    /// <summary>Supprime un lieu du référentiel via le <b>canal d'écriture HTTP</b>
+    /// (<c>POST /api/canal/supprimer-lieu</c>) : la clé est l'identifiant stable du lieu. Sur succès, on relit
+    /// le référentiel (le lieu quitte la liste et n'est plus proposé à la saisie, sans rechargement — S6).
+    /// Idempotence côté handler ; borne : les slots déjà posés sur ce lieu conservent leur lieu.</summary>
+    private async Task SupprimerLieu(string lieuId)
+    {
+        _motifEchecLieu = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/supprimer-lieu",
+                new SupprimerLieuRequete(lieuId));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecLieu = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecLieu = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        await RechargerLieux();
     }
 
     /// <summary>Compte utilisateur associé à un acteur (résolu sur son id stable), ou <c>null</c> s'il n'en

@@ -28,6 +28,11 @@ public static class CanalLecture
     /// Alimente la liste des rôles et le sélecteur de rôle borné au référentiel (jamais de rôle en dur).</summary>
     public sealed record RoleFoyerVue(string Id, string Libelle);
 
+    /// <summary>Vue d'un lieu du référentiel du foyer énumérée pour l'écran de configuration (onglet Lieux,
+    /// s27) et les sélecteurs de lieu des dialogs : identifiant stable (clé, bindé par les sélecteurs) +
+    /// libellé d'affichage. Lue depuis le store vivant (jamais la liste en dur Foyer.Lieux).</summary>
+    public sealed record LieuFoyerVue(string Id, string Libelle);
+
     /// <summary>Vue d'un compte utilisateur du foyer énumérée pour l'écran de configuration (onglet Acteurs,
     /// s22) : identifiant stable opaque (clé, jamais l'email) + email + statut (« inactif » / « actif ») +
     /// id stable de l'acteur associé, ou <c>null</c> quand le compte est désassocié (Sc.6). Alimente
@@ -68,6 +73,19 @@ public static class CanalLecture
             {
                 var vues = roles.EnumererRoles()
                     .Select(r => new RoleFoyerVue(r.Id, r.Libelle))
+                    .ToList();
+                return Results.Ok(vues);
+            });
+
+        // Énumération des lieux du référentiel du foyer DEPUIS LE STORE VIVANT (s27) : l'onglet Lieux de
+        // l'écran config la lit pour lister les lieux, ET les dialogs (Poser un slot / Définir un transfert)
+        // pour peupler leur sélecteur de lieu — un seul canal de lecture, jamais la liste en dur Foyer.Lieux.
+        // Lecture seule — ne déclenche jamais la diffusion.
+        routes.MapGet("/api/foyer/lieux",
+            (IEnumerationLieux lieux) =>
+            {
+                var vues = lieux.EnumererLieux()
+                    .Select(l => new LieuFoyerVue(l.Id, l.Libelle))
                     .ToList();
                 return Results.Ok(vues);
             });
