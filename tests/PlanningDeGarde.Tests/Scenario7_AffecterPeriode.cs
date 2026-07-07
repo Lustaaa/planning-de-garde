@@ -47,7 +47,7 @@ public class Scenario7_AffecterPeriode
         // And — la responsabilité reste stable quel que soit le lieu de l'enfant (orthogonalité) :
         // poser un slot pour Léa ne touche pas la période.
         var slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu("ecole");
+        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         var poser = new PoserSlotHandler(slots, lieux, new FakeNotificateurPlanning());
         poser.Handle(new SlotBuilder().PourEnfant("lea").DansLieu("ecole")
             .De(new System.DateTime(2025, 7, 15, 8, 30, 0))
@@ -115,7 +115,7 @@ public class Scenario7_AffecterPeriode
 
         // L'enfant change de lieu plusieurs fois pendant l'intervalle.
         var slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu("ecole").AvecLieu("nounou");
+        var lieux = new FakeReferentielLieux().AvecLieu("ecole").AvecLieu("nounou");
         var poser = new PoserSlotHandler(slots, lieux, new FakeNotificateurPlanning());
         poser.Handle(new SlotBuilder().PourEnfant("lea").DansLieu("ecole")
             .De(new System.DateTime(2025, 7, 15, 8, 30, 0)).A(new System.DateTime(2025, 7, 15, 16, 30, 0)).Build());

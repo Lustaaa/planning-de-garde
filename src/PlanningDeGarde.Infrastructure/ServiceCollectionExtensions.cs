@@ -16,8 +16,15 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<ISlotRepository>(sp => sp.GetRequiredService<InMemorySlotRepository>());
         services.AddSingleton<IPeriodeRepository>(sp => sp.GetRequiredService<InMemoryPeriodeRepository>());
         services.AddSingleton<ITransfertRepository>(sp => sp.GetRequiredService<InMemoryTransfertRepository>());
-        services.AddSingleton<ILieuRepository, FoyerLieuRepository>();
         services.AddSingleton<IResponsableRepository, FoyerResponsableRepository>();
+
+        // Référentiel de lieux du foyer (petit agrégat de config foyer, s27) : store mutable seedé
+        // depuis Foyer.Lieux, réalise la lecture IEnumerationLieux (validation de pose + sélecteurs)
+        // et l'écriture IEditeurLieux (ajouter). Remplace la liste en dur Foyer.Lieux lue par
+        // l'ancien FoyerLieuRepository (trou s27). Le remplaçant durable Mongo est branché en S4.
+        services.AddSingleton<ReferentielLieuxEnMemoire>();
+        services.AddSingleton<IEnumerationLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
+        services.AddSingleton<IEditeurLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
 
         // Configuration des acteurs (noms ET couleurs) : un store mutable singleton réalise À LA FOIS
         // les ports de LECTURE IReferentielResponsables (nom) et IPaletteCouleurs (couleur) — la grille
@@ -113,6 +120,7 @@ public static class ServiceCollectionExtensions
 
         // Use cases (handlers) et read models.
         services.AddScoped<PoserSlotHandler>();
+        services.AddScoped<AjouterLieuHandler>();
         services.AddScoped<DeplacerSlotHandler>();
         services.AddScoped<SupprimerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();

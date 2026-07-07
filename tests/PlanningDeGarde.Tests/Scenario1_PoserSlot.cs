@@ -20,7 +20,7 @@ public class Scenario1_PoserSlot
     {
         // Given
         var slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu("ecole");
+        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotHandler(slots, lieux, notificateur);
         var commande = new SlotBuilder()
@@ -55,7 +55,7 @@ public class Scenario1_PoserSlot
         out FakeNotificateurPlanning notificateur)
     {
         slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu("ecole");
+        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         notificateur = new FakeNotificateurPlanning();
         return new PoserSlotHandler(slots, lieux, notificateur);
     }

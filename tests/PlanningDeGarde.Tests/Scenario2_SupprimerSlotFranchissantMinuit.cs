@@ -34,7 +34,7 @@ public class Scenario2_SupprimerSlotFranchissantMinuit
     {
         // Given — un slot de nuit "Chez Mamie" pour Léa, du mardi 16/06 22h au mercredi 17/06 07h.
         var slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu(ChezMamie);
+        var lieux = new FakeReferentielLieux().AvecLieu(ChezMamie);
         new PoserSlotHandler(slots, lieux, new FakeNotificateurPlanning()).Handle(
             new SlotBuilder().PourEnfant("lea").DansLieu(ChezMamie).De(Mardi16_22h).A(Mercredi17_07h).Build());
         var idStable = Assert.Single(slots.AllSnapshots()).Id;

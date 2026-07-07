@@ -34,7 +34,7 @@ public class Scenario4_SlotsDuJourQuery
     {
         // Given — deux slots de Léa couvrant le mardi 16/06/2026, aucun le jeudi 18/06/2026.
         var slots = new FakeSlotRepository();
-        var lieux = new FakeLieuRepository().AvecLieu(Ecole).AvecLieu(ChezMamie);
+        var lieux = new FakeReferentielLieux().AvecLieu(Ecole).AvecLieu(ChezMamie);
         var handler = new PoserSlotHandler(slots, lieux, new FakeNotificateurPlanning());
         handler.Handle(new SlotBuilder().PourEnfant("lea").DansLieu(Ecole).De(Mardi16_0830).A(Mardi16_1630).Build());
         handler.Handle(new SlotBuilder().PourEnfant("lea").DansLieu(ChezMamie).De(Mardi16_22h).A(Mercredi17_07h).Build());
