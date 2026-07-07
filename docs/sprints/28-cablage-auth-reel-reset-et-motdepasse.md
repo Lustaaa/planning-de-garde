@@ -40,12 +40,12 @@
 > actif) → `✅` **francs autorisés** une fois prouvés — ces volets **soldent** la part correspondante
 > de la dette P0 s25.
 
-## Avancement — 1/10
+## Avancement — 2/10
 
 | # | Scénario | Type | Preuve | Statut |
 |---|----------|------|--------|--------|
 | S1 | Adaptateur SMTP concret remet le mail de récupération (jeton) | @back | runtime réel (Smtp4dev) | ✅ |
-| S2 | Store de jetons reset durable (Mongo) — émission, relecture, consommation usage-unique | @back | runtime réel (Mongo) | ⏳ |
+| S2 | Store de jetons reset durable (Mongo) — émission, relecture, consommation usage-unique | @back | runtime réel (Mongo) | ✅ |
 | S3 | Jeton expiré (> 60 min) rejeté sans mutation, sur store réel | @back | runtime réel (Mongo) | ⏳ |
 | S4 | Réponse NEUTRE anti-énumération — email inconnu : aucun mail, aucun jeton | @back | runtime réel (Smtp4dev) | ⏳ |
 | S5 | Écran « mot de passe oublié » — demande envoyée, message neutre | 🖥️ IHM | runtime réel | ⏳ |
@@ -80,7 +80,7 @@ Scénario: L'adaptateur SMTP concret remet le mail de récupération porteur du 
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario: Le store de jetons reset durable émet, relit et consomme le jeton (usage unique)
   Étant donné le mode de persistance Mongo (store réel, Docker actif) réalisant IReferentielJetonsReset
   Et un jeton de réinitialisation émis pour un compte, d'expiration à 60 minutes
