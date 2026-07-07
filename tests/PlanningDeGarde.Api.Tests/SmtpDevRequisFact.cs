@@ -49,6 +49,15 @@ internal static class SmtpDev
         return null;
     }
 
+    /// <summary>Nombre de messages actuellement captés par le serveur (une seule interrogation, sans
+    /// relance) — pour asserter l'ABSENCE de mail (anti-énumération, S4).</summary>
+    public static async Task<int> NombreDeMessages()
+    {
+        using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
+        using var doc = JsonDocument.Parse(await http.GetStringAsync($"{ApiBase}/api/Messages?pageSize=50"));
+        return doc.RootElement.GetProperty("rowCount").GetInt32();
+    }
+
     /// <summary>Skip propre : vrai (avec motif) si Smtp4dev est injoignable via son API HTTP.</summary>
     public static bool Indisponible(out string motif)
     {
@@ -88,5 +97,22 @@ public sealed class SmtpDevRequisFactAttribute : FactAttribute
     {
         if (SmtpDev.Indisponible(out var motif))
             Skip = motif;
+    }
+}
+
+/// <summary>
+/// Fait conditionné à la disponibilité de <b>Mongo ET Smtp4dev</b> (Docker) : pose
+/// <see cref="FactAttribute.Skip"/> si l'un des deux est injoignable — pour les acceptations runtime qui
+/// exercent SIMULTANÉMENT le store de jetons durable et le canal mail réel (S4). Skip propre, jamais un
+/// faux vert.
+/// </summary>
+public sealed class MongoEtSmtpRequisFactAttribute : FactAttribute
+{
+    public MongoEtSmtpRequisFactAttribute()
+    {
+        if (ConfigurationFoyerMongoDurabiliteTests.MongoIndisponible(out var motifMongo))
+            Skip = motifMongo;
+        else if (SmtpDev.Indisponible(out var motifSmtp))
+            Skip = motifSmtp;
     }
 }

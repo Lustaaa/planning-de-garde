@@ -40,14 +40,14 @@
 > actif) → `✅` **francs autorisés** une fois prouvés — ces volets **soldent** la part correspondante
 > de la dette P0 s25.
 
-## Avancement — 3/10
+## Avancement — 4/10
 
 | # | Scénario | Type | Preuve | Statut |
 |---|----------|------|--------|--------|
 | S1 | Adaptateur SMTP concret remet le mail de récupération (jeton) | @back | runtime réel (Smtp4dev) | ✅ |
 | S2 | Store de jetons reset durable (Mongo) — émission, relecture, consommation usage-unique | @back | runtime réel (Mongo) | ✅ |
 | S3 | Jeton expiré (> 60 min) rejeté sans mutation, sur store réel | @back | runtime réel (Mongo) | ✅ |
-| S4 | Réponse NEUTRE anti-énumération — email inconnu : aucun mail, aucun jeton | @back | runtime réel (Smtp4dev) | ⏳ |
+| S4 | Réponse NEUTRE anti-énumération — email inconnu : aucun mail, aucun jeton | @back | runtime réel (Smtp4dev) | ✅ |
 | S5 | Écran « mot de passe oublié » — demande envoyée, message neutre | 🖥️ IHM | runtime réel | ⏳ |
 | S6 | Écran « redéfinir par jeton » — nouveau mot de passe posé, connexion réussit | 🖥️ IHM | runtime réel | ⏳ |
 | S7 | Poser un mot de passe sur un compte → login email+mot de passe (bon/mauvais couple) | @back | runtime réel (PBKDF2) | ⏳ |
@@ -102,7 +102,7 @@ Scénario: Un jeton expiré (au-delà de 60 minutes) est rejeté sans mutation
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario: Réponse neutre anti-énumération — email inconnu ne déclenche ni mail ni jeton
   Étant donné qu'aucun compte ne porte l'email « inconnu@foyer.fr »
   Et l'adaptateur SMTP réel et le store de jetons Mongo branchés
