@@ -40,13 +40,13 @@
 > actif) → `✅` **francs autorisés** une fois prouvés — ces volets **soldent** la part correspondante
 > de la dette P0 s25.
 
-## Avancement — 2/10
+## Avancement — 3/10
 
 | # | Scénario | Type | Preuve | Statut |
 |---|----------|------|--------|--------|
 | S1 | Adaptateur SMTP concret remet le mail de récupération (jeton) | @back | runtime réel (Smtp4dev) | ✅ |
 | S2 | Store de jetons reset durable (Mongo) — émission, relecture, consommation usage-unique | @back | runtime réel (Mongo) | ✅ |
-| S3 | Jeton expiré (> 60 min) rejeté sans mutation, sur store réel | @back | runtime réel (Mongo) | ⏳ |
+| S3 | Jeton expiré (> 60 min) rejeté sans mutation, sur store réel | @back | runtime réel (Mongo) | ✅ |
 | S4 | Réponse NEUTRE anti-énumération — email inconnu : aucun mail, aucun jeton | @back | runtime réel (Smtp4dev) | ⏳ |
 | S5 | Écran « mot de passe oublié » — demande envoyée, message neutre | 🖥️ IHM | runtime réel | ⏳ |
 | S6 | Écran « redéfinir par jeton » — nouveau mot de passe posé, connexion réussit | 🖥️ IHM | runtime réel | ⏳ |
@@ -91,7 +91,7 @@ Scénario: Le store de jetons reset durable émet, relit et consomme le jeton (u
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario: Un jeton expiré (au-delà de 60 minutes) est rejeté sans mutation
   Étant donné un jeton de réinitialisation émis avec une expiration à 60 minutes (store Mongo réel)
   Et l'horloge injectée positionnée 61 minutes après l'émission
