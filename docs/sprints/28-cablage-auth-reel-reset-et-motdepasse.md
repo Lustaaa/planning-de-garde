@@ -40,7 +40,7 @@
 > actif) → `✅` **francs autorisés** une fois prouvés — ces volets **soldent** la part correspondante
 > de la dette P0 s25.
 
-## Avancement — 5/10
+## Avancement — 6/10
 
 | # | Scénario | Type | Preuve | Statut |
 |---|----------|------|--------|--------|
@@ -49,7 +49,7 @@
 | S3 | Jeton expiré (> 60 min) rejeté sans mutation, sur store réel | @back | runtime réel (Mongo) | ✅ |
 | S4 | Réponse NEUTRE anti-énumération — email inconnu : aucun mail, aucun jeton | @back | runtime réel (Smtp4dev) | ✅ |
 | S5 | Écran « mot de passe oublié » — demande envoyée, message neutre | 🖥️ IHM | runtime réel | ✅ |
-| S6 | Écran « redéfinir par jeton » — nouveau mot de passe posé, connexion réussit | 🖥️ IHM | runtime réel | ⏳ |
+| S6 | Écran « redéfinir par jeton » — nouveau mot de passe posé, connexion réussit | 🖥️ IHM | runtime réel | ✅ |
 | S7 | Poser un mot de passe sur un compte → login email+mot de passe (bon/mauvais couple) | @back | runtime réel (PBKDF2) | ⏳ |
 | S8 | Écran de connexion — champ mot de passe, login email+mot de passe | 🖥️ IHM | runtime réel | ⏳ |
 | S9 | Rapprochement Google — callback (email connu) ouvre la session sur le compte local existant | @back | **doublure + manuel** | ⏳ |
@@ -123,7 +123,7 @@ Scénario: L'écran « mot de passe oublié » émet la demande et affiche un me
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: L'écran « redéfinir par jeton » pose un nouveau mot de passe et la connexion réussit
   Étant donné un jeton de réinitialisation valide reçu par mail (route « /reinitialiser-mot-de-passe?jeton=… »)
   Quand l'utilisateur saisit un nouveau mot de passe et valide

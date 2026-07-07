@@ -172,6 +172,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DesignerAdminHandler>();
         services.AddScoped<SeConnecterHandler>();
         services.AddScoped<DemanderRecuperationMotDePasseHandler>();
+        services.AddScoped<RedefinirMotDePasseHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();

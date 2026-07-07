@@ -132,6 +132,12 @@ public static class CanalEcriture
     /// un compte, un jeton de réinitialisation est généré côté serveur et remis par mail (canal réel SMTP).</summary>
     public sealed record DemanderRecuperationRequete(string Email);
 
+    /// <summary>Corps de la requête de redéfinition de mot de passe par jeton (s28, volet 1) émise via le
+    /// canal d'écriture : le jeton de réinitialisation reçu par mail et le nouveau mot de passe (clair, haché
+    /// côté serveur). Le jeton doit être VALIDE (connu, non consommé, non expiré) — sinon refus avec motif,
+    /// sans mutation ; sur succès, le mot de passe est redéfini (haché PBKDF2) et le jeton consommé (usage unique).</summary>
+    public sealed record RedefinirMotDePasseRequete(string Jeton, string NouveauMotDePasse);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
@@ -435,6 +441,18 @@ public static class CanalEcriture
             // par le mail. Aucune session, aucune diffusion : lecture d'existence + envoi, rien d'autre.
             handler.Handle(new DemanderRecuperationMotDePasseCommand(requete.Email));
             return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/redefinir-mot-de-passe", (RedefinirMotDePasseRequete requete, RedefinirMotDePasseHandler handler) =>
+        {
+            var resultat = handler.Handle(new RedefinirMotDePasseCommand(requete.Jeton, requete.NouveauMotDePasse));
+
+            // Même convention que les autres écritures : succès acquitté (le mot de passe est redéfini haché
+            // et le jeton consommé — usage unique), refus métier (jeton inconnu / consommé / expiré) renvoyé
+            // avec son motif, sans mutation. Aucune session ni diffusion : c'est une écriture de compte.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
         });
 
         return routes;
