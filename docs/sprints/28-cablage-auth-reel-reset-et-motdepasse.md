@@ -40,7 +40,7 @@
 > actif) → `✅` **francs autorisés** une fois prouvés — ces volets **soldent** la part correspondante
 > de la dette P0 s25.
 
-## Avancement — 8/10
+## Avancement — 9/10
 
 | # | Scénario | Type | Preuve | Statut |
 |---|----------|------|--------|--------|
@@ -52,7 +52,7 @@
 | S6 | Écran « redéfinir par jeton » — nouveau mot de passe posé, connexion réussit | 🖥️ IHM | runtime réel | ✅ |
 | S7 | Poser un mot de passe sur un compte → login email+mot de passe (bon/mauvais couple) | @back | runtime réel (PBKDF2) | ✅ |
 | S8 | Écran de connexion — champ mot de passe, login email+mot de passe | 🖥️ IHM | runtime réel | ✅ |
-| S9 | Rapprochement Google — callback (email connu) ouvre la session sur le compte local existant | @back | **doublure + manuel** | ⏳ |
+| S9 | Rapprochement Google — callback (email connu) ouvre la session sur le compte local existant | @back | **doublure + manuel** | ✅ logique / ⚠️ câblage |
 | S10 | Endpoint `api/oauth/google/demarrer` + DI du handler OAuth branchés | @back | **doublure + manuel** | ⏳ |
 
 > **Dette de câblage explicite (volet 3, à brancher/prouver manuellement au G3 ; le reste → backlog
@@ -162,7 +162,7 @@ Scénario: L'écran de connexion accepte un mot de passe et connecte sur le bon 
 ### Volet 3 — Rapprochement compte local ↔ Google (tranche minimale, preuve doublure + manuel)
 
 ```gherkin
-@back @pending @preuve-doublure
+@back @vert @preuve-doublure
 Scénario: Le callback Google d'un email connu ouvre la session sur le compte local existant
   Étant donné un compte local Actif d'email « papa@foyer.fr » lié à un acteur du foyer
   Et une doublure de IFournisseurOAuth restituant l'identité externe « papa@foyer.fr » (email vérifié Google)
