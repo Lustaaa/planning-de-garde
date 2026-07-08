@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 6/14 (back 11 · IHM 3)
+## Avancement — 7/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -46,7 +46,7 @@
 | S4 | Projection grille : le slot récurrent apparaît sur **CHAQUE occurrence** du bon jour dans la fenêtre | @back | ✅ |
 | S5 | Limite : le slot récurrent **n'apparaît sur aucun autre jour de semaine** | @back | ✅ |
 | S6 | Persistance durable Mongo : un slot récurrent **survit au redémarrage** (parité slot ponctuel s15) | @back | ✅ |
-| S7 | Suppression **idempotente** par id stable (no-op si absent) + **diffusion temps réel** | @back | ⏳ |
+| S7 | Suppression **idempotente** par id stable (no-op si absent) + **diffusion temps réel** | @back | ✅ |
 | S8 | IHM : configurer un slot récurrent → occurrences visibles sur toutes les cases du bon jour (RED→GREEN) | 🖥️ IHM | ⏳ |
 | S9 | Projection grille : un jour **avec transfert** porte l'info **bicolore** (couleurs départ/arrivée résolues sur acteurs) | @back | ⏳ |
 | S10 | Limite : un jour **sans transfert** reste **unicolore**, aucune info bicolore (non-régression) | @back | ⏳ |
@@ -107,7 +107,7 @@ Scénario: S6 — Un slot récurrent persiste sur le store durable Mongo
   Alors le slot récurrent est toujours présent avec son identifiant stable et son snapshot intacts
   # Parité avec l'asymétrie seed s15 : en mode Mongo, aucun slot récurrent seedé au 1er lancement
 
-@back @pending
+@back @vert
 Scénario: S7 — Suppression idempotente d'un slot récurrent par identifiant stable
   Étant donné un slot récurrent enregistré d'identifiant stable connu
   Quand un Parent supprime ce slot récurrent par son identifiant stable
