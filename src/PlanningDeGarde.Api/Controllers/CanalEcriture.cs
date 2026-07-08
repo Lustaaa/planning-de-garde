@@ -22,6 +22,15 @@ public static class CanalEcriture
     /// provient du read model EXISTANT <c>JourneeEnfantQuery</c> (vert s01) : aucune règle ni recalcul neuf.</summary>
     public sealed record PoserSlotReponse(bool Chevauchement);
 
+    /// <summary>Corps de la requête de pose d'un slot RÉCURRENT hebdo émise via le canal requête/réponse
+    /// (s29) : enfant + lieu + jour de semaine + plage horaire (début→fin, sans date). Refus miroir de la
+    /// pose ponctuelle (lieu inconnu / durée non positive) renvoyé avec son motif.</summary>
+    public sealed record PoserSlotRecurrentRequete(string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin);
+
+    /// <summary>Corps de la requête de suppression d'un slot récurrent (s29) : la clé est l'identifiant
+    /// stable du slot récurrent (jamais un libellé) ; la suppression est idempotente côté handler.</summary>
+    public sealed record SupprimerSlotRecurrentRequete(string SlotId);
+
     /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
     public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
 
@@ -159,6 +168,31 @@ public static class CanalEcriture
             // c'est un attribut de la réponse du canal requête/réponse, pas la diffusion ni la projection.
             var chevauchement = journee.Chevauchements(requete.EnfantId, requete.Debut).Count > 0;
             return Results.Ok(new PoserSlotReponse(chevauchement));
+        });
+
+        routes.MapPost("/api/canal/poser-slot-recurrent", (PoserSlotRecurrentRequete requete, PoserSlotRecurrentHandler handler) =>
+        {
+            var resultat = handler.Handle(new PoserSlotRecurrentCommand(
+                requete.EnfantId, requete.LieuId, requete.JourDeSemaine, requete.HeureDebut, requete.HeureFin));
+
+            // Même convention que les autres écritures : succès acquitté (le slot récurrent est enregistré,
+            // ses occurrences apparaissent sur la grille ; le handler a déclenché la diffusion temps réel),
+            // refus métier (lieu inconnu / durée non positive) renvoyé avec son motif.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/supprimer-slot-recurrent", (SupprimerSlotRecurrentRequete requete, SupprimerSlotRecurrentHandler handler) =>
+        {
+            var resultat = handler.Handle(new SupprimerSlotRecurrentCommand(requete.SlotId));
+
+            // Même convention : succès acquitté (le slot récurrent quitte le store, ses occurrences
+            // disparaissent des cases ; le handler a déclenché la diffusion temps réel). Idempotent côté
+            // handler (id absent / déjà supprimé = no-op qui réussit).
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
         });
 
         routes.MapPost("/api/canal/affecter-periode", (AffecterPeriodeRequete requete, AffecterPeriodeHandler handler) =>
