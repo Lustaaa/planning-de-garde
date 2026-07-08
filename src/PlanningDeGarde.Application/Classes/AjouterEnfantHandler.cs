@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application;
@@ -37,6 +38,11 @@ public sealed class AjouterEnfantHandler
         // toute génération d'id, toute écriture et toute diffusion — aucun enfant vide persisté.
         if (string.IsNullOrWhiteSpace(commande.Prenom))
             return Result<AjouterEnfantResultat>.Echec("prénom requis");
+
+        // Garde « prénom déjà existant » (S3, miroir R6/R10) : refus si un enfant porte déjà ce prénom —
+        // aucun doublon persisté, référentiel inchangé (unicité lue sur le référentiel courant).
+        if (_enfants.EnumererEnfants().Any(enfant => enfant.Prenom == commande.Prenom))
+            return Result<AjouterEnfantResultat>.Echec("prénom déjà existant");
 
         // Identifiant stable neuf OPAQUE, généré (jamais dérivé du prénom, anti-pattern s06) et unique
         // (GUID → jamais un id existant). Le prénom se résout ensuite sur cet id.
