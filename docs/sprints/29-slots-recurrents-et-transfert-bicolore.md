@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 12/14 (back 11 · IHM 3)
+## Avancement — 13/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -52,7 +52,7 @@
 | S10 | Limite : un jour **sans transfert** reste **unicolore**, aucune info bicolore (non-régression) | @back | ✅ |
 | S11 | Légende : le motif **bicolore = transfert** est signalé quand un transfert est présent dans la fenêtre | @back | ✅ |
 | S12 | Erreur : transfert dont un acteur a été **supprimé** → couleur **neutre** pour l'orphelin (pas de couleur fantôme) | @back | ✅ |
-| S13 | IHM : rendu **diagonal bicolore** de la case (départ/arrivée), lisibilité conforme (nom + légende) — **gate G3** | 🖥️ IHM | ⏳ |
+| S13 | IHM : rendu **diagonal bicolore** de la case (départ/arrivée), lisibilité conforme (nom + légende) — **gate G3** | 🖥️ IHM | ✅ |
 | S14 | IHM : jour **sans transfert** = case **unicolore inchangée** (non-régression visuelle) | 🖥️ IHM | ⏳ |
 
 ## Scénarios
@@ -168,7 +168,7 @@ Scénario: S12 — Acteur d'un transfert supprimé : neutre, pas de couleur fant
 ### Volet 2 — Rendu IHM bicolore (menée RED→GREEN runtime, fin de sprint, gate G3)
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: S13 — Rendu diagonal bicolore d'une case de transfert
   Étant donné une case portant l'information bicolore (départ "Papa" / arrivée "Maman")
   Quand la grille est rendue

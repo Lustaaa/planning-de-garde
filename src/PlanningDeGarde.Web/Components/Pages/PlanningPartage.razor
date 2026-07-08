@@ -215,6 +215,15 @@
                          data-couleur="@jourCase.CouleurResponsable"
                          data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
+                        @* Transfert bicolore (s29, S13) — parité avec la vue cartes : diagonale départ/arrivée
+                           en calque de fond léger, nom et slots lisibles au-dessus. Absent sans transfert (S14). *@
+                        @if (jourCase.Transfert is { } transfert)
+                        {
+                            <div class="grille-horaire-transfert" data-testid="case-transfert-bicolore"
+                                 data-couleur-depart="@transfert.CouleurDepart" data-couleur-arrivee="@transfert.CouleurArrivee"
+                                 style="background: linear-gradient(135deg, @Couleur(transfert.CouleurDepart) 0 48%, @Couleur(transfert.CouleurArrivee) 52% 100%);"
+                                 title="Transfert" aria-hidden="true"></div>
+                        }
                         <div class="grille-horaire-entete">
                             <span class="grille-horaire-jour-nom">@nomJour</span>
                             @* N° de jour en pastille couleur du responsable (garde le libellé dd/MM pour les repères). *@
@@ -271,6 +280,17 @@ else
                          data-couleur="@jourCase.CouleurResponsable"
                          data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
+                        @* Transfert bicolore (s29, S13) : un jour portant un transfert affiche une DIAGONALE
+                           séparant la couleur de départ (déposant) de celle d'arrivée (récupérant), résolues
+                           sur le référentiel acteurs. Calque de fond en léger retrait (opacité) : le nom et
+                           les slots restent lisibles au-dessus (R18–R22). Absent si pas de transfert (S14). *@
+                        @if (jourCase.Transfert is { } transfert)
+                        {
+                            <div class="grille-jour-transfert" data-testid="case-transfert-bicolore"
+                                 data-couleur-depart="@transfert.CouleurDepart" data-couleur-arrivee="@transfert.CouleurArrivee"
+                                 style="background: linear-gradient(135deg, @Couleur(transfert.CouleurDepart) 0 48%, @Couleur(transfert.CouleurArrivee) 52% 100%);"
+                                 title="Transfert" aria-hidden="true"></div>
+                        }
                         <div class="grille-jour-entete">
                             <span class="grille-jour-date grille-jour-date-pastille"
                                   style="background-color:@Couleur(jourCase.CouleurResponsable);"
@@ -298,7 +318,7 @@ else
     </section>
 }
 
-<Legende Entrees="_grille.Légende" />
+<Legende Entrees="_grille.Légende" Motifs="_grille.LégendeMotifs ?? System.Array.Empty<EntreeLegendeMotif>()" />
 
 @* Menu d'actions de la case (décision CP, palier 7) : un seul déclencheur d'écriture par case
    (mutualise le gating Invité, Sc.6), deux entrées ouvrant chacune sa dialog pré-remplie sur la
@@ -422,6 +442,14 @@ else
                    border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 6px;
                    box-shadow: var(--pdg-ombre-sm, 0 1px 2px rgba(16,24,40,.05));
                    transition: box-shadow .15s ease, transform .15s ease, border-color .15s ease; }
+    /* Case portant un transfert : elle devient le repère de positionnement du calque diagonal, et son
+       contenu (en-tête, slots) passe au-dessus du calque (z-index). */
+    .grille-jour { position: relative; }
+    .grille-jour-entete, .grille-jour-slots { position: relative; z-index: 1; }
+    /* Calque diagonal bicolore (départ/arrivée) en léger retrait : couleurs INLINE (données), la case
+       reste lisible (nom + slots au-dessus, R18–R22). Coins arrondis alignés sur la carte. */
+    .grille-jour-transfert { position: absolute; inset: 0; z-index: 0; border-radius: 14px; opacity: .5;
+                             pointer-events: none; }
     .grille-jour-cliquable { cursor: pointer; }
     .grille-jour-cliquable:hover { border-color: var(--pdg-accent); transform: translateY(-2px);
                                    box-shadow: 0 6px 16px rgba(16,24,40,.10); }
@@ -456,8 +484,12 @@ else
                             padding: 2px 6px 0 0; font-size: .66rem; color: var(--pdg-muted);
                             font-variant-numeric: tabular-nums; }
     /* Colonne d'un jour : en-tête (fixe, aligne les pistes) + piste des heures. */
-    .grille-horaire-col { border-right: 1px solid var(--pdg-border); }
+    .grille-horaire-col { border-right: 1px solid var(--pdg-border); position: relative; }
     .grille-horaire-col:last-child { border-right: none; }
+    .grille-horaire-entete, .grille-horaire-piste { position: relative; z-index: 1; }
+    /* Calque diagonal bicolore (parité vue cartes) sur l'en-tête de la colonne du jour de transfert. */
+    .grille-horaire-transfert { position: absolute; top: 0; left: 0; right: 0; height: 64px; z-index: 0;
+                                opacity: .5; pointer-events: none; }
     .grille-horaire-cliquable { cursor: pointer; }
     .grille-horaire-cliquable:hover { background: color-mix(in srgb, var(--pdg-accent) 5%, transparent); }
     .grille-horaire-selectionnee { outline: 3px solid var(--pdg-accent); outline-offset: -3px; }

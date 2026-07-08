@@ -24,7 +24,8 @@ public partial class PlanningPartage
     private static readonly string[] JoursDeLaSemaine =
         { "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche" };
 
-    private GrilleAgenda _grille = new(Array.Empty<JourCase>(), Array.Empty<SemaineLigne>(), Array.Empty<EntreeLegende>());
+    private GrilleAgenda _grille = new(
+        Array.Empty<JourCase>(), Array.Empty<SemaineLigne>(), Array.Empty<EntreeLegende>(), Array.Empty<EntreeLegendeMotif>());
 
     // Acteurs DÉCLARÉS du foyer (énumérés depuis le store via api/foyer/acteurs) : source UNIQUE des
     // sélecteurs de responsable des dialogs d'écriture, passée en paramètre (les dialogs ne s'auto-chargent
