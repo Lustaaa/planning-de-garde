@@ -49,7 +49,7 @@
 > Persistance et migration prouvées sur **store Mongo durable**. **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, **pas de dette de câblage**.
 
-## Avancement — 5/10 (back 8 · IHM 2)
+## Avancement — 6/10 (back 8 · IHM 2)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -58,7 +58,7 @@
 | S3 | Rejet : prénom **doublon** d'un enfant existant → échec **sans écriture** (R6) | @back | ✅ |
 | S4 | Éditer le prénom d'un enfant existant (clé = **id stable**) → succès, relu, diffusion | @back | ✅ |
 | S5 | **Port d'énumération** : liste les enfants du foyer (id stable + prénom), dédoublonnée par id | @back | ✅ |
-| S6 | Persistance durable Mongo : un enfant **survit au redémarrage** (parité asymétrie seed s15) | @back | ⏳ |
+| S6 | Persistance durable Mongo : un enfant **survit au redémarrage** (parité asymétrie seed s15) | @back | ✅ |
 | S7 | Pose d'un slot référençant un enfant **inconnu** du foyer → rejet **sans écriture** (miroir lieu inconnu s29) | @back | ⏳ |
 | S8 | **Migration rétro-affectation idempotente** : slots du fantôme « Léa » réattachés à l'enfant réel ; rejeu = no-op ; **prouvé store réel** | @back | ⏳ |
 | S9 | IHM : onglet **« Enfants »** (Config foyer) — lister / ajouter / éditer, rejets visibles sans enregistrer (RED→GREEN) | 🖥️ IHM | ⏳ |
@@ -110,7 +110,7 @@ Scénario: S5 — Le port d'énumération liste les enfants du foyer
   Alors la liste porte "Léa" et "Tom" avec leurs identifiants stables et prénoms
   Et la liste est dédoublonnée par identifiant (jamais par libellé)
 
-@back @pending
+@back @vert
 Scénario: S6 — Un enfant persiste sur le store durable Mongo
   Étant donné le store Mongo durable actif
   Et un enfant "Léa" enregistré avec son identifiant stable
