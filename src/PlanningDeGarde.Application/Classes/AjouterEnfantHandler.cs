@@ -33,6 +33,11 @@ public sealed class AjouterEnfantHandler
 
     public Result<AjouterEnfantResultat> Handle(AjouterEnfantCommand commande)
     {
+        // Garde « prénom requis » (S2, miroir R5/R10) : un prénom vide ou tout-espaces est refusé AVANT
+        // toute génération d'id, toute écriture et toute diffusion — aucun enfant vide persisté.
+        if (string.IsNullOrWhiteSpace(commande.Prenom))
+            return Result<AjouterEnfantResultat>.Echec("prénom requis");
+
         // Identifiant stable neuf OPAQUE, généré (jamais dérivé du prénom, anti-pattern s06) et unique
         // (GUID → jamais un id existant). Le prénom se résout ensuite sur cet id.
         var enfantId = $"enfant-{Guid.NewGuid():N}";
