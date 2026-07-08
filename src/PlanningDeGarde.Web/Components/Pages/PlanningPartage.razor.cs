@@ -49,6 +49,7 @@ public partial class PlanningPartage
     private DateOnly? _dateMenu;
     // Date de contexte de chaque dialog ouverte depuis le menu (null = dialog fermée) :
     private DateOnly? _dateDialogPoserSlot;
+    private DateOnly? _dateDialogPoserSlotRecurrent;
     private DateOnly? _dateDialogAffecterPeriode;
     private DateOnly? _dateDialogDefinirTransfert;
     private DateOnly? _dateDialogSupprimerPeriode;
@@ -416,6 +417,14 @@ public partial class PlanningPartage
         _dateDialogPoserSlot = date;
     }
 
+    /// <summary>Depuis le menu (s29, S8), ouvre la dialog « Poser un slot récurrent » : la date de la case
+    /// pré-remplit le jour de semaine de la récurrence (« chez papa tous les samedis »). Aucune écriture ici.</summary>
+    private void OuvrirPoserSlotRecurrent(DateOnly date)
+    {
+        _dateMenu = null;
+        _dateDialogPoserSlotRecurrent = date;
+    }
+
     /// <summary>Depuis le menu, ouvre la dialog « Affecter une période » pré-remplie sur la date de la case.
     /// La dialog reçoit la liste des acteurs déclarés en PARAMÈTRE (chargée à l'init + rafraîchie en temps
     /// réel) : aucun chargement async en son sein → pas de re-render pendant la saisie.</summary>
@@ -538,6 +547,7 @@ public partial class PlanningPartage
     private void FermerDialog()
     {
         _dateDialogPoserSlot = null;
+        _dateDialogPoserSlotRecurrent = null;
         _dateDialogAffecterPeriode = null;
         _dateDialogDefinirTransfert = null;
         _dateDialogSupprimerPeriode = null;

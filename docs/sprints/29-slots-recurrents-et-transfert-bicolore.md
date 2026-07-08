@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 11/14 (back 11 · IHM 3)
+## Avancement — 12/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -47,7 +47,7 @@
 | S5 | Limite : le slot récurrent **n'apparaît sur aucun autre jour de semaine** | @back | ✅ |
 | S6 | Persistance durable Mongo : un slot récurrent **survit au redémarrage** (parité slot ponctuel s15) | @back | ✅ |
 | S7 | Suppression **idempotente** par id stable (no-op si absent) + **diffusion temps réel** | @back | ✅ |
-| S8 | IHM : configurer un slot récurrent → occurrences visibles sur toutes les cases du bon jour (RED→GREEN) | 🖥️ IHM | ⏳ |
+| S8 | IHM : configurer un slot récurrent → occurrences visibles sur toutes les cases du bon jour (RED→GREEN) | 🖥️ IHM | ✅ |
 | S9 | Projection grille : un jour **avec transfert** porte l'info **bicolore** (couleurs départ/arrivée résolues sur acteurs) | @back | ✅ |
 | S10 | Limite : un jour **sans transfert** reste **unicolore**, aucune info bicolore (non-régression) | @back | ✅ |
 | S11 | Légende : le motif **bicolore = transfert** est signalé quand un transfert est présent dans la fenêtre | @back | ✅ |
@@ -121,7 +121,7 @@ Scénario: S7 — Suppression idempotente d'un slot récurrent par identifiant s
 ### Volet 1 — IHM de configuration (menée RED→GREEN runtime, fin de sprint)
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: S8 — Configurer un slot récurrent depuis l'IHM
   Étant donné un Parent connecté et un foyer avec le lieu "Piscine" et un enfant déclaré
   Quand il configure un slot récurrent : jour = samedi, de 11h30 à 12h15, lieu "Piscine"

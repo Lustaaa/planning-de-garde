@@ -314,6 +314,8 @@ else
             <div class="menu-groupe menu-groupe-primaire" data-testid="menu-groupe-primaire">
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-poser-slot"
                         @onclick="@(() => OuvrirPoserSlot(dateMenu))">Poser un slot</button>
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-poser-slot-recurrent"
+                        @onclick="@(() => OuvrirPoserSlotRecurrent(dateMenu))">Poser un slot récurrent</button>
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-affecter-periode"
                         @onclick="@(() => OuvrirAffecterPeriode(dateMenu))">Affecter une période</button>
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-definir-transfert"
@@ -341,6 +343,14 @@ else
                      Lieux="_lieuxFoyer"
                      OnValide="FermerPoserSlotEtRecharger"
                      OnAnnule="FermerDialog" />
+}
+
+@if (_dateDialogPoserSlotRecurrent is { } datePoserSlotRecurrent)
+{
+    <PoserSlotRecurrentDialog DateContexte="datePoserSlotRecurrent"
+                              Lieux="_lieuxFoyer"
+                              OnValide="FermerDialogEtRecharger"
+                              OnAnnule="FermerDialog" />
 }
 
 @if (_dateDialogAffecterPeriode is { } dateAffecter)
