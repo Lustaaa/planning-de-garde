@@ -33,12 +33,23 @@ public sealed class FrontWasmTransfertBicoloreTests : TestContext
         // When — la grille réellement câblée est affichée à la date de référence 29/06/2026.
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Lundi_29_06_2026);
 
-        // Then — la case du 29/06 porte une diagonale bicolore : départ bleu (Alice), arrivée orange (Bruno).
+        // Then — le 29/06 porte une diagonale bicolore : départ bleu (Alice), arrivée orange (Bruno).
         var caseLundi = GrilleRuntimeHarness.CaseDuJour(grille, "29/06");
         var bicolore = caseLundi.QuerySelector("[data-testid='case-transfert-bicolore']");
         Assert.NotNull(bicolore);
         Assert.Equal("bleu", bicolore!.GetAttribute("data-couleur-depart"));
         Assert.Equal("orange", bicolore!.GetAttribute("data-couleur-arrivee"));
+
+        // … la diagonale est portée par la PASTILLE DE DATE (badge « 29/06 ») SEULEMENT, pas par toute la
+        // case (retour PO gate) : l'élément bicolore EST la pastille de date et affiche la date.
+        Assert.Contains("grille-jour-date-pastille", bicolore!.ClassName);
+        Assert.Contains("29/06", bicolore!.TextContent);
+
+        // … et le reste de la case revient au rendu normal : aucun calque diagonal plein n'existe (le seul
+        // élément bicolore est la pastille de date, celle qui porte le texte de date).
+        Assert.All(
+            caseLundi.QuerySelectorAll("[data-testid='case-transfert-bicolore']"),
+            el => Assert.Contains("grille-jour-date-pastille", el.ClassName));
 
         // … le nom du responsable reste lisible dans la case (R18–R22).
         Assert.Equal("Alice", caseLundi.QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
