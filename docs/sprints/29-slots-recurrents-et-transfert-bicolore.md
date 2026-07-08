@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 5/14 (back 11 · IHM 3)
+## Avancement — 6/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -45,7 +45,7 @@
 | S3 | Rejet : plage horaire non positive (fin ≤ début) → échec **sans écriture** | @back | ✅ |
 | S4 | Projection grille : le slot récurrent apparaît sur **CHAQUE occurrence** du bon jour dans la fenêtre | @back | ✅ |
 | S5 | Limite : le slot récurrent **n'apparaît sur aucun autre jour de semaine** | @back | ✅ |
-| S6 | Persistance durable Mongo : un slot récurrent **survit au redémarrage** (parité slot ponctuel s15) | @back | ⏳ |
+| S6 | Persistance durable Mongo : un slot récurrent **survit au redémarrage** (parité slot ponctuel s15) | @back | ✅ |
 | S7 | Suppression **idempotente** par id stable (no-op si absent) + **diffusion temps réel** | @back | ⏳ |
 | S8 | IHM : configurer un slot récurrent → occurrences visibles sur toutes les cases du bon jour (RED→GREEN) | 🖥️ IHM | ⏳ |
 | S9 | Projection grille : un jour **avec transfert** porte l'info **bicolore** (couleurs départ/arrivée résolues sur acteurs) | @back | ⏳ |
@@ -99,7 +99,7 @@ Scénario: S5 — Le slot récurrent n'apparaît sur aucun autre jour de semaine
   Quand on projette la grille agenda sur une fenêtre de 4 semaines
   Alors aucune case d'un jour autre que samedi ne porte l'entrée "Piscine" 11h30–12h15
 
-@back @pending
+@back @vert
 Scénario: S6 — Un slot récurrent persiste sur le store durable Mongo
   Étant donné le store Mongo durable actif
   Et un slot récurrent enregistré le samedi de 11h30 à 12h15 au lieu "Piscine"
