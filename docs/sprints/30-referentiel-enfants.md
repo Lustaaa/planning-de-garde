@@ -49,7 +49,7 @@
 > Persistance et migration prouvées sur **store Mongo durable**. **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, **pas de dette de câblage**.
 
-## Avancement — 7/10 (back 8 · IHM 2)
+## Avancement — 8/10 (back 8 · IHM 2)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -60,7 +60,7 @@
 | S5 | **Port d'énumération** : liste les enfants du foyer (id stable + prénom), dédoublonnée par id | @back | ✅ |
 | S6 | Persistance durable Mongo : un enfant **survit au redémarrage** (parité asymétrie seed s15) | @back | ✅ |
 | S7 | Pose d'un slot référençant un enfant **inconnu** du foyer → rejet **sans écriture** (miroir lieu inconnu s29) | @back | ✅ |
-| S8 | **Migration rétro-affectation idempotente** : slots du fantôme « Léa » réattachés à l'enfant réel ; rejeu = no-op ; **prouvé store réel** | @back | ⏳ |
+| S8 | **Migration rétro-affectation idempotente** : slots du fantôme « Léa » réattachés à l'enfant réel ; rejeu = no-op ; **prouvé store réel** | @back | ✅ |
 | S9 | IHM : onglet **« Enfants »** (Config foyer) — lister / ajouter / éditer, rejets visibles sans enregistrer (RED→GREEN) | 🖥️ IHM | ⏳ |
 | S10 | IHM : **sélecteur d'enfant** explicite dans la dialog de pose (ponctuel + récurrent) — choix transmis, plus de fantôme — **gate G3** | 🖥️ IHM | ⏳ |
 
@@ -127,7 +127,7 @@ Scénario: S7 — Rejet d'une pose de slot référençant un enfant inconnu du f
   Et aucune diffusion n'est déclenchée
   # Miroir de la validation "lieu inconnu" du slot récurrent (s29 S2)
 
-@back @pending
+@back @vert
 Scénario: S8 — Migration idempotente de rétro-affectation des slots du fantôme
   Étant donné le store Mongo durable actif
   Et des slots existants attachés au fantôme "Léa" (EnfantId transmis via Session, jamais choisi)
