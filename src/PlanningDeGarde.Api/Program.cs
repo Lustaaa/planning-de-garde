@@ -62,10 +62,13 @@ app.MapScalarApiReference();
 // portés par les adaptateurs eux-mêmes (config foyer), conservés pour la non-régression.
 //
 // EXCEPTION explicitement optée (flag « Demo:SeedCompteDemo », JAMAIS actif par défaut → la parité
-// « aucun seed » ci-dessus reste intacte hors amorçage de démo demandé) : amorce un compte de
-// DÉMONSTRATION par le CHEMIN RÉEL — les mêmes handlers que le runtime, aucun hash en dur : acteur
-// ajouté → compte créé (Inactif) → activé → mot de passe posé (PBKDF2 via DefinirMotDePasseHandler).
-// Idempotent : si l'email de démo est déjà présent (redémarrage sur store durable), on NE re-seede pas.
+// « aucun seed » ci-dessus reste intacte hors amorçage de démo demandé) : amène le compte de
+// DÉMONSTRATION à son état cible par le CHEMIN RÉEL — les mêmes handlers que le runtime, aucun hash
+// en dur : acteur ajouté → compte créé (si absent) → ACTIVÉ → mot de passe posé (PBKDF2 via
+// DefinirMotDePasseHandler). Amorçage CONVERGENT (idempotent), pas un simple « skip si existe » : si
+// un compte email-only préexiste sur le store durable (tentative antérieure), on lui POSE quand même
+// le mot de passe et on l'active — sinon le login « email + mot de passe » resterait indûment permissif
+// (login email-only ignorant le mot de passe). Re-exécuter le seed reconverge simplement vers l'état cible.
 if (string.Equals(app.Configuration["Demo:SeedCompteDemo"], "true", StringComparison.OrdinalIgnoreCase))
 {
     const string emailDemo = "deveaux.cyril@gmail.com";
@@ -74,17 +77,26 @@ if (string.Equals(app.Configuration["Demo:SeedCompteDemo"], "true", StringCompar
     using var portee = app.Services.CreateScope();
     var services = portee.ServiceProvider;
 
-    if (services.GetRequiredService<IEnumerationComptes>().EnumererComptes().All(c => c.Email != emailDemo))
+    var existant = services.GetRequiredService<IEnumerationComptes>()
+        .EnumererComptes().FirstOrDefault(c => c.Email == emailDemo);
+
+    string compteId;
+    if (existant is null)
     {
         var acteur = services.GetRequiredService<AjouterActeurHandler>()
             .Handle(new AjouterActeurCommand("Cyril (démo)"));
-        var compte = services.GetRequiredService<CreerCompteHandler>()
-            .Handle(new CreerCompteCommand(emailDemo, acteur.Valeur!.ActeurId));
-        services.GetRequiredService<ActiverCompteHandler>()
-            .Handle(new ActiverCompteCommand(compte.Valeur!.CompteId));
-        services.GetRequiredService<DefinirMotDePasseHandler>()
-            .Handle(new DefinirMotDePasseCommand(compte.Valeur!.CompteId, motDePasseDemo));
+        compteId = services.GetRequiredService<CreerCompteHandler>()
+            .Handle(new CreerCompteCommand(emailDemo, acteur.Valeur!.ActeurId)).Valeur!.CompteId;
     }
+    else
+    {
+        compteId = existant.Id;
+    }
+
+    // Convergence : activer (Actif→Actif inoffensif) puis (re)poser le condensat du mot de passe cible.
+    services.GetRequiredService<ActiverCompteHandler>().Handle(new ActiverCompteCommand(compteId));
+    services.GetRequiredService<DefinirMotDePasseHandler>()
+        .Handle(new DefinirMotDePasseCommand(compteId, motDePasseDemo));
 }
 
 app.Run();

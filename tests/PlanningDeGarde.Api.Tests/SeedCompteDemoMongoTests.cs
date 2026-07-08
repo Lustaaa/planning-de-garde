@@ -2,6 +2,8 @@ using System.Net.Http.Json;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using MongoDB.Driver;
+using PlanningDeGarde.Application;
+using PlanningDeGarde.Infrastructure;
 
 namespace PlanningDeGarde.Api.Tests;
 
@@ -49,6 +51,30 @@ public sealed class SeedCompteDemoMongoTests : IDisposable
         var mauvais = await client.PostAsJsonAsync(
             "/api/canal/se-connecter", new { Email = EmailDemo, MotDePasse = "mauvais-mot-de-passe" });
         Assert.False(mauvais.IsSuccessStatusCode, "un mauvais mot de passe doit être refusé.");
+    }
+
+    [MongoRequisFact]
+    public async Task Should_Poser_le_mot_de_passe_et_durcir_le_login_When_un_compte_email_only_de_meme_email_preexiste_sur_le_store_durable()
+    {
+        // Contexte réel : une tentative antérieure a laissé sur le store durable un compte ACTIF mais
+        // email-only (aucun mot de passe) portant l'email de démo. Un amorçage « skip si l'email existe »
+        // laisserait ce compte SANS mot de passe → le login accepterait n'importe quel mot de passe
+        // (login email-only). L'amorçage doit CONVERGER : poser le mot de passe cible sur ce compte.
+        new ReferentielComptesMongo(ConnectionString, _baseDeTest)
+            .Creer("compte-demo-preexistant", EmailDemo, StatutCompte.Actif, "acteur-demo-preexistant");
+
+        using var hote = new HoteDemo(ConnectionString, _baseDeTest); // l'amorçage de démo converge au démarrage
+        var client = hote.CreateClient();
+
+        // Bon couple → connexion réussie : le condensat cible a bien été posé sur le compte préexistant.
+        var bon = await client.PostAsJsonAsync(
+            "/api/canal/se-connecter", new { Email = EmailDemo, MotDePasse = MotDePasseDemo });
+        Assert.True(bon.IsSuccessStatusCode, $"la connexion du compte de démo doit réussir, statut {(int)bon.StatusCode}.");
+
+        // Mauvais mot de passe → refus : le login n'est plus permissif (le mot de passe est désormais vérifié).
+        var mauvais = await client.PostAsJsonAsync(
+            "/api/canal/se-connecter", new { Email = EmailDemo, MotDePasse = "mauvais-mot-de-passe" });
+        Assert.False(mauvais.IsSuccessStatusCode, "un mauvais mot de passe doit être refusé (login non permissif).");
     }
 
     public void Dispose()
