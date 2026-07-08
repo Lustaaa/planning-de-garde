@@ -37,16 +37,23 @@
   Lance le front via `dotnet watch run` (hot reload), pratique pendant la phase IHM.
 .PARAMETER NoBrowser
   N'ouvre pas le navigateur automatiquement.
+.PARAMETER SeedDemo
+  Active l'amorçage du compte de DÉMONSTRATION (flag Demo:SeedCompteDemo) : au démarrage, l'hôte
+  API amorce deveaux.cyril@gmail.com / Toto123@ par le chemin réel (idempotent sur Mongo durable).
+  Opt-in explicite (défaut : aucun seed, parité s15 intacte) — pratique pour se connecter au gate.
 .EXAMPLE
   pwsh .claude/skills/run/scripts/run.ps1
 .EXAMPLE
   pwsh .claude/skills/run/scripts/run.ps1 -Watch
+.EXAMPLE
+  pwsh .claude/skills/run/scripts/run.ps1 -SeedDemo
 #>
 [CmdletBinding()]
 param(
     [switch]$NoBuild,
     [switch]$Watch,
-    [switch]$NoBrowser
+    [switch]$NoBrowser,
+    [switch]$SeedDemo
 )
 
 $ErrorActionPreference = 'Stop'
@@ -94,6 +101,16 @@ if ($mongoOk) {
 } else {
     $env:Foyer__Persistance = 'InMemory'
     Write-Host "Docker/Mongo indisponible → config foyer VOLATILE (InMemory). Lancez 'docker compose up -d mongo' pour la durabilité." -ForegroundColor Yellow
+}
+
+# Amorçage de démo OPT-IN (jamais par défaut) : câble le flag Demo:SeedCompteDemo lu par l'hôte API,
+# qui amorce alors deveaux.cyril@gmail.com / Toto123@ par le chemin réel (idempotent). Sans -SeedDemo,
+# aucun seed — parité s15 préservée.
+if ($SeedDemo) {
+    $env:Demo__SeedCompteDemo = 'true'
+    Write-Host 'Amorçage compte de démo ACTIF : deveaux.cyril@gmail.com / Toto123@.' -ForegroundColor Green
+} else {
+    $env:Demo__SeedCompteDemo = 'false'
 }
 
 # --- Build SÉQUENTIEL anti-race (CS2012) -----------------------------------------------------
