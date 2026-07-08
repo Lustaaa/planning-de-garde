@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
 using PlanningDeGarde.Api;
+using PlanningDeGarde.Application;
 using PlanningDeGarde.Infrastructure;
 using Scalar.AspNetCore;
 
@@ -55,10 +56,36 @@ app.MapHub<PlanningHub>("/hubs/planning");
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-// AUCUN amorçage runtime (Sc.8, s15) : l'hôte démarre sans seed. Sur un store Mongo vierge,
+// AUCUN amorçage runtime PAR DÉFAUT (Sc.8, s15) : l'hôte démarre sans seed. Sur un store Mongo vierge,
 // l'application ouvre totalement vide (ni acteurs, ni slots/périodes/transferts, ni cycle de fond) ;
 // dès qu'on saisit, c'est durable et rechargé aux lancements suivants. Les défauts InMemory restent
 // portés par les adaptateurs eux-mêmes (config foyer), conservés pour la non-régression.
+//
+// EXCEPTION explicitement optée (flag « Demo:SeedCompteDemo », JAMAIS actif par défaut → la parité
+// « aucun seed » ci-dessus reste intacte hors amorçage de démo demandé) : amorce un compte de
+// DÉMONSTRATION par le CHEMIN RÉEL — les mêmes handlers que le runtime, aucun hash en dur : acteur
+// ajouté → compte créé (Inactif) → activé → mot de passe posé (PBKDF2 via DefinirMotDePasseHandler).
+// Idempotent : si l'email de démo est déjà présent (redémarrage sur store durable), on NE re-seede pas.
+if (string.Equals(app.Configuration["Demo:SeedCompteDemo"], "true", StringComparison.OrdinalIgnoreCase))
+{
+    const string emailDemo = "deveaux.cyril@gmail.com";
+    const string motDePasseDemo = "Toto123@";
+
+    using var portee = app.Services.CreateScope();
+    var services = portee.ServiceProvider;
+
+    if (services.GetRequiredService<IEnumerationComptes>().EnumererComptes().All(c => c.Email != emailDemo))
+    {
+        var acteur = services.GetRequiredService<AjouterActeurHandler>()
+            .Handle(new AjouterActeurCommand("Cyril (démo)"));
+        var compte = services.GetRequiredService<CreerCompteHandler>()
+            .Handle(new CreerCompteCommand(emailDemo, acteur.Valeur!.ActeurId));
+        services.GetRequiredService<ActiverCompteHandler>()
+            .Handle(new ActiverCompteCommand(compte.Valeur!.CompteId));
+        services.GetRequiredService<DefinirMotDePasseHandler>()
+            .Handle(new DefinirMotDePasseCommand(compte.Valeur!.CompteId, motDePasseDemo));
+    }
+}
 
 app.Run();
 
