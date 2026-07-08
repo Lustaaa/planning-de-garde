@@ -36,12 +36,12 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 1/14 (back 11 · IHM 3)
+## Avancement — 2/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
 | S1 | Poser un slot récurrent hebdo valide → succès + snapshot (jour, plage, lieu, enfant, id stable) | @back | ✅ |
-| S2 | Rejet : lieu inconnu du foyer → échec **sans écriture** (miroir `PoserSlot`) | @back | ⏳ |
+| S2 | Rejet : lieu inconnu du foyer → échec **sans écriture** (miroir `PoserSlot`) | @back | ✅ |
 | S3 | Rejet : plage horaire non positive (fin ≤ début) → échec **sans écriture** | @back | ⏳ |
 | S4 | Projection grille : le slot récurrent apparaît sur **CHAQUE occurrence** du bon jour dans la fenêtre | @back | ⏳ |
 | S5 | Limite : le slot récurrent **n'apparaît sur aucun autre jour de semaine** | @back | ⏳ |
@@ -70,7 +70,7 @@ Scénario: S1 — Poser un slot récurrent hebdomadaire valide
   Et son snapshot porte : jour de semaine = samedi, heure début = 11h30, heure fin = 12h15, lieu, enfant
   Et la diffusion temps réel de mise à jour est déclenchée
 
-@back @pending
+@back @vert
 Scénario: S2 — Rejet d'un slot récurrent sur un lieu inconnu du foyer
   Étant donné un foyer dont le référentiel de lieux NE contient PAS "Dojo"
   Quand un Parent pose un slot récurrent le mercredi au lieu "Dojo"

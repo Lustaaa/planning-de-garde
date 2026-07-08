@@ -28,6 +28,11 @@ public sealed class PoserSlotRecurrentHandler
 
     public Result<SlotRecurrentSnapshot> Handle(PoserSlotRecurrentCommand commande)
     {
+        // Existence lue sur le référentiel de lieux VIVANT (IEnumerationLieux) — miroir strict de
+        // PoserSlotHandler : un lieu inconnu du foyer refuse la pose, sans écriture ni diffusion.
+        if (_lieux.EnumererLieux().All(lieu => lieu.Id != commande.LieuId))
+            return Result<SlotRecurrentSnapshot>.Echec("Le lieu visé n'existe pas dans les lieux du foyer.");
+
         var pose = SlotRecurrent.Poser(
             commande.EnfantId, commande.LieuId, commande.JourDeSemaine, commande.HeureDebut, commande.HeureFin);
         if (!pose.EstSucces)
