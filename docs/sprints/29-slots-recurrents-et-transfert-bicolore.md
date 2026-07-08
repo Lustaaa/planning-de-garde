@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 13/14 (back 11 · IHM 3)
+## Avancement — 14/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -53,7 +53,7 @@
 | S11 | Légende : le motif **bicolore = transfert** est signalé quand un transfert est présent dans la fenêtre | @back | ✅ |
 | S12 | Erreur : transfert dont un acteur a été **supprimé** → couleur **neutre** pour l'orphelin (pas de couleur fantôme) | @back | ✅ |
 | S13 | IHM : rendu **diagonal bicolore** de la case (départ/arrivée), lisibilité conforme (nom + légende) — **gate G3** | 🖥️ IHM | ✅ |
-| S14 | IHM : jour **sans transfert** = case **unicolore inchangée** (non-régression visuelle) | 🖥️ IHM | ⏳ |
+| S14 | IHM : jour **sans transfert** = case **unicolore inchangée** (non-régression visuelle) | 🖥️ IHM | ✅ |
 
 ## Scénarios
 
@@ -177,7 +177,7 @@ Scénario: S13 — Rendu diagonal bicolore d'une case de transfert
   Et la légende indique le motif bicolore = transfert
   # Validation visuelle au gate G3
 
-@ihm @pending
+@ihm @vert
 Scénario: S14 — Une case sans transfert reste unicolore (non-régression visuelle)
   Étant donné une case d'un jour sans transfert
   Quand la grille est rendue
