@@ -21,7 +21,7 @@ public class Scenario2_SlotDureeNulle
         var slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         var notificateur = new FakeNotificateurPlanning();
-        var handler = new PoserSlotHandler(slots, lieux, notificateur);
+        var handler = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
         var instant = new System.DateTime(2025, 7, 15, 16, 30, 0);
         var commande = new SlotBuilder()
             .PourEnfant("lea")
@@ -49,7 +49,7 @@ public class Scenario2_SlotDureeNulle
         slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         notificateur = new FakeNotificateurPlanning();
-        return new PoserSlotHandler(slots, lieux, notificateur);
+        return new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }
 
     // Test #1 — la pose est refusée quand la fin du slot est égale au début

@@ -22,7 +22,7 @@ public class Scenario1_PoserSlot
         var slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         var notificateur = new FakeNotificateurPlanning();
-        var handler = new PoserSlotHandler(slots, lieux, notificateur);
+        var handler = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
         var commande = new SlotBuilder()
             .PourEnfant("lea")
             .DansLieu("ecole")
@@ -57,7 +57,7 @@ public class Scenario1_PoserSlot
         slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         notificateur = new FakeNotificateurPlanning();
-        return new PoserSlotHandler(slots, lieux, notificateur);
+        return new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }
 
     // Test #1 — baseline : pose d'un slot valide confirmée (TPP nil → constant)

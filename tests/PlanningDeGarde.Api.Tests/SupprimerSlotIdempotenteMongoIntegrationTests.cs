@@ -40,10 +40,12 @@ public sealed class SupprimerSlotIdempotenteMongoIntegrationTests : IDisposable
         var client = serveur.CreateClient();
         var slots = serveur.Services.GetRequiredService<ISlotRepository>();
         var handler = serveur.Services.GetRequiredService<SupprimerSlotHandler>();
-        // Mongo config foyer sans seed (s27) : on établit les lieux « école » et « nounou » avant les poses.
+        // Mongo config foyer sans seed (s27/s30) : on établit les lieux « école »/« nounou » ET l'enfant
+        // « Léa » avant les poses (la pose valide désormais l'existence de l'enfant, s30 S7).
         var lieux = serveur.Services.GetRequiredService<IEditeurLieux>();
         lieux.Ajouter("école", "école");
         lieux.Ajouter("nounou", "nounou");
+        serveur.Services.GetRequiredService<IEditeurEnfants>().Ajouter("Léa", "Léa");
 
         // Given — store durable avec deux slots S1 (école) et S2 (nounou) pour Léa.
         await Poser(client, "école", new DateTime(2026, 6, 10, 8, 0, 0), new DateTime(2026, 6, 10, 12, 0, 0));

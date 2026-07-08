@@ -12,12 +12,14 @@ public sealed class PoserSlotHandler
 {
     private readonly ISlotRepository _slots;
     private readonly IEnumerationLieux _lieux;
+    private readonly IEnumerationEnfants _enfants;
     private readonly INotificateurPlanning _notificateur;
 
-    public PoserSlotHandler(ISlotRepository slots, IEnumerationLieux lieux, INotificateurPlanning notificateur)
+    public PoserSlotHandler(ISlotRepository slots, IEnumerationLieux lieux, IEnumerationEnfants enfants, INotificateurPlanning notificateur)
     {
         _slots = slots;
         _lieux = lieux;
+        _enfants = enfants;
         _notificateur = notificateur;
     }
 
@@ -27,6 +29,12 @@ public sealed class PoserSlotHandler
         // Foyer.Lieux (trou s27) : un lieu fraîchement ajouté est immédiatement acceptable à la saisie.
         if (_lieux.EnumererLieux().All(lieu => lieu.Id != commande.LieuId))
             return Result<SlotSnapshot>.Echec("Le lieu visé n'existe pas dans les lieux du foyer.");
+
+        // Existence de l'enfant lue sur le référentiel d'enfants VIVANT (IEnumerationEnfants, s30 S7) :
+        // l'enfant n'est plus un fantôme transmis à l'aveugle (Session.EnfantId) — un enfant inconnu du
+        // foyer refuse la pose, sans écriture ni diffusion (miroir strict de la validation du lieu).
+        if (_enfants.EnumererEnfants().All(enfant => enfant.Id != commande.EnfantId))
+            return Result<SlotSnapshot>.Echec("L'enfant visé n'existe pas dans les enfants du foyer.");
 
         var pose = SlotDeLocalisation.Poser(commande.EnfantId, commande.LieuId, commande.Debut, commande.Fin);
         if (!pose.EstSucces)

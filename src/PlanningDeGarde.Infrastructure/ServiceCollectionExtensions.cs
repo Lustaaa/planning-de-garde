@@ -32,7 +32,19 @@ public static class ServiceCollectionExtensions
         // strict du référentiel de lieux) : store mutable, réalise la lecture IEnumerationEnfants
         // (validation de pose + sélecteur d'enfant) et l'écriture IEditeurEnfants (ajouter / éditer).
         // Le remplaçant durable Mongo est branché en S6.
-        services.AddSingleton<ReferentielEnfantsEnMemoire>();
+        //
+        // SEED au composition root (parité seed InMemory lieux/acteurs, asymétrie s15 : jamais côté
+        // Mongo) : l'enfant historique « Léa » (Foyer.Enfants) est amorcé sur un id stable = son prénom,
+        // pour préserver les slots DÉJÀ posés sous l'EnfantId fantôme « Léa » (transmis par Session) — la
+        // pose runtime reste acceptée (validation de pose, S7). Le seed est posé ICI (pas dans le ctor de
+        // l'adaptateur) : les `new ReferentielEnfantsEnMemoire()` des tests unitaires restent vierges.
+        services.AddSingleton<ReferentielEnfantsEnMemoire>(_ =>
+        {
+            var referentiel = new ReferentielEnfantsEnMemoire();
+            foreach (var prenom in Foyer.Enfants)
+                referentiel.Ajouter(prenom, prenom); // enfant historique : id stable = prénom
+            return referentiel;
+        });
         services.AddSingleton<IEnumerationEnfants>(sp => sp.GetRequiredService<ReferentielEnfantsEnMemoire>());
         services.AddSingleton<IEditeurEnfants>(sp => sp.GetRequiredService<ReferentielEnfantsEnMemoire>());
 

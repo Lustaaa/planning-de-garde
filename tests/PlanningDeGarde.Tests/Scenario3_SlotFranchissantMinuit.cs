@@ -21,7 +21,7 @@ public class Scenario3_SlotFranchissantMinuit
         var slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("domicile-a");
         var notificateur = new FakeNotificateurPlanning();
-        var handler = new PoserSlotHandler(slots, lieux, notificateur);
+        var handler = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
         var debut = new System.DateTime(2025, 7, 15, 22, 0, 0);
         var fin = new System.DateTime(2025, 7, 16, 7, 0, 0);
         var commande = new SlotBuilder()
@@ -52,7 +52,7 @@ public class Scenario3_SlotFranchissantMinuit
         slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("domicile-a");
         var notificateur = new FakeNotificateurPlanning();
-        return new PoserSlotHandler(slots, lieux, notificateur);
+        return new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }
 
     // Test #1 — un slot franchissant minuit (fin calendaire > début) est de durée positive
