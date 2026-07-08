@@ -64,6 +64,20 @@ aucune persistance tirée en avant. Texte complet :
   AUCUNE règle de résolution** : un slot est une **localisation**, pas une responsabilité — pas de
   repli surcharge > fond > neutre, aucun effet sur teinte / responsable / légende de la case. Réutilise
   le store **durable (Mongo, s15)** ; aucune persistance neuve.*
+- **Slot RÉCURRENT hebdomadaire simple** *(livré s29, dans la dialog « Poser un slot » unifiée)* → la
+  même dialog porte une case **« Répéter chaque semaine »** : cochée, la pose devient récurrente, le
+  **jour de semaine** étant **déduit de la case cliquée** (pas de champ jour séparé), avec la **plage
+  horaire début→fin** et le **lieu** (validation lieu/plage **miroir de `PoserSlot`** : lieu connu du
+  référentiel, durée strictement positive). Le slot récurrent reste une **LOCALISATION orthogonale à la
+  responsabilité** — **enfant + lieu + plage hebdo**, **aucun responsable embarqué** (la responsabilité
+  de la case continue de se résoudre par période / cycle de fond). L'**enfant est implicite** (transmis
+  via la session, non choisi — *dette P1 : référentiel d'enfants + sélecteur explicite*). Persisté
+  **durable (Mongo)** en parité slot ponctuel s15 (aucun seed en mode Mongo), **projeté en occurrences**
+  sur **chaque** case du bon jour de semaine dans la fenêtre par `GrilleAgendaQuery`, empilé dans l'ordre
+  horaire avec les slots ponctuels ; **suppression idempotente par identifiant stable** (id absent =
+  succès no-op). **Hors scope s29** (backlog) : récurrences riches (bi-hebdo, mensuelle, fins de série,
+  exceptions), **multi-jours**, configuration en Config du foyer, **édition** d'un récurrent, et le
+  **conditionnement à la garde** (couplerait l'occurrence à la responsabilité = **révision d'invariant**).
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 *Résolution de la case (surcharge > fond > neutre) & suppression/édition de période :*

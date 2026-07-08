@@ -11,9 +11,11 @@ public static class ServiceCollectionExtensions
     {
         // Persistance en mémoire — singletons = source de vérité partagée du foyer.
         services.AddSingleton<InMemorySlotRepository>();
+        services.AddSingleton<InMemorySlotRecurrentRepository>();
         services.AddSingleton<InMemoryPeriodeRepository>();
         services.AddSingleton<InMemoryTransfertRepository>();
         services.AddSingleton<ISlotRepository>(sp => sp.GetRequiredService<InMemorySlotRepository>());
+        services.AddSingleton<ISlotRecurrentRepository>(sp => sp.GetRequiredService<InMemorySlotRecurrentRepository>());
         services.AddSingleton<IPeriodeRepository>(sp => sp.GetRequiredService<InMemoryPeriodeRepository>());
         services.AddSingleton<ITransfertRepository>(sp => sp.GetRequiredService<InMemoryTransfertRepository>());
         services.AddSingleton<IResponsableRepository, FoyerResponsableRepository>();
@@ -43,6 +45,7 @@ public static class ServiceCollectionExtensions
             // chaque adaptateur Mongo write-through SURCHARGE l'enregistrement InMemory posé plus haut
             // (dernière inscription gagne à la résolution). Les slots survivent au redémarrage de l'hôte.
             services.AddSingleton<ISlotRepository>(_ => new MongoSlotRepository(connectionString, baseDeDonnees));
+            services.AddSingleton<ISlotRecurrentRepository>(_ => new MongoSlotRecurrentRepository(connectionString, baseDeDonnees));
             services.AddSingleton<IPeriodeRepository>(_ => new MongoPeriodeRepository(connectionString, baseDeDonnees));
             services.AddSingleton<ITransfertRepository>(_ => new MongoTransfertRepository(connectionString, baseDeDonnees));
 
@@ -154,6 +157,8 @@ public static class ServiceCollectionExtensions
 
         // Use cases (handlers) et read models.
         services.AddScoped<PoserSlotHandler>();
+        services.AddScoped<PoserSlotRecurrentHandler>();
+        services.AddScoped<SupprimerSlotRecurrentHandler>();
         services.AddScoped<AjouterLieuHandler>();
         services.AddScoped<SupprimerLieuHandler>();
         services.AddScoped<DeplacerSlotHandler>();

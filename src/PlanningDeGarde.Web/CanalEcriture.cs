@@ -17,6 +17,15 @@ public static class CanalEcriture
     /// ce drapeau résolu côté API (read model existant), il ne recalcule jamais le chevauchement.</summary>
     public sealed record PoserSlotReponse(bool Chevauchement);
 
+    /// <summary>Corps de la requête de pose d'un slot RÉCURRENT hebdo émise via le canal (s29) : enfant +
+    /// lieu + jour de semaine + plage horaire (début→fin, sans date). Aucune règle métier côté front : les
+    /// refus (lieu inconnu / durée non positive) sont tranchés côté handler.</summary>
+    public sealed record PoserSlotRecurrentRequete(string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin);
+
+    /// <summary>Corps de la requête de suppression d'un slot récurrent (s29) : la clé est l'identifiant
+    /// stable du slot récurrent. Idempotente côté handler.</summary>
+    public sealed record SupprimerSlotRecurrentRequete(string SlotId);
+
     /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
     public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
 

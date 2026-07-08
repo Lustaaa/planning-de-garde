@@ -159,6 +159,16 @@ internal static class GrilleRuntimeHarness
             .Enregistrer(SlotDeLocalisation.Poser(enfantId, lieuId, debut, fin).Valeur!);
 
     /// <summary>
+    /// Sème un transfert de bascule dans le store réel de l'API distante (Given d'un scénario de rendu
+    /// bicolore, s29) : la projection réelle le rendra en information bicolore sur la case de son jour,
+    /// les couleurs départ/arrivée résolues sur le référentiel réel des acteurs. Sème EN DIRECT via le
+    /// port (pas la commande), pour placer précisément déposant / récupérant / date.
+    /// </summary>
+    public static void SemerTransfert(ApiDistanteFactory api, string deposeParId, string recupereParId, DateTime date)
+        => api.Services.GetRequiredService<ITransfertRepository>()
+            .Enregistrer(Transfert.Definir(deposeParId, recupereParId, "école", TimeSpan.FromHours(8.5), date).Valeur!);
+
+    /// <summary>
     /// Sème un cycle de fond dans le store réel de l'API distante (Given d'un scénario de navigation) —
     /// la projection réelle résout le responsable de fond par parité ISO de chaque semaine, le
     /// référentiel réel résolvant nom et couleur. Permet d'observer la re-résolution du fond à la date

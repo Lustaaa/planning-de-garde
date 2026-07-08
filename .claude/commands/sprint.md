@@ -62,6 +62,16 @@ Quand la `dev-team` renvoie `{ "type":"question", … }` :
 
    C'est l'**unique interruption de livraison** : aucun sprint ne se conclut sans cette validation.
 
+   **Discipline anti-scope-creep au gate (obligatoire).** Le gate valide le **goal G2**, il n'en
+   ouvre pas de nouveau. Tout ajout exprimé par le PO au gate est trié **par défaut vers le backlog**
+   (`# Retours produit (PO)` → item candidat à la `/cloture`), **PAS** absorbé dans le sprint courant.
+   **Seule exception — absorption immédiate** : une **finition triviale DANS le goal** (correctif de
+   présentation, libellé, micro-ajustement d'un scénario déjà livré) **sans** nouveau handler/commande,
+   **sans** révision d'invariant ou de règle, **sans** nouvelle surface IHM. Dès qu'un ajout touche un
+   **invariant**/une **porte métier** ou demande un **nouveau volet**, il **retourne au `/planning`**
+   (G2/G1), jamais tranché sous la pression du gate. *(Friction réelle s29 : 4 ajouts successifs au gate
+   G3, dont 3 hors-goal → 2 reworks + 2 escalades G1 ; désormais backlog par défaut.)*
+
 ## Notes
 
 - **Relais pur** : analyser, écrire un test, lire le code = sortie de rôle, redélègue.

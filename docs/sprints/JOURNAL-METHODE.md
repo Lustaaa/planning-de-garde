@@ -39,6 +39,15 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   dev-team** (watchdog 600s) ; il a été **repris et fini par le thread principal**. Fix : garde-fou
   **« seed / amorçage par le chemin réel = CONVERGENT, jamais insert-si-absent »** dans `dev-team`
   (réconcilier l'état partiel préexistant + prouver les DEUX cas — absent ET partiel — sur store réel).
+- 2026-07-08 — s29 : **scope creep répété au gate G3** — le PO a empilé 4 demandes successives au gate
+  (dialog unifiée + retrait du champ enfant fantôme, bicolore sur pastille, puis D1 conditionnement à la
+  garde, D2 multi-jours/config foyer, D3 transfert auto-dérivé), dont **3 hors goal G2** touchant un
+  invariant (D1) et une porte métier (D3) → **2 reworks + 2 escalades G1** sous pression de gate. Fix :
+  **discipline anti-scope-creep au gate** dans `/sprint` (étape 5) — au gate, un ajout est trié **par
+  défaut vers le backlog** ; **absorption seulement si finition triviale DANS le goal** (aucun nouveau
+  handler, aucune révision d'invariant/règle, aucune nouvelle surface IHM) ; tout ajout touchant un
+  invariant/une porte métier/un nouveau volet **retourne au `/planning`** (G2/G1), jamais tranché sous la
+  pression du gate.
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake

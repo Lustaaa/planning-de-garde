@@ -217,10 +217,23 @@
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
                         <div class="grille-horaire-entete">
                             <span class="grille-horaire-jour-nom">@nomJour</span>
-                            @* N° de jour en pastille couleur du responsable (garde le libellé dd/MM pour les repères). *@
-                            <span class="grille-jour-date grille-jour-date-pastille"
-                                  style="background-color:@Couleur(jourCase.CouleurResponsable);"
-                                  title="@jourCase.NomResponsable">@jourCase.Date.ToString("dd/MM")</span>
+                            @* N° de jour en pastille. Transfert bicolore (s29, retour PO gate) : la DIAGONALE
+                               départ/arrivée est portée UNIQUEMENT par la pastille de date ; sans transfert,
+                               pastille normale (couleur du responsable). Parité stricte avec la vue cartes. *@
+                            @if (jourCase.Transfert is { } transfert)
+                            {
+                                <span class="grille-jour-date grille-jour-date-pastille grille-jour-date-pastille-transfert"
+                                      data-testid="case-transfert-bicolore"
+                                      data-couleur-depart="@transfert.CouleurDepart" data-couleur-arrivee="@transfert.CouleurArrivee"
+                                      style="background: linear-gradient(135deg, @Couleur(transfert.CouleurDepart) 0 46%, @Couleur(transfert.CouleurArrivee) 54% 100%);"
+                                      title="Transfert (@jourCase.NomResponsable)">@jourCase.Date.ToString("dd/MM")</span>
+                            }
+                            else
+                            {
+                                <span class="grille-jour-date grille-jour-date-pastille"
+                                      style="background-color:@Couleur(jourCase.CouleurResponsable);"
+                                      title="@jourCase.NomResponsable">@jourCase.Date.ToString("dd/MM")</span>
+                            }
                             @if (!string.IsNullOrEmpty(jourCase.NomResponsable))
                             {
                                 <span class="grille-horaire-resp nom-tronque" data-testid="nom-responsable"
@@ -272,9 +285,24 @@ else
                          data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
                         <div class="grille-jour-entete">
-                            <span class="grille-jour-date grille-jour-date-pastille"
-                                  style="background-color:@Couleur(jourCase.CouleurResponsable);"
-                                  title="@jourCase.NomResponsable">@jourCase.Date.ToString("dd/MM")</span>
+                            @* Transfert bicolore (s29, S13 — retour PO gate) : un jour portant un transfert
+                               affiche la DIAGONALE (départ déposant ↔ arrivée récupérant, couleurs résolues
+                               sur le référentiel acteurs) UNIQUEMENT sur la PASTILLE DE DATE ; le reste de la
+                               case garde son rendu normal. Sans transfert : pastille normale (S14). *@
+                            @if (jourCase.Transfert is { } transfert)
+                            {
+                                <span class="grille-jour-date grille-jour-date-pastille grille-jour-date-pastille-transfert"
+                                      data-testid="case-transfert-bicolore"
+                                      data-couleur-depart="@transfert.CouleurDepart" data-couleur-arrivee="@transfert.CouleurArrivee"
+                                      style="background: linear-gradient(135deg, @Couleur(transfert.CouleurDepart) 0 46%, @Couleur(transfert.CouleurArrivee) 54% 100%);"
+                                      title="Transfert (@jourCase.NomResponsable)">@jourCase.Date.ToString("dd/MM")</span>
+                            }
+                            else
+                            {
+                                <span class="grille-jour-date grille-jour-date-pastille"
+                                      style="background-color:@Couleur(jourCase.CouleurResponsable);"
+                                      title="@jourCase.NomResponsable">@jourCase.Date.ToString("dd/MM")</span>
+                            }
                             @if (!string.IsNullOrEmpty(jourCase.NomResponsable))
                             {
                                 <span class="grille-jour-responsable nom-tronque" data-testid="nom-responsable"
@@ -298,7 +326,7 @@ else
     </section>
 }
 
-<Legende Entrees="_grille.Légende" />
+<Legende Entrees="_grille.Légende" Motifs="_grille.LégendeMotifs ?? System.Array.Empty<EntreeLegendeMotif>()" />
 
 @* Menu d'actions de la case (décision CP, palier 7) : un seul déclencheur d'écriture par case
    (mutualise le gating Invité, Sc.6), deux entrées ouvrant chacune sa dialog pré-remplie sur la
@@ -426,6 +454,10 @@ else
     .grille-jour-date-pastille { display: inline-flex; align-items: center; justify-content: center;
                    color: #fff; font-weight: 700; font-size: .74rem; padding: 2px 9px; border-radius: 999px;
                    box-shadow: 0 1px 2px rgba(16,24,40,.16); font-variant-numeric: tabular-nums; }
+    /* Pastille de date d'un jour de TRANSFERT (s29, retour PO gate) : la couleur unie est remplacée par la
+       DIAGONALE bicolore (départ/arrivée, fond INLINE) — le motif du transfert vit sur le badge seul, le
+       reste de la case gardant son rendu normal. Texte lisible via une ombre portée (R18–R22). */
+    .grille-jour-date-pastille-transfert { text-shadow: 0 1px 2px rgba(16,24,40,.55); }
     /* Nom du responsable = légende discrète (la couleur vit désormais sur la pastille de date). */
     .grille-jour-responsable { font-size: .78rem; font-weight: 600; color: var(--pdg-muted); }
     .nom-tronque { max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

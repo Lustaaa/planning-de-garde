@@ -1,19 +1,17 @@
 @inject HttpClient Canal
 @inject SessionPlanning Session
 
-@* Dialog (modal) « Poser un slot » réutilisable, déclenchée depuis une case du planning (palier 7,
-   écriture en contexte). Le formulaire est extrait de la page PoserSlot ; il émet sa commande via le
-   MÊME canal d'écriture HTTP (POST /api/canal/poser-slot) — aucune règle métier dans l'UI. La date de
-   contexte (case cliquée) pré-remplit la saisie. Issues : succès → OnValide (le parent ferme et relit
-   la grille) ; refus domaine / API injoignable → message DANS la dialog, saisie conservée. *@
+@* Dialog (modal) « Poser un slot » unifiée, déclenchée depuis une case du planning (palier 7, écriture
+   en contexte). Elle pose SOIT un slot ponctuel (chemin PoserSlot inchangé), SOIT — si l'on coche
+   « Répéter chaque semaine » — un slot RÉCURRENT hebdomadaire (chemin PoserSlotRecurrent, s29) dont le
+   jour de semaine est déduit de la case cliquée. Aucune règle métier dans l'UI ; l'écriture passe par le
+   MÊME canal HTTP. L'enfant n'est plus affiché (dette « déclaration des enfants » backlog P1) : il reste
+   transmis implicitement au back (Session.EnfantId), inchangé. Issues : succès → OnValide (le parent
+   ferme et relit la grille) ; refus domaine / API injoignable → message DANS la dialog, saisie conservée. *@
 <div class="dialog-backdrop" data-testid="dialog-poser-slot">
     <div class="dialog-panneau">
         <h2 class="h4 mb-3">Poser un slot</h2>
         <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="poser-slot-dialog">
-            <div class="mb-3">
-                <label class="form-label">Enfant</label>
-                <input class="form-control" value="@Session.EnfantId" disabled />
-            </div>
             <div class="mb-3">
                 <label class="form-label">Lieu</label>
                 <InputSelect class="form-select" data-testid="champ-lieu" @bind-Value="_form.LieuId">
@@ -24,18 +22,51 @@
                     }
                 </InputSelect>
             </div>
-            <div class="row">
-                <div class="col mb-3">
-                    <label class="form-label">Début</label>
-                    <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="_form.Debut" />
-                </div>
-                <div class="col mb-3">
-                    <label class="form-label">Fin</label>
-                    <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="_form.Fin" />
-                </div>
+
+            @* Option de RÉCURRENCE (retour PO G3) : cochée = slot récurrent hebdomadaire, le jour de semaine
+               étant celui de la case cliquée (« chez papa tous les samedis »). Décochée = slot ponctuel. *@
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" id="repeter-hebdo"
+                       data-testid="champ-repeter-hebdo" @bind="_form.Repeter" />
+                <label class="form-check-label" for="repeter-hebdo">
+                    Répéter chaque semaine (tous les @LibelleJour(DateContexte.DayOfWeek))
+                </label>
             </div>
+
+            @if (_form.Repeter)
+            {
+                @* Slot récurrent : seule la PLAGE HORAIRE compte (le jour de semaine est déduit de la case). *@
+                <p class="text-muted small mb-2" data-testid="indice-recurrence">
+                    Créneau répété chaque @LibelleJour(DateContexte.DayOfWeek) à cette plage horaire.
+                </p>
+                <div class="row">
+                    <div class="col mb-3">
+                        <label class="form-label">Début</label>
+                        <InputDate Type="InputDateType.Time" class="form-control" data-testid="champ-heure-debut" @bind-Value="_form.HeureDebut" />
+                    </div>
+                    <div class="col mb-3">
+                        <label class="form-label">Fin</label>
+                        <InputDate Type="InputDateType.Time" class="form-control" data-testid="champ-heure-fin" @bind-Value="_form.HeureFin" />
+                    </div>
+                </div>
+            }
+            else
+            {
+                @* Slot ponctuel : bornes datées (date + heure) pré-remplies sur la date de la case. *@
+                <div class="row">
+                    <div class="col mb-3">
+                        <label class="form-label">Début</label>
+                        <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="_form.Debut" />
+                    </div>
+                    <div class="col mb-3">
+                        <label class="form-label">Fin</label>
+                        <InputDate Type="InputDateType.DateTimeLocal" class="form-control" @bind-Value="_form.Fin" />
+                    </div>
+                </div>
+            }
+
             <div class="d-flex gap-2">
-                <button type="submit" class="btn btn-primary">Poser le slot</button>
+                <button type="submit" class="btn btn-primary">@(_form.Repeter ? "Poser le slot récurrent" : "Poser le slot")</button>
                 <button type="button" class="btn btn-link" data-testid="dialog-annuler" @onclick="Annuler">Annuler</button>
             </div>
         </EditForm>

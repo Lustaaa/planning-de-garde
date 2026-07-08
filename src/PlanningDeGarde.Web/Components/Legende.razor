@@ -4,7 +4,7 @@
 
 @* Masquage (Sc.3) : légende vide ⇒ aucun bloc rendu (absent du DOM, pas un conteneur vide) —
    une fenêtre sans responsable ne doit pas suggérer une légende. *@
-@if (Entrees is { Count: > 0 })
+@if (Entrees is { Count: > 0 } || Motifs is { Count: > 0 })
 {
     <section class="legende" data-testid="legende">
         <h2 class="legende-titre">Légende</h2>
@@ -16,6 +16,16 @@
                     <span class="legende-nom">@entree.Nom</span>
                 </li>
             }
+            @* Entrées de MOTIF (s29) : le motif bicolore = transfert, signalé par une pastille en diagonale
+               (départ neutre / arrivée accent) suivie de son libellé. Distinct des responsables (le motif
+               n'est pas une personne) mais présenté côte à côte pour la découvrabilité. *@
+            @foreach (var motif in Motifs)
+            {
+                <li class="legende-entree legende-entree-motif" data-testid="legende-motif">
+                    <span class="legende-pastille legende-pastille-diagonale"></span>
+                    <span class="legende-nom">@motif.Libelle</span>
+                </li>
+            }
         </ul>
     </section>
 }
@@ -24,6 +34,11 @@
     /// <summary>Les entrées de légende dérivées de la fenêtre affichée (déjà dédoublonnées).</summary>
     [Parameter]
     public IReadOnlyList<EntreeLegende> Entrees { get; set; } = Array.Empty<EntreeLegende>();
+
+    /// <summary>Les entrées de légende de MOTIF (s29) : le motif bicolore = transfert, présent uniquement
+    /// quand un transfert couvre la fenêtre affichée (dérivé de <c>GrilleAgenda.LégendeMotifs</c>).</summary>
+    [Parameter]
+    public IReadOnlyList<EntreeLegendeMotif> Motifs { get; set; } = Array.Empty<EntreeLegendeMotif>();
 }
 
 <style>
@@ -39,5 +54,9 @@
                       border-radius: 999px; padding: 3px 12px 3px 8px; }
     .legende-pastille { width: 15px; height: 15px; border-radius: 5px; display: inline-block; flex: none;
                         border: 1px solid rgba(0, 0, 0, .15); box-shadow: 0 1px 2px rgba(16, 24, 40, .12); }
+    /* Pastille de MOTIF bicolore = transfert : coupée en diagonale (deux teintes accent), écho visuel du
+       rendu diagonal des cases de transfert — reconnaissable d'un coup d'œil, clair ET sombre. */
+    .legende-pastille-diagonale { background: linear-gradient(135deg,
+                        var(--pdg-accent) 0 48%, var(--pdg-accent-soft, #c7d2fe) 52% 100%); }
     .legende-nom { color: var(--pdg-ink); font-weight: 600; }
 </style>

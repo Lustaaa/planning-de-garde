@@ -20,6 +20,8 @@ public sealed class GrilleAgendaQuery
     private readonly IReferentielResponsables _referentiel;
     private readonly IReferentielCycleDeFond? _cycle;
     private readonly IEnumerationActeursFoyer? _acteurs;
+    private readonly ISlotRecurrentRepository? _slotsRecurrents;
+    private readonly ITransfertRepository? _transferts;
 
     public GrilleAgendaQuery(
         ISlotRepository slots,
@@ -27,7 +29,9 @@ public sealed class GrilleAgendaQuery
         IPaletteCouleurs palette,
         IReferentielResponsables referentiel,
         IReferentielCycleDeFond? cycle = null,
-        IEnumerationActeursFoyer? acteurs = null)
+        IEnumerationActeursFoyer? acteurs = null,
+        ISlotRecurrentRepository? slotsRecurrents = null,
+        ITransfertRepository? transferts = null)
     {
         _slots = slots;
         _periodes = periodes;
@@ -35,6 +39,8 @@ public sealed class GrilleAgendaQuery
         _referentiel = referentiel;
         _cycle = cycle;
         _acteurs = acteurs;
+        _slotsRecurrents = slotsRecurrents;
+        _transferts = transferts;
     }
 
     /// <summary>
@@ -74,9 +80,18 @@ public sealed class GrilleAgendaQuery
 
         var periodes = _periodes.AllSnapshots();
 
+        // Un slot RÉCURRENT hebdo se matérialise sur CHAQUE jour de la fenêtre dont le jour de semaine
+        // correspond : chaque occurrence est un slot « virtuel » daté (date + plage horaire) qui rejoint
+        // le flux des slots ponctuels de sa case (empilement en ordre horaire assuré par SlotsCasePour).
+        var recurrents = _slotsRecurrents?.AllSnapshots() ?? (IReadOnlyList<SlotRecurrentSnapshot>)Array.Empty<SlotRecurrentSnapshot>();
+
+        // Transferts saisis : rendus en présentation bicolore sur la case de leur jour (aucun changement
+        // du modèle de transfert ni de la résolution de responsabilité — décision SM s29 volet 2).
+        var transferts = _transferts?.AllSnapshots() ?? (IReadOnlyList<TransfertSnapshot>)Array.Empty<TransfertSnapshot>();
+
         var jours = Enumerable.Range(0, nbJours)
             .Select(offset => premierJour.AddDays(offset))
-            .Select(date => CaseJourAu(date, periodes, slotsParJour[date]))
+            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date)), transferts))
             .ToList();
 
         var semaines = jours
@@ -85,11 +100,13 @@ public sealed class GrilleAgendaQuery
             .ToList();
 
         var legende = LegendeDesPresents(periodes, premierJour, premierJour.AddDays(nbJours - 1));
+        var legendeMotifs = LegendeDesMotifs(transferts, premierJour, premierJour.AddDays(nbJours - 1));
 
-        return new GrilleAgenda(jours, semaines, legende);
+        return new GrilleAgenda(jours, semaines, legende, legendeMotifs);
     }
 
-    private JourCase CaseJourAu(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots)
+    private JourCase CaseJourAu(
+        DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots, IReadOnlyList<TransfertSnapshot> transferts)
     {
         var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
         // Filtre d'existence appliqué INDÉPENDAMMENT à chaque source AVANT le repli, jamais au
@@ -103,8 +120,37 @@ public sealed class GrilleAgendaQuery
         var responsableId = surcharge ?? fond;
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
-        return new JourCase(date, couleur, nom, SlotsCasePour(slots));
+        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, date));
     }
+
+    /// <summary>
+    /// Information bicolore de la case si un transfert est saisi ce jour-là, sinon <c>null</c> (case
+    /// unicolore inchangée). Couleur de départ = déposant, couleur d'arrivée = récupérant, résolues sur
+    /// le référentiel acteurs par identifiant stable ; un acteur supprimé (orphelin) retombe sur le
+    /// neutre (même contrat d'existence <see cref="Resolvable"/> que la responsabilité — pas de fantôme).
+    /// </summary>
+    private InfoTransfert? InfoTransfertDuJour(IReadOnlyList<TransfertSnapshot> transferts, DateOnly date)
+    {
+        var transfert = transferts.FirstOrDefault(t => DateOnly.FromDateTime(t.Date) == date);
+        return transfert is null
+            ? null
+            : new InfoTransfert(CouleurActeurResolue(transfert.DeposeParId), CouleurActeurResolue(transfert.RecupereParId));
+    }
+
+    /// <summary>Couleur d'un acteur existant, ou la couleur neutre s'il est orphelin (supprimé).</summary>
+    private string CouleurActeurResolue(string acteurId)
+        => Resolvable(acteurId) is null ? _palette.CouleurNeutre : _palette.CouleurDe(acteurId);
+
+    /// <summary>
+    /// Occurrences d'un slot récurrent tombant sur la <paramref name="date"/> donnée : un slot virtuel
+    /// daté (même enfant / lieu, bornes = date + plage horaire) par récurrent dont le jour de semaine
+    /// correspond. Ne persiste rien : matérialisation de lecture pure, réévaluée à chaque projection.
+    /// </summary>
+    private static IEnumerable<SlotSnapshot> OccurrencesRecurrentes(IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date)
+        => recurrents
+            .Where(r => r.JourDeSemaine == date.DayOfWeek)
+            .Select(r => new SlotSnapshot(
+                r.EnfantId, r.LieuId, date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureDebut)), date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureFin))));
 
     /// <summary>Jours calendaires couverts par un slot, du jour de son début à celui de sa fin (inclus).</summary>
     private static IEnumerable<DateOnly> JoursCouverts(SlotSnapshot slot)
@@ -158,6 +204,22 @@ public sealed class GrilleAgendaQuery
             .Distinct()
             .Select(id => new EntreeLegende(id, _referentiel.NomDe(id), _palette.CouleurDe(id)))
             .ToList();
+    }
+
+    /// <summary>
+    /// Légende des motifs de rendu : une entrée « Transfert » (motif bicolore) si au moins un transfert
+    /// est saisi dans la fenêtre [<paramref name="premierJour"/>, <paramref name="dernierJour"/>], sinon
+    /// vide (« en case comme en légende » : signalé seulement quand le motif est effectivement présent).
+    /// </summary>
+    private static IReadOnlyList<EntreeLegendeMotif> LegendeDesMotifs(
+        IReadOnlyList<TransfertSnapshot> transferts, DateOnly premierJour, DateOnly dernierJour)
+    {
+        var transfertDansLaFenetre = transferts
+            .Any(t => DateOnly.FromDateTime(t.Date) >= premierJour && DateOnly.FromDateTime(t.Date) <= dernierJour);
+
+        return transfertDansLaFenetre
+            ? new[] { new EntreeLegendeMotif("Transfert") }
+            : Array.Empty<EntreeLegendeMotif>();
     }
 
     private IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots)

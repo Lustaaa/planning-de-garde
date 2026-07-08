@@ -10,32 +10,36 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components;
 
 /// <summary>
-/// Dialog (modal) « Poser un slot » réutilisable, ouverte depuis une case du planning (palier 7,
-/// écriture en contexte). L'écriture passe par le <b>canal requête/réponse</b> (endpoint HTTP
-/// <c>/api/canal/poser-slot</c>) — JAMAIS un handler en DI direct ni le canal de diffusion. Aucune
-/// règle métier ici. Issues : succès → <see cref="OnValide"/> (le parent ferme et relit la grille) ;
-/// refus métier (4xx, motif propagé) ou API injoignable (échec de transport) → message <b>dans</b> la
-/// dialog, saisie conservée, aucune fermeture.
+/// Dialog (modal) « Poser un slot » <b>unifiée</b>, ouverte depuis une case du planning (palier 7, écriture
+/// en contexte). Elle porte DEUX chemins d'écriture derrière un seul formulaire (retour PO G3) : un slot
+/// <b>ponctuel</b> (endpoint <c>/api/canal/poser-slot</c>, inchangé) ou — si « Répéter chaque semaine » est
+/// coché — un slot <b>récurrent</b> hebdomadaire (endpoint <c>/api/canal/poser-slot-recurrent</c>, s29) dont
+/// le jour de semaine est celui de la case cliquée. L'enfant n'est plus affiché (dette « déclaration des
+/// enfants », backlog P1) mais reste transmis implicitement au back (<see cref="SessionPlanning.EnfantId"/>),
+/// contrat inchangé. Aucune règle métier ici. Issues : succès → <see cref="OnValide"/> (le parent ferme et
+/// relit la grille) ; refus métier (motif propagé) ou API injoignable → message <b>dans</b> la dialog.
 /// </summary>
 public partial class PoserSlotDialog
 {
     private sealed class Formulaire
     {
         public string LieuId { get; set; } = "";
+        // Slot ponctuel : bornes datées (date + heure).
         public DateTime Debut { get; set; }
         public DateTime Fin { get; set; }
+        // Slot récurrent : plage horaire seule (le jour de semaine est déduit de la case).
+        public TimeOnly HeureDebut { get; set; } = new(8, 30);
+        public TimeOnly HeureFin { get; set; } = new(16, 30);
+        // Option de récurrence : cochée = slot récurrent hebdomadaire ; décochée = slot ponctuel.
+        public bool Repeter { get; set; }
     }
 
     private readonly Formulaire _form = new();
     private string? _motifEchec;
 
-    /// <summary>Date de la case cliquée : elle <b>prime</b> sur le défaut « aujourd'hui » et ancre la
-    /// saisie sur la date de contexte (règle 17 composée, Sc.3). Heures usuelles 08h30 → 16h30.
-    /// <para><b>Garde-fou (décision CP, Sc.3)</b> : ce sprint retire les routes/écrans dédiés → la dialog
-    /// est <b>toujours</b> ouverte depuis une case, donc <see cref="DateContexte"/> est toujours fourni et
-    /// le repli horloge n'a plus de point d'entrée hors-contexte. NE PAS supprimer le port
-    /// <see cref="IDateTimeProvider"/> (la grille s'en sert) ; si un futur palier réintroduit un point
-    /// d'entrée hors-contexte, réintroduire ici le repli <c>IDateTimeProvider.Aujourdhui</c> par défaut.</para></summary>
+    /// <summary>Date de la case cliquée : elle <b>prime</b> comme date de contexte du slot ponctuel (bornes
+    /// pré-remplies sur ce jour) ET fournit le <b>jour de semaine</b> de la récurrence quand « Répéter chaque
+    /// semaine » est coché (le slot récurrent n'est pas daté : seul son jour de semaine est retenu).</summary>
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
@@ -48,7 +52,8 @@ public partial class PoserSlotDialog
 
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et relit la grille.
     /// L'argument <c>bool</c> = un <b>chevauchement</b> a été signalé par l'outcome de la commande (règle 16,
-    /// accepté + averti) → le parent affiche un bandeau à part, non bloquant (Sc.7).</summary>
+    /// accepté + averti) → le parent affiche un bandeau à part, non bloquant (Sc.7). Un slot récurrent ne
+    /// porte pas de chevauchement (présentation d'occurrences) : l'argument est alors <c>false</c>.</summary>
     [Parameter]
     public EventCallback<bool> OnValide { get; set; }
 
@@ -62,6 +67,17 @@ public partial class PoserSlotDialog
         _form.Fin = DateContexte.ToDateTime(new TimeOnly(16, 30));
     }
 
+    private static string LibelleJour(DayOfWeek jour) => jour switch
+    {
+        DayOfWeek.Monday => "lundis",
+        DayOfWeek.Tuesday => "mardis",
+        DayOfWeek.Wednesday => "mercredis",
+        DayOfWeek.Thursday => "jeudis",
+        DayOfWeek.Friday => "vendredis",
+        DayOfWeek.Saturday => "samedis",
+        _ => "dimanches",
+    };
+
     private async Task Soumettre()
     {
         _motifEchec = null;
@@ -69,9 +85,13 @@ public partial class PoserSlotDialog
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/poser-slot",
-                new PoserSlotRequete(Session.EnfantId, _form.LieuId, _form.Debut, _form.Fin));
+            reponse = _form.Repeter
+                ? await Canal.PostAsJsonAsync(
+                    "api/canal/poser-slot-recurrent",
+                    new PoserSlotRecurrentRequete(Session.EnfantId, _form.LieuId, DateContexte.DayOfWeek, _form.HeureDebut.ToTimeSpan(), _form.HeureFin.ToTimeSpan()))
+                : await Canal.PostAsJsonAsync(
+                    "api/canal/poser-slot",
+                    new PoserSlotRequete(Session.EnfantId, _form.LieuId, _form.Debut, _form.Fin));
         }
         catch (HttpRequestException)
         {
@@ -80,15 +100,23 @@ public partial class PoserSlotDialog
             return;
         }
 
-        if (reponse.IsSuccessStatusCode)
+        if (!reponse.IsSuccessStatusCode)
         {
-            // L'outcome de la commande porte l'avertissement de chevauchement (résolu côté API depuis le
-            // read model existant) : le front ne fait que le LIRE, jamais le recalculer.
-            var corps = await reponse.Content.ReadFromJsonAsync<PoserSlotReponse>();
-            await OnValide.InvokeAsync(corps?.Chevauchement ?? false);
-        }
-        else
             _motifEchec = await reponse.Content.ReadAsStringAsync();
+            return;
+        }
+
+        if (_form.Repeter)
+        {
+            // Slot récurrent : aucun chevauchement à signaler (présentation d'occurrences).
+            await OnValide.InvokeAsync(false);
+            return;
+        }
+
+        // Slot ponctuel : l'outcome de la commande porte l'avertissement de chevauchement (résolu côté API
+        // depuis le read model existant) : le front ne fait que le LIRE, jamais le recalculer.
+        var corps = await reponse.Content.ReadFromJsonAsync<PoserSlotReponse>();
+        await OnValide.InvokeAsync(corps?.Chevauchement ?? false);
     }
 
     private async Task Annuler() => await OnAnnule.InvokeAsync();
