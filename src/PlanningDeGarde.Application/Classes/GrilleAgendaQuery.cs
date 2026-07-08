@@ -21,6 +21,7 @@ public sealed class GrilleAgendaQuery
     private readonly IReferentielCycleDeFond? _cycle;
     private readonly IEnumerationActeursFoyer? _acteurs;
     private readonly ISlotRecurrentRepository? _slotsRecurrents;
+    private readonly ITransfertRepository? _transferts;
 
     public GrilleAgendaQuery(
         ISlotRepository slots,
@@ -29,7 +30,8 @@ public sealed class GrilleAgendaQuery
         IReferentielResponsables referentiel,
         IReferentielCycleDeFond? cycle = null,
         IEnumerationActeursFoyer? acteurs = null,
-        ISlotRecurrentRepository? slotsRecurrents = null)
+        ISlotRecurrentRepository? slotsRecurrents = null,
+        ITransfertRepository? transferts = null)
     {
         _slots = slots;
         _periodes = periodes;
@@ -38,6 +40,7 @@ public sealed class GrilleAgendaQuery
         _cycle = cycle;
         _acteurs = acteurs;
         _slotsRecurrents = slotsRecurrents;
+        _transferts = transferts;
     }
 
     /// <summary>
@@ -82,9 +85,13 @@ public sealed class GrilleAgendaQuery
         // le flux des slots ponctuels de sa case (empilement en ordre horaire assuré par SlotsCasePour).
         var recurrents = _slotsRecurrents?.AllSnapshots() ?? (IReadOnlyList<SlotRecurrentSnapshot>)Array.Empty<SlotRecurrentSnapshot>();
 
+        // Transferts saisis : rendus en présentation bicolore sur la case de leur jour (aucun changement
+        // du modèle de transfert ni de la résolution de responsabilité — décision SM s29 volet 2).
+        var transferts = _transferts?.AllSnapshots() ?? (IReadOnlyList<TransfertSnapshot>)Array.Empty<TransfertSnapshot>();
+
         var jours = Enumerable.Range(0, nbJours)
             .Select(offset => premierJour.AddDays(offset))
-            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date))))
+            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date)), transferts))
             .ToList();
 
         var semaines = jours
@@ -97,7 +104,8 @@ public sealed class GrilleAgendaQuery
         return new GrilleAgenda(jours, semaines, legende);
     }
 
-    private JourCase CaseJourAu(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots)
+    private JourCase CaseJourAu(
+        DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots, IReadOnlyList<TransfertSnapshot> transferts)
     {
         var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
         // Filtre d'existence appliqué INDÉPENDAMMENT à chaque source AVANT le repli, jamais au
@@ -111,8 +119,26 @@ public sealed class GrilleAgendaQuery
         var responsableId = surcharge ?? fond;
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
-        return new JourCase(date, couleur, nom, SlotsCasePour(slots));
+        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, date));
     }
+
+    /// <summary>
+    /// Information bicolore de la case si un transfert est saisi ce jour-là, sinon <c>null</c> (case
+    /// unicolore inchangée). Couleur de départ = déposant, couleur d'arrivée = récupérant, résolues sur
+    /// le référentiel acteurs par identifiant stable ; un acteur supprimé (orphelin) retombe sur le
+    /// neutre (même contrat d'existence <see cref="Resolvable"/> que la responsabilité — pas de fantôme).
+    /// </summary>
+    private InfoTransfert? InfoTransfertDuJour(IReadOnlyList<TransfertSnapshot> transferts, DateOnly date)
+    {
+        var transfert = transferts.FirstOrDefault(t => DateOnly.FromDateTime(t.Date) == date);
+        return transfert is null
+            ? null
+            : new InfoTransfert(CouleurActeurResolue(transfert.DeposeParId), CouleurActeurResolue(transfert.RecupereParId));
+    }
+
+    /// <summary>Couleur d'un acteur existant, ou la couleur neutre s'il est orphelin (supprimé).</summary>
+    private string CouleurActeurResolue(string acteurId)
+        => Resolvable(acteurId) is null ? _palette.CouleurNeutre : _palette.CouleurDe(acteurId);
 
     /// <summary>
     /// Occurrences d'un slot récurrent tombant sur la <paramref name="date"/> donnée : un slot virtuel

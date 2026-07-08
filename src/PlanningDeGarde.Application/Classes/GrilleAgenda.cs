@@ -23,9 +23,20 @@ public sealed record EntreeLegende(string IdentifiantStable, string Nom, string 
 /// <summary>
 /// Une case-jour de la grille (axe vertical : une ligne par semaine), portant la couleur et le
 /// nom du parent responsable de la période qui couvre ce jour (couleur neutre / nom vide si
-/// aucune période ne le couvre) et les slots rattachés à sa date.
+/// aucune période ne le couvre) et les slots rattachés à sa date. <see cref="Transfert"/> porte
+/// l'information <b>bicolore</b> quand un transfert est saisi ce jour-là (sinon <c>null</c> : case
+/// unicolore inchangée) — présentation seule, la résolution de responsabilité reste inchangée.
 /// </summary>
-public sealed record JourCase(DateOnly Date, string CouleurResponsable, string NomResponsable, IReadOnlyList<SlotCase> Slots);
+public sealed record JourCase(
+    DateOnly Date, string CouleurResponsable, string NomResponsable, IReadOnlyList<SlotCase> Slots, InfoTransfert? Transfert = null);
+
+/// <summary>
+/// Information bicolore d'une case portant un transfert : couleur de <see cref="CouleurDepart"/>
+/// (acteur cédant / déposant) et couleur d'<see cref="CouleurArrivee"/> (acteur recevant /
+/// récupérant), résolues sur le référentiel acteurs par identifiant stable. Un acteur supprimé
+/// (orphelin) retombe sur la couleur neutre (pas de couleur fantôme).
+/// </summary>
+public sealed record InfoTransfert(string CouleurDepart, string CouleurArrivee);
 
 /// <summary>
 /// Un slot positionné dans sa case-jour : libellé (lieu/acteur), bornes horaires de la journée

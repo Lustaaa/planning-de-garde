@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 7/14 (back 11 · IHM 3)
+## Avancement — 8/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -48,7 +48,7 @@
 | S6 | Persistance durable Mongo : un slot récurrent **survit au redémarrage** (parité slot ponctuel s15) | @back | ✅ |
 | S7 | Suppression **idempotente** par id stable (no-op si absent) + **diffusion temps réel** | @back | ✅ |
 | S8 | IHM : configurer un slot récurrent → occurrences visibles sur toutes les cases du bon jour (RED→GREEN) | 🖥️ IHM | ⏳ |
-| S9 | Projection grille : un jour **avec transfert** porte l'info **bicolore** (couleurs départ/arrivée résolues sur acteurs) | @back | ⏳ |
+| S9 | Projection grille : un jour **avec transfert** porte l'info **bicolore** (couleurs départ/arrivée résolues sur acteurs) | @back | ✅ |
 | S10 | Limite : un jour **sans transfert** reste **unicolore**, aucune info bicolore (non-régression) | @back | ⏳ |
 | S11 | Légende : le motif **bicolore = transfert** est signalé quand un transfert est présent dans la fenêtre | @back | ⏳ |
 | S12 | Erreur : transfert dont un acteur a été **supprimé** → couleur **neutre** pour l'orphelin (pas de couleur fantôme) | @back | ⏳ |
@@ -133,7 +133,7 @@ Scénario: S8 — Configurer un slot récurrent depuis l'IHM
 ### Volet 2 — Transfert bicolore sur la grille (back : modèle de lecture)
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario: S9 — Un jour avec transfert porte l'information bicolore
   Étant donné deux acteurs "Papa" et "Maman" du référentiel, chacun avec sa couleur
   Et un transfert saisi le jour J : déposé par "Papa", récupéré par "Maman", à un lieu et une heure
