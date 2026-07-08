@@ -49,7 +49,7 @@
 > Persistance et migration prouvées sur **store Mongo durable**. **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, **pas de dette de câblage**.
 
-## Avancement — 4/10 (back 8 · IHM 2)
+## Avancement — 5/10 (back 8 · IHM 2)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -57,7 +57,7 @@
 | S2 | Rejet : prénom vide → échec **sans écriture** (miroir libellé vide, R5) | @back | ✅ |
 | S3 | Rejet : prénom **doublon** d'un enfant existant → échec **sans écriture** (R6) | @back | ✅ |
 | S4 | Éditer le prénom d'un enfant existant (clé = **id stable**) → succès, relu, diffusion | @back | ✅ |
-| S5 | **Port d'énumération** : liste les enfants du foyer (id stable + prénom), dédoublonnée par id | @back | ⏳ |
+| S5 | **Port d'énumération** : liste les enfants du foyer (id stable + prénom), dédoublonnée par id | @back | ✅ |
 | S6 | Persistance durable Mongo : un enfant **survit au redémarrage** (parité asymétrie seed s15) | @back | ⏳ |
 | S7 | Pose d'un slot référençant un enfant **inconnu** du foyer → rejet **sans écriture** (miroir lieu inconnu s29) | @back | ⏳ |
 | S8 | **Migration rétro-affectation idempotente** : slots du fantôme « Léa » réattachés à l'enfant réel ; rejeu = no-op ; **prouvé store réel** | @back | ⏳ |
@@ -103,7 +103,7 @@ Scénario: S4 — Éditer le prénom d'un enfant existant
   Et la diffusion temps réel de mise à jour est déclenchée
   # Un prénom vide ou en doublon d'un autre enfant est rejeté (mêmes rejets que S2/S3), rien appliqué
 
-@back @pending
+@back @vert
 Scénario: S5 — Le port d'énumération liste les enfants du foyer
   Étant donné un référentiel d'enfants contenant "Léa" et "Tom"
   Quand on énumère les enfants du foyer via le port de droite
