@@ -35,7 +35,12 @@ public sealed class SlotRecurrent
     }
 
     public static Result<SlotRecurrent> Poser(string enfantId, string lieuId, DayOfWeek jourDeSemaine, TimeSpan heureDebut, TimeSpan heureFin)
-        => Result<SlotRecurrent>.Succes(new SlotRecurrent(enfantId, lieuId, jourDeSemaine, heureDebut, heureFin));
+    {
+        if (heureFin <= heureDebut)
+            return Result<SlotRecurrent>.Echec("La durée du slot récurrent doit être strictement positive.");
+
+        return Result<SlotRecurrent>.Succes(new SlotRecurrent(enfantId, lieuId, jourDeSemaine, heureDebut, heureFin));
+    }
 
     public SlotRecurrentSnapshot ToSnapshot() => new(_enfantId, _lieuId, _jourDeSemaine, _heureDebut, _heureFin);
 }
