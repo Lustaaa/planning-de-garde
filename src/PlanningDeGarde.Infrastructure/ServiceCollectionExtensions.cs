@@ -170,6 +170,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AjouterLieuHandler>();
         services.AddScoped<SupprimerLieuHandler>();
         services.AddScoped<AjouterEnfantHandler>();
+        services.AddScoped<EditerEnfantHandler>();
         services.AddScoped<DeplacerSlotHandler>();
         services.AddScoped<SupprimerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();

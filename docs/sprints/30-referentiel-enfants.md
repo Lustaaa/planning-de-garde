@@ -49,14 +49,14 @@
 > Persistance et migration prouvées sur **store Mongo durable**. **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, **pas de dette de câblage**.
 
-## Avancement — 3/10 (back 8 · IHM 2)
+## Avancement — 4/10 (back 8 · IHM 2)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
 | S1 | Ajouter un enfant valide → succès + id stable neuf + snapshot (prénom) + diffusion | @back | ✅ |
 | S2 | Rejet : prénom vide → échec **sans écriture** (miroir libellé vide, R5) | @back | ✅ |
 | S3 | Rejet : prénom **doublon** d'un enfant existant → échec **sans écriture** (R6) | @back | ✅ |
-| S4 | Éditer le prénom d'un enfant existant (clé = **id stable**) → succès, relu, diffusion | @back | ⏳ |
+| S4 | Éditer le prénom d'un enfant existant (clé = **id stable**) → succès, relu, diffusion | @back | ✅ |
 | S5 | **Port d'énumération** : liste les enfants du foyer (id stable + prénom), dédoublonnée par id | @back | ⏳ |
 | S6 | Persistance durable Mongo : un enfant **survit au redémarrage** (parité asymétrie seed s15) | @back | ⏳ |
 | S7 | Pose d'un slot référençant un enfant **inconnu** du foyer → rejet **sans écriture** (miroir lieu inconnu s29) | @back | ⏳ |
@@ -94,7 +94,7 @@ Scénario: S3 — Rejet d'un enfant au prénom doublon
   Et aucun second enfant "Léa" n'est enregistré
   Et le référentiel d'enfants est inchangé
 
-@back @pending
+@back @vert
 Scénario: S4 — Éditer le prénom d'un enfant existant
   Étant donné un enfant enregistré d'identifiant stable connu, prénom "Léa"
   Quand un Parent édite son prénom en "Léana" (clé = identifiant stable)

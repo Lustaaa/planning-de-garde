@@ -18,6 +18,9 @@ public sealed class ReferentielEnfantsEnMemoire : IEnumerationEnfants, IEditeurE
     public void Ajouter(string enfantId, string prenom)
         => _prenoms[enfantId] = prenom; // l'enfant neuf existe désormais sur son id stable
 
+    public void Editer(string enfantId, string nouveauPrenom)
+        => _prenoms[enfantId] = nouveauPrenom; // dernière écriture gagne sur l'id stable (clé inchangée)
+
     public IReadOnlyCollection<EnfantFoyer> EnumererEnfants()
         => _prenoms.Select(kv => new EnfantFoyer(kv.Key, kv.Value)).ToList();
 }

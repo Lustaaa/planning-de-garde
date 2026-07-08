@@ -23,6 +23,8 @@ public sealed class FakeReferentielEnfants : IEnumerationEnfants, IEditeurEnfant
 
     public void Ajouter(string enfantId, string prenom) => _prenoms[enfantId] = prenom;
 
+    public void Editer(string enfantId, string nouveauPrenom) => _prenoms[enfantId] = nouveauPrenom;
+
     public IReadOnlyCollection<EnfantFoyer> EnumererEnfants()
         => _prenoms.Select(kv => new EnfantFoyer(kv.Key, kv.Value)).ToList();
 }

@@ -12,4 +12,9 @@ public interface IEditeurEnfants
     /// <summary>Enregistre un enfant <b>neuf</b> dans le référentiel : persiste son prénom sur
     /// l'identifiant stable opaque fourni (jamais un id existant).</summary>
     void Ajouter(string enfantId, string prenom);
+
+    /// <summary>Affecte un nouveau prénom à l'enfant identifié de façon stable (l'id n'est jamais
+    /// éditable — il est la clé) : dernière écriture gagne, aucun doublon (le même id reste un
+    /// unique enfant).</summary>
+    void Editer(string enfantId, string nouveauPrenom);
 }
