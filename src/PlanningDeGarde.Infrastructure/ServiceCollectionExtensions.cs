@@ -28,6 +28,14 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEnumerationLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
         services.AddSingleton<IEditeurLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
 
+        // Référentiel d'enfants du foyer (petit agrégat de config foyer hissé en 1er rang, s30 — miroir
+        // strict du référentiel de lieux) : store mutable, réalise la lecture IEnumerationEnfants
+        // (validation de pose + sélecteur d'enfant) et l'écriture IEditeurEnfants (ajouter / éditer).
+        // Le remplaçant durable Mongo est branché en S6.
+        services.AddSingleton<ReferentielEnfantsEnMemoire>();
+        services.AddSingleton<IEnumerationEnfants>(sp => sp.GetRequiredService<ReferentielEnfantsEnMemoire>());
+        services.AddSingleton<IEditeurEnfants>(sp => sp.GetRequiredService<ReferentielEnfantsEnMemoire>());
+
         // Configuration des acteurs (noms ET couleurs) : un store mutable singleton réalise À LA FOIS
         // les ports de LECTURE IReferentielResponsables (nom) et IPaletteCouleurs (couleur) — la grille
         // relit nom + couleur édités, via GrilleAgendaQuery inchangé —, le port d'ÉNUMÉRATION
@@ -161,6 +169,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<SupprimerSlotRecurrentHandler>();
         services.AddScoped<AjouterLieuHandler>();
         services.AddScoped<SupprimerLieuHandler>();
+        services.AddScoped<AjouterEnfantHandler>();
         services.AddScoped<DeplacerSlotHandler>();
         services.AddScoped<SupprimerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();

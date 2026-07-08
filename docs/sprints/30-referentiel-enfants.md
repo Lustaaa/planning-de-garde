@@ -49,11 +49,11 @@
 > Persistance et migration prouvées sur **store Mongo durable**. **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, **pas de dette de câblage**.
 
-## Avancement — 0/10 (back 8 · IHM 2)
+## Avancement — 1/10 (back 8 · IHM 2)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
-| S1 | Ajouter un enfant valide → succès + id stable neuf + snapshot (prénom) + diffusion | @back | ⏳ |
+| S1 | Ajouter un enfant valide → succès + id stable neuf + snapshot (prénom) + diffusion | @back | ✅ |
 | S2 | Rejet : prénom vide → échec **sans écriture** (miroir libellé vide, R5) | @back | ⏳ |
 | S3 | Rejet : prénom **doublon** d'un enfant existant → échec **sans écriture** (R6) | @back | ⏳ |
 | S4 | Éditer le prénom d'un enfant existant (clé = **id stable**) → succès, relu, diffusion | @back | ⏳ |
@@ -69,7 +69,7 @@
 ### Volet back — Agrégat Enfant + port d'énumération (frontière Application)
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario: S1 — Ajouter un enfant valide
   Étant donné un foyer configuré
   Quand un Parent ajoute un enfant de prénom "Léa"
