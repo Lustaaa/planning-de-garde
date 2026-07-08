@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 4/14 (back 11 · IHM 3)
+## Avancement — 5/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -44,7 +44,7 @@
 | S2 | Rejet : lieu inconnu du foyer → échec **sans écriture** (miroir `PoserSlot`) | @back | ✅ |
 | S3 | Rejet : plage horaire non positive (fin ≤ début) → échec **sans écriture** | @back | ✅ |
 | S4 | Projection grille : le slot récurrent apparaît sur **CHAQUE occurrence** du bon jour dans la fenêtre | @back | ✅ |
-| S5 | Limite : le slot récurrent **n'apparaît sur aucun autre jour de semaine** | @back | ⏳ |
+| S5 | Limite : le slot récurrent **n'apparaît sur aucun autre jour de semaine** | @back | ✅ |
 | S6 | Persistance durable Mongo : un slot récurrent **survit au redémarrage** (parité slot ponctuel s15) | @back | ⏳ |
 | S7 | Suppression **idempotente** par id stable (no-op si absent) + **diffusion temps réel** | @back | ⏳ |
 | S8 | IHM : configurer un slot récurrent → occurrences visibles sur toutes les cases du bon jour (RED→GREEN) | 🖥️ IHM | ⏳ |
@@ -93,7 +93,7 @@ Scénario: S4 — Le slot récurrent se matérialise sur toutes les occurrences 
   Et les bornes horaires sont identiques sur toutes les occurrences
   Et l'entrée s'empile dans l'ordre horaire avec les slots ponctuels du même jour
 
-@back @pending
+@back @vert
 Scénario: S5 — Le slot récurrent n'apparaît sur aucun autre jour de semaine
   Étant donné un slot récurrent enregistré le samedi de 11h30 à 12h15 au lieu "Piscine"
   Quand on projette la grille agenda sur une fenêtre de 4 semaines
