@@ -77,6 +77,10 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IEnumerationComptes>(sp => sp.GetRequiredService<ReferentielComptesMongo>());
             services.AddSingleton<IEditeurComptes>(sp => sp.GetRequiredService<ReferentielComptesMongo>());
 
+            // Jetons de réinitialisation (s28, volet 1) durables Mongo, bornés à l'auth (collection dédiée
+            // « jetons_reset ») : émission / relecture / consommation usage-unique survivent au redémarrage.
+            services.AddSingleton<IReferentielJetonsReset>(_ => new ReferentielJetonsResetMongo(connectionString, baseDeDonnees));
+
             // Admins du foyer (petit agrégat de config foyer, s22) durable Mongo, borné à la config
             // foyer (même socle Mongo, collection dédiée « admins ») : lecture IEnumerationAdminsFoyer +
             // écriture IEditeurAdminsFoyer, une désignation d'admin survit au redémarrage. L'invariant
@@ -107,6 +111,9 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<AdminsFoyerEnMemoire>();
             services.AddSingleton<IEnumerationAdminsFoyer>(sp => sp.GetRequiredService<AdminsFoyerEnMemoire>());
             services.AddSingleton<IEditeurAdminsFoyer>(sp => sp.GetRequiredService<AdminsFoyerEnMemoire>());
+
+            // Jetons de réinitialisation (s28, volet 1) InMemory (volatile, re-parti vide au redémarrage) — même port.
+            services.AddSingleton<IReferentielJetonsReset, ReferentielJetonsResetEnMemoire>();
         }
 
         // Cycle de fond : adaptateur InMemory singleton par défaut (volatile) = source de vérité partagée
@@ -126,6 +133,24 @@ public static class ServiceCollectionExtensions
 
         // Facteur mot de passe local (volet 3, s25) : hachage PBKDF2 salé réel, réalise IHacheurMotDePasse.
         services.AddSingleton<IHacheurMotDePasse, HacheurMotDePassePbkdf2>();
+
+        // Horloge système réelle (s28) : réalise IDateTimeProvider côté hôte API — l'expiration des jetons
+        // de réinitialisation (60 min) est datée contre l'horloge réelle. Doublée (figée) dans les tests.
+        services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
+
+        // Fournisseur OAuth externe (s28, volet 3) : port enregistré en DI pour rendre ConnexionOAuthHandler
+        // résolvable et le callback routable. L'adaptateur Google RÉEL (secrets / token endpoint) reste une
+        // DETTE DE CÂBLAGE (backlog P0, vérif manuelle G3) → placeholder qui ne résout aucune identité tant
+        // que le provider réel n'est pas branché. La logique de rapprochement est prouvée par doublure (S9).
+        services.AddSingleton<IFournisseurOAuth, FournisseurOAuthGoogleNonCable>();
+
+        // Canal mail réel (s28, volet 1) : adaptateur SMTP concret réalisant IEnvoiMail — remet un VRAI
+        // mail de récupération au serveur SMTP configuré (Smtp4dev en dev, Docker). Remplace la doublure
+        // s25 ; l'hôte/port/expéditeur sont pilotés par configuration (défauts alignés sur le run local).
+        var smtpHote = configuration?["Mail:Smtp:Hote"] ?? "localhost";
+        var smtpPort = int.TryParse(configuration?["Mail:Smtp:Port"], out var p) ? p : 2525;
+        var smtpExpediteur = configuration?["Mail:Smtp:Expediteur"] ?? "no-reply@planning-de-garde.fr";
+        services.AddSingleton<IEnvoiMail>(_ => new EnvoiMailSmtp(smtpHote, smtpPort, smtpExpediteur));
 
         // Use cases (handlers) et read models.
         services.AddScoped<PoserSlotHandler>();
@@ -152,6 +177,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActiverCompteHandler>();
         services.AddScoped<DesignerAdminHandler>();
         services.AddScoped<SeConnecterHandler>();
+        services.AddScoped<DemanderRecuperationMotDePasseHandler>();
+        services.AddScoped<RedefinirMotDePasseHandler>();
+        services.AddScoped<DefinirMotDePasseHandler>();
+        services.AddScoped<ConnexionOAuthHandler>();
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();

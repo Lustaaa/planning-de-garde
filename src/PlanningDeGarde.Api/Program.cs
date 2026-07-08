@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.Extensions.Options;
 using PlanningDeGarde.Api;
+using PlanningDeGarde.Application;
 using PlanningDeGarde.Infrastructure;
 using Scalar.AspNetCore;
 
@@ -40,6 +41,10 @@ app.MapperCanalEcriture();
 // le front WASM (le navigateur n'a pas la projection en DI directe : il lit la grille via HTTP).
 app.MapperCanalLecture();
 
+// Flux OAuth externe (s28, volet 3) — démarrage (redirection authorize Google) + callback routé vers
+// ConnexionOAuthHandler. Provider Google réel = dette de câblage (G3) ; logique prouvée par doublure (S9).
+app.MapperOAuth();
+
 // Canal de diffusion (lecture seule) — le front WASM s'y abonne dans le navigateur ; déclenché
 // par une écriture aboutie, jamais l'inverse.
 app.MapHub<PlanningHub>("/hubs/planning");
@@ -51,10 +56,48 @@ app.MapHub<PlanningHub>("/hubs/planning");
 app.MapOpenApi();
 app.MapScalarApiReference();
 
-// AUCUN amorçage runtime (Sc.8, s15) : l'hôte démarre sans seed. Sur un store Mongo vierge,
+// AUCUN amorçage runtime PAR DÉFAUT (Sc.8, s15) : l'hôte démarre sans seed. Sur un store Mongo vierge,
 // l'application ouvre totalement vide (ni acteurs, ni slots/périodes/transferts, ni cycle de fond) ;
 // dès qu'on saisit, c'est durable et rechargé aux lancements suivants. Les défauts InMemory restent
 // portés par les adaptateurs eux-mêmes (config foyer), conservés pour la non-régression.
+//
+// EXCEPTION explicitement optée (flag « Demo:SeedCompteDemo », JAMAIS actif par défaut → la parité
+// « aucun seed » ci-dessus reste intacte hors amorçage de démo demandé) : amène le compte de
+// DÉMONSTRATION à son état cible par le CHEMIN RÉEL — les mêmes handlers que le runtime, aucun hash
+// en dur : acteur ajouté → compte créé (si absent) → ACTIVÉ → mot de passe posé (PBKDF2 via
+// DefinirMotDePasseHandler). Amorçage CONVERGENT (idempotent), pas un simple « skip si existe » : si
+// un compte email-only préexiste sur le store durable (tentative antérieure), on lui POSE quand même
+// le mot de passe et on l'active — sinon le login « email + mot de passe » resterait indûment permissif
+// (login email-only ignorant le mot de passe). Re-exécuter le seed reconverge simplement vers l'état cible.
+if (string.Equals(app.Configuration["Demo:SeedCompteDemo"], "true", StringComparison.OrdinalIgnoreCase))
+{
+    const string emailDemo = "deveaux.cyril@gmail.com";
+    const string motDePasseDemo = "Toto123@";
+
+    using var portee = app.Services.CreateScope();
+    var services = portee.ServiceProvider;
+
+    var existant = services.GetRequiredService<IEnumerationComptes>()
+        .EnumererComptes().FirstOrDefault(c => c.Email == emailDemo);
+
+    string compteId;
+    if (existant is null)
+    {
+        var acteur = services.GetRequiredService<AjouterActeurHandler>()
+            .Handle(new AjouterActeurCommand("Cyril (démo)"));
+        compteId = services.GetRequiredService<CreerCompteHandler>()
+            .Handle(new CreerCompteCommand(emailDemo, acteur.Valeur!.ActeurId)).Valeur!.CompteId;
+    }
+    else
+    {
+        compteId = existant.Id;
+    }
+
+    // Convergence : activer (Actif→Actif inoffensif) puis (re)poser le condensat du mot de passe cible.
+    services.GetRequiredService<ActiverCompteHandler>().Handle(new ActiverCompteCommand(compteId));
+    services.GetRequiredService<DefinirMotDePasseHandler>()
+        .Handle(new DefinirMotDePasseCommand(compteId, motDePasseDemo));
+}
 
 app.Run();
 

@@ -331,6 +331,31 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   > `docs/guides/auth-social-oauth-mode-operatoire.md`. **Tant que ces adaptateurs/écrans ne sont pas branchés,
   > le login n'est pas opérationnel en runtime réel.**
 
+- **R14bis — Câblage auth réel : reset E2E + mot de passe local opérationnels** *(livré s28, solde la
+  moitié de la dette de câblage G2 s25)*. Le **reset de mot de passe** est **opérationnel bout-à-bout en
+  runtime réel** : adaptateur **`IEnvoiMail` SMTP concret** (serveur de dev Smtp4dev, Docker) remplaçant la
+  doublure ; **`IReferentielJetonsReset` sur store Mongo durable** (émission / relecture / consommation
+  usage-unique) ; **expiration 60 min** prouvée contre l'horloge injectée sur store réel ; **DI** des handlers
+  `DemanderRecuperationMotDePasse` / `RedefinirMotDePasse` + endpoints du canal ; **écrans IHM** « mot de passe
+  oublié » et « redéfinir par jeton » (RED→GREEN runtime, message neutre anti-énumération). Le **login email +
+  mot de passe** est câblé de bout en bout : commande de **pose de mot de passe** (haché PBKDF2) + **champ mot
+  de passe** sur l'écran de connexion (le refus reste **neutre** — mauvais couple / email inconnu
+  indistinguables), l'email-only s23 non régressé. Le **rapprochement Google** (callback d'un email connu →
+  session sur le compte local existant, **pas** de double compte) + endpoint `api/oauth/google/demarrer` + DI
+  du `ConnexionOAuthHandler` sont **branchés en logique**, prouvés **par doublure du port `IFournisseurOAuth`**
+  + vérif manuelle.
+  - **Amorçage de démo conditionnel** : un compte de démonstration (`deveaux.cyril@gmail.com`) peut être
+    **amorcé par le CHEMIN RÉEL** (acteur → compte → activation → pose de mot de passe PBKDF2), **derrière le
+    flag `Demo:SeedCompteDemo`** (désactivé par défaut — **parité de l'asymétrie seed s15** : Mongo démarre
+    vide, aucun seed hors flag). L'amorçage est **convergent/idempotent** : s'il trouve un compte email-only
+    **préexistant** sur le store durable, il **pose le mot de passe** sur ce compte au lieu d'en recréer un
+    (réconciliation d'un état partiel, pas un simple insert-si-absent). Exposé par `run.ps1 -SeedDemo`.
+  - **Reliquat de dette (P0, backlog)** : **provider Google OAuth réel** non câblé (placeholder
+    `FournisseurOAuthGoogleNonCable` renvoie `null` — échange secret / redirect_uri / callback en env. déployé)
+    et **écran consommateur de `definir-mot-de-passe`** (endpoint livré, sans IHM). **Surface / dette assumée** :
+    **MS / Apple** OAuth (boutons → 404), **relais SMTP externe réel** (choix PO = rester Smtp4dev), **écran
+    d'inscription libre-service** (handler DI, écran non construit).
+
 ## Risques
 
 - **Login COMPLET livré (s22 fondation + s23 session + s24 activation/page login + s25 terminaison)** :
@@ -338,15 +363,17 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   accès config + logout, et le s25 a fermé les volets restants — **protection des routes**, **mot de passe
   local haché**, **inscription libre-service**, **récupération par jeton (mail)**, **OAuth 3 providers**
   (cf. R14). Le **bug rôle ≠ acteur connecté** est **corrigé** (identité réelle ancrée sur l'acteur du compte).
-- **⚠️ DETTE DE CÂBLAGE ASSUMÉE (s25, entorse G2 de preuve, P0 tête de backlog)** — la logique auth des volets
-  OAuth / mail / jetons est **verte par doublure de port**, mais **rien n'est opérationnel en runtime réel**
-  tant que ne sont pas branchés : adaptateur `IEnvoiMail` **SMTP**, `IReferentielJetonsReset` **store durable**,
-  `IFournisseurOAuth` **providers réels** + endpoint `api/oauth/{provider}/demarrer`, **enregistrement DI** des
-  handlers `@preuve-doublure`, et les **écrans IHM** mot-de-passe-oublié + inscription libre-service (non
-  construits). **Expiration du jeton reset à confirmer** (défaut suggéré 60 min). Mode op OAuth :
-  `docs/guides/auth-social-oauth-mode-operatoire.md`. À câbler/vérifier manuellement (scope architecte ou
-  sprint dédié). *(Plus tard, non spécifié : le PO envisage un **envoi de mail d'activation** — description à
-  préciser ultérieurement.)*
+  **s28 rend le reset + le login mot de passe OPÉRATIONNELS en runtime réel** (SMTP dev + jetons Mongo + PBKDF2,
+  amorçage de démo convergent) — cf. R14bis.
+- **⚠️ DETTE DE CÂBLAGE (s25, entorse G2 de preuve) — MOITIÉ SOLDÉE s28 (cf. R14bis).** ✅ **Branchés &
+  opérationnels en runtime réel** : `IEnvoiMail` **SMTP** (dev Smtp4dev), `IReferentielJetonsReset` **store
+  Mongo durable**, **expiration 60 min confirmée**, DI des handlers récup/reset + endpoints, **écrans**
+  mot-de-passe-oublié + redéfinir-par-jeton, **login email + mot de passe**. **Reliquat P0** : **provider
+  Google OAuth réel** (placeholder renvoie `null`) + **écran consommateur de `definir-mot-de-passe`**.
+  **Surface / dette assumée** : **MS / Apple** OAuth (404), **SMTP externe réel** (choix PO = Smtp4dev),
+  **écran inscription libre-service**. Mode op OAuth : `docs/guides/auth-social-oauth-mode-operatoire.md`.
+  *(Plus tard, non spécifié : le PO envisage un **envoi de mail d'activation** — description à préciser
+  ultérieurement.)*
 - **Auth tranche 1 livrée (fondation identité)** : la relation identité ↔ acteur posée en s22 a rendu le
   couplage « défaut = moi » trivial (concrétisé s23).
 - **Impersonation bornée lecture livrée — frontière avec l'auth réelle (palier 16) ; écriture « au nom

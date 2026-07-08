@@ -26,7 +26,7 @@ public class Scenario11_DemanderRecuperationMotDePasse
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-carole", Email, StatutCompte.Actif, "acteur-carole");
         var mail = new SpyEnvoiMail();
-        var handler = new DemanderRecuperationMotDePasseHandler(comptes, mail);
+        var handler = new DemanderRecuperationMotDePasseHandler(comptes, mail, new FakeReferentielJetonsReset(), new HorlogeFigee(new System.DateTime(2026, 7, 2, 12, 0, 0, System.DateTimeKind.Utc)));
 
         var resultat = handler.Handle(new DemanderRecuperationMotDePasseCommand(Email));
 
@@ -46,7 +46,7 @@ public class Scenario11_DemanderRecuperationMotDePasse
         var comptes = new ReferentielComptesEnMemoire();
         comptes.Creer("compte-carole", Email, StatutCompte.Actif, "acteur-carole");
         var mail = new SpyEnvoiMail();
-        var handler = new DemanderRecuperationMotDePasseHandler(comptes, mail);
+        var handler = new DemanderRecuperationMotDePasseHandler(comptes, mail, new FakeReferentielJetonsReset(), new HorlogeFigee(new System.DateTime(2026, 7, 2, 12, 0, 0, System.DateTimeKind.Utc)));
 
         var resultat = handler.Handle(new DemanderRecuperationMotDePasseCommand(Email));
 

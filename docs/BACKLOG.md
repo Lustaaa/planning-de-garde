@@ -11,16 +11,19 @@
 
 ## En cours
 
-*(Aucun sprint en cours.)* Dernier livré = **s27 `coherence-config-planning`** (lieux hissés
-en **référentiel foyer éditable + persisté**, pilotant validation de pose ET sélecteurs des
-dialogs ; ancien `ILieuRepository`/`FoyerLieuRepository` en dur retiré ; couleur config→grille
-confirmée en non-régression, 6/6, suite **466/466**). Prochain = `/planning`.
+*(Aucun sprint en cours.)* Dernier livré = **s28 `cablage-auth-reel-reset-et-motdepasse`**
+(reset mot de passe **E2E réel** — SMTP dev Smtp4dev + store de jetons Mongo durable +
+expiration 60 min + 2 écrans IHM ; **login email + mot de passe** posé & IHM ; rapprochement
+Google **logique** ; **seed du compte de démo par le chemin réel** derrière flag
+`Demo:SeedCompteDemo`, convergent ; gate G3 validé PO — login démo opérationnel sur Mongo réel ;
+10/10, suite **485/485**). Prochain = `/planning`.
 
 ## Prochains sprints envisagés
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| **+1 (P0 — DETTE DE CÂBLAGE ASSUMÉE s25, TÊTE)** | **Câbler les adaptateurs concrets des volets auth prouvés par doublure (s25)** : (1) `IEnvoiMail` SMTP réel ; (2) `IReferentielJetonsReset` store durable ; (3) `IFournisseurOAuth` par provider (Google/MS/Apple, secrets/callbacks) + endpoint `api/oauth/{provider}/demarrer` ; (4) **enregistrement DI** des handlers `@preuve-doublure` (récup mot de passe, OAuth callback) ; (5) **écrans IHM** mot-de-passe-oublié + inscription libre-service ; (6) **confirmer l'expiration du jeton reset** (défaut 60 min). Preuve bout-à-bout à consigner. **Scope architecte** ou sprint dédié. | É10, É5, É2 | L'entorse G2 s25 a laissé la logique verte contre des doublures : **rien n'est utilisable en runtime réel** tant que ces adaptateurs/écrans ne sont pas branchés. Priorité de tête pour rendre le login opérationnel |
+| **+1 (P0 — reliquat de la DETTE de câblage auth, s28 en a soldé la moitié)** | **Câblage auth réel — RELIQUAT après s28.** ✅ **Soldé s28** : `IEnvoiMail` (SMTP dev Smtp4dev), `IReferentielJetonsReset` (store Mongo durable), expiration 60 min prouvée, DI des handlers récup/reset + endpoints, **écrans IHM** mot-de-passe-oublié + redéfinir-par-jeton, **login email+mot de passe** (back+IHM), rapprochement Google **logique** + endpoint `demarrer`/callback + DI. **RESTE (P0)** : (1) **provider Google OAuth réel** — le placeholder `FournisseurOAuthGoogleNonCable` renvoie `null` (échange client secret / redirect_uri / callback en env. déployé non câblé) ; (2) **écran consommateur de `definir-mot-de-passe`** (endpoint livré, sans IHM). **RESTE (hors P0)** : (3) **relais SMTP externe réel** — choix PO = **rester Smtp4dev** (dette assumée) ; (4) **boutons MS / Apple OAuth** → **404** (providers non câblés) ; (5) **écran d'inscription libre-service** (handler DI, écran non construit). | É10, É5, É2 | s28 a rendu le reset + le login mot de passe **opérationnels en runtime réel** ; **Google réel** reste le seul volet OAuth non branché (P0), le reste est de la surface (MS/Apple, inscription) ou une dette assumée (SMTP externe) |
+| **+1 (P0 — retour PO s28, candidat prioritaire prochain sprint)** | **Édition d'un acteur dans la Configuration du foyer via icône crayon + dialog** — faire évoluer l'onglet Acteurs pour **modifier un acteur** depuis une **icône crayon** ouvrant une **dialog de modification** (au lieu de l'édition inline actuelle). ⚠️ **Réserve** : le PO fournira un **retour structuré complet au prochain `/planning`** (périmètre exact des champs éditables, comportement de la dialog) — cadrer alors le scope précis. | É2, É1 | Retour PO exprimé à la clôture s28 ; améliore l'ergonomie de configuration du foyer (cohérent avec les dialogs d'écriture en contexte s11-s12) |
 | **+1 (P1 — flake, 5ᵉ montée de sévérité, non pris s25/s26)** | **Rétrofit complet du garde *TempsReel* SignalR** — cibler la **convergence SignalR multi-clients** (distincte de la course d'énumération gardée s13). Chaque feature ajoutant un client SignalR (auth, config) a aggravé un flake **intermittent** (`FrontWasm*TempsReel*`, vert isolé) : la suite exige **couramment un 2ᵉ run**. Triage durci (rétro s21) tient. Helper bUnit partagé + audit. | É3 | Le gate 458/458 exige déjà souvent 2 runs ; chaque client SignalR neuf aggrave. À traiter **avant** tout nouveau feature ajoutant des clients SignalR |
 | +3 | **Convergence `EditerPeriodeHandler` / `ModifierPeriodeHandler`** — deux handlers de mutation de période coexistent (le second legacy s02, même port + même modèle de concurrence) ; converger vers un seul chemin d'écriture — **dette de code** (DDD : un seul modèle de concurrence par agrégat) | É7 | Évite la dérive de deux chemins d'édition divergents ; ménage hygiénique post-s17 |
 | +4 | **Édition concurrente du même jour sous dialog ouverte** (last-write-wins règle 11, à démontrer sous dialog) — DIFFÉRÉE jusqu'à stabilisation SignalR | É7 | Cas limite runtime ; dépend du +1 flake |
@@ -102,7 +105,7 @@ confirmée en non-régression, 6/6, suite **466/466**). Prochain = `/planning`.
 
 | Besoin | Statut | Palier | Origine |
 |--------|:------:|--------|---------|
-| ⚠️ **DETTE — câbler les adaptateurs concrets auth (s25, entorse G2)** : `IEnvoiMail` SMTP + `IReferentielJetonsReset` durable + `IFournisseurOAuth` réels + endpoint `api/oauth/{provider}/demarrer` + **DI** des handlers `@preuve-doublure` + **écrans IHM** mot-de-passe-oublié & inscription + confirmer expiration jeton (60 min) | ⬜ | Palier 13 (P0, TÊTE) | dette assumée G2 s25 |
+| ~~⚠️ **DETTE — câbler les adaptateurs concrets auth (s25, entorse G2)**~~ **partiellement soldée s28** : ✅ `IEnvoiMail` (SMTP dev), `IReferentielJetonsReset` (Mongo durable), expiration 60 min, DI handlers récup/reset + endpoints, écrans mot-de-passe-oublié + redéfinir-par-jeton, login email+MDP. **Reste (P0)** : **provider Google OAuth réel** (`FournisseurOAuthGoogleNonCable` renvoie `null`) + **écran consommateur de `definir-mot-de-passe`**. **Reste (surface/dette assumée)** : MS/Apple OAuth (404), SMTP externe réel (choix PO = Smtp4dev), écran inscription libre-service | 🟡 | Palier 13 (P0 reliquat) | dette assumée G2 s25, part soldée s28 |
 | **Protéger la page `/configuration`** pour les non connectés — ⚠️ **vérifier d'abord** : le guard global s25 est censé déjà couvrir cette route ; si accessible sans session, c'est un **trou résiduel du guard s25** à combler, pas un besoin neuf | ⬜ | à séquencer (P1) | demande PO 2026-07-03 |
 | Droits d'accès par utilisateur identifié (selon rôle) | ⬜ | Palier 5 + 13 | spec règles 6-7 |
 | Personnalisation des couleurs par utilisateur authentifié | ⬜ | Palier 13 | spec règle 16 |
@@ -112,7 +115,10 @@ confirmée en non-régression, 6/6, suite **466/466**). Prochain = `/planning`.
 
 > **Note câblage auth** : la **logique** OAuth 2b, mot de passe, inscription libre-service et
 > récupération par jeton est **livrée s25** (prouvée par doublure de port) → voir `BACKLOG-Done.md`.
-> Seul le **câblage des adaptateurs réels + les écrans IHM** reste (dette P0 ci-dessus).
+> Le **câblage réel** est **soldé s28** pour le **reset E2E** (SMTP dev + jetons Mongo + 60 min +
+> 2 écrans) et le **login email+mot de passe** ; il **reste** (P0) le **provider Google OAuth réel**
+> et l'**écran consommateur de `definir-mot-de-passe`**, plus la surface MS/Apple + inscription +
+> le choix assumé Smtp4dev (dette P0 ci-dessus).
 
 ### Épic 11 — Imprévu & échange
 
@@ -160,7 +166,7 @@ confirmée en non-régression, 6/6, suite **466/466**). Prochain = `/planning`.
 
 - **Données en dur restantes dans `Foyer.cs`** (É1) — à persister : **set couleurs par défaut** (reste). *(config foyer acteurs persistée s09/s15 ; **lieux hissés en référentiel éditable + persisté s27**, `Foyer.Lieux` static + `FoyerLieuRepository` retirés.)* — retours s03 (#11).
 - **Flakes temps-réel SignalR** (É3, `FrontWasm*TempsReel*`) — verts en isolation, **intermittents sous charge parallèle** (timing SignalR/Docker), **dette de test** (pas un bug `src/`). Chaque sprint ajoutant un client SignalR (config, auth) a **aggravé** le flake : au **s24** jusqu'à **6 flakes simultanés** sous charge `Web.Tests`, la suite exige **souvent un 2ᵉ run**. **Triage durci (rétro s21) tient** : re-run EN ISOLATION x2-3 AVANT tout étiquetage — **N/N rouge déterministe = régression** (STOP, jamais « flake »), seul un rouge **intermittent** reste flake catalogué (cf. `JOURNAL-METHODE.md`). **Rétrofit complet = candidat de TÊTE** (helper bUnit partagé + audit, +1 ci-dessus), prérequis de l'édition concurrente (+4).
-- **Risque d'adoption du second parent** (É10) — le login est livré mais le câblage réel (SMTP/OAuth) et les écrans manquent → à ne pas laisser glisser (dette P0 ci-dessus).
+- **Risque d'adoption du second parent** (É10) — **réduit s28** : le login est **opérationnel en runtime réel** (reset E2E + email/mot de passe, seed compte démo). Reliquat P0 : **Google OAuth réel** + écran `definir-mot-de-passe` ; surface : MS/Apple + inscription libre-service (dette P0 ci-dessus).
 - **Cycle de fond riche réclamé** (É7) — au-delà du plus petit incrément livré s10 : ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only. Sujet plein (+5).
 - **Vulnérabilités transitives du driver Mongo** (`SharpCompress` 0.30.1 NU1902 modéré, `Snappier` 1.0.0 NU1903 élevé) — warnings depuis le pivot Mongo généralisé (s15). À traiter par une montée de `MongoDB.Driver`. Non bloquant.
 - **Variantes de plage reportées tranche 2 (s15)** — drag riche, plage vide, chevauchement, plage à cheval sur vue/mois : seul le geste clic-début+clic-fin sur cases contiguës est livré.

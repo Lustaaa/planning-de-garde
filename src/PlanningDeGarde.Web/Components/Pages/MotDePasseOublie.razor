@@ -1,0 +1,56 @@
+@page "/mot-de-passe-oublie"
+@inject HttpClient Canal
+
+<PageTitle>Mot de passe oublié</PageTitle>
+
+<div class="connexion-page">
+    @* Écran « mot de passe oublié » (s28, volet 1) : émet une demande de récupération via le canal
+       requête/réponse (POST /api/canal/demander-recuperation) et affiche un message NEUTRE fixe — le même
+       que l'email soit connu ou non (anti-énumération : aucune fuite d'existence côté UI ; l'API répond
+       toujours par un succès neutre). Aucune règle métier côté front. *@
+    <div class="connexion-carte">
+        <div class="connexion-marque">
+            <span class="connexion-marque-pastille" aria-hidden="true">🏠</span>
+            <span class="connexion-marque-nom">Planning de garde</span>
+        </div>
+        <h1 class="connexion-titre">Mot de passe oublié</h1>
+        <p class="connexion-sous-titre">Saisissez votre adresse email : si un compte existe, un lien de
+            réinitialisation vous sera envoyé.</p>
+
+        <div class="connexion-champ">
+            <label class="form-label" for="email-oubli">Adresse email</label>
+            <input type="email" id="email-oubli" class="form-control" placeholder="votre email"
+                   data-testid="champ-email-oubli" @bind="_email" />
+        </div>
+        <button type="button" class="btn btn-primary w-100 connexion-bouton"
+                data-testid="bouton-demander-recuperation" @onclick="DemanderAsync">Envoyer le lien</button>
+
+        @if (_messageNeutre)
+        {
+            <div class="alert alert-info mt-3" data-testid="message-recuperation-neutre" role="status">
+                Si un compte existe, un mail a été envoyé.
+            </div>
+        }
+
+        <a class="connexion-retour" href="/connexion" data-testid="lien-retour-connexion">Retour à la connexion</a>
+    </div>
+</div>
+
+<style>
+    .connexion-page { min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .connexion-carte { width: min(420px, 100%); background: var(--pdg-card); border: 1px solid var(--pdg-border);
+                       border-radius: 18px; padding: 2rem 1.75rem;
+                       box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 12px 40px rgba(16,24,40,.10); }
+    .connexion-marque { display: flex; align-items: center; gap: .55rem; margin-bottom: 1.5rem; }
+    .connexion-marque-pastille { display: inline-flex; align-items: center; justify-content: center;
+                                 width: 2.1rem; height: 2.1rem; border-radius: 12px;
+                                 background: var(--pdg-accent-soft); font-size: 1.1rem; }
+    .connexion-marque-nom { font-family: var(--pdg-font-titre); font-weight: 700; font-size: 1.1rem;
+                            color: var(--pdg-accent); letter-spacing: -.01em; }
+    .connexion-titre { font-family: var(--pdg-font-titre); font-weight: 700; font-size: 1.6rem;
+                       color: var(--pdg-ink); margin: 0 0 .25rem; letter-spacing: -.02em; }
+    .connexion-sous-titre { color: var(--pdg-muted); font-size: .92rem; margin: 0 0 1.5rem; }
+    .connexion-champ { margin-bottom: 1rem; }
+    .connexion-bouton { border-radius: 12px; padding: .55rem; font-weight: 600; }
+    .connexion-retour { display: inline-block; margin-top: 1.25rem; color: var(--pdg-muted); font-size: .88rem; }
+</style>

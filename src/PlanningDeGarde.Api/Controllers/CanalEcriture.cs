@@ -117,7 +117,7 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de connexion locale par email (s23) émise via le canal requête/réponse :
     /// l'email d'un compte du référentiel. La connexion réussit ssi un compte de cet email existe ET est
     /// Actif ; sinon refus avec motif clair (email inconnu / compte non activé), aucune session ouverte.</summary>
-    public sealed record SeConnecterRequete(string Email);
+    public sealed record SeConnecterRequete(string Email, string? MotDePasse = null);
 
     /// <summary>Corps de la réponse de succès d'une connexion (s23 ; type ancré s25 Sc.5) : l'identité réelle
     /// de la session ouverte (l'acteur lié 1-1 au compte connecté — id stable), son nom d'affichage résolu côté
@@ -125,6 +125,23 @@ public static class CanalEcriture
     /// Parent / Autre) résolu côté serveur : le front ancre l'identité réelle de la session sur CET acteur et
     /// son type — le gating d'écriture suit le type RÉEL, jamais un rôle Parent hérité du configurateur en dur.</summary>
     public sealed record SeConnecterReponse(string ActeurId, string Nom, TypeActeur Type);
+
+    /// <summary>Corps de la requête de demande de récupération de mot de passe (s28, volet 1) émise via le
+    /// canal d'écriture : l'email pour lequel on demande la réinitialisation. La réponse est TOUJOURS un
+    /// succès NEUTRE (aucun jeton, aucun indice d'existence — anti-énumération) ; si l'email est porté par
+    /// un compte, un jeton de réinitialisation est généré côté serveur et remis par mail (canal réel SMTP).</summary>
+    public sealed record DemanderRecuperationRequete(string Email);
+
+    /// <summary>Corps de la requête de redéfinition de mot de passe par jeton (s28, volet 1) émise via le
+    /// canal d'écriture : le jeton de réinitialisation reçu par mail et le nouveau mot de passe (clair, haché
+    /// côté serveur). Le jeton doit être VALIDE (connu, non consommé, non expiré) — sinon refus avec motif,
+    /// sans mutation ; sur succès, le mot de passe est redéfini (haché PBKDF2) et le jeton consommé (usage unique).</summary>
+    public sealed record RedefinirMotDePasseRequete(string Jeton, string NouveauMotDePasse);
+
+    /// <summary>Corps de la requête de définition d'un mot de passe sur un compte (s28, volet 2) émise via
+    /// le canal d'écriture : l'identifiant stable du compte et le mot de passe (clair, haché côté serveur).
+    /// Pose le condensat sur le compte (jamais le clair) → le compte devient connectable email + mot de passe.</summary>
+    public sealed record DefinirMotDePasseRequete(string CompteId, string MotDePasse);
 
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
@@ -402,7 +419,7 @@ public static class CanalEcriture
 
         routes.MapPost("/api/canal/se-connecter", (SeConnecterRequete requete, SeConnecterHandler handler, IReferentielResponsables referentiel, IEnumerationActeursFoyer acteurs) =>
         {
-            var resultat = handler.Handle(new SeConnecterCommand(requete.Email));
+            var resultat = handler.Handle(new SeConnecterCommand(requete.Email, requete.MotDePasse));
 
             // Connexion = commande applicative (canal requête/réponse) : réussit ssi un compte de cet email
             // existe ET est Actif. Sur refus (email inconnu / compte non activé), aucune session — le motif
@@ -417,6 +434,41 @@ public static class CanalEcriture
             // RÉEL (Autre → pas les droits Parent), et non un rôle Parent hérité du configurateur en dur (Sc.5).
             var acteurId = resultat.Valeur!.IdentiteReelle;
             return Results.Ok(new SeConnecterReponse(acteurId, referentiel.NomDe(acteurId), acteurs.TypeDe(acteurId)));
+        });
+
+        routes.MapPost("/api/canal/demander-recuperation", (DemanderRecuperationRequete requete, DemanderRecuperationMotDePasseHandler handler) =>
+        {
+            // Demande de récupération = commande applicative (canal requête/réponse). Le handler résout le
+            // compte sur l'email ; s'il existe, un jeton de réinitialisation est généré côté serveur et remis
+            // au canal mail RÉEL (adaptateur SMTP). La RÉPONSE au client est TOUJOURS un succès NEUTRE (le
+            // handler renvoie systématiquement un succès), qu'un compte existe ou non : aucun jeton, aucun
+            // indice d'existence ne transite par la réponse (anti-énumération, S4). Le jeton ne voyage QUE
+            // par le mail. Aucune session, aucune diffusion : lecture d'existence + envoi, rien d'autre.
+            handler.Handle(new DemanderRecuperationMotDePasseCommand(requete.Email));
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/redefinir-mot-de-passe", (RedefinirMotDePasseRequete requete, RedefinirMotDePasseHandler handler) =>
+        {
+            var resultat = handler.Handle(new RedefinirMotDePasseCommand(requete.Jeton, requete.NouveauMotDePasse));
+
+            // Même convention que les autres écritures : succès acquitté (le mot de passe est redéfini haché
+            // et le jeton consommé — usage unique), refus métier (jeton inconnu / consommé / expiré) renvoyé
+            // avec son motif, sans mutation. Aucune session ni diffusion : c'est une écriture de compte.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/definir-mot-de-passe", (DefinirMotDePasseRequete requete, DefinirMotDePasseHandler handler) =>
+        {
+            var resultat = handler.Handle(new DefinirMotDePasseCommand(requete.CompteId, requete.MotDePasse));
+
+            // Même convention que les autres écritures : succès acquitté (le mot de passe haché est posé sur
+            // le compte, qui devient connectable email + mot de passe), refus métier renvoyé avec son motif.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
         });
 
         return routes;

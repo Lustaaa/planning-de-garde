@@ -100,7 +100,19 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de connexion locale par email (s23) émise via le canal requête/réponse :
     /// l'email saisi dans le bandeau de connexion. Aucune règle métier côté front — l'admission (compte
     /// existant ET Actif) est tranchée côté handler ; le front n'émet que l'email.</summary>
-    public sealed record SeConnecterRequete(string Email);
+    public sealed record SeConnecterRequete(string Email, string? MotDePasse = null);
+
+    /// <summary>Corps de la requête de demande de récupération de mot de passe (s28, volet 1) émise via le
+    /// canal requête/réponse : l'email saisi sur l'écran « mot de passe oublié ». Aucune règle métier côté
+    /// front — la réponse est toujours un succès neutre (anti-énumération, tranché côté handler) ; le front
+    /// n'émet que l'email et affiche un message neutre fixe.</summary>
+    public sealed record DemanderRecuperationRequete(string Email);
+
+    /// <summary>Corps de la requête de redéfinition de mot de passe par jeton (s28, volet 1) émise via le
+    /// canal requête/réponse : le jeton reçu par mail (porté par l'URL de l'écran de réinitialisation) et le
+    /// nouveau mot de passe saisi. Aucune règle métier côté front — validité du jeton et hachage tranchés
+    /// côté handler ; sur refus, le motif est surfacé, sur succès l'utilisateur est invité à se connecter.</summary>
+    public sealed record RedefinirMotDePasseRequete(string Jeton, string NouveauMotDePasse);
 
     /// <summary>Corps de la réponse de succès d'une connexion (s23 ; type ancré s25 Sc.5) : l'id stable de
     /// l'acteur lié au compte connecté, son nom d'affichage résolu côté serveur (« Connecté : &lt;Nom&gt; »

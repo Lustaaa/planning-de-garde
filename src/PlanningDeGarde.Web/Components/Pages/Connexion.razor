@@ -26,6 +26,13 @@
             <input type="email" id="email-connexion" class="form-control" placeholder="votre email"
                    data-testid="champ-email-connexion" @bind="_email" />
         </div>
+        @* Champ mot de passe (s28, volet 2) : la connexion émet désormais le COUPLE email + mot de passe.
+           Un compte sans mot de passe (email-only s23) reste connectable en laissant ce champ vide. *@
+        <div class="connexion-champ">
+            <label class="form-label" for="mot-de-passe-connexion">Mot de passe</label>
+            <input type="password" id="mot-de-passe-connexion" class="form-control" placeholder="votre mot de passe"
+                   data-testid="champ-mot-de-passe-connexion" @bind="_motDePasse" />
+        </div>
         <button type="button" class="btn btn-primary w-100 connexion-bouton" data-testid="bouton-se-connecter"
                 @onclick="SeConnecterAsync">Se connecter</button>
 
@@ -33,6 +40,10 @@
         {
             <div class="alert alert-danger mt-3" data-testid="motif-connexion" role="alert">@motif</div>
         }
+
+        @* Lien vers l'écran « mot de passe oublié » (s28, volet 1) : émet une demande de récupération +
+           affiche un message neutre (anti-énumération). Simple navigation, aucune règle métier côté UI. *@
+        <a class="connexion-oubli" href="/mot-de-passe-oublie" data-testid="lien-mot-de-passe-oublie">Mot de passe oublié ?</a>
 
         @* Connexion via un fournisseur OAuth externe (volet 4, s25) — À CÔTÉ du login local. Un clic
            DÉCLENCHE le flux OAuth en naviguant vers l'endpoint de démarrage du provider côté serveur
@@ -74,6 +85,7 @@
     .connexion-sous-titre { color: var(--pdg-muted); font-size: .92rem; margin: 0 0 1.5rem; }
     .connexion-champ { margin-bottom: 1rem; }
     .connexion-bouton { border-radius: 12px; padding: .55rem; font-weight: 600; }
+    .connexion-oubli { display: inline-block; margin-top: .9rem; color: var(--pdg-muted); font-size: .88rem; }
 
     /* Séparateur « ou continuer avec » : trait tokenisé + intitulé discret. */
     .oauth-providers { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .6rem; }

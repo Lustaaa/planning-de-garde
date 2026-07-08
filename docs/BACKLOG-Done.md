@@ -5,7 +5,7 @@
 > dettes refermées. Source de vérité du *déjà fait* ; le *reste à faire* vit dans `BACKLOG.md`.
 > Le *pourquoi* vit dans la spec vivante [`docs/specs/`](specs/index.md).
 >
-> **26 sprints livrés · suite complète 458/458 verte.** Fichiers de sprint clos archivés sous
+> **28 sprints livrés · suite complète 485/485 verte (s28).** Fichiers de sprint clos archivés sous
 > [`docs/_archive/sprints/`](_archive/sprints/).
 
 ## Sprints livrés
@@ -38,6 +38,8 @@
 | 24 | `auth-utilisable-activation-et-page-login` — activation Inactif→Actif + page `/connexion` dédiée + menu utilisateur | `ActiverCompteCommand`/`Handler` + `CompteUtilisateur.Activer()` + `/connexion` landing + `MenuUtilisateur` (380 verts) — **auth E2E** |
 | 25 | `terminer-tout-le-login` — protection routes + fix bug rôle≠acteur + mot de passe PBKDF2 + inscription libre-service + récup par jeton + OAuth Google/MS/Apple | Guard routes + PBKDF2 + inscription + jeton reset (`IEnvoiMail`) + `IFournisseurOAuth` + boutons OAuth (412 verts) — **login COMPLET livré. Entorse G2 : volets OAuth/SMTP prouvés par doublure de port ; câblage réel = dette** |
 | 26 | `refonte-graphique` — refonte visuelle complète « Studio » (habillage pur, zéro régression comportement) : tokens `--pdg-*`, typo Fraunces/Inter self-hosted, **thème clair/sombre persisté** (`localStorage`, `data-theme`), calendrier en mini-cartes, dialogs/légende/layout habillés, parité Safari iOS | Tokens `--pdg-*` (`:root` + `[data-theme]`) + polices offline + refonte de tous les écrans clair+sombre (14/14 ✅, **458/458**) — **épic É5 (refonte visuelle + thème sombre) livré** |
+| 27 | `coherence-config-planning` — lieux hissés en **référentiel foyer éditable + persisté**, pilotant validation de pose ET sélecteurs des dialogs ; ancien `ILieuRepository`/`FoyerLieuRepository` en dur retiré | Référentiel lieux (InMemory seedé / Mongo durable sans seed) + canal vivant unique validation+sélecteurs + couleur config→grille en non-régression (6/6, **466/466**) — **cohérence config→planning (lieux) livrée** |
+| 28 | `cablage-auth-reel-reset-et-motdepasse` — câblage auth **réel** : reset mot de passe **E2E** (SMTP dev Smtp4dev + store jetons Mongo durable + expiration 60 min + 2 écrans IHM), **login email+mot de passe** (back+IHM), rapprochement Google **logique**, **seed compte démo par chemin réel** (flag `Demo:SeedCompteDemo`, convergent) | Adaptateurs concrets `IEnvoiMail`/`IReferentielJetonsReset` + DI handlers récup/reset + endpoints + écrans mot-de-passe-oublié/redéfinir-par-jeton + champ mot de passe login + `ConnexionOAuthHandler`/endpoint `oauth/google/demarrer` (doublure+manuel) + seed démo convergent (10/10, **485/485**) — **reset + login MDP OPÉRATIONNELS en runtime réel ; solde la moitié de la dette câblage s25. Reliquat P0 : Google OAuth réel + écran `definir-mot-de-passe`** |
 
 > **Refacto technique HORS pipeline (PR #21, avant s10)** : adaptateurs de droite par techno,
 > `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, `test-count.ps1`.

@@ -26,11 +26,19 @@ public sealed class DemanderRecuperationMotDePasseHandler
 {
     private readonly IEnumerationComptes _comptes;
     private readonly IEnvoiMail _mail;
+    private readonly IReferentielJetonsReset _jetons;
+    private readonly IDateTimeProvider _horloge;
 
-    public DemanderRecuperationMotDePasseHandler(IEnumerationComptes comptes, IEnvoiMail mail)
+    public DemanderRecuperationMotDePasseHandler(
+        IEnumerationComptes comptes,
+        IEnvoiMail mail,
+        IReferentielJetonsReset jetons,
+        IDateTimeProvider horloge)
     {
         _comptes = comptes;
         _mail = mail;
+        _jetons = jetons;
+        _horloge = horloge;
     }
 
     public Result<RecuperationDemandee> Handle(DemanderRecuperationMotDePasseCommand commande)
@@ -45,6 +53,12 @@ public sealed class DemanderRecuperationMotDePasseHandler
             // consommation/expiration prouvées à Sc.13). Ne transite que par le canal mail, jamais
             // par la réponse au client.
             var jeton = $"reset-{Guid.NewGuid():N}";
+
+            // Émission persistée : le jeton est enregistré au store serveur avec une expiration à 60
+            // minutes (contre l'horloge injectée), de sorte que la redéfinition ultérieure (Sc.13) puisse
+            // le retrouver et le consommer. Un email INCONNU n'atteint pas cette branche → aucun jeton
+            // écrit, aucun mail émis (anti-énumération, S4) — mais la réponse reste identique.
+            _jetons.Enregistrer(new JetonReset(jeton, compte.Id, _horloge.Maintenant.AddMinutes(60), Consomme: false));
             _mail.EnvoyerRecuperationMotDePasse(compte.Email, jeton);
         }
 

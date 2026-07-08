@@ -20,6 +20,7 @@ namespace PlanningDeGarde.Web.Components.Pages;
 public partial class Connexion
 {
     private string _email = "";
+    private string _motDePasse = "";
     private string? _motif;
 
     /// <summary>Au montage, charge le catalogue d'acteurs incarnables depuis le référentiel réel
@@ -58,7 +59,7 @@ public partial class Connexion
         try
         {
             reponse = await Canal.PostAsJsonAsync(
-                "api/canal/se-connecter", new SeConnecterRequete(_email));
+                "api/canal/se-connecter", new SeConnecterRequete(_email, _motDePasse));
         }
         catch (HttpRequestException)
         {
