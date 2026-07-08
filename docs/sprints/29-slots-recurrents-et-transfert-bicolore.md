@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 9/14 (back 11 · IHM 3)
+## Avancement — 10/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -50,7 +50,7 @@
 | S8 | IHM : configurer un slot récurrent → occurrences visibles sur toutes les cases du bon jour (RED→GREEN) | 🖥️ IHM | ⏳ |
 | S9 | Projection grille : un jour **avec transfert** porte l'info **bicolore** (couleurs départ/arrivée résolues sur acteurs) | @back | ✅ |
 | S10 | Limite : un jour **sans transfert** reste **unicolore**, aucune info bicolore (non-régression) | @back | ✅ |
-| S11 | Légende : le motif **bicolore = transfert** est signalé quand un transfert est présent dans la fenêtre | @back | ⏳ |
+| S11 | Légende : le motif **bicolore = transfert** est signalé quand un transfert est présent dans la fenêtre | @back | ✅ |
 | S12 | Erreur : transfert dont un acteur a été **supprimé** → couleur **neutre** pour l'orphelin (pas de couleur fantôme) | @back | ⏳ |
 | S13 | IHM : rendu **diagonal bicolore** de la case (départ/arrivée), lisibilité conforme (nom + légende) — **gate G3** | 🖥️ IHM | ⏳ |
 | S14 | IHM : jour **sans transfert** = case **unicolore inchangée** (non-régression visuelle) | 🖥️ IHM | ⏳ |
@@ -150,7 +150,7 @@ Scénario: S10 — Un jour sans transfert reste unicolore (non-régression)
   Alors la case du jour K ne porte aucune information bicolore
   Et son rendu de couleur unique (responsable résolu) est inchangé
 
-@back @pending
+@back @vert
 Scénario: S11 — La légende signale le motif bicolore = transfert
   Étant donné un transfert saisi dans la fenêtre projetée
   Quand on projette la grille agenda

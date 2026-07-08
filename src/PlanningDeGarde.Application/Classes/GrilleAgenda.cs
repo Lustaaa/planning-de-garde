@@ -11,7 +11,15 @@ namespace PlanningDeGarde.Application;
 public sealed record GrilleAgenda(
     IReadOnlyList<JourCase> Jours,
     IReadOnlyList<SemaineLigne> Semaines,
-    IReadOnlyList<EntreeLegende> Légende);
+    IReadOnlyList<EntreeLegende> Légende,
+    IReadOnlyList<EntreeLegendeMotif>? LégendeMotifs = null);
+
+/// <summary>
+/// Une entrée de la légende des <b>motifs</b> de rendu (distincte des responsables) : signale un motif
+/// visuel présent dans la fenêtre — ici le motif <b>bicolore = transfert</b>. Présente uniquement quand
+/// un transfert couvre la fenêtre affichée, absente sinon.
+/// </summary>
+public sealed record EntreeLegendeMotif(string Libelle);
 
 /// <summary>
 /// Une entrée de la légende : un responsable présent dans la fenêtre affichée, avec son nom

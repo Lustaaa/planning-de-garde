@@ -100,8 +100,9 @@ public sealed class GrilleAgendaQuery
             .ToList();
 
         var legende = LegendeDesPresents(periodes, premierJour, premierJour.AddDays(nbJours - 1));
+        var legendeMotifs = LegendeDesMotifs(transferts, premierJour, premierJour.AddDays(nbJours - 1));
 
-        return new GrilleAgenda(jours, semaines, legende);
+        return new GrilleAgenda(jours, semaines, legende, legendeMotifs);
     }
 
     private JourCase CaseJourAu(
@@ -203,6 +204,22 @@ public sealed class GrilleAgendaQuery
             .Distinct()
             .Select(id => new EntreeLegende(id, _referentiel.NomDe(id), _palette.CouleurDe(id)))
             .ToList();
+    }
+
+    /// <summary>
+    /// Légende des motifs de rendu : une entrée « Transfert » (motif bicolore) si au moins un transfert
+    /// est saisi dans la fenêtre [<paramref name="premierJour"/>, <paramref name="dernierJour"/>], sinon
+    /// vide (« en case comme en légende » : signalé seulement quand le motif est effectivement présent).
+    /// </summary>
+    private static IReadOnlyList<EntreeLegendeMotif> LegendeDesMotifs(
+        IReadOnlyList<TransfertSnapshot> transferts, DateOnly premierJour, DateOnly dernierJour)
+    {
+        var transfertDansLaFenetre = transferts
+            .Any(t => DateOnly.FromDateTime(t.Date) >= premierJour && DateOnly.FromDateTime(t.Date) <= dernierJour);
+
+        return transfertDansLaFenetre
+            ? new[] { new EntreeLegendeMotif("Transfert") }
+            : Array.Empty<EntreeLegendeMotif>();
     }
 
     private IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots)
