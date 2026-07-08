@@ -36,14 +36,14 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 3/14 (back 11 · IHM 3)
+## Avancement — 4/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
 | S1 | Poser un slot récurrent hebdo valide → succès + snapshot (jour, plage, lieu, enfant, id stable) | @back | ✅ |
 | S2 | Rejet : lieu inconnu du foyer → échec **sans écriture** (miroir `PoserSlot`) | @back | ✅ |
 | S3 | Rejet : plage horaire non positive (fin ≤ début) → échec **sans écriture** | @back | ✅ |
-| S4 | Projection grille : le slot récurrent apparaît sur **CHAQUE occurrence** du bon jour dans la fenêtre | @back | ⏳ |
+| S4 | Projection grille : le slot récurrent apparaît sur **CHAQUE occurrence** du bon jour dans la fenêtre | @back | ✅ |
 | S5 | Limite : le slot récurrent **n'apparaît sur aucun autre jour de semaine** | @back | ⏳ |
 | S6 | Persistance durable Mongo : un slot récurrent **survit au redémarrage** (parité slot ponctuel s15) | @back | ⏳ |
 | S7 | Suppression **idempotente** par id stable (no-op si absent) + **diffusion temps réel** | @back | ⏳ |
@@ -85,7 +85,7 @@ Scénario: S3 — Rejet d'une plage horaire non positive
   Alors la commande échoue (la durée doit être strictement positive)
   Et aucun slot récurrent n'est enregistré
 
-@back @pending
+@back @vert
 Scénario: S4 — Le slot récurrent se matérialise sur toutes les occurrences du bon jour
   Étant donné un slot récurrent enregistré le samedi de 11h30 à 12h15 au lieu "Piscine"
   Quand on projette la grille agenda sur une fenêtre de 4 semaines

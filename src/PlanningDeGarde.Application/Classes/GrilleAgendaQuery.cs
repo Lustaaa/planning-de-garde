@@ -20,6 +20,7 @@ public sealed class GrilleAgendaQuery
     private readonly IReferentielResponsables _referentiel;
     private readonly IReferentielCycleDeFond? _cycle;
     private readonly IEnumerationActeursFoyer? _acteurs;
+    private readonly ISlotRecurrentRepository? _slotsRecurrents;
 
     public GrilleAgendaQuery(
         ISlotRepository slots,
@@ -27,7 +28,8 @@ public sealed class GrilleAgendaQuery
         IPaletteCouleurs palette,
         IReferentielResponsables referentiel,
         IReferentielCycleDeFond? cycle = null,
-        IEnumerationActeursFoyer? acteurs = null)
+        IEnumerationActeursFoyer? acteurs = null,
+        ISlotRecurrentRepository? slotsRecurrents = null)
     {
         _slots = slots;
         _periodes = periodes;
@@ -35,6 +37,7 @@ public sealed class GrilleAgendaQuery
         _referentiel = referentiel;
         _cycle = cycle;
         _acteurs = acteurs;
+        _slotsRecurrents = slotsRecurrents;
     }
 
     /// <summary>
@@ -74,9 +77,14 @@ public sealed class GrilleAgendaQuery
 
         var periodes = _periodes.AllSnapshots();
 
+        // Un slot RÉCURRENT hebdo se matérialise sur CHAQUE jour de la fenêtre dont le jour de semaine
+        // correspond : chaque occurrence est un slot « virtuel » daté (date + plage horaire) qui rejoint
+        // le flux des slots ponctuels de sa case (empilement en ordre horaire assuré par SlotsCasePour).
+        var recurrents = _slotsRecurrents?.AllSnapshots() ?? (IReadOnlyList<SlotRecurrentSnapshot>)Array.Empty<SlotRecurrentSnapshot>();
+
         var jours = Enumerable.Range(0, nbJours)
             .Select(offset => premierJour.AddDays(offset))
-            .Select(date => CaseJourAu(date, periodes, slotsParJour[date]))
+            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date))))
             .ToList();
 
         var semaines = jours
@@ -105,6 +113,17 @@ public sealed class GrilleAgendaQuery
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
         return new JourCase(date, couleur, nom, SlotsCasePour(slots));
     }
+
+    /// <summary>
+    /// Occurrences d'un slot récurrent tombant sur la <paramref name="date"/> donnée : un slot virtuel
+    /// daté (même enfant / lieu, bornes = date + plage horaire) par récurrent dont le jour de semaine
+    /// correspond. Ne persiste rien : matérialisation de lecture pure, réévaluée à chaque projection.
+    /// </summary>
+    private static IEnumerable<SlotSnapshot> OccurrencesRecurrentes(IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date)
+        => recurrents
+            .Where(r => r.JourDeSemaine == date.DayOfWeek)
+            .Select(r => new SlotSnapshot(
+                r.EnfantId, r.LieuId, date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureDebut)), date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureFin))));
 
     /// <summary>Jours calendaires couverts par un slot, du jour de son début à celui de sa fin (inclus).</summary>
     private static IEnumerable<DateOnly> JoursCouverts(SlotSnapshot slot)
