@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 10/14 (back 11 · IHM 3)
+## Avancement — 11/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -51,7 +51,7 @@
 | S9 | Projection grille : un jour **avec transfert** porte l'info **bicolore** (couleurs départ/arrivée résolues sur acteurs) | @back | ✅ |
 | S10 | Limite : un jour **sans transfert** reste **unicolore**, aucune info bicolore (non-régression) | @back | ✅ |
 | S11 | Légende : le motif **bicolore = transfert** est signalé quand un transfert est présent dans la fenêtre | @back | ✅ |
-| S12 | Erreur : transfert dont un acteur a été **supprimé** → couleur **neutre** pour l'orphelin (pas de couleur fantôme) | @back | ⏳ |
+| S12 | Erreur : transfert dont un acteur a été **supprimé** → couleur **neutre** pour l'orphelin (pas de couleur fantôme) | @back | ✅ |
 | S13 | IHM : rendu **diagonal bicolore** de la case (départ/arrivée), lisibilité conforme (nom + légende) — **gate G3** | 🖥️ IHM | ⏳ |
 | S14 | IHM : jour **sans transfert** = case **unicolore inchangée** (non-régression visuelle) | 🖥️ IHM | ⏳ |
 
@@ -157,7 +157,7 @@ Scénario: S11 — La légende signale le motif bicolore = transfert
   Alors la légende porte une entrée signalant le motif bicolore comme un transfert
   Et cette entrée est absente quand aucun transfert ne couvre la fenêtre
 
-@back @pending
+@back @vert
 Scénario: S12 — Acteur d'un transfert supprimé : neutre, pas de couleur fantôme
   Étant donné un transfert le jour J dont le récupérant a depuis été supprimé du foyer
   Quand on projette la grille agenda sur une fenêtre couvrant J
