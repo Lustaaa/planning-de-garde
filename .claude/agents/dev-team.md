@@ -90,8 +90,13 @@ lancement.
     (signal de priorisation du rétrofit pour le `scrum-master`).
   - Ne jamais étendre le passe-droit flake à un **autre** test (un rouge hors `*TempsReel*` = régression
     à traiter), ni **étiqueter flake sans le re-run isolé** qui l'a démontré intermittent.
-- **Tenir le tableau d'avancement en tête à jour à CHAQUE transition** (le compte `X/N` =
-  nombre de lignes `✅`, toujours).
+- **Seed / amorçage par le chemin réel = CONVERGENT, jamais insert-si-absent.** Tout amorçage de
+  données via le chemin de production (ex. seed d'un compte de démo : acteur → compte → activation →
+  mot de passe) doit **réconcilier un état partiel préexistant** sur le store durable, pas seulement
+  créer quand l'entité est absente. Un seed qui **court-circuite** sur « l'email existe déjà » **laisse
+  un compte email-only sans mot de passe** et le login échoue en runtime (friction réelle s28, détectée
+  au G3 : le seed sautait un compte préexistant → login démo KO). **Prouve les DEUX cas** (entité
+  absente **et** entité partielle préexistante) par un test sur store réel avant de déclarer le seed vert.
 - **Ne touche jamais** la section `# Retours produit (PO)` ni `docs/BACKLOG.md` (hors de ton rôle).
 
 ## Sortie (JSON seul, aucun texte autour)

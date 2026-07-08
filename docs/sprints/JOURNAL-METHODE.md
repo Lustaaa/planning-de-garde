@@ -33,6 +33,12 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   (`✅ logique / ⚠️ câblage`) sur les lignes `doublure+manuel` tant que le câblage réel n'est pas prouvé,
   + ligne « dette de câblage » explicite au tableau, dette portée au backlog en `à faire` (P0 si non
   opérationnel).
+- 2026-07-08 — s28 : au G3, le login démo (`deveaux.cyril@gmail.com`) échouait car le seed du compte
+  de démo **court-circuitait** sur un compte email-only **préexistant** dans le store durable Mongo →
+  mot de passe jamais posé (insert-si-absent au lieu de convergent). Le rework post-gate a fait **staller
+  dev-team** (watchdog 600s) ; il a été **repris et fini par le thread principal**. Fix : garde-fou
+  **« seed / amorçage par le chemin réel = CONVERGENT, jamais insert-si-absent »** dans `dev-team`
+  (réconcilier l'état partiel préexistant + prouver les DEUX cas — absent ET partiel — sur store réel).
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake
