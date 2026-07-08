@@ -36,11 +36,11 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 0/14 (back 11 · IHM 3)
+## Avancement — 1/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
-| S1 | Poser un slot récurrent hebdo valide → succès + snapshot (jour, plage, lieu, enfant, id stable) | @back | ⏳ |
+| S1 | Poser un slot récurrent hebdo valide → succès + snapshot (jour, plage, lieu, enfant, id stable) | @back | ✅ |
 | S2 | Rejet : lieu inconnu du foyer → échec **sans écriture** (miroir `PoserSlot`) | @back | ⏳ |
 | S3 | Rejet : plage horaire non positive (fin ≤ début) → échec **sans écriture** | @back | ⏳ |
 | S4 | Projection grille : le slot récurrent apparaît sur **CHAQUE occurrence** du bon jour dans la fenêtre | @back | ⏳ |
@@ -60,7 +60,7 @@
 ### Volet 1 — Slot récurrent hebdomadaire (back : frontière Application)
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario: S1 — Poser un slot récurrent hebdomadaire valide
   Étant donné un foyer dont le référentiel de lieux contient "Piscine"
   Et un enfant déclaré du foyer
