@@ -36,7 +36,7 @@
 > prouvée sur **store Mongo durable** (parité slot ponctuel s15). **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, pas de dette de câblage.
 
-## Avancement — 8/14 (back 11 · IHM 3)
+## Avancement — 9/14 (back 11 · IHM 3)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -49,7 +49,7 @@
 | S7 | Suppression **idempotente** par id stable (no-op si absent) + **diffusion temps réel** | @back | ✅ |
 | S8 | IHM : configurer un slot récurrent → occurrences visibles sur toutes les cases du bon jour (RED→GREEN) | 🖥️ IHM | ⏳ |
 | S9 | Projection grille : un jour **avec transfert** porte l'info **bicolore** (couleurs départ/arrivée résolues sur acteurs) | @back | ✅ |
-| S10 | Limite : un jour **sans transfert** reste **unicolore**, aucune info bicolore (non-régression) | @back | ⏳ |
+| S10 | Limite : un jour **sans transfert** reste **unicolore**, aucune info bicolore (non-régression) | @back | ✅ |
 | S11 | Légende : le motif **bicolore = transfert** est signalé quand un transfert est présent dans la fenêtre | @back | ⏳ |
 | S12 | Erreur : transfert dont un acteur a été **supprimé** → couleur **neutre** pour l'orphelin (pas de couleur fantôme) | @back | ⏳ |
 | S13 | IHM : rendu **diagonal bicolore** de la case (départ/arrivée), lisibilité conforme (nom + légende) — **gate G3** | 🖥️ IHM | ⏳ |
@@ -143,7 +143,7 @@ Scénario: S9 — Un jour avec transfert porte l'information bicolore
   Et la couleur d'arrivée = la couleur de "Maman" (récupérant), résolue sur son identifiant stable
   Et la résolution de responsabilité de la case (surcharge > fond > neutre) est inchangée
 
-@back @pending
+@back @vert
 Scénario: S10 — Un jour sans transfert reste unicolore (non-régression)
   Étant donné aucun transfert saisi le jour K
   Quand on projette la grille agenda sur une fenêtre couvrant K
