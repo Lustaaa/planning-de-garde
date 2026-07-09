@@ -14,7 +14,7 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 5/14
+## Avancement — 6/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -25,7 +25,7 @@
 | 4 | Bouton œil afficher/masquer le mot de passe sur `/connexion` | 🖥️ IHM | ✅ |
 | **Volet 2 — D3 transfert AUTO-dérivé · 1er cœur · prouvé vert AVANT volet 3** ||||
 | 5 | Nominal : fin période A (J) + début période B (J+1), même enfant → transfert dérivé le jour de bascule | back | ✅ |
-| 6 | Priorité **SAISI > DÉRIVÉ** : transfert saisi le même jour prime, pas de doublon | back | ⏳ |
+| 6 | Priorité **SAISI > DÉRIVÉ** : transfert saisi le même jour prime, pas de doublon | back | ✅ |
 | 7 | Limite **NEUTRE** : fin de garde sans successeur → aucun transfert dérivé | back | ⏳ |
 | 8 | Limite **bord de fenêtre** : J+1 hors fenêtre chargée → pas de dérivation fantôme | back | ⏳ |
 | 9 | Erreur **orphelin (R6)** : cédant/recevant supprimé → retombée neutre côté orphelin | back | ⏳ |
@@ -108,7 +108,7 @@ Scénario 5 — Nominal : transfert dérivé le jour de bascule
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 6 — Priorité SAISI > DÉRIVÉ (pas de doublon)
   Étant donné une succession de périodes qui dériverait un transfert le jour J
   Et un transfert SAISI existant le même jour J pour le même enfant
