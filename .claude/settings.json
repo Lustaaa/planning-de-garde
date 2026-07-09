@@ -1,0 +1,42 @@
+{
+  "enabledPlugins": {
+    "gtax-perso@gtax-marketplace": false,
+    "core@equipe": false,
+    "devops-flow@equipe": false,
+    "git-flow@equipe": false,
+    "exemple@equipe": false,
+    "superpowers@claude-plugins-official": false,
+    "caveman@caveman": false,
+    "miro@claude-plugins-official": false
+  },
+  "disabledMcpjsonServers": ["azure-devops", "git-superviseur", "miro"],
+  "permissions": {
+    "allow": [
+      "Bash(pwsh -NoProfile -File .claude/skills/dotnet/scripts/restore.ps1*)",
+      "Bash(pwsh -NoProfile -File .claude/skills/dotnet/scripts/build.ps1*)",
+      "Bash(pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1*)",
+      "Bash(pwsh .claude/skills/git/scripts/status.ps1*)",
+      "Bash(pwsh .claude/skills/git/scripts/sync.ps1*)",
+      "Bash(pwsh .claude/skills/git/scripts/branch.ps1*)",
+      "Bash(pwsh .claude/skills/git/scripts/commit.ps1*)",
+      "Bash(pwsh .claude/skills/git/scripts/push.ps1*)",
+      "Bash(pwsh .claude/skills/git/scripts/pr.ps1*)",
+      "Bash(pwsh .claude/skills/run/scripts/run.ps1*)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git diff*)",
+      "Bash(git fetch*)",
+      "Bash(git branch*)",
+      "Bash(dotnet build*)",
+      "Bash(dotnet test*)",
+      "Bash(gh pr view*)",
+      "Bash(gh pr list*)",
+      "Bash(gh repo view*)",
+      "PowerShell(git status*)",
+      "PowerShell(git log*)",
+      "PowerShell(git diff*)",
+      "PowerShell(git fetch*)",
+      "PowerShell(git branch*)"
+    ]
+  }
+}

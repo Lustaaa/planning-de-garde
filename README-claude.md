@@ -8,7 +8,7 @@ contexte du main reste propre.
 
 > Refonte 2026-06-29 (design : `docs/superpowers/specs/2026-06-29-refonte-pipeline-agile-design.md`).
 > Objectif : un sprint en **moitié moins de temps/tokens**. L'ancien pipeline (6 commands,
-> ~10 agents) est archivé sous `.claude/_archive/` — source d'inspiration, plus actif.
+> ~10 agents) est archivé sous `docs/_archive/claude-pipeline-v1/` — source d'inspiration, plus actif.
 
 ## Les acteurs SCRUM
 

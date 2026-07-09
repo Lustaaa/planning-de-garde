@@ -24,7 +24,7 @@ Règles d'or : le front n'appelle jamais le domaine en direct (tout passe par l'
 
 ## Tests
 
-3 projets : `PlanningDeGarde.Tests` (domaine/app), `Api.Tests`, `Web.Tests`. Non-régression = **suite COMPLÈTE verte (458/458 au sprint 26)** via `dotnet test` **sans `--no-build` ni filtre, Docker actif** (pivot Mongo). Skill `dotnet` (JSON compact) : `pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1` (aussi `build.ps1`, `restore.ps1`).
+3 projets : `PlanningDeGarde.Tests` (domaine/app), `Api.Tests`, `Web.Tests`. Non-régression = **suite COMPLÈTE verte** via le skill `dotnet`, **sans `--no-build` ni filtre, Docker actif** (pivot Mongo) : `pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1` (aussi `build.ps1`, `restore.ps1`).
 
 ## Lancer l'app
 
@@ -49,8 +49,6 @@ Le thread principal **ne raisonne pas** : il dispatche des subagents et relaie v
 
 ## État courant
 
-Pipeline refondu (3 commands `/planning`,`/sprint`,`/cloture` · 3 agents `scrum-master`,`dev-team`,`architecte` · skill `dotnet` ; ancien pipeline archivé `.claude/_archive/`). Migration spec vers `docs/specs/` **faite**.
+Pipeline refondu (3 commands `/planning`,`/sprint`,`/cloture` · 3 agents `scrum-master`,`dev-team`,`architecte` · skills `dotnet`/`git`/`run` ; ancien pipeline archivé `docs/_archive/claude-pipeline-v1/`). Migration spec vers `docs/specs/` **faite**.
 
-**26 sprints livrés** (suite 458/458). Dernier produit = **refonte graphique « Studio »** (s26 : thème clair/sombre persisté, typo Fraunces/Inter) ; auth complète (s22-s25), calendrier navigable + persistance Mongo de tout le domaine (s15). Backlog éclaté : `docs/BACKLOG-Done.md` (fait) + `docs/BACKLOG.md` (reste). Sprints clos archivés `docs/_archive/sprints/` (seul `JOURNAL-METHODE.md` reste dans `docs/sprints/`).
-
-**Prochains gros items** (backlog) : câbler les adaptateurs auth réels (SMTP / OAuth providers / store jetons — dette assumée G2 s25, TÊTE), rétrofit du flake SignalR `*TempsReel*` (P1), cohérence config→planning, panneau cloche (palier 11). Reprendre la boucle via `/planning`.
+**30 sprints livrés/mergés** (suite complète verte à chaque merge). L'état à jour vit ailleurs — ne pas le dupliquer ici : avancement du sprint courant = fichier `docs/sprints/NN-<slug>.md` ; priorités = `docs/BACKLOG.md` (fait : `docs/BACKLOG-Done.md`) ; sprints clos archivés `docs/_archive/sprints/` (seul `JOURNAL-METHODE.md` reste dans `docs/sprints/`). Reprendre la boucle via `/planning`.
