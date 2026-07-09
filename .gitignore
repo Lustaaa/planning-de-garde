@@ -39,6 +39,7 @@ desktop.ini
 *.tmp
 .cache/
 coverage/
+.claude/tmp/
 
 # Exemples de référence (non versionnés)
 inputs/

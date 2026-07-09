@@ -69,8 +69,7 @@ Quand la `dev-team` renvoie `{ "type":"question", … }` :
    présentation, libellé, micro-ajustement d'un scénario déjà livré) **sans** nouveau handler/commande,
    **sans** révision d'invariant ou de règle, **sans** nouvelle surface IHM. Dès qu'un ajout touche un
    **invariant**/une **porte métier** ou demande un **nouveau volet**, il **retourne au `/planning`**
-   (G2/G1), jamais tranché sous la pression du gate. *(Friction réelle s29 : 4 ajouts successifs au gate
-   G3, dont 3 hors-goal → 2 reworks + 2 escalades G1 ; désormais backlog par défaut.)*
+   (G2/G1), jamais tranché sous la pression du gate. *(Récit : JOURNAL-METHODE s29.)*
 
 ## Notes
 

@@ -46,20 +46,14 @@ pwsh -NoProfile -File .claude/skills/dotnet/scripts/restore.ps1
 ## Garde-fous (portés par les scripts)
 
 - **Suite/solution complète** — jamais `--no-build` ni filtre projet partiel pour une
-  non-régression (un projet de prod non recompilé fait **mentir le vert**, cf. Sc.1 s07).
+  non-régression (un projet de prod non recompilé fait **mentir le vert**).
 - **`-Filter` = RED ciblé seulement** — interdit comme preuve de non-régression.
 - **Hôtes zombies tués** — les `dotnet` pointant `Api`/`Web` sont arrêtés avant build (verrous
   DLL / MSB3027) ; on ne tue pas les autres `dotnet`.
-- **Chemin accentué** — encodage UTF-8 forcé + `Set-Location` robuste (dépôt sous `source/privée/`).
+- **Chemin accentué** — comme les scripts `git`, chaque script force l'encodage UTF-8 et se
+  repositionne via `Set-Location -LiteralPath` en tête (dépôt sous `source/privée/`) — **ne jamais
+  retirer ces lignes** en éditant un script.
 - **Sortie compacte** — JSON court sur le chemin vert ; détails plafonnés sur rouge.
-
-## Chemins non-ASCII (dépôt « privée »)
-
-Comme les scripts `git`, chaque script force l'encodage et fiabilise le repositionnement :
-```powershell
-$OutputEncoding = [Console]::OutputEncoding = [Text.UTF8Encoding]::new($false)
-Set-Location -LiteralPath (git rev-parse --show-toplevel).Trim()
-```
 
 ## Lancer l'app
 

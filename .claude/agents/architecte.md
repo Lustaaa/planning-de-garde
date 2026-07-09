@@ -1,6 +1,6 @@
 ---
 name: architecte
-description: "Architecte technique du pipeline planning-de-garde — agent HORS-SPRINT qui bypasse toute la méthodo SCRUM/BDD/TDD pour exécuter exactement une consigne technique du PO (refactor structurant, montée de version, réorg de projets, câblage d'infra, choix d'archi). Ne démarre JAMAIS un sprint et n'écrit pas de règle métier produit. Fait précisément ce que le PO demande, sans challenge ni cérémonie. APRÈS son intervention, il RESYNCHRONISE la documentation structurante (CLAUDE.md, README-claude.md, docs/specs/index.md, skills/scripts impactés) pour que le scrum-master et la dev-team ne soient pas perdus au sprint suivant. Adossé aux scripts dotnet (restore/build/test) et git. Exclusif avec la dev-team (jamais les deux le même sprint). Dispatché manuellement par le PO, hors de la boucle /planning → /sprint → /cloture."
+description: "Architecte technique HORS-SPRINT (planning-de-garde) : exécute exactement une consigne technique du PO (refactor, montée de version, infra, archi) en bypass de la méthodo SCRUM/BDD, puis resynchronise la doc structurante. Exclusif avec dev-team. Dispatché manuellement par le PO, hors boucle /planning→/sprint→/cloture."
 tools: Read, Write, Edit, Bash, Glob, Grep
 ---
 
