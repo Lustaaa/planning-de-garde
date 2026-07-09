@@ -43,6 +43,29 @@ lecture** du référentiel des lieux. **Conséquence de parité (asymétrie seed
 **part sans lieux** (aucun seed), donc **aucun slot n'est posable tant qu'un lieu n'est pas configuré** ;
 l'InMemory des tests conserve son seed pour la non-régression.
 
+Un **référentiel d'enfants éditable + persisté** est **livré** *(s30)* : l'**enfant** est hissé en
+**agrégat de config foyer de premier rang**, **miroir strict du hissage des lieux s27**. Jusque-là
+l'`EnfantId` (« Léa ») restait **implicite/masqué** : transmis via `Session.EnfantId` au canal
+d'écriture **sans jamais être choisi** (fantôme), bloquant dès qu'un foyer a ≥2 enfants. L'agrégat
+**`Enfant`** porte un **identifiant stable opaque** (jamais dérivé du prénom) + un **snapshot (prénom)**,
+énuméré par un **port d'énumération** de droite et muté par un **port d'édition** (ajouter / éditer),
+réalisés par les **mêmes stores** que les acteurs / rôles / lieux (`ConfigurationFoyerEnMemoire` **seedé** /
+`ConfigurationFoyerMongo` **durable sans seed**, parité asymétrie seed s15). **Rejets sans écriture** :
+prénom **vide** ou **doublon** de prénom (miroir des rejets acteurs R5/R6, rôles R10, lieux). L'enfant
+devient **explicite** partout : **onglet « Enfants »** dans la Config du foyer (lister / ajouter / éditer,
+rejets visibles sans enregistrer) et **sélecteur d'enfant explicite** dans la dialog de pose (slot
+ponctuel comme récurrent) qui **remplace l'`EnfantId` implicite « Léa »** (fantôme `Session.EnfantId`
+retiré, choix transmis au canal d'écriture existant). Ce **canal vivant** pilote **la validation de pose**
+contre le référentiel : poser un slot référençant un enfant **inconnu** du foyer est **refusé sans
+écriture** (ponctuel ET récurrent, miroir de la validation « lieu inconnu » s29). Une **migration de
+rétro-affectation idempotente** réattache les slots existants du fantôme « Léa » à l'**identifiant stable
+de l'enfant réel** (rejeu = no-op), **prouvée sur store Mongo réel** ; elle reste un **utilitaire ops**
+(non auto-câblé au runtime) et l'enfant par défaut du sélecteur reste le seed « Léa ». **Borne R1 (≥1
+enfant)** tenue par construction (le fantôme devient le premier enfant réel) ; la **suppression** d'un
+enfant et sa borne défensive au Delete sont **hors scope s30** (reportées). Le **vrai multi-enfants** au
+sens spec R1 (familles recomposées, graphe de parents, multi-enfants dans le cycle de fond) n'est **pas
+encore exercé** au-delà de l'agrégat.
+
 Une **fondation d'identité** est **livrée** *(s22, auth tranche 1)* : un agrégat **`CompteUtilisateur`**
 (identifiant **stable opaque**, **email**, **statut** `Actif`/`Inactif` — défaut **Inactif**, un `ActeurId`
 **nullable**) **lié 1-1 à un acteur déclaré**, **persisté Mongo** dans la config foyer (mêmes bornes que
@@ -183,6 +206,19 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   un seul chemin de lecture. **Parité seed s15** : mode Mongo sans lieux au départ ⇒ aucun slot posable tant
   qu'aucun lieu n'est configuré.
 
+- **Référentiel d'enfants éditable + persisté** *(livré s30, miroir strict du hissage lieux s27)* :
+  agrégat **`Enfant`** (**id stable opaque** + **snapshot prénom**, jamais dérivé du libellé), **port
+  d'énumération** (lecture) + **port d'édition** (ajouter / éditer), **deux adaptateurs** (InMemory **seedé** /
+  Mongo **durable sans seed**), **bornés à la config foyer**. **Rejets sans écriture** : prénom **vide** ou en
+  **doublon**. **IHM onglet « Enfants »** (Config foyer) : lister / ajouter / éditer, rejets visibles sans
+  enregistrer. **Sélecteur d'enfant explicite** dans la dialog « Poser un slot » (ponctuel + récurrent) qui
+  **remplace le fantôme `Session.EnfantId` (« Léa »)** — l'enfant n'est plus implicite, le choix est transmis
+  au canal d'écriture existant. **Validation de pose** : slot référençant un enfant **inconnu** du foyer refusé
+  **sans écriture** (miroir lieu inconnu s29). **Migration rétro-affectation idempotente** des slots du fantôme
+  vers l'id réel (rejeu = no-op, **prouvée store Mongo réel**) — **utilitaire ops non auto-câblé**. **Parité
+  seed s15** : mode Mongo sans enfant seedé au 1er lancement. **Hors scope s30** : suppression d'enfant + borne
+  défensive R1 au Delete ; vrai multi-enfants de bout en bout.
+
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
   rôles), doté d'un **id stable opaque** + **email** + **statut** (`Actif`/`Inactif`, défaut **Inactif** —
@@ -209,6 +245,15 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 ## Règles de gestion (catalogue : `regles-de-gestion.md`)
 
 - **R1 Multi-enfants · R2 Familles recomposées · R3 Toujours deux parents** (composition du foyer).
+  **R1 — référentiel d'enfants livré s30** : l'enfant est un **agrégat de config foyer de 1er rang**
+  (id stable opaque + prénom), énuméré/édité par ports dédiés, persisté **Mongo durable sans seed**
+  (miroir lieux s27) ; rejets **prénom vide / doublon** sans écriture ; **onglet « Enfants »** + **sélecteur
+  d'enfant explicite** à la pose (fantôme `Session.EnfantId` retiré) ; **validation d'existence de l'enfant
+  à la pose** (ponctuel + récurrent, slot sur enfant inconnu refusé sans écriture) ; **migration
+  rétro-affectation idempotente** des slots du fantôme « Léa » (utilitaire ops non auto-câblé). **Borne ≥1
+  enfant** tenue par construction (fantôme → 1er enfant réel) ; **suppression d'enfant + borne défensive au
+  Delete hors scope s30** ; **vrai multi-enfants de bout en bout pas encore exercé** (familles recomposées
+  R2 / graphe parents R3 / multi-enfants au cycle de fond restent ouverts).
 - **R4 — Acteurs « autres » ajoutables, éditables et supprimables.**
 - **R5 — Édition des acteurs (noms + couleurs)** : grille relue immédiatement, store vivant partout,
   type surfacé lecture seule. Distincte de la durabilité (R30). **Précisé s19** : sélecteurs des

@@ -186,4 +186,10 @@ Scénario: S14 — Une case sans transfert reste unicolore (non-régression visu
 
 # Retours produit (PO)
 
-<!-- Rempli après le gate G3, consommé à la /cloture. -->
+Ces retour ne concerne pas forcement ce qui a été fait dans le sprint, mais il faudra les adresser :
+
+- Je n'ai pas trouvé comment supprimer un slot récurent (suppression d'une instance unique)
+- comment lier les enfant au parent ? A faire pendant la refonte des acteurs
+- l'administration des enfant devra etre harmonisé comment les autres éléments de la configuration du foyer
+- quand je fais F5 sur le planning, ca m'envoi sur la page de login
+- sur la page de login, j'aimerai un petit bouton dans le champ mdp pour le visualiser (un petit oeil)
