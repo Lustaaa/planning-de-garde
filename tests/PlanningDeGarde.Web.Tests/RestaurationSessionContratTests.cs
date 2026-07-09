@@ -85,5 +85,11 @@ public sealed class RestaurationSessionContratTests
         }
 
         public ValueTask<SessionPersistee?> LireAsync() => ValueTask.FromResult(_stocke);
+
+        public ValueTask PurgerAsync()
+        {
+            _stocke = null;
+            return ValueTask.CompletedTask;
+        }
     }
 }

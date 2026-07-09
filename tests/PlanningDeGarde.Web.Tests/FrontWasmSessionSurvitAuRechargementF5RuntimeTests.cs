@@ -87,6 +87,12 @@ public sealed class FrontWasmSessionSurvitAuRechargementF5RuntimeTests : TestCon
         }
 
         public ValueTask<SessionPersistee?> LireAsync() => ValueTask.FromResult(_stocke);
+
+        public ValueTask PurgerAsync()
+        {
+            _stocke = null;
+            return ValueTask.CompletedTask;
+        }
     }
 
     /// <summary>Double du port de thème (le layout rend la bascule de thème) : neutre pour ce scénario.</summary>

@@ -48,6 +48,9 @@
             },
             lire: function () {
                 try { return localStorage.getItem('pdg-session'); } catch (e) { return null; }
+            },
+            purger: function () {
+                try { localStorage.removeItem('pdg-session'); } catch (e) { }
             }
         };
     </script>

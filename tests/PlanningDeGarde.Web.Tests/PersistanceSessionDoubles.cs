@@ -17,6 +17,9 @@ internal sealed class SpyPersistanceSession : IPersistanceSession
 
     public SessionPersistee? DernierJetonPersiste => JetonsPersistes.Count == 0 ? null : JetonsPersistes[^1];
 
+    /// <summary>Nombre de purges reçues (logout, Sc.3).</summary>
+    public int NombrePurges { get; private set; }
+
     public ValueTask PersisterAsync(SessionPersistee jeton)
     {
         JetonsPersistes.Add(jeton);
@@ -25,6 +28,13 @@ internal sealed class SpyPersistanceSession : IPersistanceSession
     }
 
     public ValueTask<SessionPersistee?> LireAsync() => ValueTask.FromResult(_stocke);
+
+    public ValueTask PurgerAsync()
+    {
+        NombrePurges++;
+        _stocke = null; // le stockage durable est vidé : une relecture ultérieure ne rend plus rien
+        return ValueTask.CompletedTask;
+    }
 }
 
 /// <summary>Double INERTE du port <see cref="IPersistanceSession"/> pour les tests qui rendent
@@ -35,4 +45,6 @@ internal sealed class PersistanceSessionInerte : IPersistanceSession
     public ValueTask PersisterAsync(SessionPersistee jeton) => ValueTask.CompletedTask;
 
     public ValueTask<SessionPersistee?> LireAsync() => ValueTask.FromResult<SessionPersistee?>(null);
+
+    public ValueTask PurgerAsync() => ValueTask.CompletedTask;
 }

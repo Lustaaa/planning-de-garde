@@ -26,6 +26,10 @@ public interface IPersistanceSession
 
     /// <summary>Relit le jeton persisté (au démarrage), ou <c>null</c> si le stockage est vide.</summary>
     ValueTask<SessionPersistee?> LireAsync();
+
+    /// <summary>Purge le jeton persisté (au logout s23) : le stockage durable est vidé, si bien qu'un F5
+    /// ultérieur ne restaure AUCUNE session (le logout reste effectif au rechargement).</summary>
+    ValueTask PurgerAsync();
 }
 
 /// <summary>
@@ -57,4 +61,6 @@ public sealed class PersistanceSessionJs : IPersistanceSession
             return null; // jeton illisible → traité comme absent (aucune session fantôme)
         }
     }
+
+    public ValueTask PurgerAsync() => _js.InvokeVoidAsync("pdgSession.purger");
 }

@@ -42,4 +42,13 @@ public sealed class AmorceSessionAssetTests
         // lire : relit le jeton au démarrage.
         Assert.Contains("localStorage.getItem('pdg-session')", html, StringComparison.Ordinal);
     }
+
+    [Fact]
+    public void Le_module_pdgSession_purge_localStorage_au_logout()
+    {
+        // purger : le logout (Sc.3) efface le jeton persisté du stockage durable → un F5 ultérieur ne
+        // restaure plus aucune session (le logout reste effectif au rechargement).
+        var html = LireIndexHtmlCompact();
+        Assert.Contains("localStorage.removeItem('pdg-session')", html, StringComparison.Ordinal);
+    }
 }

@@ -14,14 +14,14 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 2/14
+## Avancement — 3/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | **Volet 1 — Login F5 (P0) + œil · 0 cœur · dérisque tôt** ||||
 | 1 | F5 sur `/planning` connecté → reste connecté (session restaurée) | 🖥️ IHM | ✅ |
 | 2 | Contrat de restauration : jeton persisté au login, relu au démarrage client | back | ✅ |
-| 3 | Logout purge le persisté → F5 après logout → `/connexion` (R30 + logout s23 tenus) | 🖥️ IHM | ⏳ |
+| 3 | Logout purge le persisté → F5 après logout → `/connexion` (R30 + logout s23 tenus) | 🖥️ IHM | ✅ |
 | 4 | Bouton œil afficher/masquer le mot de passe sur `/connexion` | 🖥️ IHM | ⏳ |
 | **Volet 2 — D3 transfert AUTO-dérivé · 1er cœur · prouvé vert AVANT volet 3** ||||
 | 5 | Nominal : fin période A (J) + début période B (J+1), même enfant → transfert dérivé le jour de bascule | back | ⏳ |
@@ -67,7 +67,7 @@ Scénario 2 — Contrat de restauration de session (jeton persisté / relu)
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 3 — Le logout purge le persisté (borne R30 + logout s23 tenus)
   Étant donné un utilisateur connecté avec session persistée
   Quand il se déconnecte (logout s23)
