@@ -14,7 +14,7 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 4/14
+## Avancement — 5/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -24,7 +24,7 @@
 | 3 | Logout purge le persisté → F5 après logout → `/connexion` (R30 + logout s23 tenus) | 🖥️ IHM | ✅ |
 | 4 | Bouton œil afficher/masquer le mot de passe sur `/connexion` | 🖥️ IHM | ✅ |
 | **Volet 2 — D3 transfert AUTO-dérivé · 1er cœur · prouvé vert AVANT volet 3** ||||
-| 5 | Nominal : fin période A (J) + début période B (J+1), même enfant → transfert dérivé le jour de bascule | back | ⏳ |
+| 5 | Nominal : fin période A (J) + début période B (J+1), même enfant → transfert dérivé le jour de bascule | back | ✅ |
 | 6 | Priorité **SAISI > DÉRIVÉ** : transfert saisi le même jour prime, pas de doublon | back | ⏳ |
 | 7 | Limite **NEUTRE** : fin de garde sans successeur → aucun transfert dérivé | back | ⏳ |
 | 8 | Limite **bord de fenêtre** : J+1 hors fenêtre chargée → pas de dérivation fantôme | back | ⏳ |
@@ -98,7 +98,7 @@ Scénario 4 — Bouton œil afficher/masquer le mot de passe
 > pas sur un index de cycle de fond — aucune date/parité ISO à ancrer ici.*
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 5 — Nominal : transfert dérivé le jour de bascule
   Étant donné une période A responsable "Cédant" se terminant le jour J
   Et une période B responsable "Recevant", même enfant, débutant le jour J+1

@@ -120,7 +120,7 @@ public sealed class GrilleAgendaQuery
         var responsableId = surcharge ?? fond;
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
-        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, date));
+        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date));
     }
 
     /// <summary>
@@ -129,12 +129,39 @@ public sealed class GrilleAgendaQuery
     /// le référentiel acteurs par identifiant stable ; un acteur supprimé (orphelin) retombe sur le
     /// neutre (même contrat d'existence <see cref="Resolvable"/> que la responsabilité — pas de fantôme).
     /// </summary>
-    private InfoTransfert? InfoTransfertDuJour(IReadOnlyList<TransfertSnapshot> transferts, DateOnly date)
+    private InfoTransfert? InfoTransfertDuJour(
+        IReadOnlyList<TransfertSnapshot> transferts, IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date)
     {
+        // Priorité SAISI > DÉRIVÉ : un transfert saisi ce jour-là prime et est seul retenu (Sc.6).
         var transfert = transferts.FirstOrDefault(t => DateOnly.FromDateTime(t.Date) == date);
-        return transfert is null
-            ? null
-            : new InfoTransfert(CouleurActeurResolue(transfert.DeposeParId), CouleurActeurResolue(transfert.RecupereParId));
+        if (transfert is not null)
+            return new InfoTransfert(CouleurActeurResolue(transfert.DeposeParId), CouleurActeurResolue(transfert.RecupereParId));
+
+        // À défaut de saisie, on DÉRIVE la bascule depuis la succession de périodes (D3, Sc.5).
+        return TransfertDeriveDuJour(periodes, date);
+    }
+
+    /// <summary>
+    /// Transfert AUTO-dérivé (D3, Sc.5) de la succession de périodes : si une période <b>débute</b> le jour
+    /// <paramref name="date"/> ET qu'une période <b>se termine la veille</b>, la responsabilité bascule du
+    /// Cédant (déposant, période finissante) vers le Recevant (récupérant, période débutante) — c'est le
+    /// jour de bascule. Dérivation de LECTURE pure : aucune écriture, aucun transfert persisté. Le jour de
+    /// bascule est le premier jour du successeur ; s'il tombe hors de la fenêtre projetée, il n'est
+    /// simplement pas rendu (pas de dérivation fantôme, Sc.8). Retombée <c>null</c> (neutre) sans successeur
+    /// (fin de garde, Sc.7). Les couleurs orphelines (acteur supprimé) retombent sur le neutre (Sc.9).
+    /// </summary>
+    private InfoTransfert? TransfertDeriveDuJour(IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date)
+    {
+        var debutant = periodes.FirstOrDefault(p => DateOnly.FromDateTime(p.Debut) == date);
+        if (debutant is null)
+            return null; // aucun successeur ne débute ce jour-là → aucune bascule (retombée neutre)
+
+        var finissant = periodes.FirstOrDefault(p => DateOnly.FromDateTime(p.Fin) == date.AddDays(-1));
+        if (finissant is null)
+            return null; // aucune période ne se termine la veille → pas de bascule dérivée
+
+        return new InfoTransfert(
+            CouleurActeurResolue(finissant.ResponsableId), CouleurActeurResolue(debutant.ResponsableId));
     }
 
     /// <summary>Couleur d'un acteur existant, ou la couleur neutre s'il est orphelin (supprimé).</summary>
