@@ -14,7 +14,7 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 7/14
+## Avancement — 8/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -27,7 +27,7 @@
 | 5 | Nominal : fin période A (J) + début période B (J+1), même enfant → transfert dérivé le jour de bascule | back | ✅ |
 | 6 | Priorité **SAISI > DÉRIVÉ** : transfert saisi le même jour prime, pas de doublon | back | ✅ |
 | 7 | Limite **NEUTRE** : fin de garde sans successeur → aucun transfert dérivé | back | ✅ |
-| 8 | Limite **bord de fenêtre** : J+1 hors fenêtre chargée → pas de dérivation fantôme | back | ⏳ |
+| 8 | Limite **bord de fenêtre** : J+1 hors fenêtre chargée → pas de dérivation fantôme | back | ✅ |
 | 9 | Erreur **orphelin (R6)** : cédant/recevant supprimé → retombée neutre côté orphelin | back | ⏳ |
 | 10 | Rendu : transfert dérivé → pastille bicolore comme le saisi (présentation s29) ; jour sans bascule unicolore | 🖥️ IHM | ⏳ |
 | **Volet 3 — D1 slot récurrent conditionné à la garde · 2e cœur · sur base D3 stable** ||||
@@ -127,7 +127,7 @@ Scénario 7 — Limite NEUTRE : fin de garde sans successeur
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 8 — Limite bord de fenêtre : J+1 non chargé
   Étant donné une période A se terminant le dernier jour de la fenêtre chargée
   Et le jour J+1 est hors de la fenêtre chargée
