@@ -49,7 +49,7 @@
 > Persistance et migration prouvées sur **store Mongo durable**. **Aucune** entorse de preuve par
 > doublure ici → statuts `⏳`/`🔴`/`✅` **francs**, **pas de dette de câblage**.
 
-## Avancement — 9/10 (back 8 · IHM 2)
+## Avancement — 10/10 (back 8 · IHM 2)
 
 | # | Scénario | Type | Statut |
 |---|----------|------|:------:|
@@ -62,7 +62,7 @@
 | S7 | Pose d'un slot référençant un enfant **inconnu** du foyer → rejet **sans écriture** (miroir lieu inconnu s29) | @back | ✅ |
 | S8 | **Migration rétro-affectation idempotente** : slots du fantôme « Léa » réattachés à l'enfant réel ; rejeu = no-op ; **prouvé store réel** | @back | ✅ |
 | S9 | IHM : onglet **« Enfants »** (Config foyer) — lister / ajouter / éditer, rejets visibles sans enregistrer (RED→GREEN) | 🖥️ IHM | ✅ |
-| S10 | IHM : **sélecteur d'enfant** explicite dans la dialog de pose (ponctuel + récurrent) — choix transmis, plus de fantôme — **gate G3** | 🖥️ IHM | ⏳ |
+| S10 | IHM : **sélecteur d'enfant** explicite dans la dialog de pose (ponctuel + récurrent) — choix transmis, plus de fantôme — **gate G3** | 🖥️ IHM | ✅ |
 
 ## Scénarios
 
@@ -153,7 +153,7 @@ Scénario: S9 — Configurer les enfants depuis l'onglet "Enfants" de la Config 
   Quand il édite le prénom d'un enfant existant et valide
   Alors la liste reflète le nouveau prénom sans rechargement
 
-@ihm @pending
+@ihm @vert
 Scénario: S10 — Sélectionner explicitement l'enfant dans la dialog de pose
   Étant donné un Parent connecté et un foyer avec les enfants "Léa" et "Tom"
   Quand il ouvre la dialog "Poser un slot" (slot ponctuel comme récurrent)
