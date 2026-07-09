@@ -47,6 +47,16 @@ public static class CanalEcriture
     /// déjà supprimé = no-op qui réussit). Borne : les slots déjà posés sur ce lieu conservent leur lieu.</summary>
     public sealed record SupprimerLieuRequete(string LieuId);
 
+    /// <summary>Corps de la requête d'ajout d'un enfant au référentiel du foyer (s30) émise via le canal
+    /// d'écriture : le front n'émet que le prénom ; l'identifiant stable neuf opaque est généré côté handler
+    /// (jamais dérivé du prénom). Refus métier (prénom vide / doublon) renvoyé avec son motif.</summary>
+    public sealed record AjouterEnfantRequete(string Prenom);
+
+    /// <summary>Corps de la requête d'édition du prénom d'un enfant (s30) émise via le canal d'écriture : la
+    /// clé est l'<b>identifiant stable</b> de l'enfant (jamais éditable) ; seul le prénom change. Refus métier
+    /// (prénom vide / doublon d'un autre enfant) renvoyé avec son motif.</summary>
+    public sealed record EditerEnfantRequete(string EnfantId, string NouveauPrenom);
+
     /// <summary>Corps de la requête d'édition d'un acteur émise via le canal d'écriture. Le nom et la
     /// couleur sont deux champs optionnels et indépendants : un champ absent (null) n'est pas appliqué
     /// (renommage seul au Sc.1, recoloriage seul au Sc.2). L'identifiant stable n'est jamais éditable.</summary>
@@ -246,6 +256,30 @@ public static class CanalEcriture
 
             notificateur.NotifierMiseAJour();
             return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/ajouter-enfant", (AjouterEnfantRequete requete, AjouterEnfantHandler handler) =>
+        {
+            var resultat = handler.Handle(new AjouterEnfantCommand(requete.Prenom));
+
+            // Même convention que les autres écritures : succès acquitté (l'enfant ajouté est désormais énuméré
+            // depuis le store, disponible au sélecteur de pose, S9/S10), refus métier renvoyé avec son motif
+            // (prénom vide / doublon, S2/S3). La DIFFUSION temps réel est déclenchée PAR LE HANDLER sur succès
+            // (les sélecteurs d'enfant des dialogs suivent sans rechargement) — jamais par le canal de diffusion.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/editer-enfant", (EditerEnfantRequete requete, EditerEnfantHandler handler) =>
+        {
+            var resultat = handler.Handle(new EditerEnfantCommand(requete.EnfantId, requete.NouveauPrenom));
+
+            // Succès acquitté (même id, prénom mis à jour, relu sans rechargement, S9), refus métier
+            // (prénom vide / doublon d'un autre enfant) renvoyé avec son motif. Diffusion temps réel par le handler.
+            return resultat.EstSucces
+                ? Results.Ok()
+                : Results.BadRequest(resultat.Motif);
         });
 
         routes.MapPost("/api/canal/editer-acteur", (EditerActeurRequete requete, EditerActeurHandler handler) =>

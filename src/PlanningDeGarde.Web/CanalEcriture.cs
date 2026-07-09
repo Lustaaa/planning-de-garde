@@ -40,6 +40,15 @@ public static class CanalEcriture
     /// stable du lieu. Idempotente côté handler ; les slots déjà posés sur ce lieu conservent leur lieu.</summary>
     public sealed record SupprimerLieuRequete(string LieuId);
 
+    /// <summary>Corps de la requête d'ajout d'un enfant au référentiel du foyer (s30) : le front n'émet que le
+    /// prénom ; l'identifiant stable neuf opaque est généré côté handler. Refus métier (prénom vide / doublon)
+    /// renvoyé avec son motif.</summary>
+    public sealed record AjouterEnfantRequete(string Prenom);
+
+    /// <summary>Corps de la requête d'édition du prénom d'un enfant (s30) : l'identifiant stable (clé, jamais
+    /// éditable) et le nouveau prénom. Refus métier (prénom vide / doublon d'un autre enfant) renvoyé.</summary>
+    public sealed record EditerEnfantRequete(string EnfantId, string NouveauPrenom);
+
     /// <summary>Corps de la requête d'édition d'un acteur émise via le canal d'écriture. Le nom et la
     /// couleur sont deux champs optionnels et indépendants : un champ absent (null) n'est pas appliqué
     /// (renommage seul au Sc.1, recoloriage seul au Sc.2). L'identifiant stable n'est jamais éditable.</summary>

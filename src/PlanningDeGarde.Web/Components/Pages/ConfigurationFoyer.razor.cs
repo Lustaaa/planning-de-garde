@@ -133,6 +133,25 @@ public partial class ConfigurationFoyer
     private readonly FormulaireLieu _lieu = new();
     private string? _motifEchecLieu;
 
+    /// <summary>Formulaire de saisie du prénom d'un enfant à ajouter (référentiel du foyer, s30). Le front
+    /// n'émet que le prénom ; l'identifiant stable opaque est généré côté handler.</summary>
+    private sealed class FormulaireEnfant
+    {
+        public string Prenom { get; set; } = "";
+    }
+
+    private readonly FormulaireEnfant _enfant = new();
+    private string? _motifEchecEnfant;
+
+    /// <summary>Enfants du référentiel du foyer énumérés <b>depuis le store vivant</b> (GET /api/foyer/enfants),
+    /// jamais un enfant en dur : alimente la liste de l'onglet Enfants (ajoutés / édités suivent sans
+    /// rechargement, S9) — même source que le sélecteur d'enfant de la dialog de pose (S10).</summary>
+    private IReadOnlyList<EnfantFoyer> _enfants = Array.Empty<EnfantFoyer>();
+
+    /// <summary>Tampon d'édition du prénom par ligne d'enfant (édition inline, miroir du renommage de rôle) :
+    /// clé = identifiant stable de l'enfant, valeur = nouveau prénom saisi. La clé n'est jamais éditable.</summary>
+    private readonly Dictionary<string, string> _editionEnfant = new();
+
     /// <summary>Lieux du référentiel du foyer énumérés <b>depuis le store vivant</b> (GET /api/foyer/lieux),
     /// jamais un lieu en dur : alimente la liste de l'onglet Lieux (ajoutés / supprimés suivent sans
     /// rechargement, S6) — même source que les sélecteurs de lieu des dialogs.</summary>
@@ -154,7 +173,14 @@ public partial class ConfigurationFoyer
         await RechargerComptes();
         await RechargerAdmins();
         await RechargerLieux();
+        await RechargerEnfants();
     }
+
+    /// <summary>Ré-énumère les enfants du référentiel depuis le store vivant (GET /api/foyer/enfants) : c'est
+    /// cette relecture qui fait suivre la liste des enfants après ajout / édition (S9), sans rechargement.</summary>
+    private async Task RechargerEnfants()
+        => _enfants = await Canal.GetFromJsonAsync<List<EnfantFoyer>>("api/foyer/enfants")
+            ?? new List<EnfantFoyer>();
 
     /// <summary>Ré-énumère les lieux du référentiel depuis le store vivant (GET /api/foyer/lieux) : c'est
     /// cette relecture qui fait suivre la liste des lieux après ajout / suppression (S6), sans rechargement.</summary>
@@ -221,6 +247,9 @@ public partial class ConfigurationFoyer
                 // Un ajout / une suppression de lieu abouti sur un autre écran (store partagé) fait suivre la
                 // liste des lieux sans rechargement — cohérence temps réel du référentiel de lieux (S6).
                 await RechargerLieux();
+                // Un ajout / une édition d'enfant abouti sur un autre écran (store partagé) fait suivre la
+                // liste des enfants sans rechargement — cohérence temps réel du référentiel d'enfants (S9/S10).
+                await RechargerEnfants();
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -637,6 +666,83 @@ public partial class ConfigurationFoyer
         }
 
         await RechargerLieux();
+    }
+
+    /// <summary>
+    /// Ajoute un enfant au référentiel du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
+    /// (<c>POST /api/canal/ajouter-enfant</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
+    /// ré-énumère le référentiel pour faire apparaître l'enfant ajouté <b>sans rechargement</b> (S9). Le front
+    /// n'émet que le prénom ; l'identifiant stable opaque est posé côté handler. Sur refus métier (prénom vide /
+    /// doublon, S2/S3) ou service injoignable, le motif est surfacé sans muter la liste.
+    /// </summary>
+    private async Task AjouterEnfant()
+    {
+        _motifEchecEnfant = null;
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/ajouter-enfant",
+                new AjouterEnfantRequete(_enfant.Prenom));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecEnfant = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecEnfant = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        await RechargerEnfants();
+        _enfant.Prenom = "";
+    }
+
+    /// <summary>Prénom courant du champ d'édition inline d'un enfant : le tampon saisi s'il existe, sinon le
+    /// prénom persisté (valeur de départ).</summary>
+    private string PrenomEdition(string enfantId, string prenomPersiste)
+        => _editionEnfant.TryGetValue(enfantId, out var p) ? p : prenomPersiste;
+
+    /// <summary>Mémorise le nouveau prénom saisi pour l'édition inline d'un enfant (clé = identifiant stable,
+    /// jamais éditable).</summary>
+    private void SaisirEditionEnfant(string enfantId, string? prenom)
+        => _editionEnfant[enfantId] = prenom ?? "";
+
+    /// <summary>
+    /// Édite le prénom d'un enfant via le <b>canal d'écriture HTTP</b> (<c>POST /api/canal/editer-enfant</c>) :
+    /// la clé est l'identifiant stable de l'enfant (jamais éditable, règle 19), seul le prénom change. Sur
+    /// succès, on relit le référentiel (le prénom suit sans rechargement, même id, S9) ; sur refus métier
+    /// (prénom vide / doublon d'un autre enfant) ou service injoignable, le motif est surfacé.
+    /// </summary>
+    private async Task EditerEnfant(string enfantId)
+    {
+        _motifEchecEnfant = null;
+        var nouveauPrenom = _editionEnfant.TryGetValue(enfantId, out var p) ? p : "";
+
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                "api/canal/editer-enfant",
+                new EditerEnfantRequete(enfantId, nouveauPrenom));
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchecEnfant = MessagesEcriture.ServiceInjoignable;
+            return;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchecEnfant = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        await RechargerEnfants();
     }
 
     /// <summary>Compte utilisateur associé à un acteur (résolu sur son id stable), ou <c>null</c> s'il n'en
