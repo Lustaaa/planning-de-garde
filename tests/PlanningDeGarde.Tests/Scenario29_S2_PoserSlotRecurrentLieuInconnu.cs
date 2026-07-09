@@ -23,7 +23,7 @@ public class Scenario29_S2_PoserSlotRecurrentLieuInconnu
         var slots = new FakeSlotRecurrentRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("piscine"); // "dojo" absent
         var notificateur = new FakeNotificateurPlanning();
-        var handler = new PoserSlotRecurrentHandler(slots, lieux, notificateur);
+        var handler = new PoserSlotRecurrentHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
 
         // When — un Parent pose un slot récurrent le mercredi au lieu "Dojo".
         var resultat = handler.Handle(

@@ -28,6 +28,26 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IEnumerationLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
         services.AddSingleton<IEditeurLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
 
+        // Référentiel d'enfants du foyer (petit agrégat de config foyer hissé en 1er rang, s30 — miroir
+        // strict du référentiel de lieux) : store mutable, réalise la lecture IEnumerationEnfants
+        // (validation de pose + sélecteur d'enfant) et l'écriture IEditeurEnfants (ajouter / éditer).
+        // Le remplaçant durable Mongo est branché en S6.
+        //
+        // SEED au composition root (parité seed InMemory lieux/acteurs, asymétrie s15 : jamais côté
+        // Mongo) : l'enfant historique « Léa » (Foyer.Enfants) est amorcé sur un id stable = son prénom,
+        // pour préserver les slots DÉJÀ posés sous l'EnfantId fantôme « Léa » (transmis par Session) — la
+        // pose runtime reste acceptée (validation de pose, S7). Le seed est posé ICI (pas dans le ctor de
+        // l'adaptateur) : les `new ReferentielEnfantsEnMemoire()` des tests unitaires restent vierges.
+        services.AddSingleton<ReferentielEnfantsEnMemoire>(_ =>
+        {
+            var referentiel = new ReferentielEnfantsEnMemoire();
+            foreach (var prenom in Foyer.Enfants)
+                referentiel.Ajouter(prenom, prenom); // enfant historique : id stable = prénom
+            return referentiel;
+        });
+        services.AddSingleton<IEnumerationEnfants>(sp => sp.GetRequiredService<ReferentielEnfantsEnMemoire>());
+        services.AddSingleton<IEditeurEnfants>(sp => sp.GetRequiredService<ReferentielEnfantsEnMemoire>());
+
         // Configuration des acteurs (noms ET couleurs) : un store mutable singleton réalise À LA FOIS
         // les ports de LECTURE IReferentielResponsables (nom) et IPaletteCouleurs (couleur) — la grille
         // relit nom + couleur édités, via GrilleAgendaQuery inchangé —, le port d'ÉNUMÉRATION
@@ -72,6 +92,15 @@ public static class ServiceCollectionExtensions
             services.AddSingleton(_ => new ReferentielLieuxMongo(connectionString, baseDeDonnees));
             services.AddSingleton<IEnumerationLieux>(sp => sp.GetRequiredService<ReferentielLieuxMongo>());
             services.AddSingleton<IEditeurLieux>(sp => sp.GetRequiredService<ReferentielLieuxMongo>());
+
+            // Référentiel d'enfants (petit agrégat de config foyer hissé en 1er rang, s30) durable Mongo,
+            // borné à la config foyer (même socle Mongo, collection dédiée « enfants ») : lecture
+            // IEnumerationEnfants (validation de pose + sélecteur) + écriture IEditeurEnfants, un enfant
+            // ajouté/édité survit au redémarrage. Aucun seed Mongo (parité asymétrie seed s15) — SURCHARGE
+            // l'enregistrement InMemory posé plus haut (dernière inscription gagne à la résolution).
+            services.AddSingleton(_ => new ReferentielEnfantsMongo(connectionString, baseDeDonnees));
+            services.AddSingleton<IEnumerationEnfants>(sp => sp.GetRequiredService<ReferentielEnfantsMongo>());
+            services.AddSingleton<IEditeurEnfants>(sp => sp.GetRequiredService<ReferentielEnfantsMongo>());
 
             // Référentiel des comptes utilisateurs (petit agrégat de config foyer, s22) durable Mongo,
             // borné à la config foyer (même socle Mongo, collection dédiée « comptes ») : lecture
@@ -161,6 +190,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<SupprimerSlotRecurrentHandler>();
         services.AddScoped<AjouterLieuHandler>();
         services.AddScoped<SupprimerLieuHandler>();
+        services.AddScoped<AjouterEnfantHandler>();
+        services.AddScoped<EditerEnfantHandler>();
         services.AddScoped<DeplacerSlotHandler>();
         services.AddScoped<SupprimerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();

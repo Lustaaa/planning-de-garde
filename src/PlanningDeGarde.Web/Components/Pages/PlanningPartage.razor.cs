@@ -42,6 +42,12 @@ public partial class PlanningPartage
     // chaque diffusion temps réel — un lieu ajouté / supprimé en config suit sans rechargement (S6).
     private List<LieuFoyer> _lieuxFoyer = new();
 
+    // Enfants du référentiel du foyer (énumérés depuis le store vivant via api/foyer/enfants) : source UNIQUE
+    // du sélecteur d'enfant de la dialog « Poser un slot », passée en paramètre (la dialog ne lit plus le
+    // fantôme Session.EnfantId, s29). Rafraîchie à l'init et à chaque diffusion temps réel — un enfant ajouté /
+    // édité en config suit sans rechargement (S9/S10).
+    private List<EnfantFoyer> _enfantsFoyer = new();
+
     private HubConnection? _hub;
 
     // Écriture en contexte (palier 7) — la grille reste en LECTURE SEULE (règle 14) : la case ouvre un
@@ -135,7 +141,26 @@ public partial class PlanningPartage
         // d'emblée, sans re-render async pendant la saisie (robustesse runtime + parité tests).
         await ChargerActeursIncarnablesAsync();
         await ChargerLieuxAsync();
+        await ChargerEnfantsAsync();
         await ChargerAsync();
+    }
+
+    /// <summary>Charge les enfants du référentiel du foyer depuis le store vivant via le canal de lecture HTTP
+    /// (<c>GET /api/foyer/enfants</c>) : alimente le sélecteur d'enfant de la dialog de pose (jamais le fantôme
+    /// Session.EnfantId). Lecture seule ; sur référentiel distant injoignable, la liste reste inchangée.</summary>
+    private async Task ChargerEnfantsAsync()
+    {
+        try
+        {
+            var enfants = await Canal.GetFromJsonAsync<List<EnfantFoyer>>("api/foyer/enfants");
+            if (enfants is not null)
+                _enfantsFoyer = enfants;
+        }
+        catch (HttpRequestException)
+        {
+            // Référentiel distant injoignable : le sélecteur d'enfant conserve son dernier état plutôt que
+            // de planter la vue (le planning en lecture reste consultable).
+        }
     }
 
     /// <summary>Charge les lieux du référentiel du foyer depuis le store vivant via le canal de lecture HTTP
@@ -209,6 +234,10 @@ public partial class PlanningPartage
                 // ré-énumère depuis le store vivant, si bien que le sélecteur de lieu des dialogs suit sans
                 // rechargement (temps réel SignalR lecture, S6).
                 await ChargerLieuxAsync();
+                // Le référentiel d'enfants peut avoir changé en config (ajout / édition) : on le ré-énumère
+                // depuis le store vivant, si bien que le sélecteur d'enfant de la dialog suit sans rechargement
+                // (temps réel SignalR lecture, S9/S10).
+                await ChargerEnfantsAsync();
                 Session.ReplierSiActeurIncarneAbsent();
                 await InvokeAsync(StateHasChanged);
             });

@@ -33,6 +33,11 @@ public static class CanalLecture
     /// libellé d'affichage. Lue depuis le store vivant (jamais la liste en dur Foyer.Lieux).</summary>
     public sealed record LieuFoyerVue(string Id, string Libelle);
 
+    /// <summary>Vue d'un enfant du référentiel du foyer énumérée pour l'écran de configuration (onglet Enfants,
+    /// s30) et le sélecteur d'enfant des dialogs de pose : identifiant stable opaque (clé, bindé par les
+    /// sélecteurs, jamais le prénom) + prénom d'affichage. Lue depuis le store vivant (jamais un enfant en dur).</summary>
+    public sealed record EnfantFoyerVue(string Id, string Prenom);
+
     /// <summary>Vue d'un compte utilisateur du foyer énumérée pour l'écran de configuration (onglet Acteurs,
     /// s22) : identifiant stable opaque (clé, jamais l'email) + email + statut (« inactif » / « actif ») +
     /// id stable de l'acteur associé, ou <c>null</c> quand le compte est désassocié (Sc.6). Alimente
@@ -86,6 +91,18 @@ public static class CanalLecture
             {
                 var vues = lieux.EnumererLieux()
                     .Select(l => new LieuFoyerVue(l.Id, l.Libelle))
+                    .ToList();
+                return Results.Ok(vues);
+            });
+
+        // Énumération des enfants du référentiel du foyer DEPUIS LE STORE VIVANT (s30) : l'onglet Enfants de
+        // l'écran config la lit pour lister les enfants, ET la dialog « Poser un slot » pour peupler son
+        // sélecteur d'enfant — un seul canal de lecture, jamais un enfant en dur / fantôme. Lecture seule.
+        routes.MapGet("/api/foyer/enfants",
+            (IEnumerationEnfants enfants) =>
+            {
+                var vues = enfants.EnumererEnfants()
+                    .Select(e => new EnfantFoyerVue(e.Id, e.Prenom))
                     .ToList();
                 return Results.Ok(vues);
             });

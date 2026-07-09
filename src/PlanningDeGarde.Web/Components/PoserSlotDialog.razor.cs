@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
@@ -23,6 +24,10 @@ public partial class PoserSlotDialog
 {
     private sealed class Formulaire
     {
+        // Enfant CHOISI explicitement (s30 S10) : remplace le fantôme Session.EnfantId transmis à l'aveugle
+        // (s29). Bindé par le sélecteur d'enfant, transmis tel quel aux DEUX chemins d'écriture (ponctuel /
+        // récurrent). Pré-sélectionné sur le premier enfant du foyer à l'ouverture (OnInitialized).
+        public string EnfantId { get; set; } = "";
         public string LieuId { get; set; } = "";
         // Slot ponctuel : bornes datées (date + heure).
         public DateTime Debut { get; set; }
@@ -50,6 +55,13 @@ public partial class PoserSlotDialog
     [Parameter]
     public IReadOnlyList<LieuFoyer> Lieux { get; set; } = Array.Empty<LieuFoyer>();
 
+    /// <summary>Enfants du référentiel du foyer (id stable opaque + prénom), fournis par le parent depuis le
+    /// store vivant (GET /api/foyer/enfants) : le sélecteur d'enfant ne propose que ces enfants réels (jamais
+    /// un enfant en dur / fantôme), y compris un enfant fraîchement ajouté en config, propagé en temps réel
+    /// (S9/S10). L'enfant choisi remplace <c>Session.EnfantId</c> transmis à l'aveugle (s29).</summary>
+    [Parameter]
+    public IReadOnlyList<EnfantFoyer> Enfants { get; set; } = Array.Empty<EnfantFoyer>();
+
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et relit la grille.
     /// L'argument <c>bool</c> = un <b>chevauchement</b> a été signalé par l'outcome de la commande (règle 16,
     /// accepté + averti) → le parent affiche un bandeau à part, non bloquant (Sc.7). Un slot récurrent ne
@@ -65,6 +77,10 @@ public partial class PoserSlotDialog
     {
         _form.Debut = DateContexte.ToDateTime(new TimeOnly(8, 30));
         _form.Fin = DateContexte.ToDateTime(new TimeOnly(16, 30));
+        // Pré-sélection du premier enfant du foyer (le sélecteur reste explicite : visible et modifiable).
+        // Un foyer part toujours avec ≥1 enfant (R1, garanti par la migration s30) : la pose d'un slot n'est
+        // donc jamais bloquée par un sélecteur vide dans le cas nominal.
+        _form.EnfantId = Enfants.FirstOrDefault()?.Id ?? "";
     }
 
     private static string LibelleJour(DayOfWeek jour) => jour switch
@@ -88,10 +104,10 @@ public partial class PoserSlotDialog
             reponse = _form.Repeter
                 ? await Canal.PostAsJsonAsync(
                     "api/canal/poser-slot-recurrent",
-                    new PoserSlotRecurrentRequete(Session.EnfantId, _form.LieuId, DateContexte.DayOfWeek, _form.HeureDebut.ToTimeSpan(), _form.HeureFin.ToTimeSpan()))
+                    new PoserSlotRecurrentRequete(_form.EnfantId, _form.LieuId, DateContexte.DayOfWeek, _form.HeureDebut.ToTimeSpan(), _form.HeureFin.ToTimeSpan()))
                 : await Canal.PostAsJsonAsync(
                     "api/canal/poser-slot",
-                    new PoserSlotRequete(Session.EnfantId, _form.LieuId, _form.Debut, _form.Fin));
+                    new PoserSlotRequete(_form.EnfantId, _form.LieuId, _form.Debut, _form.Fin));
         }
         catch (HttpRequestException)
         {

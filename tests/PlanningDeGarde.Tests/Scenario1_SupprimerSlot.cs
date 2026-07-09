@@ -28,7 +28,7 @@ public class Scenario1_SupprimerSlot
         var slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("ecole");
         var notificateur = new FakeNotificateurPlanning();
-        new PoserSlotHandler(slots, lieux, notificateur).Handle(
+        new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur).Handle(
             new SlotBuilder().PourEnfant("lea").DansLieu("ecole").De(Mardi16Juin2026_0830).A(Mardi16Juin2026_1630).Build());
         var stocke = Assert.Single(slots.AllSnapshots());
         var idStable = stocke.Id;

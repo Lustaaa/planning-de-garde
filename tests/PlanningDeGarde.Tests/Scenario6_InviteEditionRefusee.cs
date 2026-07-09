@@ -23,7 +23,7 @@ public class Scenario6_InviteEditionRefusee
     {
         var slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("ecole").AvecLieu("nounou");
-        var poser = new PoserSlotHandler(slots, lieux, new FakeNotificateurPlanning());
+        var poser = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), new FakeNotificateurPlanning());
         poser.Handle(new SlotBuilder().PourEnfant("lea").DansLieu("ecole").De(Debut).A(Fin).Build());
         return slots;
     }

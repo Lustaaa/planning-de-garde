@@ -27,7 +27,7 @@ public class Scenario2_LieuSupprimeQuitteReferentiel
     {
         var referentiel = new ReferentielLieuxEnMemoire();
         var slots = new FakeSlotRepository();
-        var poser = new PoserSlotHandler(slots, referentiel, new FakeNotificateurPlanning());
+        var poser = new PoserSlotHandler(slots, referentiel, new FakeReferentielEnfants().AvecEnfant("lea"), new FakeNotificateurPlanning());
         var supprimer = new SupprimerLieuHandler(referentiel);
 
         // Un slot est DÉJÀ posé sur « nounou » (avant suppression)

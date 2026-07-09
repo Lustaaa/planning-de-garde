@@ -25,7 +25,7 @@ public class Scenario1_LieuAjouteDisponible
     {
         var referentiel = new ReferentielLieuxEnMemoire();
         var ajouter = new AjouterLieuHandler(referentiel, referentiel);
-        var poser = new PoserSlotHandler(new FakeSlotRepository(), referentiel, new FakeNotificateurPlanning());
+        var poser = new PoserSlotHandler(new FakeSlotRepository(), referentiel, new FakeReferentielEnfants().AvecEnfant("lea"), new FakeNotificateurPlanning());
 
         var ajout = ajouter.Handle(new AjouterLieuCommand(Piscine));
 

@@ -67,9 +67,11 @@ public sealed class ItemDomaineSurvitRedemarrageMongoTests : IDisposable
         using (var serveur1 = NouveauServeur())
         {
             var c1 = serveur1.CreateClient();
-            // Mongo config foyer sans seed (s27) : le lieu « école » n'existe pas par défaut, on l'établit
-            // explicitement — parité avec l'établissement des acteurs (AjouterAlice) déjà pratiqué ici.
+            // Mongo config foyer sans seed (s27/s30) : le lieu « école » ET l'enfant « Léa » n'existent pas
+            // par défaut, on les établit explicitement — parité avec l'établissement des acteurs (AjouterAlice)
+            // déjà pratiqué ici. La pose valide désormais l'existence de l'enfant (s30 S7), plus un fantôme.
             serveur1.Services.GetRequiredService<IEditeurLieux>().Ajouter("école", "école");
+            serveur1.Services.GetRequiredService<IEditeurEnfants>().Ajouter("Léa", "Léa");
             var pose = await c1.PostAsJsonAsync("/api/canal/poser-slot",
                 new { EnfantId = "Léa", LieuId = "école", Debut = new DateTime(2026, 6, 10, 8, 0, 0), Fin = new DateTime(2026, 6, 10, 17, 0, 0) });
             Assert.True(pose.IsSuccessStatusCode, $"la pose du slot doit aboutir, statut {(int)pose.StatusCode}.");

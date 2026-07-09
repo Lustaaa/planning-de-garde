@@ -23,7 +23,7 @@ public class Scenario29_S1_PoserSlotRecurrent
         slots = new FakeSlotRecurrentRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("piscine");
         notificateur = new FakeNotificateurPlanning();
-        return new PoserSlotRecurrentHandler(slots, lieux, notificateur);
+        return new PoserSlotRecurrentHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }
 
     // ---------- Test d'acceptation (boucle externe, BDD) ----------

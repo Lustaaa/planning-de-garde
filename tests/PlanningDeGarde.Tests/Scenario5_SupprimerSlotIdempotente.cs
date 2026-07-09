@@ -30,7 +30,7 @@ public class Scenario5_SupprimerSlotIdempotente
         // Given — le store comporte deux slots S1 (école) et S2 (nounou) pour Léa.
         var slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu(S1).AvecLieu(S2);
-        var poser = new PoserSlotHandler(slots, lieux, new FakeNotificateurPlanning());
+        var poser = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), new FakeNotificateurPlanning());
         poser.Handle(new SlotBuilder().PourEnfant("lea").DansLieu(S1)
             .De(new DateTime(2026, 6, 10, 8, 0, 0)).A(new DateTime(2026, 6, 10, 12, 0, 0)).Build());
         poser.Handle(new SlotBuilder().PourEnfant("lea").DansLieu(S2)

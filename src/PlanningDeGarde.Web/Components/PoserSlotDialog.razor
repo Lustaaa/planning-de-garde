@@ -12,6 +12,21 @@
     <div class="dialog-panneau">
         <h2 class="h4 mb-3">Poser un slot</h2>
         <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="poser-slot-dialog">
+            @* Sélecteur d'enfant EXPLICITE (s30 S10) : remplace le fantôme Session.EnfantId transmis à
+               l'aveugle (s29). Alimenté par l'énumération des enfants du foyer (store vivant) ; l'enfant
+               choisi est transmis au canal d'écriture (ponctuel comme récurrent). Pré-sélectionné sur le
+               premier enfant, modifiable. *@
+            <div class="mb-3">
+                <label class="form-label">Enfant</label>
+                <InputSelect class="form-select" data-testid="champ-enfant" @bind-Value="_form.EnfantId">
+                    <option value="">— choisir —</option>
+                    @foreach (var enfant in Enfants)
+                    {
+                        <option value="@enfant.Id">@enfant.Prenom</option>
+                    }
+                </InputSelect>
+            </div>
+
             <div class="mb-3">
                 <label class="form-label">Lieu</label>
                 <InputSelect class="form-select" data-testid="champ-lieu" @bind-Value="_form.LieuId">

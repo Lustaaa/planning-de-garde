@@ -62,6 +62,13 @@ public sealed record RoleFoyer(string Id, string Libelle);
 /// suit sans rechargement, temps réel SignalR lecture).</summary>
 public sealed record LieuFoyer(string Id, string Libelle);
 
+/// <summary>Un enfant du référentiel du foyer <b>énuméré depuis le store vivant</b> via le canal de lecture
+/// (s30, GET /api/foyer/enfants) : identifiant stable opaque (clé, bindé par les sélecteurs, jamais le
+/// prénom) + prénom d'affichage. Alimente l'onglet Enfants de la config ET le sélecteur d'enfant de la
+/// dialog « Poser un slot » (un enfant ajouté / édité suit sans rechargement, temps réel SignalR lecture) —
+/// remplace le fantôme <c>Session.EnfantId</c> transmis à l'aveugle (s29).</summary>
+public sealed record EnfantFoyer(string Id, string Prenom);
+
 /// <summary>Un compte utilisateur du foyer <b>énuméré depuis le store durable</b> via le canal de lecture
 /// (s22) : identifiant stable opaque (clé, jamais l'email) + email + statut (« inactif » / « actif ») +
 /// id stable de l'acteur associé (ou <c>null</c> = désassocié). Alimente l'affichage du compte associé à

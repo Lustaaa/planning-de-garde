@@ -26,7 +26,7 @@ public class Scenario5_Chevauchement
         var slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("ecole").AvecLieu("nounou");
         var notificateur = new FakeNotificateurPlanning();
-        var handler = new PoserSlotHandler(slots, lieux, notificateur);
+        var handler = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
         handler.Handle(new SlotBuilder()
             .PourEnfant("lea").DansLieu("ecole")
             .De(new System.DateTime(2025, 7, 15, 8, 30, 0))
@@ -57,7 +57,7 @@ public class Scenario5_Chevauchement
         slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("ecole").AvecLieu("nounou");
         var notificateur = new FakeNotificateurPlanning();
-        return new PoserSlotHandler(slots, lieux, notificateur);
+        return new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }
 
     // Test #1 — le second slot recouvrant EST créé : le chevauchement n'est pas un invariant

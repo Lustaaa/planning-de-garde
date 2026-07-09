@@ -22,7 +22,7 @@ public class Scenario4_LieuInexistant
         var slots = new FakeSlotRepository();
         var lieux = new FakeReferentielLieux();
         var notificateur = new FakeNotificateurPlanning();
-        var handler = new PoserSlotHandler(slots, lieux, notificateur);
+        var handler = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
         var commande = new SlotBuilder()
             .PourEnfant("lea")
             .DansLieu("ancienne-creche")
@@ -46,7 +46,7 @@ public class Scenario4_LieuInexistant
     {
         slots = new FakeSlotRepository();
         var notificateur = new FakeNotificateurPlanning();
-        return new PoserSlotHandler(slots, lieux, notificateur);
+        return new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }
 
     // Test #1 — la pose est refusée quand le lieu visé n'est pas dans les lieux du foyer

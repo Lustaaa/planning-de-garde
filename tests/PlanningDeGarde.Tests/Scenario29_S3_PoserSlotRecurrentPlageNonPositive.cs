@@ -26,7 +26,7 @@ public class Scenario29_S3_PoserSlotRecurrentPlageNonPositive
         var slots = new FakeSlotRecurrentRepository();
         var lieux = new FakeReferentielLieux().AvecLieu("piscine");
         var notificateur = new FakeNotificateurPlanning();
-        var handler = new PoserSlotRecurrentHandler(slots, lieux, notificateur);
+        var handler = new PoserSlotRecurrentHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
 
         // When — un Parent pose un slot récurrent le samedi de 12h15 à 11h30 (fin ≤ début).
         var resultat = handler.Handle(new SlotRecurrentBuilder()
