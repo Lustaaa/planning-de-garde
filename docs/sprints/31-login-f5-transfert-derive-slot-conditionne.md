@@ -14,7 +14,7 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 10/14
+## Avancement — 11/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -31,7 +31,7 @@
 | 9 | Erreur **orphelin (R6)** : cédant/recevant supprimé → retombée neutre côté orphelin | back | ✅ |
 | 10 | Rendu : transfert dérivé → pastille bicolore comme le saisi (présentation s29) ; jour sans bascule unicolore | 🖥️ IHM | ✅ |
 | **Volet 3 — D1 slot récurrent conditionné à la garde · 2e cœur · sur base D3 stable** ||||
-| 11 | Nominal : slot « seulement les jours où l'enfant est chez moi » → occurrence projetée uniquement les jours où le poseur est responsable | back | ⏳ |
+| 11 | Nominal : slot « seulement les jours où l'enfant est chez moi » → occurrence projetée uniquement les jours où le poseur est responsable | back | ✅ |
 | 12 | Limite : jour où l'enfant n'est pas chez le poseur → occurrence masquée | back | ⏳ |
 | 13 | Non-régression : slot **non conditionné** (défaut) → comportement s29 strictement inchangé | back | ⏳ |
 | 14 | Toggle « seulement les jours où l'enfant est chez moi » dans la dialog « Poser un slot » | 🖥️ IHM | ⏳ |
@@ -167,7 +167,7 @@ Scénario 10 — Rendu du transfert dérivé (présentation s29 réutilisée)
 > sur base D3 (volet 2) stable.**
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 11 — Nominal : occurrence projetée les jours de garde du poseur
   Étant donné un slot récurrent posé par le parent "Poseur", conditionné "seulement les jours où l'enfant est chez moi"
   Quand la grille projette les occurrences du slot sur la fenêtre

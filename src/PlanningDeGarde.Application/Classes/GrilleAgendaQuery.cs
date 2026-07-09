@@ -91,7 +91,7 @@ public sealed class GrilleAgendaQuery
 
         var jours = Enumerable.Range(0, nbJours)
             .Select(offset => premierJour.AddDays(offset))
-            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date)), transferts))
+            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date, periodes)), transferts))
             .ToList();
 
         var semaines = jours
@@ -108,16 +108,7 @@ public sealed class GrilleAgendaQuery
     private JourCase CaseJourAu(
         DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots, IReadOnlyList<TransfertSnapshot> transferts)
     {
-        var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
-        // Filtre d'existence appliqué INDÉPENDAMMENT à chaque source AVANT le repli, jamais au
-        // responsableId combiné (un faux raccourci ferait retomber une surcharge orpheline sur le neutre
-        // au lieu du fond) : une surcharge orpheline (Sc.2) retombe sur le fond ; un fond orphelin (Sc.4)
-        // est traité comme un index non mappé → null → neutre, sans nom fantôme.
-        var surcharge = Resolvable(periode?.ResponsableId);
-        var fond = Resolvable(_cycle?.CycleCourant()?.ResponsableDeFond(date));
-        // Priorité de résolution : surcharge (période saisie) > fond (cycle) > neutre. La surcharge
-        // prime structurellement ; le fond ne s'applique que sans surcharge résolvable.
-        var responsableId = surcharge ?? fond;
+        var responsableId = ResoudreResponsable(date, periodes);
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
         return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date));
@@ -172,12 +163,35 @@ public sealed class GrilleAgendaQuery
     /// Occurrences d'un slot récurrent tombant sur la <paramref name="date"/> donnée : un slot virtuel
     /// daté (même enfant / lieu, bornes = date + plage horaire) par récurrent dont le jour de semaine
     /// correspond. Ne persiste rien : matérialisation de lecture pure, réévaluée à chaque projection.
+    ///
+    /// <para>D1 (s31, Sc.11) : un slot <b>conditionné à la garde</b> n'est matérialisé que les jours où la
+    /// résolution de responsabilité (surcharge &gt; fond) désigne son <b>parent poseur</b> — il LIT la
+    /// résolution sans la modifier. Un slot non conditionné (défaut) est matérialisé sur tous ses jours de
+    /// récurrence (comportement s29 strictement inchangé, Sc.13).</para>
     /// </summary>
-    private static IEnumerable<SlotSnapshot> OccurrencesRecurrentes(IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date)
+    private IEnumerable<SlotSnapshot> OccurrencesRecurrentes(
+        IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes)
         => recurrents
             .Where(r => r.JourDeSemaine == date.DayOfWeek)
+            .Where(r => !r.ConditionneGarde || ResoudreResponsable(date, periodes) == r.PoseurId)
             .Select(r => new SlotSnapshot(
                 r.EnfantId, r.LieuId, date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureDebut)), date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureFin))));
+
+    /// <summary>
+    /// Résout le responsable d'un jour (priorité <b>surcharge (période saisie) &gt; fond (cycle) &gt;
+    /// neutre</b>), ou <c>null</c> si neutre. Le filtre d'existence (<see cref="Resolvable"/>) est appliqué
+    /// INDÉPENDAMMENT à chaque source AVANT le repli, jamais au responsableId combiné (un faux raccourci
+    /// ferait retomber une surcharge orpheline sur le neutre au lieu du fond) : une surcharge orpheline
+    /// retombe sur le fond ; un fond orphelin est traité comme un index non mappé → null → neutre, sans nom
+    /// fantôme. Source unique de la responsabilité d'un jour (case ET conditionnement des slots D1).
+    /// </summary>
+    private string? ResoudreResponsable(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes)
+    {
+        var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
+        var surcharge = Resolvable(periode?.ResponsableId);
+        var fond = Resolvable(_cycle?.CycleCourant()?.ResponsableDeFond(date));
+        return surcharge ?? fond;
+    }
 
     /// <summary>Jours calendaires couverts par un slot, du jour de son début à celui de sa fin (inclus).</summary>
     private static IEnumerable<DateOnly> JoursCouverts(SlotSnapshot slot)

@@ -50,6 +50,12 @@ public sealed class MongoSlotRecurrentRepository : ISlotRecurrentRepository
         public int JourDeSemaine { get; set; }
         public long HeureDebutTicks { get; set; }
         public long HeureFinTicks { get; set; }
+        // D1 (s31) : conditionnement à la garde + identité du parent poseur. Champs à défaut ([BsonDefaultValue])
+        // pour les documents antérieurs (slots non conditionnés) — parité round-trip sans migration.
+        [BsonDefaultValue(false)]
+        public bool ConditionneGarde { get; set; }
+        [BsonDefaultValue("")]
+        public string PoseurId { get; set; } = "";
 
         public static SlotRecurrentDocument De(SlotRecurrentSnapshot s)
             // Plage horaire en ticks (round-trip exact, sans fuseau) ; jour de semaine en entier stable.
@@ -60,9 +66,12 @@ public sealed class MongoSlotRecurrentRepository : ISlotRecurrentRepository
                 JourDeSemaine = (int)s.JourDeSemaine,
                 HeureDebutTicks = s.HeureDebut.Ticks,
                 HeureFinTicks = s.HeureFin.Ticks,
+                ConditionneGarde = s.ConditionneGarde,
+                PoseurId = s.PoseurId,
             };
 
         public SlotRecurrentSnapshot VersSnapshot()
-            => new(EnfantId, LieuId, (DayOfWeek)JourDeSemaine, TimeSpan.FromTicks(HeureDebutTicks), TimeSpan.FromTicks(HeureFinTicks), Id.ToString());
+            => new(EnfantId, LieuId, (DayOfWeek)JourDeSemaine, TimeSpan.FromTicks(HeureDebutTicks), TimeSpan.FromTicks(HeureFinTicks),
+                ConditionneGarde, PoseurId, Id.ToString());
     }
 }
