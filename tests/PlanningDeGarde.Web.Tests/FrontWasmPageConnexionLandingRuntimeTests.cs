@@ -49,6 +49,7 @@ public sealed class FrontWasmPageConnexionLandingRuntimeTests : TestContext
         using var api = new ApiDistanteFactory();
         SemerCompteActifAlice(api);
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         var session = new SessionPlanning();
         Services.AddSingleton(session);
         var nav = Services.GetRequiredService<NavigationManager>();

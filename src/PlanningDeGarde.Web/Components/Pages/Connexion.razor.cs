@@ -82,6 +82,11 @@ public partial class Connexion
             // menu utilisateur (Sc.11) — puis redirige vers le planning (Sc.8). Le gating d'écriture suit
             // désormais le type RÉEL de l'acteur, jamais un rôle Parent hérité du configurateur en dur.
             Session.Connecter(session.Nom, session.ActeurId, session.Type);
+            // Persiste le jeton de session dans le stockage durable client (localStorage via le port) : c'est
+            // lui que le démarrage suivant relira pour restaurer la session après un F5 (s31, Sc.1). On persiste
+            // l'identité réelle déjà résolue serveur (acteur + nom + type), aucun secret. La session reste en
+            // mémoire (borne R30) — on ne fait qu'écrire son amorce d'identité rejouable.
+            await Persistance.PersisterAsync(new SessionPersistee(session.ActeurId, session.Nom, session.Type));
             Nav.NavigateTo("planning");
         }
     }

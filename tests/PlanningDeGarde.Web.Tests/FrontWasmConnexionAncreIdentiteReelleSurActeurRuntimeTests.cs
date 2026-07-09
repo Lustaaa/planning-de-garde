@@ -31,6 +31,7 @@ public sealed class FrontWasmConnexionAncreIdentiteReelleSurActeurRuntimeTests :
         api.Services.GetRequiredService<IEditeurComptes>()
             .Creer("compte-mamie-s25", "mamie@foyer.fr", StatutCompte.Actif, ActeurNounou);
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         var session = new SessionPlanning();
         Services.AddSingleton(session);
 

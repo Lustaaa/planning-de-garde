@@ -24,6 +24,7 @@ public sealed class FrontWasmPageConnexionMotifClairRuntimeTests : TestContext
     private IRenderedComponent<Connexion> RendreConnexion(ApiDistanteFactory api, out SessionPlanning session, out NavigationManager nav)
     {
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         session = new SessionPlanning();
         Services.AddSingleton(session);
         nav = Services.GetRequiredService<NavigationManager>();

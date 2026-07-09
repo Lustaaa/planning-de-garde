@@ -14,12 +14,12 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 1/14
+## Avancement — 2/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | **Volet 1 — Login F5 (P0) + œil · 0 cœur · dérisque tôt** ||||
-| 1 | F5 sur `/planning` connecté → reste connecté (session restaurée) | 🖥️ IHM | ⏳ |
+| 1 | F5 sur `/planning` connecté → reste connecté (session restaurée) | 🖥️ IHM | ✅ |
 | 2 | Contrat de restauration : jeton persisté au login, relu au démarrage client | back | ✅ |
 | 3 | Logout purge le persisté → F5 après logout → `/connexion` (R30 + logout s23 tenus) | 🖥️ IHM | ⏳ |
 | 4 | Bouton œil afficher/masquer le mot de passe sur `/connexion` | 🖥️ IHM | ⏳ |
@@ -47,7 +47,7 @@
 > le persisté). **0 changement de cœur de résolution.** Retours non traités s29 (PO).
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 1 — La session survit au rechargement (F5)
   Étant donné un utilisateur connecté sur "/planning"
   Quand il recharge la page (F5)

@@ -37,6 +37,13 @@ builder.Services.AddSingleton<IDateTimeProvider, HorlogeNavigateur>();
 // window.pdgTheme (localStorage + data-theme). Adaptateur de bord, aucune règle métier.
 builder.Services.AddScoped<IPreferencesTheme, PreferencesThemeJs>();
 
+// Persistance de session (s31, Sc.1) : le jeton d'identité du compte connecté est écrit dans localStorage
+// (window.pdgSession) au login et relu au DÉMARRAGE par le restaurateur, si bien que la session survit au
+// F5 sans repasser par /connexion. La session elle-même reste en MÉMOIRE (SessionPlanning, borne R30) :
+// seule l'amorce d'identité est persistée/rejouée. Adaptateur de bord, aucune règle métier.
+builder.Services.AddScoped<IPersistanceSession, PersistanceSessionJs>();
+builder.Services.AddScoped<RestaurateurSession>();
+
 // Câblage de la connexion au hub SignalR de lecture. Neutre en WASM réel (le navigateur négocie
 // en WebSocket vers l'API distante) ; surchargeable par un hôte de test pour pointer son TestServer.
 builder.Services.AddSingleton(new OptionsConnexionHub());
