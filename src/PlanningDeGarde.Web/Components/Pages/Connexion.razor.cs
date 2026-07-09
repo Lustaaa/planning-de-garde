@@ -23,6 +23,13 @@ public partial class Connexion
     private string _motDePasse = "";
     private string? _motif;
 
+    /// <summary>Visibilité en clair du mot de passe (Sc.4) : faux = champ masqué (type password, défaut),
+    /// vrai = champ visible (type text). Pur état de présentation, aucune règle métier.</summary>
+    private bool _motDePasseVisible;
+
+    /// <summary>Bascule l'affichage/masquage du mot de passe (bouton œil, Sc.4).</summary>
+    private void BasculerVisibiliteMotDePasse() => _motDePasseVisible = !_motDePasseVisible;
+
     /// <summary>Au montage, charge le catalogue d'acteurs incarnables depuis le référentiel réel
     /// (GET /api/foyer/acteurs) et le dépose dans la session : c'est ce catalogue que résout l'incarnation
     /// du compte connecté (pré-positionnement du sélecteur d'acteur, s23 Sc.8). Lecture seule.</summary>

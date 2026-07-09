@@ -14,7 +14,7 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 3/14
+## Avancement — 4/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -22,7 +22,7 @@
 | 1 | F5 sur `/planning` connecté → reste connecté (session restaurée) | 🖥️ IHM | ✅ |
 | 2 | Contrat de restauration : jeton persisté au login, relu au démarrage client | back | ✅ |
 | 3 | Logout purge le persisté → F5 après logout → `/connexion` (R30 + logout s23 tenus) | 🖥️ IHM | ✅ |
-| 4 | Bouton œil afficher/masquer le mot de passe sur `/connexion` | 🖥️ IHM | ⏳ |
+| 4 | Bouton œil afficher/masquer le mot de passe sur `/connexion` | 🖥️ IHM | ✅ |
 | **Volet 2 — D3 transfert AUTO-dérivé · 1er cœur · prouvé vert AVANT volet 3** ||||
 | 5 | Nominal : fin période A (J) + début période B (J+1), même enfant → transfert dérivé le jour de bascule | back | ⏳ |
 | 6 | Priorité **SAISI > DÉRIVÉ** : transfert saisi le même jour prime, pas de doublon | back | ⏳ |
@@ -77,7 +77,7 @@ Scénario 3 — Le logout purge le persisté (borne R30 + logout s23 tenus)
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 4 — Bouton œil afficher/masquer le mot de passe
   Étant donné le champ mot de passe sur "/connexion" (masqué par défaut)
   Quand l'utilisateur active le bouton œil
