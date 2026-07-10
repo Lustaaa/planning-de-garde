@@ -11,23 +11,23 @@
 
 ## En cours
 
-*(Aucun sprint en cours.)* Dernier livré = **s30 `referentiel-enfants`**
-(**enfant hissé en agrégat de 1er rang**, miroir strict du hissage lieux s27 — agrégat `Enfant`
-(id opaque + prénom), **ports énumération/édition**, ajouter/éditer avec rejets **prénom vide /
-doublon sans écriture**, store **Mongo durable sans seed** (parité asymétrie s15), **validation
-d'existence de l'enfant à la pose** (ponctuelle ET récurrente, miroir lieu inconnu s29), **migration
-rétro-affectation idempotente** des slots du fantôme « Léa » vers l'id réel (**prouvée sur Mongo
-réel**), **onglet « Enfants »** dans la Config foyer, **sélecteur d'enfant explicite** dans la dialog
-de pose (`Session.EnfantId` fantôme retiré) ; gate G3 validé PO ; 10/10, suite **531/531**).
-Prochain = `/planning`.
+*(Aucun sprint en cours.)* Dernier livré = **s31 `login-f5-transfert-derive-slot-conditionne`**
+(3 volets + rework G3 : **(V1) Login F5 (P0)** — port `IPersistanceSession` + adaptateur JS
+localStorage, session restaurée au démarrage, purgée au logout (R30 + logout s23 tenus), **bouton œil**
+afficher/masquer le mot de passe ; **(V2) D3 transfert AUTO-dérivé** — dérivé de la **succession de
+périodes** (bascule le jour de relève), priorité **SAISI > DÉRIVÉ**, cas limites neutre/bord de
+fenêtre/orphelin R6, rendu bicolore réutilisé ; **(V3) D1 slot récurrent conditionné à la garde** —
+toggle « seulement les jours où l'enfant est chez moi », occurrence projetée seulement les jours où le
+poseur est résolu responsable, défaut s29 inchangé ; **rework G3 (option A PO)** — la dérivation D3
+couvre aussi les **bascules du CYCLE DE FOND** (2ᵉ chemin « cycle-résolu », séparé du chemin
+« période-existence » Sc.9 préservé), **prouvé runtime sur Mongo réel** (06/07, 10/08) ; gate G3 validé
+PO ; 15/15, suite **561/561**). Prochain = `/planning`.
 
-> **Candidat SPRINT 31 confirmé (décision PO au /planning s30 : « s30 = P1, s31 = D1+D3 »)** :
-> **D1 (slot récurrent conditionné à la garde) + D3 (transfert auto-dérivé) COMBINÉS** (ligne +0
-> ci-dessous). ⚠️ **Alerte SM** : D1 et D3 **touchent tous deux le cœur de la résolution** (D1 couple
-> l'occurrence du slot à surcharge > fond > neutre ; D3 dérive une bascule de responsabilité de la
-> succession de périodes) → **risque de 2 changements de cœur dans le même sprint** : à cadrer
-> soigneusement au `/planning` s31 (séquencer, borner les invariants touchés). **D2** (config des
-> slots récurrents en Config foyer + récurrence **multi-jours**) reste **dette ouverte séparée**.
+> **Candidat goal prochain `/planning`** : **suppression d'un slot récurrent depuis l'IHM** (retour PO
+> gate s31 : « les slots récurrents ne sont toujours pas supprimables » — le back sait déjà supprimer
+> par id stable idempotent s29, l'affordance IHM manque + nuance occurrence unique vs série à trancher).
+> **D2** (config des slots récurrents en Config foyer + récurrence **multi-jours**) reste dette ouverte
+> séparée. Épic **Refonte Config foyer** (brief) et **Google OAuth réel** (P0) restent en tête.
 
 ## Défauts (bugs) à corriger
 
@@ -36,14 +36,14 @@ Prochain = `/planning`.
 
 | Prio | Défaut | Détail | Origine |
 |:----:|--------|--------|---------|
-| **P0** | **F5 sur `/planning` → renvoie sur la page de login** | La **session ne survit pas au rechargement** (F5) : l'état de connexion vit en mémoire (`SessionPlanning`, borne anti-cliquet R30) et est perdu au refresh → la protection des routes s25 re-redirige vers `/connexion`. Trou d'UX bloquant (l'utilisateur est déconnecté à chaque F5). À corriger : **persister/restaurer la session côté client** (jeton/cookie) au rechargement **sans** casser la borne anti-cliquet ni le logout s23. | retours s29 (PO) |
-| **P2** | **Champ mot de passe sans bouton « œil »** (afficher/masquer) | Sur `/connexion`, le PO veut un **petit bouton œil** dans le champ mot de passe pour **visualiser** la saisie (toggle afficher/masquer). UX login, petit incrément. | retours s29 (PO) |
+| ~~**P0** — **FAIT s31**~~ | ~~**F5 sur `/planning` → renvoie sur la page de login**~~ **CORRIGÉ s31 (V1)** : session **persistée/restaurée côté client** (port `IPersistanceSession` + adaptateur JS localStorage) au démarrage, **purgée au logout** (borne anti-cliquet R30 + logout s23 **tenus**) → F5 connecté reste connecté ; F5 après logout redirige `/connexion`. | retours s29 (PO) · fait s31 |
+| ~~**P2** — **FAIT s31**~~ | ~~**Champ mot de passe sans bouton « œil »**~~ **LIVRÉ s31 (V1)** : bouton œil afficher/masquer le mot de passe sur `/connexion` (toggle). | retours s29 (PO) · fait s31 |
 
 ## Prochains sprints envisagés
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| **+0 (candidat SPRINT 31 confirmé — D1 + D3 combinés, décision PO /planning s30)** | **Slot conditionné à la garde (D1) + transfert auto-dérivé (D3) — COMBINÉS.** **D1 — slot récurrent conditionné à la garde** : toggle « seulement les jours où l'enfant est chez moi » = **RÉVISION D'INVARIANT** (couple l'occurrence du slot à la résolution de responsabilité surcharge > fond > neutre, alors que le slot est aujourd'hui une **localisation orthogonale**) → à cadrer comme **révision de règle hors boucle**, pas un simple feature. **D3 — transfert AUTO-dérivé de la succession de périodes** (fin période A + début période B le lendemain ⇒ transfert le jour de bascule) = nouvelle sémantique **« transfert implicite »** → **PORTE MÉTIER À TRANCHER** au /planning : priorité **saisi vs dérivé** ; cas limites : retombée **neutre** (fin de garde sans successeur = pas de transfert), **collision** avec un transfert saisi le même jour, **bord de fenêtre** (J+1 non chargé), transition **fond↔période**, acteur **orphelin**. ⚠️ **ALERTE SM** : D1 **et** D3 touchent **tous deux le cœur de la résolution** → **2 changements de cœur dans le même sprint** ; **cadrer/séquencer au /planning s31 avant de coder** (borner chaque invariant touché, éviter de croiser les deux révisions). | É6, É8, É7 | Décision PO (« s30 = P1, s31 = D1+D3 ») ; valeur produit continue ; D1 & D3 touchent des invariants → cadrer au /planning **avant** de coder (révision de règle) |
+| ~~**+0 (SPRINT 31 — D1 + D3 combinés)** — **LIVRÉ s31**~~ | ~~Slot conditionné à la garde (D1) + transfert auto-dérivé (D3)~~ **LIVRÉ s31** (15/15, 561/561, gate G3 validé) : **D3** transfert AUTO-dérivé sur **deux chemins séparés** — (1) succession de **périodes saisies** (fin A jour J + début B jour J+1) ; (2) **bascule du CYCLE DE FOND** (`ResoudreResponsable(J-1) ≠ ResoudreResponsable(J)`, ajouté au **rework G3 option A**, prouvé Mongo réel) ; priorité **SAISI > DÉRIVÉ**, cas limites neutre/bord de fenêtre/orphelin R6, rendu bicolore réutilisé. **D1** slot récurrent conditionné à la garde (toggle « seulement les jours où l'enfant est chez moi », occurrence projetée seulement les jours où le poseur est résolu responsable, défaut s29 inchangé, toggle en dialog). Les 2 changements de cœur ont été **séquencés strictement** (V1 dérisque → V2 D3 vert → V3 D1) sans jamais se croiser. | É6, É8, É7 | livré s31 |
 | **+0 (D2 — dette ouverte séparée, retour PO gate s29)** | **Configurer les slots récurrents dans la Config du foyer + récurrence MULTI-JOURS** (ex. École lun/mar/jeu/ven) = nouvelle **surface IHM** (onglet config) + extension du modèle de récurrence (hebdo simple → set de jours). Distinct de D1/D3 (aucun changement de cœur de résolution) — peut être séquencé indépendamment. | É6, É2 | Retour PO gate s29 ; extension de récurrence + surface config, sans toucher la résolution |
 | ~~**+0 (P1 — dette structurelle actée gate s29 : enfant implicite/masqué)** — Référentiel d'enfants~~ **livré s30** : enfant hissé en **agrégat de 1er rang** (id opaque + prénom), ports énumération/édition, rejets prénom vide/doublon sans écriture, **store Mongo durable sans seed**, **validation d'existence à la pose** (ponctuel + récurrent), **migration rétro-affectation idempotente** prouvée store réel, **onglet « Enfants »** config foyer, **sélecteur d'enfant explicite** (`Session.EnfantId` fantôme retiré). **Reliquats explicites** : (1) **migration = utilitaire ops non auto-câblé** (aucun red runtime ne la force) ; (2) **enfant par défaut du sélecteur = seed « Léa »** (pas de choix persisté par contexte) ; (3) **vrai multi-enfants au sens spec R1 pas encore exercé** au-delà de l'agrégat (familles recomposées, graphe parents, multi-enfants dans le cycle de fond restent ouverts). | ✅ (reliquats notés Épic 1) | livré s30 | dette s29 · spec R1 |
 | **+1 (P0 — reliquat de la DETTE de câblage auth, s28 en a soldé la moitié)** | **Câblage auth réel — RELIQUAT après s28.** ✅ **Soldé s28** : `IEnvoiMail` (SMTP dev Smtp4dev), `IReferentielJetonsReset` (store Mongo durable), expiration 60 min prouvée, DI des handlers récup/reset + endpoints, **écrans IHM** mot-de-passe-oublié + redéfinir-par-jeton, **login email+mot de passe** (back+IHM), rapprochement Google **logique** + endpoint `demarrer`/callback + DI. **RESTE (P0)** : (1) **provider Google OAuth réel** — le placeholder `FournisseurOAuthGoogleNonCable` renvoie `null` (échange client secret / redirect_uri / callback en env. déployé non câblé) ; (2) **écran consommateur de `definir-mot-de-passe`** (endpoint livré, sans IHM). **RESTE (hors P0)** : (3) **relais SMTP externe réel** — choix PO = **rester Smtp4dev** (dette assumée) ; (4) **boutons MS / Apple OAuth** → **404** (providers non câblés) ; (5) **écran d'inscription libre-service** (handler DI, écran non construit). | É10, É5, É2 | s28 a rendu le reset + le login mot de passe **opérationnels en runtime réel** ; **Google réel** reste le seul volet OAuth non branché (P0), le reste est de la surface (MS/Apple, inscription) ou une dette assumée (SMTP externe) |
@@ -108,9 +108,9 @@ Prochain = `/planning`.
 | Besoin | Statut | Palier | Origine |
 |--------|:------:|--------|---------|
 | ~~**Slot récurrent hebdomadaire simple** (jour de semaine + plage début→fin + lieu, enfant implicite, projeté en occurrences)~~ **livré s29** (posé via dialog « Poser un slot » unifiée, persistance Mongo durable, projection dans `GrilleAgendaQuery`, suppression idempotente par id stable ; slot = **localisation orthogonale à la responsabilité**) | ✅ | s29 | goal G2 s29 |
-| **Slot récurrent conditionné à la garde** (toggle « seulement les jours où l'enfant est chez moi ») — **révision d'invariant** (couple l'occurrence à la responsabilité) — ⚠️ touche le cœur de la résolution, combiné à D3 | ⬜ | **candidat s31 (D1+D3)** | retours s29 |
+| ~~**Slot récurrent conditionné à la garde**~~ **livré s31 (D1)** : toggle « seulement les jours où l'enfant est chez moi » → occurrence projetée **uniquement les jours où la résolution (surcharge > fond) désigne le parent poseur responsable** ; lit la responsabilité sans la modifier ; slot **non conditionné** (défaut) = comportement s29 strictement inchangé ; toggle dans la dialog « Poser un slot ». **Révision d'invariant assumée** (le slot lit désormais la responsabilité). | ✅ | s31 | retours s29 |
 | **Slot récurrent MULTI-JOURS + configuration en Config du foyer** (ex. École lun/mar/jeu/ven) — extension récurrence + nouvelle surface IHM | ⬜ | dette ouverte (D2, séparée) | retours s29 |
-| **Supprimer un slot récurrent depuis l'IHM** (affordance manquante) + **nuance occurrence unique vs série** : le back sait déjà supprimer par id stable (idempotent, s29), mais le PO **ne trouve pas comment** le faire dans l'IHM ; en plus, clarifier **supprimer une seule occurrence** (instance) **vs toute la série** (nouvelle sémantique à trancher) | ⬜ | candidat fix / à cadrer | retours s29 (PO) |
+| **Supprimer un slot récurrent depuis l'IHM** (affordance manquante) + **nuance occurrence unique vs série** : le back sait déjà supprimer par id stable (idempotent, s29), mais le PO **ne trouve toujours pas comment** le faire dans l'IHM (**re-signalé au gate s31**) ; en plus, clarifier **supprimer une seule occurrence** (instance) **vs toute la série** (nouvelle sémantique à trancher). **CANDIDAT GOAL PROCHAIN `/planning`** (nouvelle surface IHM + commande/handler, hors goal s31). | ⬜ | **candidat goal /planning** | retours s29 · **re-signalé s31 (PO)** |
 | **Slot imbriqué** — un slot peut en contenir un autre (ex. chez mamie **et** cours de natation) | ⬜ | à séquencer | retours s07 (idée) |
 
 ### Épic 7 — Périodes de garde & responsabilité récurrente
@@ -123,10 +123,10 @@ Prochain = `/planning`.
 
 | Besoin | Statut | Palier | Origine |
 |--------|:------:|--------|---------|
-| Transfert dérivé automatiquement par défaut (saisie réservée au ponctuel) | ⬜ | Palier 5-6 | spec règle 17 · retours s02 (#14) |
+| ~~Transfert dérivé automatiquement par défaut (saisie réservée au ponctuel)~~ **livré s31 (D3)** : transfert dérivé automatiquement, priorité **SAISI > DÉRIVÉ** (le saisi prime, pas de doublon). Deux chemins de dérivation (succession de périodes **et** bascule du cycle de fond). | ✅ | s31 | spec règle 24 · retours s02 (#14) |
 | Transfert ponctuel & modifiable | 🟡 | Palier 5+ | spec règle 18 |
 | ~~**Transfert matérialisé sur le planning** : case **bicolore** + séparation en diagonale (départ → arrivée)~~ **livré s29** (diagonale bicolore sur la **pastille de date**, couleurs cédant/recevant résolues sur le référentiel acteurs, orphelin → neutre, légende motif « Transfert », jour sans transfert = unicolore inchangé ; **transfert saisi inchangé**, présentation seule) | ✅ | s29 | retours s17 (#7) |
-| **Transfert AUTO-dérivé de la succession de périodes** (fin période A + début période B ⇒ transfert le jour de bascule) — **porte métier** : priorité saisi vs dérivé, cas limites (neutre, collision, bord de fenêtre, fond↔période, orphelin) — ⚠️ touche le cœur de la résolution, combiné à D1 | ⬜ | **candidat s31 (D1+D3)** | retours s29 · spec règle 17 |
+| ~~**Transfert AUTO-dérivé de la succession de périodes**~~ **livré s31 (D3)** : **deux chemins de dérivation séparés** — (1) succession de **périodes saisies** (fin A jour J + début B jour J+1, même enfant) ; (2) **bascule du cycle de fond** (le responsable résolu change d'un jour à l'autre, ajouté au rework G3 option A). Priorité **SAISI > DÉRIVÉ** (pas de doublon), cas limites tenus : **neutre** (fin sans successeur), **bord de fenêtre** (J+1 non chargé), **orphelin R6** (acteur supprimé → repli neutre côté orphelin) ; rendu bicolore réutilisé (présentation s29). Prouvé runtime sur Mongo réel (06/07, 10/08). | ✅ | s31 | retours s29 · spec règle 24 |
 | Transferts exposés dans le panneau cloche | ⬜ | Palier 11 | spec règle 20 · retours s02 (#8)/s03 |
 
 ### Épic 9 — Notifications & événements à venir

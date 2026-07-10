@@ -36,15 +36,17 @@ Texte complet : [`sequence-de-livraison.md` § paliers 2-3](sequence-de-livraiso
   sinon la case retombe sur la couleur neutre.
 - L'app porte un **thème** en accord avec son domaine (garde d'enfants) : ergonomie de surface
   subordonnée à l'usage.
-- **Rendu bicolore d'un transfert sur la pastille de date** *(livré s29 — présentation seule)* : un jour
-  portant un **transfert saisi** rend sa **pastille de date coupée par une diagonale** séparant la
-  **couleur de départ** (acteur **cédant**) de la **couleur d'arrivée** (acteur **recevant**), toutes deux
-  **résolues sur l'identifiant d'acteur stable** (R19) depuis le référentiel acteurs ; un acteur
-  **orphelin** (supprimé du foyer) retombe sur la **teinte neutre** sans nom ni couleur fantôme. La
-  **légende** signale le **motif bicolore = transfert** dès qu'un transfert couvre la fenêtre. Un jour
-  **sans transfert** garde une pastille **unicolore inchangée** (non-régression). C'est un enrichissement
-  de **présentation** : le **modèle du transfert saisi est inchangé** (R25) et la **résolution de
-  responsabilité de la case** (surcharge > fond > neutre) n'est **pas** affectée.
+- **Rendu bicolore d'un transfert sur la pastille de date** *(livré s29 — présentation seule ; étendu au
+  transfert dérivé s31)* : un jour portant un **transfert** — **saisi (s29)** OU **AUTO-dérivé (s31, D3 :
+  succession de périodes ou bascule du cycle de fond, cf. R24)** — rend sa **pastille de date coupée par
+  une diagonale** séparant la **couleur de départ** (acteur **cédant**) de la **couleur d'arrivée** (acteur
+  **recevant**), toutes deux **résolues sur l'identifiant d'acteur stable** (R19) depuis le référentiel
+  acteurs ; un acteur **orphelin** (supprimé du foyer) retombe sur la **teinte neutre** sans nom ni couleur
+  fantôme. La **légende** signale le **motif bicolore = transfert** dès qu'un transfert (saisi ou dérivé)
+  couvre la fenêtre. Un jour **sans bascule** garde une pastille **unicolore inchangée** (non-régression).
+  C'est un enrichissement de **présentation** : le **modèle du transfert saisi est inchangé** (R25), la
+  dérivation **n'écrit rien**, et la **résolution de responsabilité de la case** (surcharge > fond > neutre)
+  n'est **pas** affectée.
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 

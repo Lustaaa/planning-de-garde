@@ -241,6 +241,17 @@
 
 24. **Transfert dérivé par défaut** — Le transfert d'un enfant (qui dépose, qui récupère, à quelle
     heure) est dérivé automatiquement du planning par défaut : c'est le cas nominal, sans saisie.
+    **Livré s31 (D3)** : sur un jour où le **responsable résolu change d'un jour à l'autre**, un
+    transfert (cédant = résolu de la veille, recevant = résolu du jour) est **dérivé automatiquement**
+    et rendu **bicolore** (R18/R19, présentation s29). Deux chemins de dérivation **séparés** : (1)
+    **succession de périodes saisies** (fin A jour J + début B jour J+1, même enfant) ; (2) **bascule
+    du cycle de fond** (`ResoudreResponsable(J-1) ≠ ResoudreResponsable(J)`, sans période traçant la
+    succession — cas nominal du planning réel). **Priorité SAISI > DÉRIVÉ** (le saisi de règle 25
+    prime, aucun doublon). Cas limites : **neutre** (fin sans successeur), **bord de fenêtre** (J+1
+    non chargé → pas de dérivation fantôme), **orphelin R6** (acteur supprimé → repli neutre côté
+    orphelin). La dérivation **n'écrit rien** (présentation dérivée) ; la résolution de responsabilité
+    de la case reste inchangée. *Texte mécanique :*
+    [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md).
 
 25. **Transfert modifiable et ponctuel, saisi en contexte** — Un transfert auto-calculé peut être
     modifié, et des transferts ponctuels peuvent être proposés ou ajoutés à l'exception (urgence,

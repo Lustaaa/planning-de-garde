@@ -60,6 +60,23 @@ la portion **encore couverte** affiche le responsable (ré)affecté.
   **ou état périmé** (concurrence) → message clair dans la dialog, **rien appliqué**. Échec API → la
   dialog **reste ouverte**, rien appliqué ; annulation → **aucune commande émise**. **Gating
   Invité** : aucun bouton « Éditer », aucune commande émissible.
+- **Transfert AUTO-dérivé d'une bascule de responsabilité** *(livré s31 — D3, R24)* → sur un jour où
+  le responsable **change d'un jour à l'autre**, un transfert (cédant = responsable de la veille,
+  recevant = responsable du jour) est **dérivé automatiquement**, **sans saisie**, et rendu en
+  **pastille bicolore** comme un transfert saisi (présentation s29). La dérivation lit **deux chemins
+  SÉPARÉS**, tous deux ancrés sur la résolution surcharge > fond > neutre : **(1) chemin
+  « période-existence »** — une **succession de périodes saisies** (fin période A le jour J + début
+  période B, **même enfant**, le jour J+1) dérive le transfert le jour de relève ; **(2) chemin
+  « cycle-résolu »** — une **bascule du cycle de fond** (`ResoudreResponsable(J-1) ≠
+  ResoudreResponsable(J)`) dérive le transfert le jour de bascule **même si aucune période ne trace
+  la succession** (c'est le cas nominal du planning réel, ajouté au rework s31). **Priorité SAISI >
+  DÉRIVÉ** : un transfert **saisi** le même jour prime et est **seul retenu** (aucun doublon dérivé).
+  **Cas limites** : fin de garde **sans successeur** → **aucune** dérivation (retombée **neutre**) ;
+  **bord de fenêtre** (J+1 hors de la fenêtre chargée) → **pas** de dérivation fantôme sur données non
+  chargées ; **acteur orphelin (R6)** (cédant ou recevant supprimé) → le côté orphelin retombe sur le
+  **neutre** (sans nom ni couleur fantôme). La dérivation est de la **présentation dérivée** : elle
+  **n'écrit rien** (pas de transfert persisté), la résolution de responsabilité de la case reste
+  **inchangée**.
 
 ## Règles de gestion
 

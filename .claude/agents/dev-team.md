@@ -72,6 +72,16 @@ lancement.
 - Jamais de framework de mock ; doublures à la main, ne doubler que les **ports**.
 - Asserter sur le **snapshot** / la frontière publique, jamais un champ privé.
 - **Acceptation runtime obligatoire** (store réel / câblage réel) — pas de preuve par doublure.
+- **Acceptation runtime sur PROFIL DE DONNÉES RÉALISTE, jamais un seed sur-mesure adjacent.** Prouver
+  un scénario `@ihm` / de bout en bout sur un **store semé exprès pour le rendre vert** (données
+  taillées à la main autour du cas) est un **vert-qui-ment** : le trou reste invisible sur les données
+  réelles de l'app. Le seed / fixture d'acceptation doit être **représentatif de l'état réel** du store
+  (cycle de fond + surcharges éparses comme en usage), pas une **succession sur-mesure** construite pour
+  déclencher exactement l'attendu. Après vert, **rejoue le cas sur le store réel courant** (Mongo, via
+  `run`) pour confirmer qu'il apparaît **hors du seed de test**. *(Friction réelle s31, Sc.10 : le
+  transfert dérivé était vert sur un store semé sur-mesure mais **ne s'affichait pas du tout** sur les
+  données réelles — la dérivation ne voyait que les successions de périodes saisies, jamais les bascules
+  du cycle de fond qui pilotent le planning réel ; rework G3.)*
 - **Flake *TempsReel* SignalR — DISCRIMINER flake vs régression AVANT tout étiquetage (dette P1).**
   Un rouge sur un test `*TempsReel*` **n'est jamais présumé flake**. **Obligation** : re-lancer le test
   **EN ISOLATION x2-3** (`… test.ps1 -Filter "<TestExact>"`, seul, hors charge de suite).
