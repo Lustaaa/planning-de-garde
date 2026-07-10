@@ -14,7 +14,7 @@
 > édite uniquement les **champs existants** (nom, couleur, rôle ; email/compte via l'affordance
 > compte existante).
 
-## Avancement — 5/7
+## Avancement — 6/7
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -23,7 +23,7 @@
 | 3 | Édition via la modal → enregistrer (CRUD existant) → table relue, modal fermée | 🖥️ IHM | ✅ |
 | 4 | Bouton « Ajouter » → même modal VIDE → création (id stable neuf) | 🖥️ IHM | ✅ |
 | 5 | Erreur — refus domaine → modal reste ouverte, motif dedans, saisie conservée | 🖥️ IHM | ✅ |
-| 6 | Gating — Invité (non-Parent) : ni crayon ni « Ajouter », table lecture seule | 🖥️ IHM | ⏳ |
+| 6 | Gating — Invité (non-Parent) : ni crayon ni « Ajouter », table lecture seule | 🖥️ IHM | ✅ |
 | 7 | Temps réel SignalR — un 2ᵉ écran édite/ajoute → table converge sans reload | 🖥️ IHM | ⏳ |
 
 > **⚠️ Lot atomique Sc.1→Sc.4 = UN seul commit « swap de surface » (décision SM).** Retirer la
@@ -102,7 +102,7 @@ Et ma saisie est CONSERVÉE
 Et le tableau et la grille restent INCHANGÉS (aucune écriture partielle)
 ```
 
-### Sc.6 — Gating : Invité (non-Parent) → ni crayon ni « Ajouter » @ihm @pending
+### Sc.6 — Gating : Invité (non-Parent) → ni crayon ni « Ajouter » @ihm @vert
 ```gherkin
 Étant donné une identité EFFECTIVE non-Parent (Invité, ou incarnation d'un acteur « Autre »)
 Quand j'ouvre l'onglet « Acteurs » de /configuration
