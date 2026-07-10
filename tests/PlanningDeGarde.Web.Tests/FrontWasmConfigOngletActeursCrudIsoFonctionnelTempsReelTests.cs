@@ -50,17 +50,24 @@ public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests
 
         // When (édition) — je renomme parent-a en « Alicia » ET le recolorie en vert, puis j'enregistre
         // (canal d'écriture HTTP réel : POST /api/canal/editer-acteur).
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-acteur-edition']").Change("parent-a"));
+        // Refonte s32 : l'édition passe par la MODAL ouverte au crayon.
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("Alicia"));
         this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("vert"));
-        config.Find("form").Submit(); // le formulaire d'édition est le premier <form> du panneau Acteurs
+        this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
-        // Then (édition) — l'écran confirme l'enregistrement (le canal a accepté l'écriture, aucun handler neuf).
+        // Then (édition) — sur succès la modal se ferme et la table relue reflète « Alicia » (canal accepté,
+        // aucun handler neuf).
         config.WaitForAssertion(
-            () => Assert.NotEmpty(config.FindAll("[data-testid='confirmation-edition']")),
+            () =>
+            {
+                Assert.Empty(config.FindAll("[data-testid='dialog-acteur']"));
+                Assert.Contains(config.FindAll("[data-testid='acteur-foyer']"), li => NomLigne(li) == "Alicia");
+            },
             TimeSpan.FromSeconds(10));
 
-        // When (ajout) — j'ajoute « Carla » en rose (canal d'écriture réel : POST /api/canal/ajouter-acteur).
+        // When (ajout) — j'ouvre la modal d'ajout et j'ajoute « Carla » en rose (POST /api/canal/ajouter-acteur).
+        ConfigActeursModalHarness.OuvrirAjout(this, config);
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
         this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
         this.SurDispatcher(() => config.Find("#form-ajout").Submit());
@@ -70,11 +77,12 @@ public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests
             () => Assert.Contains(config.FindAll("[data-testid='acteur-foyer']"), li => NomLigne(li) == "Carla"),
             TimeSpan.FromSeconds(10));
 
-        // When (suppression) — je supprime « Carla » via son bouton supprimer (POST /api/canal/supprimer-acteur).
-        this.SurDispatcher(() => config.FindAll("[data-testid='acteur-foyer']")
-            .Single(li => NomLigne(li) == "Carla")
-            .QuerySelector("[data-testid='bouton-supprimer']")!
-            .Click());
+        // When (suppression) — j'ouvre la modal de « Carla » (id stable neuf) et je la supprime
+        // (POST /api/canal/supprimer-acteur).
+        var carlaId = config.FindAll("[data-testid='acteur-foyer']")
+            .Single(li => NomLigne(li) == "Carla").GetAttribute("data-acteur-id")!;
+        ConfigActeursModalHarness.OuvrirEdition(this, config, carlaId);
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-supprimer']").Click());
 
         // Then (suppression) — sans rechargement, « Carla » quitte la liste relue, et un accusé s'affiche.
         config.WaitForAssertion(

@@ -53,13 +53,13 @@ public sealed class FrontWasmConfigGatingInviteChaqueOngletTempsReelTests : Test
         Assert.Empty(config.FindAll("[data-testid='champ-nombre-semaines']"));
 
         // Contrôle positif (anti faux-vert) — sous l'identité Parent, les écritures REDEVIENNENT proposées
-        // sur chaque section (page unique) : preuve que le gating est bien le discriminant (les formulaires
-        // ne sont pas cassés pour tous). Le changement de rôle est reflété au re-render forcé.
+        // sur chaque section : preuve que le gating est bien le discriminant. Refonte s32 : l'écriture d'un
+        // acteur passe par la modal — les entrées visibles gatées sont le crayon d'édition et le bouton
+        // « Ajouter un acteur » ; le cycle reste gaté sur sa section.
         session.Role = RoleAuteur.Parent;
         config.Render();
-        Assert.NotEmpty(config.FindAll("[data-testid='champ-nom']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='champ-nom-ajout']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='bouton-supprimer']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='crayon-acteur']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-acteur']"));
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
     }
 }

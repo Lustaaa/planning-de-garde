@@ -72,15 +72,19 @@ public sealed class FrontWasmConfigRolesDeuxEcransConvergenceTempsReelTests : Te
             config2.InvokeAsync(() => config2.Find("[data-testid='champ-libelle-role']").Change("Grand-parent"));
             config2.InvokeAsync(() => config2.Find("#form-creer-role").Submit());
 
+            // Refonte s32 : le sélecteur de rôle d'un acteur vit dans la MODAL. On ouvre la modal du 1er acteur
+            // sur l'écran 1 (elle reste ouverte) pour observer que son sélecteur reflète le référentiel relu.
+            var premierActeurId = config1.FindAll("[data-testid='acteur-foyer']").First().GetAttribute("data-acteur-id")!;
+            ConfigActeursModalHarness.OuvrirEdition(this, config1, premierActeurId);
+
             // Then (convergence création) — sans rechargement, le PREMIER écran voit « Grand-parent » dans
-            // la liste des rôles ET dans le sélecteur de rôle d'un acteur (relu via SignalR).
+            // la liste des rôles ET dans le sélecteur de rôle de la modal (relu via SignalR).
             config1.WaitForAssertion(
                 () =>
                 {
                     Assert.Contains(config1.FindAll("[data-testid='role-foyer']"), li => LibelleLigne(li) == "Grand-parent");
                     Assert.Contains(
-                        config1.FindAll("[data-testid='acteur-foyer']").First()
-                            .QuerySelector("[data-testid='selecteur-role-acteur']")!.QuerySelectorAll("option")
+                        config1.Find("[data-testid='selecteur-role-acteur']").QuerySelectorAll("option")
                             .Select(o => o.TextContent.Trim()),
                         t => t == "Grand-parent");
                 },

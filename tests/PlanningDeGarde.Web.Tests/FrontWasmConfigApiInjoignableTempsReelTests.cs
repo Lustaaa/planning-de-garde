@@ -72,9 +72,11 @@ public sealed class FrontWasmConfigApiInjoignableTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        config.SurDispatcher(() => config.Find("select.form-select").Change("parent-a"));
+        // Refonte s32 : l'édition passe par la MODAL ouverte au crayon (plus de sélecteur d'acteur inline).
+        // Sur échec de transport, la modal RESTE OUVERTE (saisie à resoumettre), motif surfacé dedans.
+        ConfigActeursModalHarness.OuvrirEdition(ecranConfig, config, "parent-a");
         config.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("Alicia"));
-        config.SurDispatcher(() => config.Find("form").Submit());
+        config.SurDispatcher(() => config.Find("#form-edition").Submit());
 
         // Then — l'enregistrement échoue clairement : le message de service injoignable s'affiche.
         var alerte = config.WaitForElement("[data-testid='motif-echec']", TimeSpan.FromSeconds(10));

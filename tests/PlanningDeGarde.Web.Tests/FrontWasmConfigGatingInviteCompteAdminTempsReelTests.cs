@@ -52,10 +52,12 @@ public sealed class FrontWasmConfigGatingInviteCompteAdminTempsReelTests : TestC
         Assert.Empty(config.FindAll("[data-testid='bouton-supprimer']"));
         Assert.Empty(config.FindAll("[data-testid='champ-libelle-role']"));
 
-        // Contrôle positif (anti faux-vert) — sous l'identité Parent, la création de compte ET la désignation
-        // d'admin REDEVIENNENT proposées : preuve que le gating est bien le discriminant.
+        // Contrôle positif (anti faux-vert) — sous l'identité Parent, le crayon réapparaît (refonte s32) et,
+        // dans la modal ouverte, la création de compte ET la désignation d'admin REDEVIENNENT proposées :
+        // preuve que le gating est bien le discriminant.
         session.Role = RoleAuteur.Parent;
         config.Render();
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         Assert.NotEmpty(config.FindAll("[data-testid='champ-email-compte']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-creer-compte']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-designer-admin']"));

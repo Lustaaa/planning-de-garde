@@ -63,8 +63,9 @@ public sealed class FrontWasmIncarnationSuppressionConcurrenteTempsReelTests : T
         config.WaitForState(
             () => config.FindAll("[data-testid='acteur-foyer'][data-acteur-id='nounou']").Count == 1,
             TimeSpan.FromSeconds(10));
-        this.SurDispatcher(() => config.Find("[data-testid='acteur-foyer'][data-acteur-id='nounou'] [data-testid='bouton-supprimer']")
-            .Click());
+        // Refonte s32 : la suppression se fait dans la MODAL ouverte au crayon de Nina la nounou.
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "nounou");
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-supprimer']").Click());
 
         // … re-diffusion de fond idempotente (le store est déjà muté) pour que le push SignalR tombe forcément
         // APRÈS l'établissement de la connexion long polling de l'écran 2, sans dépendre du timing.

@@ -44,22 +44,25 @@ public sealed class FrontWasmConfigOngletActeursActiverCompteRuntimeTests : Test
         using var api = new ApiDistanteFactory();
         var config = RendreConfig(api);
 
-        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']")!.Change("alice@foyer.fr"));
-        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-creer-compte']")!.Click());
+        // Refonte s32 : la gestion du compte se fait dans la MODAL ouverte au crayon d'Alice.
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
+        this.SurDispatcher(() => config.Find("[data-testid='champ-email-compte']").Change("alice@foyer.fr"));
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-creer-compte']").Click());
 
-        // ... et on attend que le compte inactif soit affiché avec son action « Activer ».
+        // ... et on attend que le compte inactif soit affiché (ligne relue) avec son action « Activer »
+        // dans la modal.
         config.WaitForAssertion(
             () =>
             {
                 var compte = LigneDe(config, "Alice").QuerySelector("[data-testid='compte-acteur']");
                 Assert.NotNull(compte);
                 Assert.Contains("inactif", compte!.TextContent, StringComparison.OrdinalIgnoreCase);
-                Assert.NotNull(LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']"));
+                Assert.NotEmpty(config.FindAll("[data-testid='bouton-activer-compte']"));
             },
             TimeSpan.FromSeconds(10));
 
-        // When — je clique « Activer » sur le compte d'Alice (POST /api/canal/activer-compte réel).
-        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")!.Click());
+        // When — je clique « Activer » dans la modal (POST /api/canal/activer-compte réel).
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-activer-compte']").Click());
 
         // Then — sans rechargement, le compte relu depuis le store passe « actif », un accusé non bloquant
         // « Compte activé » s'affiche, et l'action « Activer » disparaît (déjà Actif).
@@ -70,7 +73,7 @@ public sealed class FrontWasmConfigOngletActeursActiverCompteRuntimeTests : Test
                 Assert.NotNull(compte);
                 Assert.Contains("actif", compte!.TextContent, StringComparison.OrdinalIgnoreCase);
                 Assert.DoesNotContain("inactif", compte.TextContent, StringComparison.OrdinalIgnoreCase);
-                Assert.Null(LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']"));
+                Assert.Empty(config.FindAll("[data-testid='bouton-activer-compte']"));
                 var accuse = config.Find("[data-testid='accuse-activation']");
                 Assert.Contains("activé", accuse.TextContent, StringComparison.OrdinalIgnoreCase);
             },

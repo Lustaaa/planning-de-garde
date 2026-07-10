@@ -49,6 +49,8 @@ public sealed class FrontWasmConfigAjouterActeurTempsReelTests : TestContext
             li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
         // When — un parent ajoute « Carla » en rose et valide (émission via le canal d'écriture HTTP réel).
+        // Refonte s32 : l'ajout passe par la MODAL ouverte au bouton « Ajouter un acteur » (mode création).
+        ConfigActeursModalHarness.OuvrirAjout(this, config);
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
         this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
         this.SurDispatcher(() => config.Find("#form-ajout").Submit());

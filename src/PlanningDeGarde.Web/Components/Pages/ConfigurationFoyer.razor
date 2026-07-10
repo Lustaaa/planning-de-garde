@@ -1,4 +1,5 @@
 @page "/configuration"
+@using System.Linq
 @implements IAsyncDisposable
 @inject HttpClient Canal
 @inject PlanningDeGarde.Web.State.SessionPlanning Session
@@ -59,80 +60,13 @@
             <section class="config-panneau @(_onglet == "acteurs" ? null : "cacher")"
                      data-testid="panneau-acteurs" aria-label="Acteurs">
 
-                @* Écritures d'acteur gardées sur l'identité EFFECTIVE (règle 9, Sc.7). La LECTURE (table)
-                   reste visible pour tous ; les affordances d'écriture sont gatées Parent. *@
-                @if (Session.EstParent)
-                {
-                    @* Le formulaire d'ÉDITION est rendu EN PREMIER (premier <form> et premier select.form-select
-                       de la page) : plusieurs acceptations runtime pilotent l'édition via `Find("form")` /
-                       `Find("select.form-select")` — ordre significatif, à préserver. *@
-                    <div class="config-formulaires">
-                        @* Modification d'un acteur — l'identifiant stable ne change jamais ; choisir un acteur
-                           pré-remplit son nom courant, puis on ajuste nom et/ou couleur. La table suit sans reload. *@
-                        <div class="config-carte">
-                            <h2 class="config-carte-titre">Modifier un acteur</h2>
-                            <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="editer-acteur">
-                                <div class="config-ligne-form">
-                                    <InputSelect class="form-select" data-testid="selecteur-acteur-edition"
-                                                 @bind-Value="_form.ActeurId" @bind-Value:after="PreRemplirNom">
-                                        <option value="">— choisir —</option>
-                                        @foreach (var a in _acteurs)
-                                        {
-                                            <option value="@a.Id">@a.Nom</option>
-                                        }
-                                    </InputSelect>
-                                    <InputText class="form-control" @bind-Value="_form.Nom" data-testid="champ-nom"
-                                               placeholder="Nouveau nom" />
-                                    <InputSelect class="form-select" @bind-Value="_form.Couleur" data-testid="champ-couleur">
-                                        <option value="">— inchangée —</option>
-                                        <option value="bleu">Bleu</option>
-                                        <option value="orange">Orange</option>
-                                        <option value="vert">Vert</option>
-                                        <option value="violet">Violet</option>
-                                    </InputSelect>
-                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                </div>
-                                @if (NomActuel is not null)
-                                {
-                                    <div class="form-text" data-testid="nom-actuel">Nom actuel : <strong>@NomActuel</strong></div>
-                                }
-                            </EditForm>
-                            @if (_confirmation is not null)
-                            {
-                                <div class="alert alert-success mt-2 mb-0" data-testid="confirmation-edition">@_confirmation</div>
-                            }
-                            @if (_motifEchec is not null)
-                            {
-                                <div class="alert alert-danger mt-2 mb-0" data-testid="motif-echec">@_motifEchec</div>
-                            }
-                        </div>
-
-                        @* Ajout d'un acteur — l'acteur reçoit un identifiant stable neuf, apparaît aussitôt
-                           dans la table (relecture du store), sans recharger la page. *@
-                        <div class="config-carte">
-                            <h2 class="config-carte-titre">Ajouter un acteur</h2>
-                            <EditForm Model="_ajout" OnValidSubmit="Ajouter" FormName="ajouter-acteur" id="form-ajout">
-                                <div class="config-ligne-form">
-                                    <InputText class="form-control" @bind-Value="_ajout.Nom" data-testid="champ-nom-ajout"
-                                               placeholder="Nom du nouvel acteur" />
-                                    <InputSelect class="form-select" @bind-Value="_ajout.Couleur" data-testid="champ-couleur-ajout">
-                                        <option value="">— neutre —</option>
-                                        <option value="rose">Rose</option>
-                                        <option value="bleu">Bleu</option>
-                                        <option value="orange">Orange</option>
-                                        <option value="vert">Vert</option>
-                                        <option value="violet">Violet</option>
-                                    </InputSelect>
-                                    <button type="submit" class="btn btn-primary">Ajouter</button>
-                                </div>
-                            </EditForm>
-                            @if (_motifEchecAjout is not null)
-                            {
-                                <div class="alert alert-danger mt-2 mb-0" data-testid="motif-echec-ajout">@_motifEchecAjout</div>
-                            }
-                        </div>
-                    </div>
-                }
+                @* Refonte s32 (patron « tableau lecture seule + crayon → modal », brief refonte-config) :
+                   la table des acteurs est PUREMENT EN LECTURE (pastille + nom, email + statut du compte,
+                   rôle, état actif/admin en pastille/badge). Toute l'ÉCRITURE d'un acteur — nom, couleur,
+                   rôle, compte, admin, suppression — est déportée dans la MODAL ouverte par le crayon de la
+                   ligne (édition) ou par le bouton « Ajouter un acteur » (création). Réutilise les MÊMES
+                   commandes CRUD (aucun handler neuf) et les mêmes testids d'écriture. Gating d'écriture sur
+                   l'identité EFFECTIVE (règle 9) : crayon, bouton d'ajout et modal ne sont rendus que Parent. *@
 
                 @if (_accuseSuppression is not null)
                 {
@@ -147,11 +81,6 @@
                     <div class="alert alert-danger" data-testid="motif-echec-suppression">@_motifEchecSuppression</div>
                 }
 
-                @* Table des acteurs (fusion des surfaces acteur en un seul tableau) : pastille + nom, rôle
-                   (affecté depuis le référentiel), compte, admin et actions sur une ligne. Chaque case porte
-                   la même teinte que la grille et la légende ; un acteur sans couleur retombe sur le neutre.
-                   La suppression retire l'acteur (ses cases orphelines retombent sur le fond/neutre, sans nom
-                   fantôme) et la grille partagée suit sans recharger la page. *@
                 <div class="acteurs-defilement">
                     <table class="acteurs-table" data-testid="liste-acteurs">
                         <thead>
@@ -159,7 +88,7 @@
                                 <th>Acteur</th>
                                 <th>Rôle</th>
                                 <th>Compte</th>
-                                <th>Admin</th>
+                                <th>État</th>
                                 @if (Session.EstParent)
                                 {
                                     <th class="acteurs-col-actions">Actions</th>
@@ -181,11 +110,121 @@
                                     <td>
                                         @* Rôle courant (lecture pour tous) : libellé résolu sur l'id stable du référentiel. *@
                                         <div class="acteur-role" data-testid="role-acteur-courant">@LibelleRoleActeur(a.RoleId)</div>
-                                        @if (Session.EstParent)
+                                    </td>
+                                    <td>
+                                        @* Compte associé (LECTURE pour tous) : email + statut, s'il en porte un. La création /
+                                           l'activation se font dans la modal (crayon), pas ici. *@
+                                        @if (CompteDe(a.Id) is { } compte)
                                         {
+                                            <span class="acteur-compte" data-testid="compte-acteur">
+                                                @compte.Email — <span class="acteur-compte-statut">@compte.Statut</span>
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @* État actif/admin matérialisé en pastille/badge de LECTURE (pour tous). *@
+                                        @if (CompteDe(a.Id) is { } c)
+                                        {
+                                            <span class="badge @(EstInactif(c) ? "bg-light text-dark" : "bg-success") acteur-etat-compte"
+                                                  data-testid="acteur-etat-compte">@(EstInactif(c) ? "inactif" : "actif")</span>
+                                        }
+                                        @if (EstAdmin(a.Id))
+                                        {
+                                            <span class="badge bg-secondary acteur-admin" data-testid="acteur-admin-marqueur">admin</span>
+                                        }
+                                    </td>
+                                    @if (Session.EstParent)
+                                    {
+                                        <td class="acteurs-col-actions">
+                                            @* Crayon d'édition : ouvre la modal pré-remplie sur cet acteur (id stable porté). *@
+                                            <button type="button" class="btn btn-outline-secondary btn-sm acteur-crayon"
+                                                    data-testid="crayon-acteur" data-acteur-id="@a.Id"
+                                                    @onclick="() => OuvrirEdition(a.Id)" aria-label="Modifier @a.Nom">✏️</button>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (Session.EstParent)
+                {
+                    @* Bouton d'ajout au bas du tableau : ouvre la MÊME modal, champs vides (mode création). *@
+                    <div class="acteurs-ajout">
+                        <button type="button" class="btn btn-primary" data-testid="bouton-ajouter-acteur"
+                                @onclick="OuvrirAjout">Ajouter un acteur</button>
+                    </div>
+
+                    @* ── MODAL acteur (édition OU ajout) ── rendue seulement quand ouverte et sous identité Parent.
+                       Réutilise les commandes CRUD existantes et les testids d'écriture (champ-nom, champ-couleur,
+                       selecteur-role-acteur, compte, admin, suppression). *@
+                    @if (_modalAjout || _modalActeurId is not null)
+                    {
+                        var acteurEdite = _modalActeurId is null ? null : _acteurs.FirstOrDefault(x => x.Id == _modalActeurId);
+                        <div class="dialog-backdrop" data-testid="dialog-acteur">
+                            <div class="dialog-panneau">
+                                <h2 class="h4 mb-3">@(_modalAjout ? "Ajouter un acteur" : "Modifier l'acteur")</h2>
+
+                                @if (_modalAjout)
+                                {
+                                    @* Mode CRÉATION : champs vides, identifiant stable neuf posé côté handler. *@
+                                    <EditForm Model="_ajout" OnValidSubmit="Ajouter" FormName="ajouter-acteur" id="form-ajout">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nom</label>
+                                            <InputText class="form-control" @bind-Value="_ajout.Nom" data-testid="champ-nom-ajout"
+                                                       placeholder="Nom du nouvel acteur" />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Couleur</label>
+                                            <InputSelect class="form-select" @bind-Value="_ajout.Couleur" data-testid="champ-couleur-ajout">
+                                                <option value="">— neutre —</option>
+                                                <option value="rose">Rose</option>
+                                                <option value="bleu">Bleu</option>
+                                                <option value="orange">Orange</option>
+                                                <option value="vert">Vert</option>
+                                                <option value="violet">Violet</option>
+                                            </InputSelect>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                            <button type="button" class="btn btn-link" data-testid="dialog-acteur-annuler"
+                                                    @onclick="FermerModal">Annuler</button>
+                                        </div>
+                                    </EditForm>
+                                    @if (_motifEchecAjout is not null)
+                                    {
+                                        <div class="alert alert-danger mt-3 mb-0" data-testid="motif-echec-ajout">@_motifEchecAjout</div>
+                                    }
+                                }
+                                else if (acteurEdite is { } a)
+                                {
+                                    @* Mode ÉDITION : pré-rempli sur les champs courants ; l'id stable est porté par la modal
+                                       (data-acteur-id), jamais éditable ni dérivé du libellé. *@
+                                    <div data-testid="dialog-acteur-id" data-acteur-id="@a.Id"></div>
+
+                                    <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="editer-acteur" id="form-edition">
+                                        <div class="mb-3">
+                                            <label class="form-label">Nom</label>
+                                            <InputText class="form-control" @bind-Value="_form.Nom" data-testid="champ-nom"
+                                                       placeholder="Nom de l'acteur" />
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Couleur</label>
+                                            <InputSelect class="form-select" @bind-Value="_form.Couleur" data-testid="champ-couleur">
+                                                <option value="">— inchangée —</option>
+                                                <option value="bleu">Bleu</option>
+                                                <option value="orange">Orange</option>
+                                                <option value="vert">Vert</option>
+                                                <option value="violet">Violet</option>
+                                            </InputSelect>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Rôle</label>
                                             @* Sélecteur BORNÉ AU RÉFÉRENTIEL : exactement les rôles du foyer + « sans rôle ».
-                                               La valeur bindée est l'id de rôle (jamais le libellé) ; vide = retrait. *@
-                                            <select class="form-select form-select-sm acteur-selecteur-role" data-testid="selecteur-role-acteur"
+                                               La valeur bindée est l'id de rôle (jamais le libellé) ; vide = retrait. Appliqué
+                                               immédiatement (commande existante affecter/retirer-role). *@
+                                            <select class="form-select acteur-selecteur-role" data-testid="selecteur-role-acteur"
                                                     value="@(a.RoleId ?? "")"
                                                     @onchange="e => AffecterRole(a.Id, e.Value?.ToString())">
                                                 <option value="">sans rôle</option>
@@ -194,17 +233,29 @@
                                                     <option value="@r.Id">@r.Libelle</option>
                                                 }
                                             </select>
-                                        }
-                                    </td>
-                                    <td>
-                                        @if (Session.EstParent)
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                            <button type="button" class="btn btn-link" data-testid="dialog-acteur-annuler"
+                                                    @onclick="FermerModal">Annuler</button>
+                                        </div>
+                                    </EditForm>
+                                    @if (_motifEchec is not null)
+                                    {
+                                        <div class="alert alert-danger mt-3 mb-0" data-testid="motif-echec">@_motifEchec</div>
+                                    }
+
+                                    <hr />
+
+                                    @* Compte associé : compte existant (statut + activer), ou mini-formulaire de création
+                                       (email obligatoire). Écriture via le canal HTTP ; sur refus, le motif reste dans la
+                                       modal, sans compte créé. *@
+                                    <div class="mb-3">
+                                        <label class="form-label">Compte</label>
+                                        @if (CompteDe(a.Id) is { } compte)
                                         {
-                                            @* Compte associé : compte existant (email + statut), ou mini-formulaire de
-                                               création (email obligatoire). Écriture via le canal HTTP ; sur refus, le
-                                               motif reste dans la ligne, sans compte créé. *@
-                                            @if (CompteDe(a.Id) is { } compte)
-                                            {
-                                                <span class="acteur-compte" data-testid="compte-acteur">
+                                            <div>
+                                                <span class="acteur-compte" data-testid="compte-acteur-modal">
                                                     @compte.Email — <span class="acteur-compte-statut">@compte.Statut</span>
                                                 </span>
                                                 @if (EstInactif(compte))
@@ -213,62 +264,63 @@
                                                             data-testid="bouton-activer-compte" data-compte-id="@compte.Id"
                                                             @onclick="() => ActiverCompte(compte.Id)">Activer</button>
                                                 }
-                                                @if (MotifEchecActivation(compte.Id) is { } motifActivation)
-                                                {
-                                                    <span class="alert alert-danger py-1 px-2 mb-0 acteur-activer-motif"
-                                                          data-testid="motif-echec-activation">@motifActivation</span>
-                                                }
-                                            }
-                                            else
+                                            </div>
+                                            @if (MotifEchecActivation(compte.Id) is { } motifActivation)
                                             {
-                                                <span class="acteur-compte-form">
-                                                    <input type="email" class="form-control form-control-sm acteur-champ-email"
-                                                           data-testid="champ-email-compte" placeholder="email du compte"
-                                                           @bind:get="EmailCompte(a.Id)" @bind:set="v => SaisirEmailCompte(a.Id, v)"
-                                                           @bind:event="onchange" />
-                                                    <button type="button" class="btn btn-outline-primary btn-sm"
-                                                            data-testid="bouton-creer-compte"
-                                                            @onclick="() => CreerCompte(a.Id)">Créer le compte</button>
-                                                </span>
-                                                @if (MotifEchecCompte(a.Id) is { } motifCompte)
-                                                {
-                                                    <span class="alert alert-danger py-1 px-2 mb-0 acteur-compte-motif"
-                                                          data-testid="motif-echec-compte">@motifCompte</span>
-                                                }
+                                                <div class="alert alert-danger py-1 px-2 mb-0 mt-2 acteur-activer-motif"
+                                                     data-testid="motif-echec-activation">@motifActivation</div>
                                             }
                                         }
-                                    </td>
-                                    <td>
-                                        @* Marqueur admin (lecture pour tous) : suit une désignation aboutie ailleurs (SignalR). *@
-                                        @if (EstAdmin(a.Id))
+                                        else
                                         {
-                                            <span class="badge bg-secondary acteur-admin" data-testid="acteur-admin-marqueur">admin</span>
+                                            <div class="acteur-compte-form">
+                                                <input type="email" class="form-control acteur-champ-email"
+                                                       data-testid="champ-email-compte" placeholder="email du compte"
+                                                       @bind:get="EmailCompte(a.Id)" @bind:set="v => SaisirEmailCompte(a.Id, v)"
+                                                       @bind:event="onchange" />
+                                                <button type="button" class="btn btn-outline-primary btn-sm mt-2"
+                                                        data-testid="bouton-creer-compte"
+                                                        @onclick="() => CreerCompte(a.Id)">Créer le compte</button>
+                                            </div>
+                                            @if (MotifEchecCompte(a.Id) is { } motifCompte)
+                                            {
+                                                <div class="alert alert-danger py-1 px-2 mb-0 mt-2 acteur-compte-motif"
+                                                     data-testid="motif-echec-compte">@motifCompte</div>
+                                            }
                                         }
-                                        @if (Session.EstParent)
-                                        {
+                                    </div>
+
+                                    @* État admin : badge de lecture + action de désignation (commande existante). *@
+                                    <div class="mb-3">
+                                        <label class="form-label">Admin</label>
+                                        <div>
+                                            @if (EstAdmin(a.Id))
+                                            {
+                                                <span class="badge bg-secondary acteur-admin" data-testid="acteur-admin-marqueur-modal">admin</span>
+                                            }
                                             <button type="button" class="btn btn-outline-secondary btn-sm acteur-designer-admin"
                                                     data-testid="bouton-designer-admin" data-acteur-id="@a.Id"
                                                     @onclick="() => DesignerAdmin(a.Id)">Désigner admin</button>
-                                            @if (MotifEchecAdmin(a.Id) is { } motifAdmin)
-                                            {
-                                                <span class="alert alert-danger py-1 px-2 mb-0 acteur-admin-motif"
-                                                      data-testid="motif-echec-admin">@motifAdmin</span>
-                                            }
+                                        </div>
+                                        @if (MotifEchecAdmin(a.Id) is { } motifAdmin)
+                                        {
+                                            <div class="alert alert-danger py-1 px-2 mb-0 mt-2 acteur-admin-motif"
+                                                 data-testid="motif-echec-admin">@motifAdmin</div>
                                         }
-                                    </td>
-                                    @if (Session.EstParent)
-                                    {
-                                        <td class="acteurs-col-actions">
-                                            <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
-                                                    data-testid="bouton-supprimer" data-acteur-id="@a.Id"
-                                                    @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer</button>
-                                        </td>
-                                    }
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                                    </div>
+
+                                    <hr />
+
+                                    @* Suppression de l'acteur (commande existante) : sur succès, ferme la modal et retire
+                                       l'acteur de la table (cases orphelines → fond/neutre, sans nom fantôme). *@
+                                    <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
+                                            data-testid="bouton-supprimer" data-acteur-id="@a.Id"
+                                            @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer cet acteur</button>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
             </section>
 
             @* ══════════════ Panneau RÔLES ══════════════ *@
@@ -534,6 +586,9 @@
     .acteur-admin { display: inline-block; margin-bottom: .35rem; }
     .acteur-designer-admin { display: inline-block; }
     .acteur-activer-compte { margin-left: .4rem; }
+    .acteur-etat-compte { margin-right: .35rem; }
+    .acteurs-ajout { margin-top: 1rem; display: flex; justify-content: flex-start; }
+    .acteurs-col-actions .acteur-crayon { font-size: 1rem; line-height: 1; }
 
     /* Rôles (liste). */
     .role-ligne { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }

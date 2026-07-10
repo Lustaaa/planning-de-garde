@@ -74,9 +74,9 @@ public sealed class FrontWasmGrilleSuppressionTempsReelTests : TestContext
         config.WaitForState(
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
-        this.SurDispatcher(() => config.FindAll("[data-testid='acteur-foyer']")
-            .Single(li => li.GetAttribute("data-acteur-id") == "grand-pere")
-            .QuerySelector("[data-testid='bouton-supprimer']")!.Click());
+        // Refonte s32 : la suppression se fait dans la MODAL ouverte au crayon de grand-père.
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "grand-pere");
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-supprimer']").Click());
 
         // … re-diffusion de fond idempotente (le store est déjà muté) pour que le push SignalR tombe forcément
         // APRÈS l'établissement de la connexion long polling du second écran, sans dépendre du timing.

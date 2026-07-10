@@ -43,16 +43,22 @@ public sealed class FrontWasmConfigInviteNeSupprimePasTempsReelTests : TestConte
             TimeSpan.FromSeconds(10));
         var nombreActeurs = config.FindAll("[data-testid='acteur-foyer']").Count;
 
-        // Contrôle positif — le Parent voit un bouton supprimer par acteur (le bouton n'est pas cassé pour tous).
-        Assert.Equal(nombreActeurs, config.FindAll("[data-testid='bouton-supprimer']").Count);
+        // Contrôle positif — refonte s32 : le Parent voit un crayon d'édition par acteur (entrée d'écriture)
+        // et, dans la modal ouverte, l'action supprimer est atteignable (le mécanisme n'est pas cassé pour tous).
+        Assert.Equal(nombreActeurs, config.FindAll("[data-testid='crayon-acteur']").Count);
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-supprimer']"));
+        this.SurDispatcher(() => config.Find("[data-testid='dialog-acteur-annuler']").Click());
 
         // When — le rôle bascule en Invité (consultation seule) et l'écran est re-rendu.
         session.Role = RoleAuteur.Invite;
         config.Render();
 
-        // Then — aucun bouton supprimer n'est proposé (aucune commande de suppression émissible) …
+        // Then — aucun crayon ni bouton d'ajout n'est proposé (aucune modal d'écriture atteignable, donc
+        // aucune commande de suppression émissible) …
+        Assert.Empty(config.FindAll("[data-testid='crayon-acteur']"));
         Assert.Empty(config.FindAll("[data-testid='bouton-supprimer']"));
+        Assert.Empty(config.FindAll("[data-testid='bouton-ajouter-acteur']"));
 
         // … et la liste des acteurs reste inchangée (même nombre, lecture seule préservée).
         Assert.Equal(nombreActeurs, config.FindAll("[data-testid='acteur-foyer']").Count);

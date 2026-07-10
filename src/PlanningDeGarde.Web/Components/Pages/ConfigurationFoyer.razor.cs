@@ -32,6 +32,47 @@ public partial class ConfigurationFoyer
 
     private void ChoisirOnglet(string onglet) => _onglet = onglet;
 
+    // ── État de la MODAL acteur (refonte s32, patron crayon → modal) ──
+    // Identifiant stable de l'acteur en cours d'édition dans la modal (null = pas d'édition ouverte).
+    // C'est le crayon de la ligne qui le pose (jamais un select, jamais dérivé du libellé, règle 19).
+    private string? _modalActeurId;
+    // Modal ouverte en mode CRÉATION (bouton « Ajouter un acteur ») : champs vides, pas d'acteur porté.
+    private bool _modalAjout;
+
+    /// <summary>Ouvre la modal d'ÉDITION sur un acteur (clic crayon de sa ligne) : porte son id stable,
+    /// pré-remplit le nom courant et repart d'une couleur « inchangée », efface les messages de l'édition
+    /// précédente. L'écriture (nom/couleur/rôle/compte/admin/suppression) s'exerce ensuite dans la modal.</summary>
+    private void OuvrirEdition(string acteurId)
+    {
+        _modalAjout = false;
+        _modalActeurId = acteurId;
+        _form.ActeurId = acteurId;
+        _form.Couleur = "";
+        PreRemplirNom();
+    }
+
+    /// <summary>Ouvre la MÊME modal en mode CRÉATION (bouton « Ajouter un acteur ») : tous les champs vides,
+    /// aucun acteur pré-sélectionné, motif d'échec précédent effacé.</summary>
+    private void OuvrirAjout()
+    {
+        _modalActeurId = null;
+        _modalAjout = true;
+        _ajout.Nom = "";
+        _ajout.Couleur = "";
+        _motifEchecAjout = null;
+    }
+
+    /// <summary>Ferme la modal (annuler, ou après un enregistrement abouti) sans émettre aucune commande :
+    /// le tableau reste inchangé côté annulation. Efface les messages d'édition volatils.</summary>
+    private void FermerModal()
+    {
+        _modalActeurId = null;
+        _modalAjout = false;
+        _confirmation = null;
+        _motifEchec = null;
+        _motifEchecAjout = null;
+    }
+
     private sealed class Formulaire
     {
         public string ActeurId { get; set; } = "";
@@ -320,11 +361,18 @@ public partial class ConfigurationFoyer
         }
 
         if (reponse.IsSuccessStatusCode)
+        {
+            // Refonte s32 (Sc.3) : sur succès, la modal se FERME et le tableau est relu — il reflète le
+            // renommage / recoloriage sans rechargement de page (la grille partagée suit via la diffusion
+            // temps réel déclenchée côté API). Aucune confirmation persistante à afficher (modal fermée).
             _confirmation = "Modification enregistrée.";
+            await RechargerActeurs();
+            FermerModal();
+        }
         else
             // Le canal renvoie le motif métier en corps JSON (Results.BadRequest(string)) : on le
             // désérialise comme la chaîne qu'il est, pour surfacer un message propre (« le nom ne peut
-            // pas être vide ») sans guillemets parasites (Sc.8).
+            // pas être vide ») sans guillemets parasites (Sc.5). La modal RESTE OUVERTE, saisie conservée.
             _motifEchec = await reponse.Content.ReadFromJsonAsync<string>();
     }
 
@@ -365,10 +413,12 @@ public partial class ConfigurationFoyer
             return;
         }
 
-        // La liste reflète l'ajout sans recharger la page : on relit l'énumération du store durable.
+        // La liste reflète l'ajout sans recharger la page : on relit l'énumération du store durable, puis
+        // la modal de création se ferme (refonte s32, Sc.4) — le nouvel acteur apparaît aussitôt.
         await RechargerActeurs();
         _ajout.Nom = "";
         _ajout.Couleur = "";
+        FermerModal();
     }
 
     /// <summary>
@@ -422,8 +472,10 @@ public partial class ConfigurationFoyer
             return;
         }
 
-        // La liste reflète la suppression sans recharger la page : on relit l'énumération du store durable.
+        // La liste reflète la suppression sans recharger la page : on relit l'énumération du store durable,
+        // puis la modal d'édition se ferme (refonte s32) — l'acteur supprimé quitte la table.
         await RechargerActeurs();
+        FermerModal();
     }
 
     /// <summary>Libellé d'affichage du rôle courant d'un acteur (Sc.8) : le libellé du rôle du référentiel
