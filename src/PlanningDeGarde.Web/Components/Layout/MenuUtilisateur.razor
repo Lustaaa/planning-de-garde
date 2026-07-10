@@ -1,5 +1,6 @@
 @inject PlanningDeGarde.Web.State.SessionPlanning Session
 @inject NavigationManager Nav
+@inject PlanningDeGarde.Web.IPersistanceSession Persistance
 
 @* Menu utilisateur connecté (s24, Sc.11) : visible UNIQUEMENT une fois une session ouverte (état partagé
    de session, s23 — nom résolu serveur). Surface le nom / acteur connecté, un accès à la config foyer, et
@@ -23,9 +24,12 @@
 
     private void Rafraichir() => InvokeAsync(StateHasChanged);
 
-    private void SeDeconnecter()
+    private async Task SeDeconnecter()
     {
         Session.Deconnecter();
+        // Purge le jeton persisté (s31, Sc.3) : le logout s23 reste effectif au rechargement — un F5 après
+        // logout ne restaure plus aucune session (le stockage durable est vidé). Borne R30 inchangée.
+        await Persistance.PurgerAsync();
         Nav.NavigateTo("connexion");
     }
 

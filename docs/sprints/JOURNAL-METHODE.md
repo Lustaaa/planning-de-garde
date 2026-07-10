@@ -48,6 +48,17 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   handler, aucune révision d'invariant/règle, aucune nouvelle surface IHM) ; tout ajout touchant un
   invariant/une porte métier/un nouveau volet **retourne au `/planning`** (G2/G1), jamais tranché sous la
   pression du gate.
+- 2026-07-10 — s31 : **vert-qui-ment au gate G3** — Sc.10 (transfert dérivé) **vert** sur un store **semé
+  sur-mesure** mais **invisible sur les données réelles** (la dérivation ne voyait que les successions de
+  **périodes saisies**, jamais les **bascules du cycle de fond** qui pilotent le planning réel) → rework
+  G3 (2ᵉ chemin « cycle-résolu »). Fix : garde **« acceptation runtime sur PROFIL DE DONNÉES RÉALISTE,
+  jamais un seed sur-mesure adjacent »** dans `dev-team` (fixture représentative de l'état réel + rejeu
+  sur store réel courant hors seed de test avant de déclarer vert).
+- 2026-07-10 — s31 : **incident git concurrent** — un process/agent concurrent a fait `git checkout`
+  (HEAD détaché hors branche) + committé pendant un scénario ; or `commit.ps1` faisait `git commit` **nu**
+  qui committe **tout l'index** → risque de **happer des fichiers étrangers pré-stagés**. Fix : `commit.ps1`
+  **scope le commit aux pathspecs** (`git commit -- @Files`), **refuse un HEAD détaché**, et **signale un
+  index déjà peuplé** avant staging ; garde-fou documenté dans `git/SKILL.md`.
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake

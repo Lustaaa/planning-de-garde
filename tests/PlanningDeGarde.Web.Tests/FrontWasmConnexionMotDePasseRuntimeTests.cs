@@ -32,6 +32,7 @@ public sealed class FrontWasmConnexionMotDePasseRuntimeTests : TestContext
         api.Services.GetRequiredService<IEditeurComptes>()
             .Creer("compte-maman", Email, StatutCompte.Actif, ActeurNounou, hacheur.Hacher(BonMotDePasse));
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         var session = new SessionPlanning();
         Services.AddSingleton(session);
 
@@ -61,6 +62,7 @@ public sealed class FrontWasmConnexionMotDePasseRuntimeTests : TestContext
         api.Services.GetRequiredService<IEditeurComptes>()
             .Creer("compte-maman", Email, StatutCompte.Actif, ActeurNounou, hacheur.Hacher(BonMotDePasse));
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         var session = new SessionPlanning();
         Services.AddSingleton(session);
 

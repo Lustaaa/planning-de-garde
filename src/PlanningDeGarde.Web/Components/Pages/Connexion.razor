@@ -2,6 +2,7 @@
 @inject HttpClient Canal
 @inject PlanningDeGarde.Web.State.SessionPlanning Session
 @inject NavigationManager Nav
+@inject PlanningDeGarde.Web.IPersistanceSession Persistance
 
 <PageTitle>Connexion</PageTitle>
 
@@ -30,8 +31,18 @@
            Un compte sans mot de passe (email-only s23) reste connectable en laissant ce champ vide. *@
         <div class="connexion-champ">
             <label class="form-label" for="mot-de-passe-connexion">Mot de passe</label>
-            <input type="password" id="mot-de-passe-connexion" class="form-control" placeholder="votre mot de passe"
-                   data-testid="champ-mot-de-passe-connexion" @bind="_motDePasse" />
+            @* Bouton œil (s31, Sc.4) : bascule l'attribut type du champ (password ↔ text) pour afficher /
+               masquer la saisie. Pur confort de saisie, aucune règle métier, aucun flux d'auth touché. *@
+            <div class="connexion-mot-de-passe">
+                <input type="@(_motDePasseVisible ? "text" : "password")" id="mot-de-passe-connexion"
+                       class="form-control" placeholder="votre mot de passe"
+                       data-testid="champ-mot-de-passe-connexion" @bind="_motDePasse" />
+                <button type="button" class="connexion-oeil" data-testid="bouton-oeil-mot-de-passe"
+                        aria-label="@(_motDePasseVisible ? "Masquer le mot de passe" : "Afficher le mot de passe")"
+                        aria-pressed="@_motDePasseVisible" @onclick="BasculerVisibiliteMotDePasse">
+                    @(_motDePasseVisible ? "🙈" : "👁")
+                </button>
+            </div>
         </div>
         <button type="button" class="btn btn-primary w-100 connexion-bouton" data-testid="bouton-se-connecter"
                 @onclick="SeConnecterAsync">Se connecter</button>
@@ -84,6 +95,14 @@
                        color: var(--pdg-ink); margin: 0 0 .25rem; letter-spacing: -.02em; }
     .connexion-sous-titre { color: var(--pdg-muted); font-size: .92rem; margin: 0 0 1.5rem; }
     .connexion-champ { margin-bottom: 1rem; }
+    /* Champ mot de passe + bouton œil (Sc.4) : l'œil se superpose à droite du champ, cible tactile ≥ 40px. */
+    .connexion-mot-de-passe { position: relative; }
+    .connexion-mot-de-passe .form-control { padding-right: 2.75rem; }
+    .connexion-oeil { position: absolute; top: 50%; right: .35rem; transform: translateY(-50%);
+                      display: inline-flex; align-items: center; justify-content: center; width: 2.2rem; height: 2.2rem;
+                      border: none; background: transparent; cursor: pointer; font-size: 1.1rem; line-height: 1;
+                      border-radius: 8px; color: var(--pdg-muted); }
+    .connexion-oeil:hover { background: var(--pdg-accent-soft); }
     .connexion-bouton { border-radius: 12px; padding: .55rem; font-weight: 600; }
     .connexion-oubli { display: inline-block; margin-top: .9rem; color: var(--pdg-muted); font-size: .88rem; }
 

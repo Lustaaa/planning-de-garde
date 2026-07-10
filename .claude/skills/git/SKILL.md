@@ -100,6 +100,13 @@ script `commit.ps1` (garde-fous portés).
 
 - **Jamais de commit/push direct sur `main`/`master`.**
 - **Staging sélectif** — `commit` exige `-Files`, jamais `git add -A`.
+- **Commit SCOPÉ aux pathspecs + garde anti-index-pollué** *(durci s31)* — `commit` committe avec
+  `-- @Files` (pathspec) : un `git commit` nu committe **tout l'index**, donc happerait un fichier
+  **étranger pré-stagé** par un **process/agent concurrent** ; scoper garantit qu'on ne committe **que**
+  nos fichiers. Le script **signale** aussi un index déjà peuplé avant staging (soupçon de pré-stage
+  concurrent). Refuse enfin un **HEAD détaché** (un `git checkout <sha>` concurrent a pu détacher HEAD
+  hors de la branche de travail). *(Friction réelle s31 : un process concurrent a basculé hors branche +
+  committé pendant un scénario.)*
 - **Branche** — toujours `ia-{type}/{slug}`, créée depuis `main` à jour.
 - **Arbre propre exigé** par `sync` et `branch` (commit/stash avant).
 - **Trailers** — `Co-Authored-By` (commit) et Claude Code (PR) ajoutés si absents.

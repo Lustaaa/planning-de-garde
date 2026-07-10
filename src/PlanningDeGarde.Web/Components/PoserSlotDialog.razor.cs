@@ -37,6 +37,9 @@ public partial class PoserSlotDialog
         public TimeOnly HeureFin { get; set; } = new(16, 30);
         // Option de récurrence : cochée = slot récurrent hebdomadaire ; décochée = slot ponctuel.
         public bool Repeter { get; set; }
+        // D1 (s31) : conditionne le slot récurrent à la garde (« seulement les jours où l'enfant est chez
+        // moi »). Décochée par défaut = comportement s29 inchangé. Pertinente seulement quand Repeter.
+        public bool ConditionneGarde { get; set; }
     }
 
     private readonly Formulaire _form = new();
@@ -104,7 +107,11 @@ public partial class PoserSlotDialog
             reponse = _form.Repeter
                 ? await Canal.PostAsJsonAsync(
                     "api/canal/poser-slot-recurrent",
-                    new PoserSlotRecurrentRequete(_form.EnfantId, _form.LieuId, DateContexte.DayOfWeek, _form.HeureDebut.ToTimeSpan(), _form.HeureFin.ToTimeSpan()))
+                    new PoserSlotRecurrentRequete(
+                        _form.EnfantId, _form.LieuId, DateContexte.DayOfWeek, _form.HeureDebut.ToTimeSpan(), _form.HeureFin.ToTimeSpan(),
+                        // D1 (s31) : le conditionnement à la garde porte l'identité du parent COURANT (identité
+                        // effective de la session) comme poseur — sa responsabilité pilote la projection du slot.
+                        _form.ConditionneGarde, Session.IdentiteEffective.Id))
                 : await Canal.PostAsJsonAsync(
                     "api/canal/poser-slot",
                     new PoserSlotRequete(_form.EnfantId, _form.LieuId, _form.Debut, _form.Fin));

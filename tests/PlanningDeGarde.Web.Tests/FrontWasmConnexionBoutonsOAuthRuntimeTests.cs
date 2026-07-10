@@ -27,6 +27,7 @@ public sealed class FrontWasmConnexionBoutonsOAuthRuntimeTests : TestContext
     private void CablerConnexionReelle(ApiDistanteFactory api)
     {
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         Services.AddSingleton(new SessionPlanning()); // page de connexion : pas de session ouverte
         Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(GrilleRuntimeHarness.Lundi_29_06_2026));
         Services.AddSingleton(new OptionsConnexionHub

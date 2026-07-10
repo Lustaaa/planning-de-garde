@@ -31,6 +31,7 @@ public sealed class FrontWasmMenuUtilisateurConnecteRuntimeTests : TestContext
         api.Services.GetRequiredService<IEditeurComptes>()
             .Creer("compte-alice-s24", "alice@foyer.fr", StatutCompte.Actif, ActeurAlice);
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         var session = new SessionPlanning();
         Services.AddSingleton(session);
         var nav = Services.GetRequiredService<NavigationManager>();

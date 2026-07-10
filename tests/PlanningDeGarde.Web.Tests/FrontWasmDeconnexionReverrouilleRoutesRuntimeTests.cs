@@ -30,6 +30,7 @@ public sealed class FrontWasmDeconnexionReverrouilleRoutesRuntimeTests : TestCon
         // API distante réelle (store réel). La grille s'affiche (28 cases-jour projetées).
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         var session = GrilleRuntimeHarness.SessionConnectee();
         Services.AddSingleton(session);
         Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(GrilleRuntimeHarness.Lundi_29_06_2026));

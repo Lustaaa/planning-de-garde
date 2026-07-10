@@ -23,6 +23,13 @@ public partial class Connexion
     private string _motDePasse = "";
     private string? _motif;
 
+    /// <summary>Visibilité en clair du mot de passe (Sc.4) : faux = champ masqué (type password, défaut),
+    /// vrai = champ visible (type text). Pur état de présentation, aucune règle métier.</summary>
+    private bool _motDePasseVisible;
+
+    /// <summary>Bascule l'affichage/masquage du mot de passe (bouton œil, Sc.4).</summary>
+    private void BasculerVisibiliteMotDePasse() => _motDePasseVisible = !_motDePasseVisible;
+
     /// <summary>Au montage, charge le catalogue d'acteurs incarnables depuis le référentiel réel
     /// (GET /api/foyer/acteurs) et le dépose dans la session : c'est ce catalogue que résout l'incarnation
     /// du compte connecté (pré-positionnement du sélecteur d'acteur, s23 Sc.8). Lecture seule.</summary>
@@ -82,6 +89,11 @@ public partial class Connexion
             // menu utilisateur (Sc.11) — puis redirige vers le planning (Sc.8). Le gating d'écriture suit
             // désormais le type RÉEL de l'acteur, jamais un rôle Parent hérité du configurateur en dur.
             Session.Connecter(session.Nom, session.ActeurId, session.Type);
+            // Persiste le jeton de session dans le stockage durable client (localStorage via le port) : c'est
+            // lui que le démarrage suivant relira pour restaurer la session après un F5 (s31, Sc.1). On persiste
+            // l'identité réelle déjà résolue serveur (acteur + nom + type), aucun secret. La session reste en
+            // mémoire (borne R30) — on ne fait qu'écrire son amorce d'identité rejouable.
+            await Persistance.PersisterAsync(new SessionPersistee(session.ActeurId, session.Nom, session.Type));
             Nav.NavigateTo("planning");
         }
     }

@@ -25,6 +25,7 @@ public sealed class FrontWasmConnexionLibrementAccessibleRuntimeTests : TestCont
         // (aucun compte connecté). La position de départ du NavigationManager réel est « / ».
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         var session = new SessionPlanning();
         Services.AddSingleton(session);
         var nav = Services.GetRequiredService<NavigationManager>();

@@ -37,6 +37,22 @@
                 document.documentElement.setAttribute('data-theme', theme);
             }
         };
+
+        // Module de persistance de session (s31, Sc.1), consommé par le port IPersistanceSession via JS interop.
+        // Le jeton d'identité du compte connecté est écrit dans localStorage['pdg-session'] : ce stockage,
+        // hors mémoire du runtime WASM, SURVIT au rechargement (F5) — au démarrage suivant, l'app le relit et
+        // restaure la session sans repasser par /connexion. Contenu = identité déjà résolue serveur, aucun secret.
+        window.pdgSession = {
+            persister: function (jetonJson) {
+                try { localStorage.setItem('pdg-session', jetonJson); } catch (e) { }
+            },
+            lire: function () {
+                try { return localStorage.getItem('pdg-session'); } catch (e) { return null; }
+            },
+            purger: function () {
+                try { localStorage.removeItem('pdg-session'); } catch (e) { }
+            }
+        };
     </script>
 </head>
 

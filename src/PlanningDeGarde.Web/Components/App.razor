@@ -1,17 +1,38 @@
+@inject RestaurateurSession Restaurateur
+@inject PlanningDeGarde.Web.State.SessionPlanning Session
 @*
     Composant racine du front WASM standalone (monté sur #app par Program.cs). Tout le rendu est
     interactif côté navigateur : pas de @rendermode à poser (WASM standalone n'a pas de rendu
     statique serveur). Le Router résout les pages @page ; les @onclick/@bind y sont vivants.
+
+    Restauration de session au DÉMARRAGE (s31, Sc.1) : avant de rendre le Router, on relit le jeton de
+    session persisté (localStorage, survit au F5) et l'on ré-ouvre la session en mémoire s'il est valide.
+    Ainsi, un F5 sur une route protégée (/planning) retrouve une session ouverte AVANT que la garde d'accès
+    de la page ne s'évalue — plus de redirection intempestive vers /connexion. Un jeton absent/invalide
+    laisse la session fermée (comportement s25 inchangé). La session reste en mémoire (borne R30).
 *@
-<Router AppAssembly="@typeof(App).Assembly">
-    <Found Context="routeData">
-        <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
-        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
-    </Found>
-    <NotFound>
-        <LayoutView Layout="@typeof(Layout.MainLayout)">
-            <h3>Page introuvable</h3>
-            <p>Désolé, le contenu recherché n'existe pas.</p>
-        </LayoutView>
-    </NotFound>
-</Router>
+@if (_restauree)
+{
+    <Router AppAssembly="@typeof(App).Assembly">
+        <Found Context="routeData">
+            <RouteView RouteData="@routeData" DefaultLayout="@typeof(Layout.MainLayout)" />
+            <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+        </Found>
+        <NotFound>
+            <LayoutView Layout="@typeof(Layout.MainLayout)">
+                <h3>Page introuvable</h3>
+                <p>Désolé, le contenu recherché n'existe pas.</p>
+            </LayoutView>
+        </NotFound>
+    </Router>
+}
+
+@code {
+    private bool _restauree;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Restaurateur.RestaurerAsync(Session);
+        _restauree = true;
+    }
+}

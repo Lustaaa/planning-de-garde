@@ -76,8 +76,20 @@ aucune persistance tirée en avant. Texte complet :
   sur **chaque** case du bon jour de semaine dans la fenêtre par `GrilleAgendaQuery`, empilé dans l'ordre
   horaire avec les slots ponctuels ; **suppression idempotente par identifiant stable** (id absent =
   succès no-op). **Hors scope s29** (backlog) : récurrences riches (bi-hebdo, mensuelle, fins de série,
-  exceptions), **multi-jours**, configuration en Config du foyer, **édition** d'un récurrent, et le
-  **conditionnement à la garde** (couplerait l'occurrence à la responsabilité = **révision d'invariant**).
+  exceptions), **multi-jours**, configuration en Config du foyer, **édition** d'un récurrent *(le
+  **conditionnement à la garde** est désormais livré s31, ci-dessous)*.
+- **Slot RÉCURRENT conditionné à la garde** *(livré s31 — D1, révision d'invariant assumée)* → la dialog
+  « Poser un slot » porte un **toggle « seulement les jours où l'enfant est chez moi »** (`ConditionneGarde`
+  + `PoseurId`). Cochée, l'occurrence du slot n'est **projetée que les jours de récurrence OÙ la
+  résolution (surcharge > fond) désigne le parent POSEUR responsable** ; un jour de récurrence où la
+  résolution désigne un **autre** responsable → **occurrence masquée**. Le conditionnement **lit la
+  résolution sans la modifier** (aucun effet sur teinte / responsable / légende de la case). **Révision
+  d'invariant** : le slot, jusque-là **localisation orthogonale à la responsabilité** (s29), **lit
+  désormais la responsabilité** — mais **seulement quand le toggle est actif**. Un slot **non conditionné**
+  (toggle inactif, **défaut**) garde le **comportement s29 strictement inchangé** : projeté sur **tous**
+  ses jours de récurrence, la résolution **n'intervient pas** dans sa projection. **Hors scope s31** :
+  multi-jours + config foyer (D2), édition d'un récurrent, **suppression d'un récurrent depuis l'IHM**
+  (affordance IHM manquante, re-signalée gate s31 — candidat goal prochain).
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 *Résolution de la case (surcharge > fond > neutre) & suppression/édition de période :*

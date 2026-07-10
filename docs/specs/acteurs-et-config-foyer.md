@@ -401,6 +401,19 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
     **MS / Apple** OAuth (boutons → 404), **relais SMTP externe réel** (choix PO = rester Smtp4dev), **écran
     d'inscription libre-service** (handler DI, écran non construit).
 
+- **R14ter — Persistance / restauration de session côté client (survie au F5) & bouton œil** *(livré s31,
+  V1 — bug P0 F5→login corrigé)*. La **session survit au rechargement** de la page : à la connexion réussie,
+  un **jeton de session est persisté côté client** derrière un **port `IPersistanceSession`** (adaptateur
+  **JS localStorage**, stockage durable au rechargement) ; **au démarrage du client**, un jeton persisté
+  **valide** est **relu** et la session est **restaurée sans repasser par le flux de connexion** (F5 sur une
+  route protégée reste connecté, **plus** de re-redirection `/connexion` de la protection des routes s25). Un
+  jeton **absent ou invalide** n'ouvre **aucune** session (pas de session fantôme). Le **logout purge le
+  persisté** : après déconnexion, un F5 redirige vers `/connexion` et **aucune** session n'est restaurée (le
+  **logout s23 reste effectif au rechargement**). **Borne anti-cliquet R30 tenue** : `SessionPlanning` reste
+  l'état de session en mémoire (aucune persistance de domaine neuve) ; la persistance est **bornée au jeton de
+  session côté client**, distincte de la durabilité de la config foyer. **UX login** : un **bouton œil** sur
+  `/connexion` bascule l'affichage du mot de passe (visible ↔ masqué).
+
 ## Risques
 
 - **Login COMPLET livré (s22 fondation + s23 session + s24 activation/page login + s25 terminaison)** :

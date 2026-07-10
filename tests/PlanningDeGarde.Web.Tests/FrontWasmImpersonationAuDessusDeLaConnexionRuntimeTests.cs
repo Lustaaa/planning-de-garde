@@ -34,6 +34,7 @@ public sealed class FrontWasmImpersonationAuDessusDeLaConnexionRuntimeTests : Te
         api.Services.GetRequiredService<IEditeurComptes>()
             .Creer("compte-alice-s25", "alice@foyer.fr", StatutCompte.Actif, ActeurAlice);
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         var session = new SessionPlanning();
         Services.AddSingleton(session);
 

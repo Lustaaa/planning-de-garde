@@ -91,7 +91,7 @@ public sealed class GrilleAgendaQuery
 
         var jours = Enumerable.Range(0, nbJours)
             .Select(offset => premierJour.AddDays(offset))
-            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date)), transferts))
+            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date, periodes)), transferts))
             .ToList();
 
         var semaines = jours
@@ -100,7 +100,7 @@ public sealed class GrilleAgendaQuery
             .ToList();
 
         var legende = LegendeDesPresents(periodes, premierJour, premierJour.AddDays(nbJours - 1));
-        var legendeMotifs = LegendeDesMotifs(transferts, premierJour, premierJour.AddDays(nbJours - 1));
+        var legendeMotifs = LegendeDesMotifs(transferts, periodes, premierJour, premierJour.AddDays(nbJours - 1));
 
         return new GrilleAgenda(jours, semaines, legende, legendeMotifs);
     }
@@ -108,19 +108,10 @@ public sealed class GrilleAgendaQuery
     private JourCase CaseJourAu(
         DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots, IReadOnlyList<TransfertSnapshot> transferts)
     {
-        var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
-        // Filtre d'existence appliqué INDÉPENDAMMENT à chaque source AVANT le repli, jamais au
-        // responsableId combiné (un faux raccourci ferait retomber une surcharge orpheline sur le neutre
-        // au lieu du fond) : une surcharge orpheline (Sc.2) retombe sur le fond ; un fond orphelin (Sc.4)
-        // est traité comme un index non mappé → null → neutre, sans nom fantôme.
-        var surcharge = Resolvable(periode?.ResponsableId);
-        var fond = Resolvable(_cycle?.CycleCourant()?.ResponsableDeFond(date));
-        // Priorité de résolution : surcharge (période saisie) > fond (cycle) > neutre. La surcharge
-        // prime structurellement ; le fond ne s'applique que sans surcharge résolvable.
-        var responsableId = surcharge ?? fond;
+        var responsableId = ResoudreResponsable(date, periodes);
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
-        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, date));
+        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date));
     }
 
     /// <summary>
@@ -129,12 +120,65 @@ public sealed class GrilleAgendaQuery
     /// le référentiel acteurs par identifiant stable ; un acteur supprimé (orphelin) retombe sur le
     /// neutre (même contrat d'existence <see cref="Resolvable"/> que la responsabilité — pas de fantôme).
     /// </summary>
-    private InfoTransfert? InfoTransfertDuJour(IReadOnlyList<TransfertSnapshot> transferts, DateOnly date)
+    private InfoTransfert? InfoTransfertDuJour(
+        IReadOnlyList<TransfertSnapshot> transferts, IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date)
     {
+        // Priorité SAISI > DÉRIVÉ : un transfert saisi ce jour-là prime et est seul retenu (Sc.6).
         var transfert = transferts.FirstOrDefault(t => DateOnly.FromDateTime(t.Date) == date);
-        return transfert is null
-            ? null
-            : new InfoTransfert(CouleurActeurResolue(transfert.DeposeParId), CouleurActeurResolue(transfert.RecupereParId));
+        if (transfert is not null)
+            return new InfoTransfert(CouleurActeurResolue(transfert.DeposeParId), CouleurActeurResolue(transfert.RecupereParId));
+
+        // À défaut de saisie, DEUX chemins de dérivation SÉPARÉS, dans l'ordre (pas de doublon si les deux
+        // pointent le même jour : le premier non nul gagne — décision PO option A, rework G3) :
+        //  1) chemin « période-existence » (D3, Sc.5) : succession fin A jour J + début B jour J+1 depuis
+        //     les PÉRIODES saisies. INCHANGÉ — orphelin neutralisé par existence des périodes (Sc.9).
+        //  2) chemin « cycle-résolu » (Sc.15) : bascule quand le responsable RÉSOLU (surcharge > fond) change
+        //     d'un jour à l'autre du fait du CYCLE DE FOND, là où aucune période ne trace la succession.
+        return TransfertDeriveDuJour(periodes, date) ?? TransfertDeriveDuCycle(periodes, date);
+    }
+
+    /// <summary>
+    /// Transfert AUTO-dérivé du <b>relais de responsabilité résolue</b> (Sc.15, rework G3 — option A) : quand
+    /// le responsable RÉSOLU (surcharge &gt; fond) du jour <paramref name="date"/> diffère de celui de la
+    /// veille, la garde bascule ce jour-là (cédant = résolu de la veille, recevant = résolu du jour). Ce
+    /// chemin lit la RÉSOLUTION (il voit donc les bascules du cycle de fond que le chemin « période-existence »
+    /// ne trace pas), sans la modifier. Contrairement au chemin période (orphelin neutralisé par existence),
+    /// il s'appuie sur des responsables déjà filtrés par le contrat d'existence (<see cref="ResoudreResponsable"/>
+    /// applique <see cref="Resolvable"/>) : un côté neutre (résolution nulle) ⇒ aucune bascule dérivée (pas de
+    /// fantôme, cohérent avec la retombée neutre Sc.7 / Sc.9). Distinct du chemin période : il n'est consulté
+    /// qu'en second (le période-existence prime), donc aucun doublon.
+    /// </summary>
+    private InfoTransfert? TransfertDeriveDuCycle(IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date)
+    {
+        var recevant = ResoudreResponsable(date, periodes);
+        var cedant = ResoudreResponsable(date.AddDays(-1), periodes);
+        if (recevant is null || cedant is null || cedant == recevant)
+            return null; // pas de bascule (un côté neutre, ou même responsable qu'la veille)
+
+        return new InfoTransfert(_palette.CouleurDe(cedant), _palette.CouleurDe(recevant));
+    }
+
+    /// <summary>
+    /// Transfert AUTO-dérivé (D3, Sc.5) de la succession de périodes : si une période <b>débute</b> le jour
+    /// <paramref name="date"/> ET qu'une période <b>se termine la veille</b>, la responsabilité bascule du
+    /// Cédant (déposant, période finissante) vers le Recevant (récupérant, période débutante) — c'est le
+    /// jour de bascule. Dérivation de LECTURE pure : aucune écriture, aucun transfert persisté. Le jour de
+    /// bascule est le premier jour du successeur ; s'il tombe hors de la fenêtre projetée, il n'est
+    /// simplement pas rendu (pas de dérivation fantôme, Sc.8). Retombée <c>null</c> (neutre) sans successeur
+    /// (fin de garde, Sc.7). Les couleurs orphelines (acteur supprimé) retombent sur le neutre (Sc.9).
+    /// </summary>
+    private InfoTransfert? TransfertDeriveDuJour(IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date)
+    {
+        var debutant = periodes.FirstOrDefault(p => DateOnly.FromDateTime(p.Debut) == date);
+        if (debutant is null)
+            return null; // aucun successeur ne débute ce jour-là → aucune bascule (retombée neutre)
+
+        var finissant = periodes.FirstOrDefault(p => DateOnly.FromDateTime(p.Fin) == date.AddDays(-1));
+        if (finissant is null)
+            return null; // aucune période ne se termine la veille → pas de bascule dérivée
+
+        return new InfoTransfert(
+            CouleurActeurResolue(finissant.ResponsableId), CouleurActeurResolue(debutant.ResponsableId));
     }
 
     /// <summary>Couleur d'un acteur existant, ou la couleur neutre s'il est orphelin (supprimé).</summary>
@@ -145,12 +189,35 @@ public sealed class GrilleAgendaQuery
     /// Occurrences d'un slot récurrent tombant sur la <paramref name="date"/> donnée : un slot virtuel
     /// daté (même enfant / lieu, bornes = date + plage horaire) par récurrent dont le jour de semaine
     /// correspond. Ne persiste rien : matérialisation de lecture pure, réévaluée à chaque projection.
+    ///
+    /// <para>D1 (s31, Sc.11) : un slot <b>conditionné à la garde</b> n'est matérialisé que les jours où la
+    /// résolution de responsabilité (surcharge &gt; fond) désigne son <b>parent poseur</b> — il LIT la
+    /// résolution sans la modifier. Un slot non conditionné (défaut) est matérialisé sur tous ses jours de
+    /// récurrence (comportement s29 strictement inchangé, Sc.13).</para>
     /// </summary>
-    private static IEnumerable<SlotSnapshot> OccurrencesRecurrentes(IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date)
+    private IEnumerable<SlotSnapshot> OccurrencesRecurrentes(
+        IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes)
         => recurrents
             .Where(r => r.JourDeSemaine == date.DayOfWeek)
+            .Where(r => !r.ConditionneGarde || ResoudreResponsable(date, periodes) == r.PoseurId)
             .Select(r => new SlotSnapshot(
                 r.EnfantId, r.LieuId, date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureDebut)), date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureFin))));
+
+    /// <summary>
+    /// Résout le responsable d'un jour (priorité <b>surcharge (période saisie) &gt; fond (cycle) &gt;
+    /// neutre</b>), ou <c>null</c> si neutre. Le filtre d'existence (<see cref="Resolvable"/>) est appliqué
+    /// INDÉPENDAMMENT à chaque source AVANT le repli, jamais au responsableId combiné (un faux raccourci
+    /// ferait retomber une surcharge orpheline sur le neutre au lieu du fond) : une surcharge orpheline
+    /// retombe sur le fond ; un fond orphelin est traité comme un index non mappé → null → neutre, sans nom
+    /// fantôme. Source unique de la responsabilité d'un jour (case ET conditionnement des slots D1).
+    /// </summary>
+    private string? ResoudreResponsable(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes)
+    {
+        var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
+        var surcharge = Resolvable(periode?.ResponsableId);
+        var fond = Resolvable(_cycle?.CycleCourant()?.ResponsableDeFond(date));
+        return surcharge ?? fond;
+    }
 
     /// <summary>Jours calendaires couverts par un slot, du jour de son début à celui de sa fin (inclus).</summary>
     private static IEnumerable<DateOnly> JoursCouverts(SlotSnapshot slot)
@@ -208,14 +275,21 @@ public sealed class GrilleAgendaQuery
 
     /// <summary>
     /// Légende des motifs de rendu : une entrée « Transfert » (motif bicolore) si au moins un transfert
-    /// est saisi dans la fenêtre [<paramref name="premierJour"/>, <paramref name="dernierJour"/>], sinon
-    /// vide (« en case comme en légende » : signalé seulement quand le motif est effectivement présent).
+    /// est présent dans la fenêtre [<paramref name="premierJour"/>, <paramref name="dernierJour"/>], qu'il
+    /// soit <b>saisi</b> OU <b>AUTO-dérivé</b> d'une succession de périodes (D3, Sc.10 : « en case comme en
+    /// légende » — un transfert dérivé rendu bicolore sur une case surface le même motif que le saisi).
+    /// Sinon vide (signalé seulement quand le motif est effectivement présent).
     /// </summary>
-    private static IReadOnlyList<EntreeLegendeMotif> LegendeDesMotifs(
-        IReadOnlyList<TransfertSnapshot> transferts, DateOnly premierJour, DateOnly dernierJour)
+    private IReadOnlyList<EntreeLegendeMotif> LegendeDesMotifs(
+        IReadOnlyList<TransfertSnapshot> transferts, IReadOnlyList<PeriodeSnapshot> periodes,
+        DateOnly premierJour, DateOnly dernierJour)
     {
-        var transfertDansLaFenetre = transferts
-            .Any(t => DateOnly.FromDateTime(t.Date) >= premierJour && DateOnly.FromDateTime(t.Date) <= dernierJour);
+        // « En case comme en légende » : le motif est présent dès qu'une case de la fenêtre porte un transfert,
+        // quelle qu'en soit l'origine (saisi, dérivé période OU dérivé cycle) — même source de vérité que la case
+        // (InfoTransfertDuJour), pour ne pas laisser une pastille bicolore sans entrée de légende (Sc.15).
+        var transfertDansLaFenetre = Enumerable.Range(0, dernierJour.DayNumber - premierJour.DayNumber + 1)
+            .Select(offset => premierJour.AddDays(offset))
+            .Any(jour => InfoTransfertDuJour(transferts, periodes, jour) is not null);
 
         return transfertDansLaFenetre
             ? new[] { new EntreeLegendeMotif("Transfert") }

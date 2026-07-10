@@ -21,6 +21,7 @@ public sealed class FrontWasmConnexionPageSoigneeTests : TestContext
     private void CablerConnexion(ApiDistanteFactory api)
     {
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton<IPersistanceSession>(new PersistanceSessionInerte());
         Services.AddSingleton(new SessionPlanning());
     }
 
