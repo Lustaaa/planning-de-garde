@@ -152,14 +152,43 @@ public partial class ConfigurationFoyer
     private readonly FormulaireRole _role = new();
     private string? _motifEchecRole;
 
+    // ── État de la MODAL rôle (refonte s33, Sc.8 — patron crayon → modal) ──
+    // Identifiant stable du rôle en cours d'édition (null = pas d'édition ouverte) ; posé par le crayon.
+    private string? _modalRoleId;
+    // Modal ouverte en mode CRÉATION (bouton « Ajouter un rôle ») : champ vide, aucun rôle porté.
+    private bool _modalRoleAjout;
+
+    /// <summary>Ouvre la modal d'ÉDITION sur un rôle (clic crayon) : porte son id stable, pré-remplit son
+    /// libellé courant, efface le motif d'échec précédent.</summary>
+    private void OuvrirEditionRole(string roleId)
+    {
+        _modalRoleAjout = false;
+        _modalRoleId = roleId;
+        _role.Libelle = _roles.FirstOrDefault(r => r.Id == roleId)?.Libelle ?? "";
+        _motifEchecRole = null;
+    }
+
+    /// <summary>Ouvre la MÊME modal en mode CRÉATION (bouton « Ajouter un rôle ») : champ vide, aucun rôle porté.</summary>
+    private void OuvrirAjoutRole()
+    {
+        _modalRoleId = null;
+        _modalRoleAjout = true;
+        _role.Libelle = "";
+        _motifEchecRole = null;
+    }
+
+    /// <summary>Ferme la modal rôle (annuler ou après un enregistrement abouti), sans émettre de commande.</summary>
+    private void FermerModalRole()
+    {
+        _modalRoleId = null;
+        _modalRoleAjout = false;
+        _motifEchecRole = null;
+    }
+
     /// <summary>Rôles du référentiel du foyer énumérés <b>depuis le store durable</b> (GET /api/foyer/roles),
     /// jamais un rôle en dur : alimente la liste des rôles de l'onglet Acteurs (créés / renommés / supprimés
     /// suivent sans rechargement, Sc.7).</summary>
     private IReadOnlyList<RoleFoyer> _roles = Array.Empty<RoleFoyer>();
-
-    /// <summary>Tampon d'édition du libellé par ligne de rôle (renommage inline) : clé = identifiant stable
-    /// du rôle, valeur = nouveau libellé saisi. La clé n'est jamais éditable (règle 19).</summary>
-    private readonly Dictionary<string, string> _renommageRole = new();
 
     /// <summary>Comptes utilisateurs du foyer énumérés <b>depuis le store durable</b> (GET /api/foyer/comptes),
     /// jamais en dur : alimente l'affichage du compte associé à chaque acteur et de son statut dans l'onglet
@@ -578,22 +607,23 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>
-    /// Crée un rôle du référentiel du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/creer-role</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
-    /// ré-énumère le référentiel pour faire apparaître le rôle créé <b>sans rechargement</b> (Sc.7). Le
-    /// front n'émet que le libellé ; l'identifiant stable neuf est généré côté handler. Sur refus métier
-    /// (libellé vide / doublon, Sc.3), le motif renvoyé par le canal est surfacé sans muter la liste.
+    /// Enregistre la modal rôle (Sc.8) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
+    /// en mode CRÉATION émet <c>POST /api/canal/creer-role</c> (id stable neuf généré côté handler), en mode
+    /// ÉDITION émet <c>POST /api/canal/renommer-role</c> sur l'id stable (jamais le libellé). Réutilise les
+    /// commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le référentiel (le libellé suit sans
+    /// rechargement, Sc.2) et la modal se ferme. Sur refus métier (libellé vide / doublon) ou service
+    /// injoignable, le motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée (Sc.9).
     /// </summary>
-    private async Task CreerRole()
+    private async Task SoumettreRole()
     {
         _motifEchecRole = null;
 
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/creer-role",
-                new CreerRoleRequete(_role.Libelle));
+            reponse = _modalRoleAjout
+                ? await Canal.PostAsJsonAsync("api/canal/creer-role", new CreerRoleRequete(_role.Libelle))
+                : await Canal.PostAsJsonAsync("api/canal/renommer-role", new RenommerRoleRequete(_modalRoleId!, _role.Libelle));
         }
         catch (HttpRequestException)
         {
@@ -608,53 +638,14 @@ public partial class ConfigurationFoyer
         }
 
         await RechargerRoles();
-        _role.Libelle = "";
-    }
-
-    /// <summary>Libellé courant du champ de renommage inline d'un rôle : le tampon saisi s'il existe,
-    /// sinon le libellé persisté (valeur de départ).</summary>
-    private string LibelleRenommage(string roleId, string libellePersiste)
-        => _renommageRole.TryGetValue(roleId, out var l) ? l : libellePersiste;
-
-    /// <summary>Mémorise le nouveau libellé saisi pour le renommage inline d'un rôle (clé = identifiant
-    /// stable, jamais éditable).</summary>
-    private void SaisirRenommage(string roleId, string? libelle)
-        => _renommageRole[roleId] = libelle ?? "";
-
-    /// <summary>Renomme un rôle du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>POST /api/canal/renommer-role</c>) : la clé est l'identifiant stable du rôle (jamais éditable,
-    /// règle 19), seul le libellé change. Sur succès, on relit le référentiel (le libellé suit sans
-    /// rechargement, même id, Sc.7) ; sur refus métier, le motif est surfacé.</summary>
-    private async Task RenommerRole(string roleId)
-    {
-        _motifEchecRole = null;
-        var nouveauLibelle = _renommageRole.TryGetValue(roleId, out var l) ? l : "";
-
-        HttpResponseMessage reponse;
-        try
-        {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/renommer-role",
-                new RenommerRoleRequete(roleId, nouveauLibelle));
-        }
-        catch (HttpRequestException)
-        {
-            _motifEchecRole = MessagesEcriture.ServiceInjoignable;
-            return;
-        }
-
-        if (!reponse.IsSuccessStatusCode)
-        {
-            _motifEchecRole = await reponse.Content.ReadFromJsonAsync<string>();
-            return;
-        }
-
-        await RechargerRoles();
+        FermerModalRole();
     }
 
     /// <summary>Supprime un rôle du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>POST /api/canal/supprimer-role</c>) : la clé est l'identifiant stable du rôle. Sur succès, on
-    /// relit le référentiel (le rôle quitte la liste sans rechargement, Sc.7). Idempotence côté handler.</summary>
+    /// (<c>POST /api/canal/supprimer-role</c>) depuis la modal d'édition (Sc.8) : la clé est l'identifiant
+    /// stable du rôle. Sur succès, on relit le référentiel (le rôle quitte la table sans rechargement) ET
+    /// les acteurs (un porteur du rôle supprimé retombe « sans rôle »), puis la modal se ferme. Idempotence
+    /// côté handler ; sur refus / service injoignable, le motif reste DANS la modal ouverte.</summary>
     private async Task SupprimerRole(string roleId)
     {
         _motifEchecRole = null;
@@ -679,6 +670,8 @@ public partial class ConfigurationFoyer
         }
 
         await RechargerRoles();
+        await RechargerActeurs(); // un porteur du rôle supprimé retombe « sans rôle » (repli neutre)
+        FermerModalRole();
     }
 
     /// <summary>

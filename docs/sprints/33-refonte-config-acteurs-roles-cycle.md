@@ -26,7 +26,7 @@
 > - **Enfants / Activités / lien enfant↔parent** : autres incréments de l'épic, **non traités ici**.
 > - **Occurrence-unique vs série** (goal 4) : reporté s34.
 
-## Avancement — 7/11
+## Avancement — 8/11
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -37,7 +37,7 @@
 | 5 | Champ adresse éditable dans la modal + rendu dans le tableau lecture | 🖥️ IHM | ✅ |
 | 6 | Palette couleur en picker minimal dans la modal | 🖥️ IHM | ✅ |
 | 7 | Invariants Acteurs — refus→modal ouverte (adresse/toggle) + Parent-gated + SignalR | 🖥️ IHM | ✅ |
-| 8 | Onglet Rôles au patron tableau lecture + crayon → modal + « Ajouter » | 🖥️ IHM | ⏳ |
+| 8 | Onglet Rôles au patron tableau lecture + crayon → modal + « Ajouter » | 🖥️ IHM | ✅ |
 | 9 | Invariants Rôles — refus→modal ouverte + Parent-gated + SignalR | 🖥️ IHM | ⏳ |
 | 10 | Onglet Cycle — tableau des cycles + cycles déclarés RENDUS VISIBLES + modal | 🖥️ IHM | ⏳ |
 | 11 | Invariants Cycle — Parent-gated + SignalR (+ refus→modal si édition) | 🖥️ IHM | ⏳ |
@@ -165,7 +165,7 @@ Quand un acteur est édité (toggle / adresse / couleur) depuis le 1ᵉʳ écran
 Alors le tableau du 2ᵉ écran CONVERGE sur les champs neufs sans rechargement, sans écriture par la diffusion
 ```
 
-### Sc.8 — Onglet Rôles au patron tableau + crayon → modal @ihm @pending
+### Sc.8 — Onglet Rôles au patron tableau + crayon → modal @ihm @vert
 ```gherkin
 Étant donné l'onglet « Rôles » de /configuration, connecté en tant que Parent
 Quand la page est rendue

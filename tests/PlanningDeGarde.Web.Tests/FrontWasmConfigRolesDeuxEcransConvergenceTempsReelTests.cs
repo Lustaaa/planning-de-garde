@@ -69,8 +69,9 @@ public sealed class FrontWasmConfigRolesDeuxEcransConvergenceTempsReelTests : Te
             // When (création depuis l'écran 2) — le second écran crée un rôle « Grand-parent ». Le pousseur de
             // diffusion re-rend l'écran en fond : on enveloppe find+action dans InvokeAsync (aucun re-render
             // entre la résolution et le déclenchement — workaround bUnit).
+            config2.InvokeAsync(() => config2.Find("[data-testid='bouton-ajouter-role']").Click()); // modal d'ajout (Sc.8)
             config2.InvokeAsync(() => config2.Find("[data-testid='champ-libelle-role']").Change("Grand-parent"));
-            config2.InvokeAsync(() => config2.Find("#form-creer-role").Submit());
+            config2.InvokeAsync(() => config2.Find("#form-role").Submit());
 
             // Refonte s32 : le sélecteur de rôle d'un acteur vit dans la MODAL. On ouvre la modal du 1er acteur
             // sur l'écran 1 (elle reste ouverte) pour observer que son sélecteur reflète le référentiel relu.
@@ -90,11 +91,13 @@ public sealed class FrontWasmConfigRolesDeuxEcransConvergenceTempsReelTests : Te
                 },
                 TimeSpan.FromSeconds(15));
 
-            // When (suppression depuis l'écran 2) — le second écran supprime « Nounou » (porté par Alice).
+            // When (suppression depuis l'écran 2) — le second écran ouvre la modal au crayon de « Nounou »
+            // (porté par Alice) et clique « Supprimer ce rôle » (Sc.8).
             config2.InvokeAsync(() =>
                 config2.FindAll("[data-testid='role-foyer']")
                     .Single(li => LibelleLigne(li) == "Nounou")
-                    .QuerySelector("[data-testid='bouton-supprimer-role']")!.Click());
+                    .QuerySelector("[data-testid='crayon-role']")!.Click());
+            config2.InvokeAsync(() => config2.Find("[data-testid='bouton-supprimer-role']").Click());
 
             // Then (convergence suppression + repli) — sans rechargement, « Nounou » quitte la liste des rôles
             // du premier écran, et Alice retombe « sans rôle » sur les DEUX écrans (repli neutre, pas de fantôme).

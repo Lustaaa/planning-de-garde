@@ -44,11 +44,12 @@ public sealed class FrontWasmConfigGatingInviteRolesTempsReelTests : TestContext
             TimeSpan.FromSeconds(10));
         Assert.False(session.EstParent); // garde-fou : un Invité n'a pas le droit d'écrire
 
-        // Then (onglet « Acteurs ») — aucune action de gestion des rôles (créer / renommer / supprimer) ni
-        // aucun sélecteur d'affectation de rôle n'est proposé ; la lecture (liste des acteurs) reste visible.
+        // Then — refonte s33 Sc.8 : aucune surface d'écriture des rôles (crayon, bouton « Ajouter », modal donc
+        // champ-libellé) n'est proposée ni aucun sélecteur d'affectation de rôle ; la lecture (liste des acteurs
+        // ET table des rôles en lecture seule, Sc.9) reste visible.
+        Assert.Empty(config.FindAll("[data-testid='crayon-role']"));
+        Assert.Empty(config.FindAll("[data-testid='bouton-ajouter-role']"));
         Assert.Empty(config.FindAll("[data-testid='champ-libelle-role']"));
-        Assert.Empty(config.FindAll("[data-testid='bouton-renommer-role']"));
-        Assert.Empty(config.FindAll("[data-testid='bouton-supprimer-role']"));
         Assert.Empty(config.FindAll("[data-testid='selecteur-role-acteur']"));
         Assert.NotEmpty(config.FindAll("[data-testid='acteur-foyer']"));
 
@@ -61,9 +62,8 @@ public sealed class FrontWasmConfigGatingInviteRolesTempsReelTests : TestContext
         // le gating est bien le discriminant.
         session.Role = RoleAuteur.Parent;
         config.Render();
-        Assert.NotEmpty(config.FindAll("[data-testid='champ-libelle-role']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='bouton-renommer-role']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='bouton-supprimer-role']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='crayon-role']"));       // gestion des rôles au crayon (Sc.8)
+        Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-role']"));
         ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         Assert.NotEmpty(config.FindAll("[data-testid='selecteur-role-acteur']"));
     }

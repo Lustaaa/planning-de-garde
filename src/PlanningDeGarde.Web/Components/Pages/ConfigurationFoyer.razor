@@ -364,53 +364,86 @@
             @* ══════════════ Panneau RÔLES ══════════════ *@
             <section class="config-panneau @(_onglet == "roles" ? null : "cacher")"
                      data-testid="panneau-roles" aria-label="Rôles">
-                @* Référentiel de rôles (Sc.7) : créer / renommer / supprimer. La valeur d'un rôle affectable à
-                   un acteur provient EXCLUSIVEMENT de ce référentiel (jamais un libellé en dur). Écritures via
-                   le canal HTTP (POST /api/canal/{creer,renommer,supprimer}-role). Gating Parent. *@
+                @* Refonte s33 (Sc.8) : patron « tableau lecture seule + crayon → modal » (comme Acteurs s32).
+                   La table des rôles est PUREMENT EN LECTURE ; toute l'écriture (créer / renommer / supprimer)
+                   est déportée dans la MODAL ouverte par le crayon (édition) ou « Ajouter un rôle » (création).
+                   Réutilise les MÊMES commandes existantes (POST /api/canal/{creer,renommer,supprimer}-role,
+                   aucun handler neuf). Gating d'écriture sur l'identité EFFECTIVE (règle 9) : crayon, bouton
+                   d'ajout et modal ne sont rendus que Parent ; la table reste visible en lecture pour tous. *@
+                <h2 class="config-panneau-titre">Rôles du foyer</h2>
+                <p class="text-muted">Le référentiel de rôles (Nounou, Grand-parent…) ; un rôle reçoit un
+                    identifiant stable neuf (jamais dérivé du libellé) et peut être affecté à un acteur. Créer,
+                    renommer ou supprimer un rôle met la table à jour sans recharger la page.</p>
+
+                <div class="acteurs-defilement">
+                    <table class="acteurs-table" data-testid="liste-roles">
+                        <thead>
+                            <tr>
+                                <th>Rôle</th>
+                                @if (Session.EstParent)
+                                {
+                                    <th class="acteurs-col-actions">Actions</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var r in _roles)
+                            {
+                                <tr class="role-ligne" data-testid="role-foyer" data-role-id="@r.Id">
+                                    <td><span class="role-libelle">@r.Libelle</span></td>
+                                    @if (Session.EstParent)
+                                    {
+                                        <td class="acteurs-col-actions">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm acteur-crayon"
+                                                    data-testid="crayon-role" data-role-id="@r.Id"
+                                                    @onclick="() => OuvrirEditionRole(r.Id)" aria-label="Modifier @r.Libelle">✏️</button>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
                 @if (Session.EstParent)
                 {
-                    <h2 class="config-panneau-titre">Rôles du foyer</h2>
-                    <p class="text-muted">Gérer le référentiel de rôles (Nounou, Grand-parent…). Un rôle reçoit un
-                        identifiant stable neuf (jamais dérivé du libellé) ; il peut ensuite être affecté à un acteur.
-                        Créer, renommer ou supprimer un rôle met la liste à jour sans recharger la page.</p>
+                    <div class="acteurs-ajout">
+                        <button type="button" class="btn btn-primary" data-testid="bouton-ajouter-role"
+                                @onclick="OuvrirAjoutRole">Ajouter un rôle</button>
+                    </div>
 
-                    <EditForm Model="_role" OnValidSubmit="CreerRole" FormName="creer-role" id="form-creer-role">
-                        <div class="input-group mb-3">
-                            <InputText class="form-control" @bind-Value="_role.Libelle" data-testid="champ-libelle-role"
-                                       placeholder="Libellé du rôle (ex. Nounou)" />
-                            <button type="submit" class="btn btn-primary">Créer le rôle</button>
-                        </div>
-                    </EditForm>
-
-                    @if (_motifEchecRole is not null)
+                    @* MODAL rôle (édition OU ajout) — rendue seulement quand ouverte et sous Parent. *@
+                    @if (_modalRoleAjout || _modalRoleId is not null)
                     {
-                        <div class="alert alert-danger mb-3" data-testid="motif-echec-role">@_motifEchecRole</div>
-                    }
-
-                    <ul class="list-group" data-testid="liste-roles">
-                        @foreach (var r in _roles)
-                        {
-                            <li class="list-group-item role-ligne" data-testid="role-foyer" data-role-id="@r.Id">
-                                <span class="role-libelle">@r.Libelle</span>
-                                <span class="role-actions">
-                                    <input type="text" class="form-control form-control-sm role-champ-renommer"
-                                           data-testid="champ-renommer-role"
-                                           @bind:get="LibelleRenommage(r.Id, r.Libelle)"
-                                           @bind:set="v => SaisirRenommage(r.Id, v)" @bind:event="onchange" />
-                                    <button type="button" class="btn btn-outline-secondary btn-sm"
-                                            data-testid="bouton-renommer-role"
-                                            @onclick="() => RenommerRole(r.Id)">Renommer</button>
+                        <div class="dialog-backdrop" data-testid="dialog-role">
+                            <div class="dialog-panneau">
+                                <h2 class="h4 mb-3">@(_modalRoleAjout ? "Ajouter un rôle" : "Modifier le rôle")</h2>
+                                <EditForm Model="_role" OnValidSubmit="SoumettreRole" FormName="role" id="form-role">
+                                    <div class="mb-3">
+                                        <label class="form-label">Libellé</label>
+                                        <InputText class="form-control" @bind-Value="_role.Libelle" data-testid="champ-libelle-role"
+                                                   placeholder="Libellé du rôle (ex. Nounou)" />
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                        <button type="button" class="btn btn-link" data-testid="dialog-role-annuler"
+                                                @onclick="FermerModalRole">Annuler</button>
+                                    </div>
+                                </EditForm>
+                                @if (_motifEchecRole is not null)
+                                {
+                                    <div class="alert alert-danger mt-3 mb-0" data-testid="motif-echec-role">@_motifEchecRole</div>
+                                }
+                                @if (!_modalRoleAjout && _modalRoleId is { } rid)
+                                {
+                                    <hr />
                                     <button type="button" class="btn btn-outline-danger btn-sm"
-                                            data-testid="bouton-supprimer-role"
-                                            @onclick="() => SupprimerRole(r.Id)" aria-label="Supprimer @r.Libelle">Supprimer</button>
-                                </span>
-                            </li>
-                        }
-                    </ul>
-                }
-                else
-                {
-                    <p class="text-muted">La gestion des rôles est réservée aux parents du foyer.</p>
+                                            data-testid="bouton-supprimer-role" data-role-id="@rid"
+                                            @onclick="() => SupprimerRole(rid)">Supprimer ce rôle</button>
+                                }
+                            </div>
+                        </div>
+                    }
                 }
             </section>
 
