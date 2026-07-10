@@ -106,6 +106,12 @@
                                                   aria-hidden="true"></span>
                                             <span class="acteur-nom">@a.Nom</span>
                                         </span>
+                                        @* Adresse de résidence (Sc.5) en LECTURE : ligne dédiée sous le nom, rendue seulement
+                                           si renseignée (champ optionnel — absente = rien à afficher). *@
+                                        @if (!string.IsNullOrEmpty(a.Adresse))
+                                        {
+                                            <div class="acteur-adresse" data-testid="acteur-adresse">@a.Adresse</div>
+                                        }
                                     </td>
                                     <td>
                                         @* Rôle courant (lecture pour tous) : libellé résolu sur l'id stable du référentiel. *@
@@ -218,6 +224,13 @@
                                                 <option value="vert">Vert</option>
                                                 <option value="violet">Violet</option>
                                             </InputSelect>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Adresse de résidence</label>
+                                            @* Champ ADRESSE (Sc.5) : pré-rempli sur la valeur courante, éditable. Optionnel —
+                                               une adresse vide est acceptée (Sc.1) et n'écrase pas les autres champs. *@
+                                            <InputText class="form-control" @bind-Value="_form.Adresse" data-testid="champ-adresse"
+                                                       placeholder="Adresse de résidence (optionnelle)" />
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Rôle</label>
@@ -589,6 +602,7 @@
         border: 1px solid rgba(0,0,0,.15); box-shadow: 0 1px 2px rgba(16,24,40,.10); }
     .acteur-nom { color: var(--pdg-ink); font-weight: 700; }
     .acteur-role { color: var(--pdg-muted); font-size: .82rem; margin-bottom: .35rem; }
+    .acteur-adresse { color: var(--pdg-muted); font-size: .78rem; margin-top: .15rem; }
     .acteur-selecteur-role { max-width: 12rem; }
     .acteur-compte { font-size: .82rem; color: var(--pdg-muted); display: block; margin-bottom: .3rem; }
     .acteur-compte-statut { font-weight: 700; }

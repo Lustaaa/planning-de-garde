@@ -52,6 +52,8 @@ public partial class ConfigurationFoyer
         // (s'il en porte un) est déjà actif. À l'Enregistrer, seule une bascule OFF→ON est appliquée.
         _form.Admin = EstAdmin(acteurId);
         _form.Actif = CompteDe(acteurId) is { } compte && !EstInactif(compte);
+        // Sc.5 : pré-remplit l'adresse avec la valeur courante de l'acteur (vide s'il n'en porte pas).
+        _form.Adresse = _acteurs.FirstOrDefault(x => x.Id == acteurId)?.Adresse ?? "";
         PreRemplirNom();
     }
 
@@ -82,6 +84,9 @@ public partial class ConfigurationFoyer
         public string ActeurId { get; set; } = "";
         public string Nom { get; set; } = "";
         public string Couleur { get; set; } = "";
+        // Sc.5 (s33) : adresse de résidence éditable, pré-remplie sur la valeur courante à l'ouverture.
+        // Champ optionnel (une adresse vide est acceptée, Sc.1) — envoyé tel quel à l'Enregistrer.
+        public string Adresse { get; set; } = "";
         // Sc.4 (s33) : état désiré des toggles admin / actif de la modal, pré-réglés sur l'état courant à
         // l'ouverture. SENS UNIQUE : seul OFF→ON est appliqué à l'Enregistrer (commandes existantes) ; un
         // toggle déjà ON est rendu verrouillé (pas de commande inverse). Deux surfaces indépendantes.
@@ -357,9 +362,11 @@ public partial class ConfigurationFoyer
         try
         {
             // Émission de la commande d'édition via le canal HTTP de l'API distante (adaptateur de gauche).
+            // L'adresse (Sc.5) part telle quelle : pré-remplie sur la valeur courante, elle n'écrase donc pas
+            // par erreur lors d'une édition nom/couleur-seule, et une adresse vidée volontairement est acceptée (Sc.1).
             reponse = await Canal.PostAsJsonAsync(
                 "api/canal/editer-acteur",
-                new EditerActeurRequete(_form.ActeurId, nom, couleur));
+                new EditerActeurRequete(_form.ActeurId, nom, couleur, _form.Adresse));
         }
         catch (HttpRequestException)
         {

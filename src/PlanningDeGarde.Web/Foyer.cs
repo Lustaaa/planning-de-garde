@@ -48,7 +48,7 @@ public sealed record Responsable(string Id, string Libelle);
 /// <see cref="RoleId"/> (s21) est l'identifiant stable du rôle du référentiel porté par l'acteur, ou
 /// <c>null</c> = « sans rôle » (attribut optionnel, neutre assumé) : pré-sélectionne le sélecteur de rôle
 /// borné au référentiel et affiche le rôle courant (jamais un libellé en dur).</summary>
-public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris", TypeActeur Type = TypeActeur.Parent, string? RoleId = null);
+public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris", TypeActeur Type = TypeActeur.Parent, string? RoleId = null, string? Adresse = null);
 
 /// <summary>Un rôle du référentiel du foyer <b>énuméré depuis le store durable</b> via le canal de
 /// lecture (s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable.

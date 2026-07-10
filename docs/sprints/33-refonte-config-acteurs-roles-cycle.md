@@ -26,7 +26,7 @@
 > - **Enfants / Activités / lien enfant↔parent** : autres incréments de l'épic, **non traités ici**.
 > - **Occurrence-unique vs série** (goal 4) : reporté s34.
 
-## Avancement — 4/11
+## Avancement — 5/11
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -34,7 +34,7 @@
 | 2 | Éditer / ajouter un rôle à la frontière Application (harmonisation Rôles) | back | ✅ déjà couvert s21 (filet non-régression) |
 | 3 | Lire TOUS les cycles déclarés/actifs du foyer (corrige le trou de lecture) | back | ✅ |
 | 4 | Toggle actif/admin DANS la modal acteur (remplace la pastille lecture) | 🖥️ IHM | ✅ |
-| 5 | Champ adresse éditable dans la modal + rendu dans le tableau lecture | 🖥️ IHM | ⏳ |
+| 5 | Champ adresse éditable dans la modal + rendu dans le tableau lecture | 🖥️ IHM | ✅ |
 | 6 | Palette couleur en picker minimal dans la modal | 🖥️ IHM | ⏳ |
 | 7 | Invariants Acteurs — refus→modal ouverte (adresse/toggle) + Parent-gated + SignalR | 🖥️ IHM | ⏳ |
 | 8 | Onglet Rôles au patron tableau lecture + crayon → modal + « Ajouter » | 🖥️ IHM | ⏳ |
@@ -129,7 +129,7 @@ Et en succès la modal se ferme et le tableau relu reflète le nouvel état (pas
 Et l'identifiant stable reste inchangé
 ```
 
-### Sc.5 — Champ adresse éditable dans la modal + rendu tableau @ihm @pending
+### Sc.5 — Champ adresse éditable dans la modal + rendu tableau @ihm @vert
 ```gherkin
 Étant donné la modal d'édition (ou d'ajout) d'un acteur ouverte (Parent)
 Quand la modal est rendue
