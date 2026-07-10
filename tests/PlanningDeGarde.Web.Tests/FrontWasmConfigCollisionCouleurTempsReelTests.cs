@@ -61,7 +61,7 @@ public sealed class FrontWasmConfigCollisionCouleurTempsReelTests : TestContext
 
         // Refonte s32 : l'édition passe par la MODAL ouverte au crayon (plus de sélecteur d'acteur inline).
         ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-b");
-        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("bleu"));
+        this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-bleu']").Click()); // palette (Sc.6)
         this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
         // … re-diffusion de fond idempotente (le store est déjà muté) pour que le push SignalR tombe

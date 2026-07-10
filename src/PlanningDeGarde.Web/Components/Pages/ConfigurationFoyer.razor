@@ -163,7 +163,7 @@
                     </div>
 
                     @* ── MODAL acteur (édition OU ajout) ── rendue seulement quand ouverte et sous identité Parent.
-                       Réutilise les commandes CRUD existantes et les testids d'écriture (champ-nom, champ-couleur,
+                       Réutilise les commandes CRUD existantes et les testids d'écriture (champ-nom, palette-couleur,
                        selecteur-role-acteur, compte, admin, suppression). *@
                     @if (_modalAjout || _modalActeurId is not null)
                     {
@@ -183,14 +183,20 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Couleur</label>
-                                            <InputSelect class="form-select" @bind-Value="_ajout.Couleur" data-testid="champ-couleur-ajout">
-                                                <option value="">— neutre —</option>
-                                                <option value="rose">Rose</option>
-                                                <option value="bleu">Bleu</option>
-                                                <option value="orange">Orange</option>
-                                                <option value="vert">Vert</option>
-                                                <option value="violet">Violet</option>
-                                            </InputSelect>
+                                            @* Picker minimal (Sc.6) — même palette qu'en édition (set de couleurs réutilisé) : à la
+                                               création, aucune couleur pré-sélectionnée (repli neutre par défaut côté handler). *@
+                                            <div class="palette-couleurs" data-testid="palette-couleur-ajout" role="radiogroup"
+                                                 aria-label="Couleur du nouvel acteur">
+                                                @foreach (var c in CouleursTheme.Palette)
+                                                {
+                                                    var couleur = c;
+                                                    <button type="button" data-testid="pastille-couleur-ajout-@couleur" data-couleur="@couleur"
+                                                            class="palette-pastille @(_ajout.Couleur == couleur ? "selectionnee" : null)"
+                                                            style="background-color:@CouleursTheme.Pleine(couleur);"
+                                                            aria-pressed="@(_ajout.Couleur == couleur)" aria-label="@couleur"
+                                                            @onclick="() => _ajout.Couleur = couleur"></button>
+                                                }
+                                            </div>
                                         </div>
                                         <div class="d-flex gap-2">
                                             <button type="submit" class="btn btn-primary">Enregistrer</button>
@@ -217,13 +223,22 @@
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Couleur</label>
-                                            <InputSelect class="form-select" @bind-Value="_form.Couleur" data-testid="champ-couleur">
-                                                <option value="">— inchangée —</option>
-                                                <option value="bleu">Bleu</option>
-                                                <option value="orange">Orange</option>
-                                                <option value="vert">Vert</option>
-                                                <option value="violet">Violet</option>
-                                            </InputSelect>
+                                            @* Picker minimal (Sc.6) : une PALETTE de pastilles cliquables réutilisant le set de
+                                               couleurs (CouleursTheme.Palette), la couleur COURANTE pré-sélectionnée. HORS scope :
+                                               aucune gestion de palette custom. La couleur choisie est persistée à l'« Enregistrer »
+                                               via la commande existante editer-acteur (couleur). *@
+                                            <div class="palette-couleurs" data-testid="palette-couleur" role="radiogroup"
+                                                 aria-label="Couleur de l'acteur">
+                                                @foreach (var c in CouleursTheme.Palette)
+                                                {
+                                                    var couleur = c;
+                                                    <button type="button" data-testid="pastille-couleur-@couleur" data-couleur="@couleur"
+                                                            class="palette-pastille @(_form.Couleur == couleur ? "selectionnee" : null)"
+                                                            style="background-color:@CouleursTheme.Pleine(couleur);"
+                                                            aria-pressed="@(_form.Couleur == couleur)" aria-label="@couleur"
+                                                            @onclick="() => _form.Couleur = couleur"></button>
+                                                }
+                                            </div>
                                         </div>
                                         <div class="mb-3">
                                             <label class="form-label">Adresse de résidence</label>
@@ -603,6 +618,13 @@
     .acteur-nom { color: var(--pdg-ink); font-weight: 700; }
     .acteur-role { color: var(--pdg-muted); font-size: .82rem; margin-bottom: .35rem; }
     .acteur-adresse { color: var(--pdg-muted); font-size: .78rem; margin-top: .15rem; }
+
+    /* Palette de couleurs (picker minimal, Sc.6) : pastilles cliquables, la sélection cerclée. */
+    .palette-couleurs { display: flex; gap: .5rem; flex-wrap: wrap; }
+    .palette-pastille { width: 28px; height: 28px; border-radius: 8px; padding: 0; cursor: pointer;
+        border: 2px solid transparent; box-shadow: 0 1px 2px rgba(16,24,40,.15); outline-offset: 2px; }
+    .palette-pastille:hover { transform: scale(1.06); }
+    .palette-pastille.selectionnee { border-color: var(--pdg-ink); box-shadow: 0 0 0 2px var(--pdg-card), 0 0 0 4px var(--pdg-accent); }
     .acteur-selecteur-role { max-width: 12rem; }
     .acteur-compte { font-size: .82rem; color: var(--pdg-muted); display: block; margin-bottom: .3rem; }
     .acteur-compte-statut { font-weight: 700; }

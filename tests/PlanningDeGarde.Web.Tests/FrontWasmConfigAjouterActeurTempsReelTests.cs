@@ -52,7 +52,7 @@ public sealed class FrontWasmConfigAjouterActeurTempsReelTests : TestContext
         // Refonte s32 : l'ajout passe par la MODAL ouverte au bouton « Ajouter un acteur » (mode création).
         ConfigActeursModalHarness.OuvrirAjout(this, config);
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
-        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
+        this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-ajout-rose']").Click()); // palette (Sc.6)
         this.SurDispatcher(() => config.Find("#form-ajout").Submit());
 
         // Then — sans rechargement (même instance rendue), la liste de l'écran de configuration contient

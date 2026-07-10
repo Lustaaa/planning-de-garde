@@ -47,7 +47,9 @@ public partial class ConfigurationFoyer
         _modalAjout = false;
         _modalActeurId = acteurId;
         _form.ActeurId = acteurId;
-        _form.Couleur = "";
+        // Sc.6 : la palette pré-sélectionne la couleur COURANTE de l'acteur (pastille active). Comme le champ
+        // est pré-réglé, une édition nom/adresse-seule ré-émet la même couleur (idempotent), sans écrasement.
+        _form.Couleur = _acteurs.FirstOrDefault(x => x.Id == acteurId)?.Couleur ?? "";
         // Toggles pré-réglés sur l'état COURANT (Sc.4) : admin si l'acteur est admin ; actif si son compte
         // (s'il en porte un) est déjà actif. À l'Enregistrer, seule une bascule OFF→ON est appliquée.
         _form.Admin = EstAdmin(acteurId);
@@ -347,16 +349,15 @@ public partial class ConfigurationFoyer
         _confirmation = null;
         _motifEchec = null;
 
-        // Un champ laissé vide n'est pas une édition : il part null (non appliqué côté handler), pour
-        // ne pas écraser le nom par une chaîne vide lors d'un recoloriage seul (et inversement).
+        // Couleur : une pastille non choisie (chaîne vide) part null (non appliquée). Depuis s33 Sc.6 la
+        // palette pré-sélectionne la couleur courante, donc une édition normale ré-émet cette couleur.
         var couleur = string.IsNullOrWhiteSpace(_form.Couleur) ? null : _form.Couleur;
-        // Sc.8 : un nom vide / tout-espaces soumis SANS recoloriage concurrent est une tentative de
-        // renommage à vide — on transmet la valeur brute pour que le serveur la refuse avec son motif
-        // métier (« le nom ne peut pas être vide »), surfacé à l'écran. Avec un recoloriage, un nom vide
-        // reste un recoloriage-seul (nom non appliqué, Sc.2) : il part null.
-        var nom = string.IsNullOrWhiteSpace(_form.Nom)
-            ? (couleur is null ? _form.Nom : null)
-            : _form.Nom;
+        // Nom : le champ est PRÉ-REMPLI à l'ouverture (patron modal s32/s33). On émet donc sa valeur telle
+        // quelle — un nom VIDÉ volontairement part vide et est refusé côté domaine (« le nom ne peut pas être
+        // vide », Sc.7), motif surfacé dans la modal restée ouverte. (L'ancien repli « nom vide + couleur =
+        // recoloriage-seul » est caduc : avec la palette pré-sélectionnée la couleur n'est jamais null, il
+        // avalait le nom vide et court-circuitait le refus — régression corrigée s33 Sc.6.)
+        var nom = _form.Nom;
 
         HttpResponseMessage reponse;
         try

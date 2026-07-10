@@ -32,7 +32,7 @@ public sealed class FrontWasmConfigActeursModalEditionEnregistreTests : TestCont
         // When — je renomme « Alice » en « Alicia », la recolorie en vert, puis j'enregistre (POST réel
         // /api/canal/editer-acteur).
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("Alicia"));
-        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("vert"));
+        this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-vert']").Click()); // palette (Sc.6)
         this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
         // Then — la modal se ferme et le tableau relu reflète « Alicia » (plus d'« Alice »), sur le MÊME

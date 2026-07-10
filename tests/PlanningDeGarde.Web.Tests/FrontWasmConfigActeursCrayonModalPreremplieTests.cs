@@ -38,7 +38,7 @@ public sealed class FrontWasmConfigActeursCrayonModalPreremplieTests : TestConte
         // Then (pré-remplie) — la modal porte le nom courant « Alice », un sélecteur de couleur et un
         // sélecteur de rôle BORNÉ au référentiel (Nounou + « sans rôle », rien en dur).
         Assert.Equal("Alice", config.Find("[data-testid='champ-nom']").GetAttribute("value"));
-        Assert.NotNull(config.Find("[data-testid='champ-couleur']"));
+        Assert.NotNull(config.Find("[data-testid='palette-couleur']")); // picker minimal (Sc.6)
         var optionsRole = config.Find("[data-testid='selecteur-role-acteur']")
             .QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToList();
         Assert.Contains("Nounou", optionsRole);

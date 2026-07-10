@@ -56,7 +56,7 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
         // … un parent ouvre la modal d'ajout (refonte s32) et saisit « Carla » (rose) dans le formulaire.
         ConfigActeursModalHarness.OuvrirAjout(this, config);
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
-        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
+        this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-ajout-rose']").Click()); // palette (Sc.6)
 
         // When — il valide l'ajout alors que le service de configuration est injoignable
         // (l'émission HTTP réelle se heurte à un échec de transport).
@@ -66,9 +66,10 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
         var alerte = config.WaitForElement("[data-testid='motif-echec-ajout']", TimeSpan.FromSeconds(10));
         Assert.Equal(MessageInjoignable, alerte.TextContent.Trim());
 
-        // … la saisie « Carla / rose » reste à l'écran à resoumettre (rien n'est effacé).
+        // … la saisie « Carla / rose » reste à l'écran à resoumettre (rien n'est effacé) : le nom est conservé
+        // et la pastille « rose » du picker (Sc.6) demeure sélectionnée.
         Assert.Equal("Carla", config.Find("[data-testid='champ-nom-ajout']").GetAttribute("value"));
-        Assert.Equal("rose", config.Find("[data-testid='champ-couleur-ajout']").GetAttribute("value"));
+        Assert.Contains("selectionnee", config.Find("[data-testid='pastille-couleur-ajout-rose']").GetAttribute("class"));
 
         // … et aucun acteur n'est enregistré : la liste reste inchangée, sans « Carla » fantôme.
         Assert.Equal(nombreInitial, config.FindAll("[data-testid='acteur-foyer']").Count);

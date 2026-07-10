@@ -61,7 +61,7 @@ public sealed class FrontWasmConfigRecolorierActeurTempsReelTests : TestContext
 
         // Refonte s32 : l'édition passe par la MODAL ouverte au crayon (plus de sélecteur d'acteur inline).
         ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-b");
-        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("violet"));
+        this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-violet']").Click()); // palette (Sc.6)
         this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
         // … la connexion SignalR du front (long polling vers le TestServer) s'établit de façon

@@ -87,7 +87,7 @@ public sealed class FrontWasmConfigSelecteurEditionTempsReelDeuxEcransTests : Te
         // canal d'écriture HTTP réel : POST /api/canal/ajouter-acteur → store partagé muté + diffusion).
         ConfigActeursModalHarness.OuvrirAjout(ecran2, config2);
         config2.SurDispatcher(() => config2.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
-        config2.SurDispatcher(() => config2.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
+        config2.SurDispatcher(() => config2.Find("[data-testid='pastille-couleur-ajout-rose']").Click()); // palette (Sc.6)
         config2.SurDispatcher(() => config2.Find("#form-ajout").Submit());
         config2.WaitForAssertion(
             () => Assert.Contains(config2.FindAll("[data-testid='acteur-foyer']"),

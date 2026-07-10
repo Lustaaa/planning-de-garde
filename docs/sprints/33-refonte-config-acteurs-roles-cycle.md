@@ -26,7 +26,7 @@
 > - **Enfants / Activités / lien enfant↔parent** : autres incréments de l'épic, **non traités ici**.
 > - **Occurrence-unique vs série** (goal 4) : reporté s34.
 
-## Avancement — 5/11
+## Avancement — 6/11
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -35,7 +35,7 @@
 | 3 | Lire TOUS les cycles déclarés/actifs du foyer (corrige le trou de lecture) | back | ✅ |
 | 4 | Toggle actif/admin DANS la modal acteur (remplace la pastille lecture) | 🖥️ IHM | ✅ |
 | 5 | Champ adresse éditable dans la modal + rendu dans le tableau lecture | 🖥️ IHM | ✅ |
-| 6 | Palette couleur en picker minimal dans la modal | 🖥️ IHM | ⏳ |
+| 6 | Palette couleur en picker minimal dans la modal | 🖥️ IHM | ✅ |
 | 7 | Invariants Acteurs — refus→modal ouverte (adresse/toggle) + Parent-gated + SignalR | 🖥️ IHM | ⏳ |
 | 8 | Onglet Rôles au patron tableau lecture + crayon → modal + « Ajouter » | 🖥️ IHM | ⏳ |
 | 9 | Invariants Rôles — refus→modal ouverte + Parent-gated + SignalR | 🖥️ IHM | ⏳ |
@@ -140,7 +140,7 @@ Et le tableau en lecture seule affiche l'adresse de l'acteur (colonne ou ligne d
 Et une adresse laissée vide est acceptée sans bloquer l'enregistrement des autres champs
 ```
 
-### Sc.6 — Palette couleur en picker minimal @ihm @pending
+### Sc.6 — Palette couleur en picker minimal @ihm @vert
 ```gherkin
 Étant donné la modal d'édition (ou d'ajout) d'un acteur ouverte (Parent)
 Quand j'ouvre le sélecteur de couleur
