@@ -125,4 +125,20 @@ Et le temps réel de lecture s20 (hub SignalR) reste préservé, sans écriture 
 
 # Retours produit (PO)
 
-<!-- Rempli au gate G3 / à la clôture. -->
+Gate G3 validé PO (7/7 ✅, suite 569/569). Retours captés à la clôture — **fusionnés dans
+`docs/BACKLOG.md`** (rien ne se perd) :
+
+1. **⚠️ Édition INLINE au clic (valeur seule) — À ARBITRER au prochain `/planning`.** Le PO veut, **EN
+   PLUS** de la modal, cliquer un champ du tableau pour l'éditer **en place** (valeur seule, pas la modal) :
+   clic → champ ouvert, **Entrée** valide, **clic dehors** referme **sans update**. **NOUVEAU VOLET en
+   TENSION directe avec la refonte s32** (qui a retiré l'inline au profit de la modal) → **choix de
+   direction** (inline seul / modal seule / cohabitation) à **trancher en G2**, **non absorbé s32**.
+2. **Harmonisation Rôles / Cycle / Enfants** sur le même patron tableau+crayon→modal — **2ᵉ incrément**
+   de l'épic Refonte Config foyer (hors scope s32).
+3. **Cycles déclarés qui n'apparaissent pas** dans la config acteurs — relève de l'harmonisation (2ᵉ
+   incrément, volet Cycle).
+4. **Adresse postale de l'acteur** (champ neuf) — **2ᵉ incrément** de l'épic (déjà réservé au G2).
+
+→ Clôturé : goal G2 s32 marqué **fait** (`BACKLOG-Done.md` ligne 32), 4 retours fusionnés au backlog
+vivant, spec `acteurs-et-config-foyer.md` éditée en diff (patron tableau+crayon→modal), rétro méthode
+appliquée (garde lot atomique refonte de surface).

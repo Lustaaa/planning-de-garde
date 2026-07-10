@@ -59,6 +59,16 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   qui committe **tout l'index** → risque de **happer des fichiers étrangers pré-stagés**. Fix : `commit.ps1`
   **scope le commit aux pathspecs** (`git commit -- @Files`), **refuse un HEAD détaché**, et **signale un
   index déjà peuplé** avant staging ; garde-fou documenté dans `git/SKILL.md`.
+- 2026-07-10 — s32 : **refonte de SURFACE** (retirer l'édition inline des acteurs + brancher la modal) —
+  un découpage naïf 1 scénario = 1 commit aurait ouvert une **fenêtre rouge multi-scénarios** (retirer
+  l'inline avant que la modal ne porte l'écriture = suite non verte ; ~34 fichiers d'acceptation à migrer
+  d'un parcours à l'autre). Le SM l'a anticipé en groupant Sc.1-4 en un **lot atomique « swap de surface »**
+  (un commit, chaque scénario individuellement asserté) — sprint 7/7 sans rework, mais l'heuristique
+  n'était **pas** encodée et le **2ᵉ incrément de l'épic Refonte Config foyer** (harmonisation rôles/cycle/
+  enfants) rejouera le même motif. Fix : garde du **LOT ATOMIQUE sur une refonte de surface** dans le
+  chapeau PLANNING du `scrum-master` (repérer le swap ancienne→neuve surface AVANT d'écrire les scénarios,
+  grouper les scénarios inséparables en un seul commit, erreur/gating/temps-réel en incréments propres,
+  jamais de coexistence durable ancienne+neuve).
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake

@@ -182,6 +182,30 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **Toutes les écritures de l'écran de config** (édition, ajout, édition du cycle de fond, suppression)
   sont **gatées sur l'identité effective**, **sur chaque onglet** (durcissement complet, plus seulement
   le bouton supprimer ; non-régression du gating config s14 tenue par onglet).
+
+- **Onglet Acteurs — patron tableau lecture seule + crayon → modal** *(livré s32, 1er incrément de la
+  Refonte Config foyer, cohérent avec le patron dialogs s11-s12)* : l'**édition inline** des acteurs
+  (les deux cartes « Modifier » / « Ajouter » + contrôles inline dans la table) est **remplacée** par un
+  **tableau en LECTURE SEULE** — une ligne par acteur (pastille couleur + nom, email + statut du compte,
+  rôle, état actif/admin **matérialisé en pastille lecture**) — doté d'une colonne **Actions → crayon**
+  par ligne et d'un bouton **« Ajouter un acteur »**. Le crayon (ou « Ajouter ») ouvre une **MODAL**
+  pré-remplie des **champs COURANTS** (nom, couleur, rôle **borné au référentiel** : les rôles du foyer +
+  « sans rôle »), ou **vide** en mode création. L'**identifiant stable** est porté par la modal **sans
+  être éditable** (jamais dérivé du libellé). **« Enregistrer » émet les commandes CRUD acteurs
+  EXISTANTES** (aucun handler ni query neuf) via le canal HTTP : en **succès** la modal se ferme, le
+  tableau est **relu** et la grille/légende partagée suit la nouvelle couleur/le nouveau nom **sans
+  rechargement** (renommage = **id stable inchangé**, ajout = **id stable neuf**). **Contrat d'erreur**
+  (refus domaine — nom vide/doublon — ou API injoignable) : la **modal RESTE OUVERTE**, le **motif est
+  affiché dedans**, la **saisie est CONSERVÉE**, et **aucune écriture partielle** ne touche le tableau ni
+  la grille. **Fermer/annuler** n'émet **aucune** commande. **Parent-gated** (identité effective, non-
+  régression gating s14/s20) : l'**Invité** (non-Parent) garde le tableau **en lecture seule** mais **ni
+  crayon, ni « Ajouter »**, aucune modal d'écriture atteignable. **Temps réel SignalR** : l'édition/l'ajout
+  depuis un 2ᵉ écran fait **converger** le tableau (ligne mise à jour ou ajoutée) **sans rechargement**
+  (lecture s20 préservée, aucune écriture par la diffusion). **Hors 1er incrément (reporté 2ᵉ incrément)** :
+  état actif/admin en **toggle** *dans* la modal (ici pastille lecture seule), **adresse de résidence**
+  [champ neuf], **couleur vraie palette** [picker], et harmonisation **Rôles / Cycle / Enfants** sur le
+  même patron. **Volet en tension à arbitrer (retour PO gate s32)** : réintroduire une **édition inline au
+  clic de la valeur** *en plus* de la modal — **choix de direction non tranché** (cf. backlog).
 - **Impersonation bornée lecture** : session = identité **réelle** (configurateur fixe) vs identité
   **effective** (acteur incarné, ou **repli sur la réelle**) ; bandeau « Vous incarnez X » ; droit
   d'écriture dérivé du type de l'identité effective ; retour à l'identité réelle ; repli auto sur
@@ -439,8 +463,15 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **Borne anti-cliquet** : la persistance reste **bornée à la config foyer** ; le reste du domaine en
   queue (paliers « config foyer durable — reste » puis « persistance réelle »).
 - **Variantes refus/réaffectation de suppression** = porte G1 au make-gherkin si un vrai trou émerge.
-- **Évolutions de surface config non priorisées** : palette/picker, refonte visuelle profonde du thème,
-  contenu réel de l'onglet **Slot récurrent** (placeholder réservé au s20, aucune fonctionnalité neuve).
+- **Refonte Config foyer — 1er incrément (Acteurs) livré s32** : onglet Acteurs migré au patron **tableau
+  lecture seule + crayon → modal** (cf. Mécaniques). **Restent au 2ᵉ incrément** : état actif/admin en
+  **toggle** dans la modal, **adresse de résidence** + **couleur vraie palette (picker)** [champs neufs],
+  harmonisation **Rôles / Cycle / Enfants** (dont **cycles déclarés non affichés** dans la config acteurs,
+  retour PO gate s32). **Tension ouverte à arbitrer G2** : le PO veut **en plus** une **édition inline au
+  clic de la valeur** — direction (inline seul / modal seule / cohabitation) **non tranchée**, à décider au
+  prochain `/planning` avant tout code (ne pas re-livrer l'inline sans arbitrage).
+- **Évolutions de surface config non priorisées** : refonte visuelle profonde du thème, contenu réel de
+  l'onglet **Slot récurrent** (placeholder réservé au s20, aucune fonctionnalité neuve).
 - **Rôle sans effet fonctionnel encore** *(s21)* : le rôle est **livré comme caractéristique** (pas une
   responsabilité) — il n'a **pas encore** de droits/comportements attachés. Le couplage rôle → droits
   par acteur (nounou / grand-parent / second parent) vit dans **É10 (auth, palier 13)**, après la prise
