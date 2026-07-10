@@ -247,4 +247,14 @@ Alors le tableau du 2ᵉ écran CONVERGE sans rechargement, sans écriture par l
 
 # Retours produit (PO)
 
-_(À remplir après le gate G3.)_
+**Gate visuel G3 — fond validé, 3 finitions de présentation (rework in-goal, aucun handler/commande/invariant neuf) :**
+1. **Onglet Rôles** — crayon d'édition aligné à droite dans le tableau. *(Cause : `.role-ligne { display:flex }`
+   restait posé sur les `<tr>` du tableau — hérité de l'ancienne surface « liste » — cassant la mise en page
+   table ; retiré des `<tr>` Rôles & Cycle, conservé sur les `<li>` Lieux/Enfants. `.acteurs-col-actions`
+   (text-align:right) réaligne le crayon.)*
+2. **Onglet Cycle** — responsables alignés sous le titre de leur colonne. *(Même cause : le `display:flex` sur
+   `<tr>` désalignait les cellules des en-têtes ; corrigé par le même retrait.)*
+3. **Onglet Cycle** — libellés « Semaine d'index 0/1 » renommés en **« Semaine paire » / « Semaine impaire »**
+   (helper `LibelleSemaineCycle`). **Nuance N>2** : paire/impaire sur les seuls index 0/1 (cas courant cycle ISO
+   2 semaines) ; index ≥ 2 conservent « Semaine d'index k » pour éviter des libellés paire/impaire dupliqués et
+   ambigus. Assertion runtime ajoutée dans `FrontWasmConfigCycleTableCrayonModalTests`.

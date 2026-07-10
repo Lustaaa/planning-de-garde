@@ -25,6 +25,9 @@ public sealed class FrontWasmConfigCycleTableCrayonModalTests : TestContext
     private static string? ResponsableLigne(AngleSharp.Dom.IElement li)
         => li.QuerySelector(".cycle-responsable")?.TextContent.Trim();
 
+    private static string? LibelleLigne(AngleSharp.Dom.IElement li)
+        => li.QuerySelector(".role-libelle")?.TextContent.Trim();
+
     private static AngleSharp.Dom.IElement LigneIndex(IRenderedComponent<ConfigurationFoyer> config, int index)
         => config.FindAll("[data-testid='cycle-foyer']").Single(li => li.GetAttribute("data-cycle-index") == index.ToString());
 
@@ -58,6 +61,9 @@ public sealed class FrontWasmConfigCycleTableCrayonModalTests : TestContext
                 Assert.Equal(2, config.FindAll("[data-testid='cycle-foyer']").Count);
                 Assert.Equal("Alice", ResponsableLigne(LigneIndex(config, 0)));
                 Assert.Equal("Bruno", ResponsableLigne(LigneIndex(config, 1)));
+                // Finition PO s33 : libellés par parité (cycle ISO 2 semaines) au lieu de « Semaine d'index k ».
+                Assert.Equal("Semaine paire", LibelleLigne(LigneIndex(config, 0)));
+                Assert.Equal("Semaine impaire", LibelleLigne(LigneIndex(config, 1)));
             },
             TimeSpan.FromSeconds(10));
 

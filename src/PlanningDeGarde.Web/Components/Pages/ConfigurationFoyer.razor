@@ -389,7 +389,7 @@
                         <tbody>
                             @foreach (var r in _roles)
                             {
-                                <tr class="role-ligne" data-testid="role-foyer" data-role-id="@r.Id">
+                                <tr data-testid="role-foyer" data-role-id="@r.Id">
                                     <td><span class="role-libelle">@r.Libelle</span></td>
                                     @if (Session.EstParent)
                                     {
@@ -471,8 +471,8 @@
                         <tbody>
                             @foreach (var c in _cyclesDeclares.OrderBy(x => x.IndexSemaine))
                             {
-                                <tr class="role-ligne" data-testid="cycle-foyer" data-cycle-index="@c.IndexSemaine">
-                                    <td><span class="role-libelle">Semaine d'index @c.IndexSemaine</span></td>
+                                <tr data-testid="cycle-foyer" data-cycle-index="@c.IndexSemaine">
+                                    <td><span class="role-libelle">@LibelleSemaineCycle(c.IndexSemaine)</span></td>
                                     <td><span class="cycle-responsable">@NomResponsableCycle(c.ResponsableId)</span></td>
                                 </tr>
                             }
@@ -509,7 +509,7 @@
                                         {
                                             var index = i;
                                             <div class="cycle-carte">
-                                                <label class="cycle-carte-label">Semaine d'index @index</label>
+                                                <label class="cycle-carte-label">@LibelleSemaineCycle(index)</label>
                                                 <select class="form-select" data-testid="champ-cycle-index-@index"
                                                         value="@(_cycle.Affectations.TryGetValue(index, out var r) ? r : "")"
                                                         @onchange="e => AffecterIndex(index, e.Value?.ToString())">

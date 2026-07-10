@@ -160,6 +160,17 @@ public partial class ConfigurationFoyer
     private string NomResponsableCycle(string responsableId)
         => _acteurs.FirstOrDefault(a => a.Id == responsableId)?.Nom ?? responsableId;
 
+    /// <summary>Libellé lisible d'une semaine du cycle (finition PO s33) : par parité pour le cas courant
+    /// (cycle ISO 2 semaines) — index 0 = « Semaine paire », index 1 = « Semaine impaire ». Pour un cycle
+    /// plus long (N &gt; 2), les index ≥ 2 conservent « Semaine d'index k » afin d'éviter des libellés paire/
+    /// impaire dupliqués et ambigus.</summary>
+    private static string LibelleSemaineCycle(int index) => index switch
+    {
+        0 => "Semaine paire",
+        1 => "Semaine impaire",
+        _ => $"Semaine d'index {index}",
+    };
+
     /// <summary>Affecte (ou retire, si vide) un responsable à un index de semaine du cycle en cours de
     /// saisie. La valeur bindée est l'identifiant stable de l'acteur (jamais le libellé, règle 19).</summary>
     private void AffecterIndex(int index, string? responsableId)
