@@ -9,13 +9,14 @@ using Xunit;
 namespace PlanningDeGarde.Web.Tests;
 
 /// <summary>
-/// Sprint 24 — Sc.5 (🖥️ @ihm — acceptation de NIVEAU RUNTIME) : depuis l'onglet « Acteurs » de l'écran
-/// de configuration réellement câblé (<see cref="ConfigurationFoyer"/>, API distante réelle
+/// Sprint 24 — Sc.5, MIGRÉ s33 Sc.4 (🖥️ @ihm — acceptation de NIVEAU RUNTIME) : depuis la modal d'un
+/// acteur de l'écran réellement câblé (<see cref="ConfigurationFoyer"/>, API distante réelle
 /// <see cref="ApiDistanteFactory"/>, store réel, DI réelle, canal HTTP réel), un compte de statut
-/// « inactif » offre une action <b>« Activer »</b> (Parent-gated). Le clic transite par le canal
+/// « inactif » offre désormais un <b>TOGGLE « actif »</b> (plus un bouton d'action immédiat — swap de
+/// surface s33 Sc.4, sens ON). Basculer le toggle OFF→ON puis « Enregistrer » transite par le canal
 /// d'écriture HTTP réel (POST /api/canal/activer-compte) ; relu depuis le store (GET /api/foyer/comptes),
-/// le compte passe « actif » sans rechargement, un accusé non bloquant « Compte activé » s'affiche, et
-/// l'action « Activer » disparaît pour ce compte (déjà Actif). Preuve sur câblage réel, jamais une doublure.
+/// le compte passe « actif » sans rechargement, la modal se ferme, un accusé « Compte activé » s'affiche.
+/// Preuve sur câblage réel, jamais une doublure.
 /// </summary>
 public sealed class FrontWasmConfigOngletActeursActiverCompteRuntimeTests : TestContext
 {
@@ -37,7 +38,7 @@ public sealed class FrontWasmConfigOngletActeursActiverCompteRuntimeTests : Test
     }
 
     [Fact]
-    public void Should_activer_un_compte_inactif_afficher_l_accuse_et_retirer_l_action_When_le_parent_clique_Activer()
+    public void Should_activer_un_compte_inactif_afficher_l_accuse_et_fermer_la_modal_When_le_parent_bascule_le_toggle_actif_et_enregistre()
     {
         // Given — l'écran de configuration réellement câblé à l'API distante réelle (store réel), identité
         // Parent. On crée d'abord le compte d'Alice (POST /api/canal/creer-compte réel) : il naît « inactif ».
@@ -49,31 +50,33 @@ public sealed class FrontWasmConfigOngletActeursActiverCompteRuntimeTests : Test
         this.SurDispatcher(() => config.Find("[data-testid='champ-email-compte']").Change("alice@foyer.fr"));
         this.SurDispatcher(() => config.Find("[data-testid='bouton-creer-compte']").Click());
 
-        // ... et on attend que le compte inactif soit affiché (ligne relue) avec son action « Activer »
-        // dans la modal.
+        // ... et on attend que le compte inactif soit affiché (ligne relue) et que le TOGGLE « actif » de la
+        // modal soit désormais ACTIONNABLE (compte inactif → non verrouillé). Swap de surface s33 Sc.4.
         config.WaitForAssertion(
             () =>
             {
                 var compte = LigneDe(config, "Alice").QuerySelector("[data-testid='compte-acteur']");
                 Assert.NotNull(compte);
                 Assert.Contains("inactif", compte!.TextContent, StringComparison.OrdinalIgnoreCase);
-                Assert.NotEmpty(config.FindAll("[data-testid='bouton-activer-compte']"));
+                var toggle = config.Find("[data-testid='toggle-actif']");
+                Assert.False(toggle.HasAttribute("disabled")); // compte inactif → toggle actionnable
             },
             TimeSpan.FromSeconds(10));
 
-        // When — je clique « Activer » dans la modal (POST /api/canal/activer-compte réel).
-        this.SurDispatcher(() => config.Find("[data-testid='bouton-activer-compte']").Click());
+        // When — je bascule le toggle « actif » OFF→ON puis j'enregistre (POST /api/canal/activer-compte réel).
+        this.SurDispatcher(() => config.Find("[data-testid='toggle-actif']").Change(true));
+        this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
-        // Then — sans rechargement, le compte relu depuis le store passe « actif », un accusé non bloquant
-        // « Compte activé » s'affiche, et l'action « Activer » disparaît (déjà Actif).
+        // Then — sans rechargement, la modal se ferme, le compte relu depuis le store passe « actif » (dans la
+        // table), et un accusé non bloquant « Compte activé » s'affiche.
         config.WaitForAssertion(
             () =>
             {
+                Assert.Empty(config.FindAll("[data-testid='dialog-acteur']"));
                 var compte = LigneDe(config, "Alice").QuerySelector("[data-testid='compte-acteur']");
                 Assert.NotNull(compte);
                 Assert.Contains("actif", compte!.TextContent, StringComparison.OrdinalIgnoreCase);
                 Assert.DoesNotContain("inactif", compte.TextContent, StringComparison.OrdinalIgnoreCase);
-                Assert.Empty(config.FindAll("[data-testid='bouton-activer-compte']"));
                 var accuse = config.Find("[data-testid='accuse-activation']");
                 Assert.Contains("activé", accuse.TextContent, StringComparison.OrdinalIgnoreCase);
             },

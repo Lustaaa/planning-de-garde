@@ -26,14 +26,14 @@
 > - **Enfants / Activités / lien enfant↔parent** : autres incréments de l'épic, **non traités ici**.
 > - **Occurrence-unique vs série** (goal 4) : reporté s34.
 
-## Avancement — 3/11
+## Avancement — 4/11
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Adresse de résidence de l'acteur — modèle + persistance + édition (frontière Application) | back | ✅ |
 | 2 | Éditer / ajouter un rôle à la frontière Application (harmonisation Rôles) | back | ✅ déjà couvert s21 (filet non-régression) |
 | 3 | Lire TOUS les cycles déclarés/actifs du foyer (corrige le trou de lecture) | back | ✅ |
-| 4 | Toggle actif/admin DANS la modal acteur (remplace la pastille lecture) | 🖥️ IHM | ⏳ |
+| 4 | Toggle actif/admin DANS la modal acteur (remplace la pastille lecture) | 🖥️ IHM | ✅ |
 | 5 | Champ adresse éditable dans la modal + rendu dans le tableau lecture | 🖥️ IHM | ⏳ |
 | 6 | Palette couleur en picker minimal dans la modal | 🖥️ IHM | ⏳ |
 | 7 | Invariants Acteurs — refus→modal ouverte (adresse/toggle) + Parent-gated + SignalR | 🖥️ IHM | ⏳ |
@@ -104,14 +104,27 @@ Et chaque cycle est identifié de façon stable, avec ses attributs déjà persi
 Et un foyer sans cycle déclaré renvoie une liste vide (pas d'erreur)
 ```
 
-### Sc.4 — Toggle actif/admin DANS la modal acteur @ihm @pending
+### Sc.4 — Toggle actif/admin DANS la modal acteur @ihm @vert
+> **Cadrage SM (décision s33).** Sens UNIQUE ce sprint. Le domaine n'offre que `designer-admin`
+> et `activer-compte` (montantes) ; **aucune commande inverse** (dé-désignation / désactivation).
+> Un OFF « no-op silencieux » serait un **vert-qui-ment** (toggle bascule à l'écran, Enregistrer
+> « réussit », rien ne change) → **PROSCRIT**. On promet donc **seulement le sens ON** : un toggle
+> déjà ON est **verrouillé** (pas de bascule OFF actionnable). Les commandes inverses partent au
+> **backlog**. **Lot atomique de surface (s32)** : ce Sc.4 **remplace** les boutons d'action
+> immédiats (`bouton-designer-admin`, `bouton-activer-compte`) par des toggles-sur-Enregistrer →
+> les ~4 tests runtime *TempsReel* qui cliquent ces boutons **migrent dans le MÊME commit** (pas de
+> coexistence boutons+toggles, pas de fenêtre rouge multi-scénarios). Le toggle « actif » cible un
+> `CompteId` : **actionnable seulement si l'acteur porte un compte**.
 ```gherkin
 Étant donné la modal d'édition d'un acteur ouverte (Parent), issue du crayon (patron s32)
 Quand la modal est rendue
-Alors l'état « actif » et l'état « admin » sont matérialisés en TOGGLES éditables DANS la modal
-  (et non plus seulement en pastille lecture seule dans le tableau)
-Quand je bascule un toggle puis clique « Enregistrer »
-Alors la commande EXISTANTE de (dés)activation / (dés)ignation d'admin est émise via le canal HTTP
+Alors l'état « actif » et l'état « admin » sont matérialisés en TOGGLES DANS la modal, pré-réglés
+  sur l'état COURANT (et non plus en pastille lecture seule, ni en boutons d'action immédiats)
+Et le toggle « actif » n'est actionnable que si l'acteur porte un COMPTE (sinon désactivé, motif dedans)
+Et un toggle DÉJÀ ON est rendu VERROUILLÉ (pas de sens inverse ce sprint — dé-désignation /
+  désactivation absentes du domaine, reportées backlog ; AUCUNE bascule OFF no-op silencieuse)
+Quand je bascule un toggle de OFF vers ON puis clique « Enregistrer »
+Alors la commande EXISTANTE de désignation d'admin / d'activation de compte est émise via le canal HTTP
 Et en succès la modal se ferme et le tableau relu reflète le nouvel état (pastille lecture à jour)
 Et l'identifiant stable reste inchangé
 ```

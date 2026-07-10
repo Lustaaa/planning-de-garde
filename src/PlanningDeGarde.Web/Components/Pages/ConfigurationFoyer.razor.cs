@@ -48,6 +48,10 @@ public partial class ConfigurationFoyer
         _modalActeurId = acteurId;
         _form.ActeurId = acteurId;
         _form.Couleur = "";
+        // Toggles pré-réglés sur l'état COURANT (Sc.4) : admin si l'acteur est admin ; actif si son compte
+        // (s'il en porte un) est déjà actif. À l'Enregistrer, seule une bascule OFF→ON est appliquée.
+        _form.Admin = EstAdmin(acteurId);
+        _form.Actif = CompteDe(acteurId) is { } compte && !EstInactif(compte);
         PreRemplirNom();
     }
 
@@ -78,6 +82,11 @@ public partial class ConfigurationFoyer
         public string ActeurId { get; set; } = "";
         public string Nom { get; set; } = "";
         public string Couleur { get; set; } = "";
+        // Sc.4 (s33) : état désiré des toggles admin / actif de la modal, pré-réglés sur l'état courant à
+        // l'ouverture. SENS UNIQUE : seul OFF→ON est appliqué à l'Enregistrer (commandes existantes) ; un
+        // toggle déjà ON est rendu verrouillé (pas de commande inverse). Deux surfaces indépendantes.
+        public bool Admin { get; set; }
+        public bool Actif { get; set; }
     }
 
     private sealed class FormulaireAjout
@@ -360,20 +369,61 @@ public partial class ConfigurationFoyer
             return;
         }
 
-        if (reponse.IsSuccessStatusCode)
+        if (!reponse.IsSuccessStatusCode)
         {
-            // Refonte s32 (Sc.3) : sur succès, la modal se FERME et le tableau est relu — il reflète le
-            // renommage / recoloriage sans rechargement de page (la grille partagée suit via la diffusion
-            // temps réel déclenchée côté API). Aucune confirmation persistante à afficher (modal fermée).
-            _confirmation = "Modification enregistrée.";
-            await RechargerActeurs();
-            FermerModal();
-        }
-        else
             // Le canal renvoie le motif métier en corps JSON (Results.BadRequest(string)) : on le
             // désérialise comme la chaîne qu'il est, pour surfacer un message propre (« le nom ne peut
             // pas être vide ») sans guillemets parasites (Sc.5). La modal RESTE OUVERTE, saisie conservée.
             _motifEchec = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        // Sc.4 (s33) : la modal porte désormais les toggles admin/actif appliqués au MÊME « Enregistrer ».
+        // SENS UNIQUE — n'émettre les commandes EXISTANTES que sur une bascule OFF→ON (un toggle déjà ON est
+        // verrouillé à l'écran, aucune bascule OFF no-op). Sur refus/injoignable, la modal reste ouverte avec
+        // le motif, sans écriture partielle relue (le tableau n'est relu qu'après le succès complet).
+        if (_form.Admin && !EstAdmin(_form.ActeurId) && !await AppliquerToggle("api/canal/designer-admin", new DesignerAdminRequete(_form.ActeurId)))
+            return;
+
+        if (_form.Actif && CompteDe(_form.ActeurId) is { } compteAActiver && EstInactif(compteAActiver))
+        {
+            if (!await AppliquerToggle("api/canal/activer-compte", new ActiverCompteRequete(compteAActiver.Id)))
+                return;
+            _accuseActivation = "Compte activé.";
+        }
+
+        // Succès complet : le tableau est relu (acteurs + comptes + admins) et la modal se ferme — l'état
+        // neuf (badge admin / actif) est reflété sans rechargement (la grille partagée suit via la diffusion).
+        _confirmation = "Modification enregistrée.";
+        await RechargerActeurs();
+        await RechargerComptes();
+        await RechargerAdmins();
+        FermerModal();
+    }
+
+    /// <summary>Émet une commande de toggle (Sc.4) via le canal HTTP réel et renvoie <c>true</c> en succès.
+    /// Sur service injoignable ou refus métier, pose le motif dans la modal (<c>_motifEchec</c>) et renvoie
+    /// <c>false</c> — la modal reste ouverte, aucun tableau relu (pas d'écriture partielle affichée).</summary>
+    private async Task<bool> AppliquerToggle<TRequete>(string route, TRequete requete)
+    {
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(route, requete);
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchec = MessagesEcriture.ServiceInjoignable;
+            return false;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchec = await reponse.Content.ReadFromJsonAsync<string>();
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -858,93 +908,9 @@ public partial class ConfigurationFoyer
     /// supprimé » — D5) : affiché sans interrompre la consultation, effacé à l'activation suivante.</summary>
     private string? _accuseActivation;
 
-    /// <summary>Motif d'échec d'activation, par compte (clé = id stable du compte) : sur refus métier
-    /// (compte introuvable, Sc.3) ou service injoignable, ce motif clair est surfacé dans la ligne du compte,
-    /// sans faux positif — le statut affiché reste inchangé, aucun accusé « Compte activé » (Sc.6).</summary>
-    private readonly Dictionary<string, string> _motifEchecActivation = new();
-
-    private string? MotifEchecActivation(string compteId)
-        => _motifEchecActivation.TryGetValue(compteId, out var m) ? m : null;
-
     /// <summary>Vrai si le compte est de statut « inactif » (le statut est renvoyé en minuscules par le canal
-    /// de lecture) — condition d'affichage de l'action « Activer » (Sc.5). Aucune règle métier dans l'UI :
-    /// c'est une simple lecture du statut projeté ; l'activation est tranchée côté handler.</summary>
+    /// de lecture) — pilote l'actionnabilité du toggle « actif » de la modal (Sc.4). Aucune règle métier dans
+    /// l'UI : simple lecture du statut projeté ; l'activation est tranchée côté handler.</summary>
     private static bool EstInactif(CompteFoyer compte)
         => string.Equals(compte.Statut, "inactif", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Active un compte utilisateur via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/activer-compte</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
-    /// ré-énumère les comptes pour que le statut passe « actif » <b>sans rechargement</b> et que l'action
-    /// « Activer » disparaisse (Sc.5). Sur succès, un accusé non bloquant « Compte activé » s'affiche. Sur
-    /// refus métier (compte introuvable, Sc.3) ou <b>service injoignable</b> (échec de transport, règle 28),
-    /// un motif clair est surfacé dans la ligne et le statut affiché reste inchangé (aucun faux positif, Sc.6).
-    /// </summary>
-    private async Task ActiverCompte(string compteId)
-    {
-        _motifEchecActivation.Remove(compteId);
-
-        HttpResponseMessage reponse;
-        try
-        {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/activer-compte",
-                new ActiverCompteRequete(compteId));
-        }
-        catch (HttpRequestException)
-        {
-            _motifEchecActivation[compteId] = MessagesEcriture.ServiceInjoignable;
-            return;
-        }
-
-        if (!reponse.IsSuccessStatusCode)
-        {
-            _motifEchecActivation[compteId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de l'activation du compte.";
-            return;
-        }
-
-        _accuseActivation = "Compte activé.";
-        await RechargerComptes();
-    }
-
-    /// <summary>Motif d'échec de désignation d'admin d'une ligne d'acteur (clé = id stable), ou <c>null</c> :
-    /// sur refus métier (l'admin doit être un parent, Sc.4) ou service injoignable, le motif reste affiché
-    /// dans la ligne, sans écriture (Sc.8/Sc.9).</summary>
-    private readonly Dictionary<string, string> _motifEchecAdmin = new();
-
-    private string? MotifEchecAdmin(string acteurId)
-        => _motifEchecAdmin.TryGetValue(acteurId, out var m) ? m : null;
-
-    /// <summary>
-    /// Désigne un acteur comme admin du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/designer-admin</c>, règle 27 — aucune vue n'écrit le domaine en direct). L'invariant
-    /// admin=parent est tranché côté Domain : un acteur non-Parent est rejeté avec son motif, surfacé dans la
-    /// ligne (Sc.4). Sur succès, l'API diffuse la mise à jour (les écrans re-projettent l'admin sans rechargement,
-    /// Sc.9). Sur <b>service injoignable</b> (échec de transport, règle 28), un message dédié s'affiche.
-    /// </summary>
-    private async Task DesignerAdmin(string acteurId)
-    {
-        _motifEchecAdmin.Remove(acteurId);
-
-        HttpResponseMessage reponse;
-        try
-        {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/designer-admin",
-                new DesignerAdminRequete(acteurId));
-        }
-        catch (HttpRequestException)
-        {
-            _motifEchecAdmin[acteurId] = MessagesEcriture.ServiceInjoignable;
-            return;
-        }
-
-        if (!reponse.IsSuccessStatusCode)
-        {
-            _motifEchecAdmin[acteurId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de la désignation.";
-            return;
-        }
-
-        await RechargerActeurs();
-    }
 }

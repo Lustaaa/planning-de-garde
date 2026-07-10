@@ -53,16 +53,17 @@ public sealed class FrontWasmConfigActiverCompteGatingEtEchecRuntimeTests : Test
             TimeSpan.FromSeconds(10));
         Assert.False(session.EstParent); // garde-fou : un Invité n'écrit pas
 
-        // Then — sous « Invité », aucune action « Activer » n'est offerte (gating sur l'identité effective).
-        Assert.Empty(config.FindAll("[data-testid='bouton-activer-compte']"));
+        // Then — sous « Invité », aucun toggle « actif » n'est atteignable (gating sur l'identité effective :
+        // ni crayon ni modal ne sont rendus). Swap de surface s33 Sc.4.
+        Assert.Empty(config.FindAll("[data-testid='toggle-actif']"));
 
-        // Contrôle positif (anti faux-vert) — sous « Parent », l'action REDEVIENT offerte pour le compte
-        // inactif : le crayon réapparaît (refonte s32) et, dans la modal ouverte, « Activer » est présent.
+        // Contrôle positif (anti faux-vert) — sous « Parent », le crayon réapparaît (refonte s32) et, dans la
+        // modal ouverte sur le compte inactif, le TOGGLE « actif » est présent et actionnable.
         session.Role = RoleAuteur.Parent;
         config.Render();
         ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         config.WaitForAssertion(
-            () => Assert.NotEmpty(config.FindAll("[data-testid='bouton-activer-compte']")),
+            () => Assert.False(config.Find("[data-testid='toggle-actif']").HasAttribute("disabled")),
             TimeSpan.FromSeconds(10));
     }
 
@@ -78,19 +79,21 @@ public sealed class FrontWasmConfigActiverCompteGatingEtEchecRuntimeTests : Test
         Services.AddSingleton(new SessionPlanning()); // Parent par défaut
 
         var config = RenderComponent<ConfigurationFoyer>();
-        // Refonte s32 : « Activer » vit dans la MODAL ouverte au crayon d'Alice.
+        // Refonte s32 + swap s33 Sc.4 : l'activation vit dans le TOGGLE « actif » de la MODAL, appliqué à l'« Enregistrer ».
         ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         config.WaitForAssertion(
-            () => Assert.NotEmpty(config.FindAll("[data-testid='bouton-activer-compte']")),
+            () => Assert.False(config.Find("[data-testid='toggle-actif']").HasAttribute("disabled")),
             TimeSpan.FromSeconds(10));
 
-        // When — je clique « Activer » dans la modal alors que le canal d'activation est injoignable.
-        this.SurDispatcher(() => config.Find("[data-testid='bouton-activer-compte']").Click());
+        // When — je bascule le toggle « actif » OFF→ON et j'enregistre alors que le canal d'activation est injoignable.
+        this.SurDispatcher(() => config.Find("[data-testid='toggle-actif']").Change(true));
+        this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
-        // Then — un message d'échec clair s'affiche dans la ligne, le statut affiché reste « inactif »
+        // Then — la modal RESTE OUVERTE avec un message d'échec clair, le statut affiché reste « inactif »
         // (aucun faux positif), et aucun accusé « Compte activé » n'apparaît.
-        var motif = config.WaitForElement("[data-testid='motif-echec-activation']", TimeSpan.FromSeconds(10));
+        var motif = config.WaitForElement("[data-testid='motif-echec']", TimeSpan.FromSeconds(10));
         Assert.Equal(MessageInjoignable, motif.TextContent.Trim());
+        Assert.NotEmpty(config.FindAll("[data-testid='dialog-acteur']")); // modal restée ouverte
         var compte = LigneDe(config, "Alice").QuerySelector("[data-testid='compte-acteur']");
         Assert.Contains("inactif", compte!.TextContent, StringComparison.OrdinalIgnoreCase);
         Assert.Empty(config.FindAll("[data-testid='accuse-activation']"));

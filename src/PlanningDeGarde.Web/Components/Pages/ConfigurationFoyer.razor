@@ -258,17 +258,20 @@
                                                 <span class="acteur-compte" data-testid="compte-acteur-modal">
                                                     @compte.Email — <span class="acteur-compte-statut">@compte.Statut</span>
                                                 </span>
-                                                @if (EstInactif(compte))
-                                                {
-                                                    <button type="button" class="btn btn-outline-success btn-sm acteur-activer-compte"
-                                                            data-testid="bouton-activer-compte" data-compte-id="@compte.Id"
-                                                            @onclick="() => ActiverCompte(compte.Id)">Activer</button>
-                                                }
                                             </div>
-                                            @if (MotifEchecActivation(compte.Id) is { } motifActivation)
+                                            @* Toggle ACTIF (Sc.4) — sens ON : actionnable seulement si le compte est INACTIF ;
+                                               verrouillé (disabled) si déjà actif (désactivation absente du domaine ce sprint).
+                                               Appliqué à l'« Enregistrer » via la commande existante activer-compte. *@
+                                            <div class="form-check form-switch mt-2">
+                                                <input type="checkbox" class="form-check-input acteur-toggle-actif" role="switch"
+                                                       id="toggle-actif-@a.Id" data-testid="toggle-actif" @bind="_form.Actif"
+                                                       disabled="@(!EstInactif(compte))" />
+                                                <label class="form-check-label" for="toggle-actif-@a.Id">Compte actif</label>
+                                            </div>
+                                            @if (!EstInactif(compte))
                                             {
-                                                <div class="alert alert-danger py-1 px-2 mb-0 mt-2 acteur-activer-motif"
-                                                     data-testid="motif-echec-activation">@motifActivation</div>
+                                                <div class="text-muted small mt-1" data-testid="toggle-actif-motif">
+                                                    Compte déjà actif (le retrait de l'activation arrivera dans un prochain incrément).</div>
                                             }
                                         }
                                         else
@@ -287,25 +290,32 @@
                                                 <div class="alert alert-danger py-1 px-2 mb-0 mt-2 acteur-compte-motif"
                                                      data-testid="motif-echec-compte">@motifCompte</div>
                                             }
+                                            @* Toggle ACTIF désactivé : sans compte associé, rien à activer (motif dedans). *@
+                                            <div class="form-check form-switch mt-2">
+                                                <input type="checkbox" class="form-check-input acteur-toggle-actif" role="switch"
+                                                       data-testid="toggle-actif" @bind="_form.Actif" disabled />
+                                                <label class="form-check-label">Compte actif</label>
+                                            </div>
+                                            <div class="text-muted small mt-1" data-testid="toggle-actif-motif">
+                                                Créez d'abord un compte pour pouvoir l'activer.</div>
                                         }
                                     </div>
 
-                                    @* État admin : badge de lecture + action de désignation (commande existante). *@
+                                    @* État ADMIN (Sc.4) — toggle sens ON : verrouillé (disabled) si l'acteur est DÉJÀ admin
+                                       (la dé-désignation est absente du domaine ce sprint, reportée backlog). Appliqué à
+                                       l'« Enregistrer » via la commande existante designer-admin. *@
                                     <div class="mb-3">
                                         <label class="form-label">Admin</label>
-                                        <div>
-                                            @if (EstAdmin(a.Id))
-                                            {
-                                                <span class="badge bg-secondary acteur-admin" data-testid="acteur-admin-marqueur-modal">admin</span>
-                                            }
-                                            <button type="button" class="btn btn-outline-secondary btn-sm acteur-designer-admin"
-                                                    data-testid="bouton-designer-admin" data-acteur-id="@a.Id"
-                                                    @onclick="() => DesignerAdmin(a.Id)">Désigner admin</button>
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" class="form-check-input acteur-toggle-admin" role="switch"
+                                                   id="toggle-admin-@a.Id" data-testid="toggle-admin" @bind="_form.Admin"
+                                                   disabled="@EstAdmin(a.Id)" />
+                                            <label class="form-check-label" for="toggle-admin-@a.Id">Administrateur du foyer</label>
                                         </div>
-                                        @if (MotifEchecAdmin(a.Id) is { } motifAdmin)
+                                        @if (EstAdmin(a.Id))
                                         {
-                                            <div class="alert alert-danger py-1 px-2 mb-0 mt-2 acteur-admin-motif"
-                                                 data-testid="motif-echec-admin">@motifAdmin</div>
+                                            <div class="text-muted small mt-1" data-testid="toggle-admin-motif">
+                                                Déjà administrateur (le retrait arrivera dans un prochain incrément).</div>
                                         }
                                     </div>
 
