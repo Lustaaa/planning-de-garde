@@ -14,7 +14,7 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 11/14
+## Avancement — 12/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -32,7 +32,7 @@
 | 10 | Rendu : transfert dérivé → pastille bicolore comme le saisi (présentation s29) ; jour sans bascule unicolore | 🖥️ IHM | ✅ |
 | **Volet 3 — D1 slot récurrent conditionné à la garde · 2e cœur · sur base D3 stable** ||||
 | 11 | Nominal : slot « seulement les jours où l'enfant est chez moi » → occurrence projetée uniquement les jours où le poseur est responsable | back | ✅ |
-| 12 | Limite : jour où l'enfant n'est pas chez le poseur → occurrence masquée | back | ⏳ |
+| 12 | Limite : jour où l'enfant n'est pas chez le poseur → occurrence masquée | back | ✅ |
 | 13 | Non-régression : slot **non conditionné** (défaut) → comportement s29 strictement inchangé | back | ⏳ |
 | 14 | Toggle « seulement les jours où l'enfant est chez moi » dans la dialog « Poser un slot » | 🖥️ IHM | ⏳ |
 
@@ -176,7 +176,7 @@ Scénario 11 — Nominal : occurrence projetée les jours de garde du poseur
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 12 — Limite : jour où l'enfant n'est pas chez le poseur
   Étant donné le même slot conditionné du scénario 11
   Et un jour de récurrence OÙ la résolution désigne un AUTRE responsable que "Poseur"
