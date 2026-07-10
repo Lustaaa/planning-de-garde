@@ -26,7 +26,7 @@
 > - **Enfants / Activités / lien enfant↔parent** : autres incréments de l'épic, **non traités ici**.
 > - **Occurrence-unique vs série** (goal 4) : reporté s34.
 
-## Avancement — 8/11
+## Avancement — 9/11
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -38,7 +38,7 @@
 | 6 | Palette couleur en picker minimal dans la modal | 🖥️ IHM | ✅ |
 | 7 | Invariants Acteurs — refus→modal ouverte (adresse/toggle) + Parent-gated + SignalR | 🖥️ IHM | ✅ |
 | 8 | Onglet Rôles au patron tableau lecture + crayon → modal + « Ajouter » | 🖥️ IHM | ✅ |
-| 9 | Invariants Rôles — refus→modal ouverte + Parent-gated + SignalR | 🖥️ IHM | ⏳ |
+| 9 | Invariants Rôles — refus→modal ouverte + Parent-gated + SignalR | 🖥️ IHM | ✅ |
 | 10 | Onglet Cycle — tableau des cycles + cycles déclarés RENDUS VISIBLES + modal | 🖥️ IHM | ⏳ |
 | 11 | Invariants Cycle — Parent-gated + SignalR (+ refus→modal si édition) | 🖥️ IHM | ⏳ |
 
@@ -179,7 +179,7 @@ Quand je clique « Ajouter un rôle »
 Alors la MÊME modal s'ouvre VIDE (mode création) → « Enregistrer » crée un rôle avec un id stable neuf
 ```
 
-### Sc.9 — Invariants Rôles : refus→modal ouverte + gating + SignalR @ihm @pending
+### Sc.9 — Invariants Rôles : refus→modal ouverte + gating + SignalR @ihm @vert
 ```gherkin
 Étant donné la modal d'édition (ou d'ajout) d'un rôle ouverte (Parent)
 Quand j'enregistre un libellé refusé par le domaine (vide / doublon) ou que l'API est injoignable
