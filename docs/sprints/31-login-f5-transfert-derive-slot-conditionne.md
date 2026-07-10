@@ -14,7 +14,7 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 13/14
+## Avancement — 14/14
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -34,7 +34,7 @@
 | 11 | Nominal : slot « seulement les jours où l'enfant est chez moi » → occurrence projetée uniquement les jours où le poseur est responsable | back | ✅ |
 | 12 | Limite : jour où l'enfant n'est pas chez le poseur → occurrence masquée | back | ✅ |
 | 13 | Non-régression : slot **non conditionné** (défaut) → comportement s29 strictement inchangé | back | ✅ |
-| 14 | Toggle « seulement les jours où l'enfant est chez moi » dans la dialog « Poser un slot » | 🖥️ IHM | ⏳ |
+| 14 | Toggle « seulement les jours où l'enfant est chez moi » dans la dialog « Poser un slot » | 🖥️ IHM | ✅ |
 
 **back : 9 · 🖥️ IHM : 5 · total : 14.**
 
@@ -194,7 +194,7 @@ Scénario 13 — Non-régression : slot non conditionné (défaut s29 inchangé)
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 14 — Toggle de conditionnement dans la dialog de pose
   Étant donné la dialog "Poser un slot" (récurrent, s29)
   Quand l'utilisateur active le toggle "seulement les jours où l'enfant est chez moi"

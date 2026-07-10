@@ -25,7 +25,9 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de pose d'un slot RÉCURRENT hebdo émise via le canal requête/réponse
     /// (s29) : enfant + lieu + jour de semaine + plage horaire (début→fin, sans date). Refus miroir de la
     /// pose ponctuelle (lieu inconnu / durée non positive) renvoyé avec son motif.</summary>
-    public sealed record PoserSlotRecurrentRequete(string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin);
+    public sealed record PoserSlotRecurrentRequete(
+        string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
+        bool ConditionneGarde = false, string PoseurId = "");
 
     /// <summary>Corps de la requête de suppression d'un slot récurrent (s29) : la clé est l'identifiant
     /// stable du slot récurrent (jamais un libellé) ; la suppression est idempotente côté handler.</summary>
@@ -183,7 +185,8 @@ public static class CanalEcriture
         routes.MapPost("/api/canal/poser-slot-recurrent", (PoserSlotRecurrentRequete requete, PoserSlotRecurrentHandler handler) =>
         {
             var resultat = handler.Handle(new PoserSlotRecurrentCommand(
-                requete.EnfantId, requete.LieuId, requete.JourDeSemaine, requete.HeureDebut, requete.HeureFin));
+                requete.EnfantId, requete.LieuId, requete.JourDeSemaine, requete.HeureDebut, requete.HeureFin,
+                requete.ConditionneGarde, requete.PoseurId));
 
             // Même convention que les autres écritures : succès acquitté (le slot récurrent est enregistré,
             // ses occurrences apparaissent sur la grille ; le handler a déclenché la diffusion temps réel),

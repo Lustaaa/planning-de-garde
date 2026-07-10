@@ -4,9 +4,13 @@ using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application;
 
-/// <summary>Commande de pose d'un slot récurrent hebdomadaire par un Parent.</summary>
+/// <summary>Commande de pose d'un slot récurrent hebdomadaire par un Parent. Le slot peut être
+/// <b>conditionné à la garde</b> (D1, s31) — « seulement les jours où l'enfant est chez moi » — auquel cas
+/// il porte l'identité du <paramref name="PoseurId"/> (parent courant) qui pilote son conditionnement. Non
+/// conditionné par défaut (comportement s29 strictement inchangé).</summary>
 public sealed record PoserSlotRecurrentCommand(
-    string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin);
+    string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
+    bool ConditionneGarde = false, string PoseurId = "");
 
 /// <summary>
 /// Use case : poser un slot récurrent hebdomadaire dans le planning partagé du foyer. Miroir de
@@ -42,7 +46,8 @@ public sealed class PoserSlotRecurrentHandler
             return Result<SlotRecurrentSnapshot>.Echec("L'enfant visé n'existe pas dans les enfants du foyer.");
 
         var pose = SlotRecurrent.Poser(
-            commande.EnfantId, commande.LieuId, commande.JourDeSemaine, commande.HeureDebut, commande.HeureFin);
+            commande.EnfantId, commande.LieuId, commande.JourDeSemaine, commande.HeureDebut, commande.HeureFin,
+            commande.ConditionneGarde, commande.PoseurId);
         if (!pose.EstSucces)
             return Result<SlotRecurrentSnapshot>.Echec(pose.Motif!);
 

@@ -20,7 +20,9 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de pose d'un slot RÉCURRENT hebdo émise via le canal (s29) : enfant +
     /// lieu + jour de semaine + plage horaire (début→fin, sans date). Aucune règle métier côté front : les
     /// refus (lieu inconnu / durée non positive) sont tranchés côté handler.</summary>
-    public sealed record PoserSlotRecurrentRequete(string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin);
+    public sealed record PoserSlotRecurrentRequete(
+        string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
+        bool ConditionneGarde = false, string PoseurId = "");
 
     /// <summary>Corps de la requête de suppression d'un slot récurrent (s29) : la clé est l'identifiant
     /// stable du slot récurrent. Idempotente côté handler.</summary>
