@@ -26,12 +26,12 @@
 > - **Enfants / Activités / lien enfant↔parent** : autres incréments de l'épic, **non traités ici**.
 > - **Occurrence-unique vs série** (goal 4) : reporté s34.
 
-## Avancement — 1/11
+## Avancement — 2/11
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Adresse de résidence de l'acteur — modèle + persistance + édition (frontière Application) | back | ✅ |
-| 2 | Éditer / ajouter un rôle à la frontière Application (harmonisation Rôles) | back | ⏳ |
+| 2 | Éditer / ajouter un rôle à la frontière Application (harmonisation Rôles) | back | ✅ déjà couvert s21 (filet non-régression) |
 | 3 | Lire TOUS les cycles déclarés/actifs du foyer (corrige le trou de lecture) | back | ⏳ |
 | 4 | Toggle actif/admin DANS la modal acteur (remplace la pastille lecture) | 🖥️ IHM | ⏳ |
 | 5 | Champ adresse éditable dans la modal + rendu dans le tableau lecture | 🖥️ IHM | ⏳ |
@@ -73,7 +73,18 @@ Et l'identifiant stable reste inchangé (édition, pas recréation)
 Et une adresse VIDE est acceptée (champ optionnel) sans écriture partielle des autres champs
 ```
 
-### Sc.2 — Éditer / ajouter un rôle à la frontière Application @back @pending
+### Sc.2 — Éditer / ajouter un rôle à la frontière Application @back @vert
+> **Early-green (s21) — option A retenue par le SM.** La capacité complète existe déjà à la frontière
+> Application : ajout (`CreerRoleHandler` — id stable neuf opaque, refus vide/doublon, persiste) et
+> édition (`RenommerRoleHandler` — id stable inchangé donc renommage ≠ recréation, refus vide/doublon
+> en s'excluant lui-même). Relecture par `IEnumerationRoles.EnumererRoles()`. Aucun handler neuf.
+> Filet de non-régression (preuve, conservé) :
+> `tests/PlanningDeGarde.Tests/Scenario1_CreerRole.cs`, `Scenario2_RenommerRole.cs`,
+> `Scenario3_RejetLibelleVideOuDoublon.cs`, `Scenario7_DeuxLibellesIdentiquesIdsDistincts.cs` ;
+> durabilité store Mongo réel : `tests/PlanningDeGarde.Api.Tests/ReferentielRolesMongoDurabiliteTests.cs`,
+> `RenommerRoleMongoDurabiliteTests.cs`. Seul l'invariant « affectation acteur→rôle cohérente après
+> renommage » n'était asserté nulle part de façon combinée → **un** test @back ciblé ajouté :
+> `tests/PlanningDeGarde.Tests/Scenario33_S2_AffectationSurvitRenommageRole.cs`.
 ```gherkin
 Étant donné le référentiel de rôles du foyer (rôles déclarés, s21)
 Quand la commande d'édition d'un rôle (libellé) OU d'ajout d'un rôle est émise
