@@ -128,6 +128,38 @@ public partial class ConfigurationFoyer
     private string? _confirmationCycle;
     private string? _motifEchecCycle;
 
+    /// <summary>Affectations déclarées du cycle de fond lues depuis le store (GET /api/foyer/cycles, Sc.3) :
+    /// alimentent le TABLEAU lecture seule de l'onglet Cycle (Sc.10), qui rend visibles toutes les semaines
+    /// affectées — y compris celles auparavant invisibles (retour PO gate s32).</summary>
+    private IReadOnlyList<CycleFoyer> _cyclesDeclares = Array.Empty<CycleFoyer>();
+
+    // ── État de la MODAL cycle (refonte s33, Sc.10 — patron crayon → modal) ──
+    // La modal héberge l'éditeur EXISTANT (N + selects par semaine) déplacé de l'inline (aucun autre changement).
+    private bool _modalCycleOuverte;
+
+    /// <summary>Ouvre la modal d'édition du cycle (clic « Éditer le cycle ») : l'éditeur est déjà pré-rempli
+    /// sur le cycle courant (<see cref="_cycle"/> synchronisé depuis les affectations déclarées).</summary>
+    private void OuvrirEditionCycle()
+    {
+        _modalCycleOuverte = true;
+        _confirmationCycle = null;
+        _motifEchecCycle = null;
+    }
+
+    /// <summary>Ferme la modal cycle (annuler ou après un enregistrement abouti), sans émettre de commande.
+    /// Ne touche pas <see cref="_confirmationCycle"/> : sur succès, l'accusé posé par <see cref="DefinirCycle"/>
+    /// reste affiché dans le panneau (hors modal) après fermeture.</summary>
+    private void FermerModalCycle()
+    {
+        _modalCycleOuverte = false;
+        _motifEchecCycle = null;
+    }
+
+    /// <summary>Résout le nom d'affichage du responsable d'une semaine du cycle (sur l'identifiant stable,
+    /// jamais un libellé en dur), pour le tableau lecture seule (Sc.10) ; repli sur l'id brut si non résolu.</summary>
+    private string NomResponsableCycle(string responsableId)
+        => _acteurs.FirstOrDefault(a => a.Id == responsableId)?.Nom ?? responsableId;
+
     /// <summary>Affecte (ou retire, si vide) un responsable à un index de semaine du cycle en cours de
     /// saisie. La valeur bindée est l'identifiant stable de l'acteur (jamais le libellé, règle 19).</summary>
     private void AffecterIndex(int index, string? responsableId)
@@ -260,6 +292,27 @@ public partial class ConfigurationFoyer
         await RechargerAdmins();
         await RechargerLieux();
         await RechargerEnfants();
+        await RechargerCycles();
+    }
+
+    /// <summary>Ré-énumère les affectations déclarées du cycle de fond depuis le store (GET /api/foyer/cycles,
+    /// Sc.3) : alimente le tableau lecture seule de l'onglet Cycle (Sc.10). Quand la modal cycle n'est pas
+    /// ouverte, synchronise aussi l'éditeur <see cref="_cycle"/> sur le cycle courant (N dérivé de la plus
+    /// grande semaine affectée + 1, cas nominal « un responsable par semaine »), pour qu'un clic « Éditer le
+    /// cycle » l'ouvre pré-rempli — sans écraser une saisie en cours si la modal est ouverte.</summary>
+    private async Task RechargerCycles()
+    {
+        _cyclesDeclares = await Canal.GetFromJsonAsync<List<CycleFoyer>>("api/foyer/cycles")
+            ?? new List<CycleFoyer>();
+
+        if (!_modalCycleOuverte)
+        {
+            _cycle.Affectations.Clear();
+            foreach (var c in _cyclesDeclares)
+                _cycle.Affectations[c.IndexSemaine] = c.ResponsableId;
+            if (_cyclesDeclares.Count > 0)
+                _cycle.NombreSemaines = _cyclesDeclares.Max(c => c.IndexSemaine) + 1;
+        }
     }
 
     /// <summary>Ré-énumère les enfants du référentiel depuis le store vivant (GET /api/foyer/enfants) : c'est
@@ -336,6 +389,9 @@ public partial class ConfigurationFoyer
                 // Un ajout / une édition d'enfant abouti sur un autre écran (store partagé) fait suivre la
                 // liste des enfants sans rechargement — cohérence temps réel du référentiel d'enfants (S9/S10).
                 await RechargerEnfants();
+                // Une édition du cycle aboutie sur un autre écran fait converger le tableau des cycles déclarés
+                // sans rechargement (Sc.11) — diffusion en LECTURE SEULE (ré-énumération du store).
+                await RechargerCycles();
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -701,10 +757,20 @@ public partial class ConfigurationFoyer
             return;
         }
 
-        if (reponse.IsSuccessStatusCode)
-            _confirmationCycle = "Cycle de fond enregistré.";
-        else
+        if (!reponse.IsSuccessStatusCode)
+        {
+            // Refus métier (N < 1, Sc.11) : le motif reste DANS la modal ouverte, la saisie (N + affectations)
+            // est conservée, le tableau inchangé — aucune écriture partielle.
             _motifEchecCycle = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        // Succès : le cycle est relu (le tableau reflète l'édition sans rechargement), la modal se ferme (l'accusé
+        // « Cycle de fond enregistré » reste affiché dans le panneau), et la grille partagée suit via la diffusion
+        // temps réel déclenchée côté API (Sc.10).
+        await RechargerCycles();
+        FermerModalCycle();
+        _confirmationCycle = "Cycle de fond enregistré.";
     }
 
     /// <summary>

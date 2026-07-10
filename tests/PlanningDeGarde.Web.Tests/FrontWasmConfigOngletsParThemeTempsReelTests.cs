@@ -54,6 +54,8 @@ public sealed class FrontWasmConfigOngletsParThemeTempsReelTests : TestContext
         Assert.NotEmpty(config.FindAll("[data-testid='crayon-acteur']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-acteur']"));
         Assert.NotEmpty(config.FindAll("[data-testid='liste-acteurs']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
+        // Refonte s33 Sc.10 : le cycle est présent via son tableau lecture + crayon « Éditer le cycle ».
+        Assert.NotEmpty(config.FindAll("[data-testid='liste-cycles']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='crayon-cycle']"));
     }
 }

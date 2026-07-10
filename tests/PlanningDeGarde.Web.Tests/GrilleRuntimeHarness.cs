@@ -43,8 +43,10 @@ internal static class GrilleRuntimeHarness
         config.WaitForState(
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
-        // Fusion des sections (hors-sprint) : plus d'onglets — la section « Cycle de fond » est toujours
-        // rendue. On attend simplement que son formulaire soit présent (garde déterministe anti-flake).
+        // Refonte s33 Sc.10 : l'éditeur du cycle (N + selects par semaine) vit désormais dans une MODAL
+        // ouverte par le crayon « Éditer le cycle » (l'inline #form-cycle n'est plus rendu). On ouvre la
+        // modal, puis on attend que le formulaire soit rendu (index 1 présent) — garde déterministe anti-flake.
+        config.InvokeAsync(() => config.Find("[data-testid='crayon-cycle']").Click());
         config.WaitForElement("[data-testid='champ-cycle-index-1']", TimeSpan.FromSeconds(10));
     }
 

@@ -450,53 +450,92 @@
             @* ══════════════ Panneau CYCLES ══════════════ *@
             <section class="config-panneau @(_onglet == "cycles" ? null : "cacher")"
                      data-testid="panneau-periode-garde" aria-label="Cycle de fond">
-                @* Cycle de fond (responsabilité par défaut) : écriture gardée sur l'identité effective (Sc.7). *@
+                @* Refonte s33 (Sc.10) : patron « tableau lecture seule + crayon → modal ». Le tableau rend
+                   VISIBLES toutes les affectations déclarées du cycle (query Sc.3), y compris celles auparavant
+                   invisibles (retour PO gate s32) ; il reste visible en lecture pour toutes les identités.
+                   L'éditeur EXISTANT (N + un select par semaine → definir-cycle, atomique) est DÉPLACÉ dans la
+                   MODAL ouverte par le crayon « Éditer le cycle » (gating Parent) — l'inline #form-cycle n'est
+                   plus rendu hors modal. Aucun découpage per-semaine (definir-cycle reste atomique). *@
+                <h2 class="config-panneau-titre">Cycle de fond (responsabilité par défaut)</h2>
+                <p class="text-muted">Les semaines du cycle et leur responsable de fond. Les jours sans période
+                    explicite suivent ce cycle ; la grille se met à jour sans recharger la page.</p>
+
+                <div class="acteurs-defilement">
+                    <table class="acteurs-table" data-testid="liste-cycles">
+                        <thead>
+                            <tr>
+                                <th>Semaine</th>
+                                <th>Responsable de fond</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in _cyclesDeclares.OrderBy(x => x.IndexSemaine))
+                            {
+                                <tr class="role-ligne" data-testid="cycle-foyer" data-cycle-index="@c.IndexSemaine">
+                                    <td><span class="role-libelle">Semaine d'index @c.IndexSemaine</span></td>
+                                    <td><span class="cycle-responsable">@NomResponsableCycle(c.ResponsableId)</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
                 @if (Session.EstParent)
                 {
-                    <h2 class="config-panneau-titre">Cycle de fond (responsabilité par défaut)</h2>
-                    <p class="text-muted">Définir le nombre de semaines du cycle et, pour chaque semaine (index ISO),
-                        le responsable de fond. Les jours sans période explicite suivent ce cycle ; la grille se met à jour
-                        sans recharger la page. Une nouvelle définition remplace le cycle courant.</p>
-
-                    <EditForm Model="_cycle" OnValidSubmit="DefinirCycle" FormName="definir-cycle" id="form-cycle">
-                        <div class="mb-3">
-                            <label class="form-label">Nombre de semaines du cycle</label>
-                            <InputNumber class="form-control" @bind-Value="_cycle.NombreSemaines"
-                                         @bind-Value:after="StateHasChanged" data-testid="champ-nombre-semaines" min="1" />
-                        </div>
-                        <div class="cycle-semaines">
-                            @for (var i = 0; i < _cycle.NombreSemaines && i < 12; i++)
-                            {
-                                var index = i;
-                                <div class="cycle-carte">
-                                    <label class="cycle-carte-label">Semaine d'index @index</label>
-                                    <select class="form-select" data-testid="champ-cycle-index-@index"
-                                            value="@(_cycle.Affectations.TryGetValue(index, out var r) ? r : "")"
-                                            @onchange="e => AffecterIndex(index, e.Value?.ToString())">
-                                        <option value="">— aucun (teinte neutre) —</option>
-                                        @foreach (var a in _acteurs)
-                                        {
-                                            <option value="@a.Id">@a.Nom</option>
-                                        }
-                                    </select>
-                                </div>
-                            }
-                        </div>
-                        <button type="submit" class="btn btn-primary mt-3">Définir le cycle</button>
-                    </EditForm>
+                    <div class="acteurs-ajout">
+                        <button type="button" class="btn btn-primary acteur-crayon" data-testid="crayon-cycle"
+                                @onclick="OuvrirEditionCycle" aria-label="Éditer le cycle">✏️ Éditer le cycle</button>
+                    </div>
 
                     @if (_confirmationCycle is not null)
                     {
                         <div class="alert alert-success mt-3" data-testid="confirmation-cycle">@_confirmationCycle</div>
                     }
-                    @if (_motifEchecCycle is not null)
+
+                    @* MODAL cycle — héberge l'éditeur EXISTANT (N + selects par semaine) déplacé de l'inline. *@
+                    @if (_modalCycleOuverte)
                     {
-                        <div class="alert alert-danger mt-3" data-testid="motif-echec-cycle">@_motifEchecCycle</div>
+                        <div class="dialog-backdrop" data-testid="dialog-cycle">
+                            <div class="dialog-panneau">
+                                <h2 class="h4 mb-3">Éditer le cycle de fond</h2>
+                                <EditForm Model="_cycle" OnValidSubmit="DefinirCycle" FormName="definir-cycle" id="form-cycle">
+                                    <div class="mb-3">
+                                        <label class="form-label">Nombre de semaines du cycle</label>
+                                        <InputNumber class="form-control" @bind-Value="_cycle.NombreSemaines"
+                                                     @bind-Value:after="StateHasChanged" data-testid="champ-nombre-semaines" min="1" />
+                                    </div>
+                                    <div class="cycle-semaines">
+                                        @for (var i = 0; i < _cycle.NombreSemaines && i < 12; i++)
+                                        {
+                                            var index = i;
+                                            <div class="cycle-carte">
+                                                <label class="cycle-carte-label">Semaine d'index @index</label>
+                                                <select class="form-select" data-testid="champ-cycle-index-@index"
+                                                        value="@(_cycle.Affectations.TryGetValue(index, out var r) ? r : "")"
+                                                        @onchange="e => AffecterIndex(index, e.Value?.ToString())">
+                                                    <option value="">— aucun (teinte neutre) —</option>
+                                                    @foreach (var a in _acteurs)
+                                                    {
+                                                        <option value="@a.Id">@a.Nom</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                        }
+                                    </div>
+                                    <div class="d-flex gap-2 mt-3">
+                                        <button type="submit" class="btn btn-primary">Définir le cycle</button>
+                                        <button type="button" class="btn btn-link" data-testid="dialog-cycle-annuler"
+                                                @onclick="FermerModalCycle">Annuler</button>
+                                    </div>
+                                </EditForm>
+
+                                @if (_motifEchecCycle is not null)
+                                {
+                                    <div class="alert alert-danger mt-3 mb-0" data-testid="motif-echec-cycle">@_motifEchecCycle</div>
+                                }
+                            </div>
+                        </div>
                     }
-                }
-                else
-                {
-                    <p class="text-muted">La définition du cycle de fond est réservée aux parents du foyer.</p>
                 }
             </section>
 

@@ -26,7 +26,7 @@
 > - **Enfants / Activités / lien enfant↔parent** : autres incréments de l'épic, **non traités ici**.
 > - **Occurrence-unique vs série** (goal 4) : reporté s34.
 
-## Avancement — 9/11
+## Avancement — 10/11
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -39,7 +39,7 @@
 | 7 | Invariants Acteurs — refus→modal ouverte (adresse/toggle) + Parent-gated + SignalR | 🖥️ IHM | ✅ |
 | 8 | Onglet Rôles au patron tableau lecture + crayon → modal + « Ajouter » | 🖥️ IHM | ✅ |
 | 9 | Invariants Rôles — refus→modal ouverte + Parent-gated + SignalR | 🖥️ IHM | ✅ |
-| 10 | Onglet Cycle — tableau des cycles + cycles déclarés RENDUS VISIBLES + modal | 🖥️ IHM | ⏳ |
+| 10 | Onglet Cycle — tableau des cycles + cycles déclarés RENDUS VISIBLES + modal | 🖥️ IHM | ✅ |
 | 11 | Invariants Cycle — Parent-gated + SignalR (+ refus→modal si édition) | 🖥️ IHM | ⏳ |
 
 > **⚠️ GARDE lot atomique de surface (Rôles & Cycle) — rappel s32.** Si un onglet (Rôles ou Cycle)
@@ -191,30 +191,55 @@ Quand un rôle est édité / ajouté depuis le 1ᵉʳ écran
 Alors le tableau du 2ᵉ écran CONVERGE sans rechargement, sans écriture par la diffusion
 ```
 
-### Sc.10 — Onglet Cycle : tableau + cycles déclarés visibles + modal @ihm @pending
+### Sc.10 — Onglet Cycle : tableau + cycles déclarés visibles + modal @ihm @vert
+> **Arbitrage SM (décision s33) — option B : swap inline→modal en HÉBERGEANT l'éditeur existant.**
+> L'inline `#form-cycle` (`champ-nombre-semaines` N + un select `champ-cycle-index-{i}` par semaine
+> → `POST /api/canal/definir-cycle`) est **la seule surface qui DÉFINIT le cycle** (crée, règle N,
+> affecte chaque semaine) ; `definir-cycle` **remplace tout le cycle et exige N**. On **déplace cet
+> éditeur TEL QUEL dans la modal** (N + tous les selects pré-remplis) — **aucune extension backend**,
+> la query Sc.3 (affectations par semaine {index → responsable}) alimente le tableau lecture seule.
+> **Rejetée : option A** (crayon per-semaine n'éditant qu'un responsable) — imposerait d'exposer N en
+> lecture (**@back neuf → repasse /planning**) et perdrait la définition de N / la création quand aucun
+> cycle n'existe (**trou fonctionnel**). Le write-path `definir-cycle` **reste ATOMIQUE** (N + toutes
+> les semaines) ; pas de découpage per-semaine ce sprint. **Lot atomique de surface (garde s32)** : le
+> retrait de l'inline + le branchement de la modal + la **migration des ~8 tests runtime** qui pilotent
+> l'inline (`champ-nombre-semaines`, `champ-cycle-index-{i}`, « Définir le cycle ») se font **dans le
+> MÊME commit** (juste l'étape « ouvrir la modal » ajoutée avant les mêmes champs).
 ```gherkin
 Étant donné l'onglet « Cycle » de /configuration, connecté en tant que Parent
-Et un foyer où plusieurs cycles sont déclarés (dont des cycles qui n'apparaissaient PAS avant)
+Et un foyer où le cycle de fond est déclaré (N semaines, un responsable affecté par semaine),
+  dont des affectations qui n'apparaissaient PAS avant dans la config
 Quand la page est rendue
-Alors un TABLEAU en lecture seule liste TOUS les cycles settés / actifs du foyer (Sc.3),
-  y compris ceux qui étaient auparavant invisibles dans la config (retour PO gate s32)
-Et une colonne « Actions » porte un CRAYON par cycle ; toute surface inline préexistante n'est PLUS rendue
-Quand je clique le crayon d'un cycle
-Alors une MODAL pré-remplie s'ouvre, éditant les champs DÉJÀ éditables du cycle
-Et « Enregistrer » persiste via la commande existante, la modal se ferme, le tableau est relu
+Alors un TABLEAU en lecture seule rend VISIBLES toutes les affectations déclarées du cycle
+  (une ligne par semaine {index → responsable}, Sc.3), y compris celles auparavant invisibles (retour PO gate s32)
+Et une colonne « Actions » porte UN crayon « Éditer le cycle » ; la surface inline préexistante
+  (#form-cycle : nombre de semaines + selects par semaine) n'est PLUS rendue hors modal (lot atomique de surface)
+Quand je clique le crayon « Éditer le cycle »
+Alors une MODAL s'ouvre HÉBERGEANT l'éditeur EXISTANT tel quel : le champ « nombre de semaines » (N)
+  et un select responsable par semaine, tous PRÉ-REMPLIS sur le cycle courant
+Et « Définir le cycle » (commande existante definir-cycle, N + toutes les affectations) persiste,
+  la modal se ferme, le tableau est relu
 Et HORS scope : édition avancée du cycle (ancre / frontière de jour / plage / sur-cycle vacances / WE-only)
+  et découpage per-semaine du write-path (definir-cycle reste atomique : N + toutes les semaines)
 ```
 
 ### Sc.11 — Invariants Cycle : gating + SignalR (+ refus→modal) @ihm @pending
+> **Lot atomique (garde s32).** Les invariants Cycle réutilisent les tests runtime pilotant l'ancienne
+> surface inline (`FrontWasmConfigCycleServiceInjoignableTempsReel`, `...ZeroSemaineRefuseTempsReel`,
+> `FrontWasmConfigGatingInviteChaqueOnglet`, `...GatingAutreIncarne`, `...OngletsParTheme`,
+> `FrontWasmGrilleDeuxEcransCycleDerniereEcritureGagneTempsReel`) : ces tests **migrent DANS le commit
+> de swap Sc.10** (même surface). Seules les assertions **neuves propres à la modal** (refus → modal
+> RESTE OUVERTE, motif DEDANS, saisie N+affectations CONSERVÉE) peuvent former un incrément de suivi
+> **sans fenêtre rouge** (suite complète verte à chaque commit).
 ```gherkin
 Étant donné une identité EFFECTIVE non-Parent (Invité)
 Quand j'ouvre l'onglet « Cycle »
-Alors le tableau des cycles reste visible en LECTURE SEULE, sans crayon, aucune modal atteignable
-Étant donné la modal d'édition d'un cycle ouverte (Parent)
-Quand j'enregistre une valeur refusée par le domaine ou que l'API est injoignable
-Alors la modal RESTE OUVERTE, le motif est affiché DEDANS, la saisie CONSERVÉE, le tableau INCHANGÉ
+Alors le tableau des cycles reste visible en LECTURE SEULE, sans crayon « Éditer le cycle », aucune modal atteignable
+Étant donné la modal d'édition du cycle ouverte (Parent)
+Quand j'enregistre une valeur refusée par le domaine (ex. zéro semaine) ou que l'API est injoignable
+Alors la modal RESTE OUVERTE, le motif est affiché DEDANS, la saisie (N + affectations) CONSERVÉE, le tableau INCHANGÉ
 Étant donné deux écrans ouverts sur l'onglet « Cycle »
-Quand un cycle est édité depuis le 1ᵉʳ écran
+Quand le cycle est édité depuis le 1ᵉʳ écran (via la modal)
 Alors le tableau du 2ᵉ écran CONVERGE sans rechargement, sans écriture par la diffusion
 ```
 

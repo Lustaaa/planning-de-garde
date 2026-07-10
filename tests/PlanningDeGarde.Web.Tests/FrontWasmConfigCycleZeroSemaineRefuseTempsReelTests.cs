@@ -73,8 +73,11 @@ public sealed class FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests : TestCo
         var storeCycle = api.Services.GetRequiredService<IReferentielCycleDeFond>();
         Assert.Equal(2, storeCycle.CycleCourant()!.NombreSemaines);
 
-        // When — le parent tente d'enregistrer un cycle de ZÉRO semaine : il porte le nombre de semaines à 0
-        // (le min HTML est contournable côté navigateur — le serveur est le gardien) et valide.
+        // When — le parent RÉ-OUVRE la modal d'édition (le succès précédent l'avait fermée, refonte s33 Sc.10)
+        // et tente d'enregistrer un cycle de ZÉRO semaine : il porte le nombre de semaines à 0 (le min HTML est
+        // contournable côté navigateur — le serveur est le gardien) et valide.
+        this.SurDispatcher(() => config.Find("[data-testid='crayon-cycle']").Click());
+        config.WaitForElement("[data-testid='dialog-cycle']", TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => config.Find("[data-testid='champ-nombre-semaines']").Change("0"));
         this.SurDispatcher(() => config.Find("#form-cycle").Submit());
 

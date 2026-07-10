@@ -55,6 +55,13 @@ public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris",
 /// Alimente la liste des rôles de l'onglet Acteurs et le sélecteur de rôle borné au référentiel.</summary>
 public sealed record RoleFoyer(string Id, string Libelle);
 
+/// <summary>Une affectation déclarée du cycle de fond <b>lue depuis le store</b> via le canal de lecture
+/// (s33, Sc.3, GET /api/foyer/cycles) : index de semaine (0..N-1) → identifiant stable du responsable de
+/// fond. Alimente le TABLEAU en lecture seule de l'onglet Cycle (Sc.10), qui rend visibles toutes les
+/// affectations déclarées (y compris celles auparavant invisibles, retour PO gate s32) ; le nom est
+/// résolu sur l'identifiant via la liste des acteurs, jamais un libellé en dur.</summary>
+public sealed record CycleFoyer(int IndexSemaine, string ResponsableId);
+
 /// <summary>Un lieu du référentiel du foyer <b>énuméré depuis le store vivant</b> via le canal de lecture
 /// (s27, GET /api/foyer/lieux) : identifiant stable (clé, bindé par les sélecteurs) + libellé d'affichage.
 /// Remplace la liste en dur <see cref="Foyer.Lieux"/> — alimente l'onglet Lieux de la config ET les
