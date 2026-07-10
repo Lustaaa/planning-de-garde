@@ -168,8 +168,7 @@
                     @if (_modalAjout || _modalActeurId is not null)
                     {
                         var acteurEdite = _modalActeurId is null ? null : _acteurs.FirstOrDefault(x => x.Id == _modalActeurId);
-                        <div class="dialog-backdrop" data-testid="dialog-acteur">
-                            <div class="dialog-panneau">
+                        <ModalConfig TestId="dialog-acteur" OnFermer="FermerModal">
                                 <h2 class="h4 mb-3">@(_modalAjout ? "Ajouter un acteur" : "Modifier l'acteur")</h2>
 
                                 @if (_modalAjout)
@@ -355,8 +354,7 @@
                                             data-testid="bouton-supprimer" data-acteur-id="@a.Id"
                                             @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer cet acteur</button>
                                 }
-                            </div>
-                        </div>
+                        </ModalConfig>
                     }
                 }
             </section>
@@ -415,8 +413,7 @@
                     @* MODAL rôle (édition OU ajout) — rendue seulement quand ouverte et sous Parent. *@
                     @if (_modalRoleAjout || _modalRoleId is not null)
                     {
-                        <div class="dialog-backdrop" data-testid="dialog-role">
-                            <div class="dialog-panneau">
+                        <ModalConfig TestId="dialog-role" OnFermer="FermerModalRole">
                                 <h2 class="h4 mb-3">@(_modalRoleAjout ? "Ajouter un rôle" : "Modifier le rôle")</h2>
                                 <EditForm Model="_role" OnValidSubmit="SoumettreRole" FormName="role" id="form-role">
                                     <div class="mb-3">
@@ -441,8 +438,7 @@
                                             data-testid="bouton-supprimer-role" data-role-id="@rid"
                                             @onclick="() => SupprimerRole(rid)">Supprimer ce rôle</button>
                                 }
-                            </div>
-                        </div>
+                        </ModalConfig>
                     }
                 }
             </section>
@@ -495,8 +491,7 @@
                     @* MODAL cycle — héberge l'éditeur EXISTANT (N + selects par semaine) déplacé de l'inline. *@
                     @if (_modalCycleOuverte)
                     {
-                        <div class="dialog-backdrop" data-testid="dialog-cycle">
-                            <div class="dialog-panneau">
+                        <ModalConfig TestId="dialog-cycle" OnFermer="FermerModalCycle">
                                 <h2 class="h4 mb-3">Éditer le cycle de fond</h2>
                                 <EditForm Model="_cycle" OnValidSubmit="DefinirCycle" FormName="definir-cycle" id="form-cycle">
                                     <div class="mb-3">
@@ -533,8 +528,7 @@
                                 {
                                     <div class="alert alert-danger mt-3 mb-0" data-testid="motif-echec-cycle">@_motifEchecCycle</div>
                                 }
-                            </div>
-                        </div>
+                        </ModalConfig>
                     }
                 }
             </section>

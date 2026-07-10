@@ -258,3 +258,12 @@ Alors le tableau du 2ᵉ écran CONVERGE sans rechargement, sans écriture par l
    (helper `LibelleSemaineCycle`). **Nuance N>2** : paire/impaire sur les seuls index 0/1 (cas courant cycle ISO
    2 semaines) ; index ≥ 2 conservent « Semaine d'index k » pour éviter des libellés paire/impaire dupliqués et
    ambigus. Assertion runtime ajoutée dans `FrontWasmConfigCycleTableCrayonModalTests`.
+4. **Fermeture Échap des modals** — les trois modals d'édition de la Config foyer (Acteurs, Rôles, Cycle) se
+   ferment à la touche **Échap**, strictement comme « Annuler » : fermeture SANS mutation (aucune commande
+   émise, saisie abandonnée), jamais confondu avec « Enregistrer ». **Factorisation** : nouveau composant
+   commun `Components/ModalConfig.razor` (backdrop + panneau + `@onkeydown` Échap → `OnFermer`, focus clavier
+   best-effort au montage) ; les trois backdrops inline sont remplacés par `<ModalConfig>` (DOM rendu
+   identique — mêmes `data-testid`/classes, acceptations existantes intactes). Invariant préservé : même en
+   état de **refus** (motif affiché, saisie conservée), Échap ferme quand même sans rien réémettre. Acceptation
+   runtime `FrontWasmConfigModalsEchapFermeSansMutationTests` (4 tests : un par onglet + le cas refus→Échap ;
+   store réel vérifié inchangé après Échap).
