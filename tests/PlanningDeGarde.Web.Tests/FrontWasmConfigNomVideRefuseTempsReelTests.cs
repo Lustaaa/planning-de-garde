@@ -51,11 +51,13 @@ public sealed class FrontWasmConfigNomVideRefuseTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        this.SurDispatcher(() => config.Find("select.form-select").Change("parent-b"));
+        // Refonte s32 : l'édition passe par la MODAL ouverte au crayon (plus de sélecteur d'acteur inline).
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-b");
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("   "));
-        this.SurDispatcher(() => config.Find("form").Submit());
+        this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
-        // Then — l'édition est refusée : le motif métier renvoyé par l'API est affiché clairement à l'écran.
+        // Then — l'édition est refusée : le motif métier renvoyé par l'API est affiché clairement DANS la
+        // modal, qui reste ouverte (Sc.5), tandis que la grille ne bouge pas.
         config.WaitForAssertion(
             () => Assert.Equal(
                 "le nom ne peut pas être vide",

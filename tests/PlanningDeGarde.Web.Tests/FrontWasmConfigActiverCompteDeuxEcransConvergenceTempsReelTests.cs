@@ -43,10 +43,12 @@ public sealed class FrontWasmConfigActiverCompteDeuxEcransConvergenceTempsReelTe
         using var ecran2 = new TestContext();
         var config2 = RendreConfig(ecran2, api);
 
-        // Baseline sur les DEUX écrans : le compte d'Alice est « inactif » et offre l'action « Activer ».
+        // Baseline sur les DEUX écrans : le compte d'Alice est « inactif » (lu en ligne) et l'action « Activer »
+        // est offerte dans la MODAL de l'écran 2 (refonte s32) — ouverte au crayon, elle porte l'activation.
         Assert.Contains("inactif", LigneDe(config1, "Alice").QuerySelector("[data-testid='compte-acteur']")!.TextContent,
             StringComparison.OrdinalIgnoreCase);
-        Assert.NotNull(LigneDe(config2, "Alice").QuerySelector("[data-testid='bouton-activer-compte']"));
+        ConfigActeursModalHarness.OuvrirEdition(ecran2, config2, "parent-a");
+        Assert.NotEmpty(config2.FindAll("[data-testid='bouton-activer-compte']"));
 
         var notificateur = api.Services.GetRequiredService<INotificateurPlanning>();
         using var diffusionContinue = new CancellationTokenSource();
@@ -62,12 +64,12 @@ public sealed class FrontWasmConfigActiverCompteDeuxEcransConvergenceTempsReelTe
 
         try
         {
-            // When (activation depuis l'écran 2) — le second écran active le compte d'Alice (POST réel).
+            // When (activation depuis l'écran 2) — le second écran active le compte d'Alice depuis sa modal (POST réel).
             config2.InvokeAsync(() =>
-                LigneDe(config2, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")!.Click());
+                config2.Find("[data-testid='bouton-activer-compte']").Click());
 
             // Then (convergence) — sans rechargement, le PREMIER écran voit le compte d'Alice passer « actif »
-            // et l'action « Activer » y disparaître (statut relu du store partagé sur diffusion SignalR).
+            // (statut + badge d'état relus du store partagé sur diffusion SignalR).
             config1.WaitForAssertion(
                 () =>
                 {
@@ -75,7 +77,6 @@ public sealed class FrontWasmConfigActiverCompteDeuxEcransConvergenceTempsReelTe
                     Assert.NotNull(compte);
                     Assert.DoesNotContain("inactif", compte!.TextContent, StringComparison.OrdinalIgnoreCase);
                     Assert.Contains("actif", compte.TextContent, StringComparison.OrdinalIgnoreCase);
-                    Assert.Null(LigneDe(config1, "Alice").QuerySelector("[data-testid='bouton-activer-compte']"));
                 },
                 TimeSpan.FromSeconds(15));
         }

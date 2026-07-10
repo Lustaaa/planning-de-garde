@@ -56,13 +56,15 @@ public sealed class FrontWasmConfigGatingInviteRolesTempsReelTests : TestContext
         Assert.Empty(config.FindAll("[data-testid='champ-nom']"));
         Assert.Empty(config.FindAll("[data-testid='bouton-supprimer']"));
 
-        // Contrôle positif (anti faux-vert) — sous l'identité Parent, la gestion des rôles et le sélecteur
-        // d'affectation REDEVIENNENT proposés : preuve que le gating est bien le discriminant.
+        // Contrôle positif (anti faux-vert) — sous l'identité Parent, la gestion des rôles REDEVIENT proposée
+        // et le sélecteur d'affectation réapparaît DANS la modal ouverte au crayon (refonte s32) : preuve que
+        // le gating est bien le discriminant.
         session.Role = RoleAuteur.Parent;
         config.Render();
         Assert.NotEmpty(config.FindAll("[data-testid='champ-libelle-role']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-renommer-role']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-supprimer-role']"));
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         Assert.NotEmpty(config.FindAll("[data-testid='selecteur-role-acteur']"));
     }
 }

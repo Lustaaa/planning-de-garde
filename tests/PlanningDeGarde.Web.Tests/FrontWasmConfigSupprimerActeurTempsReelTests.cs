@@ -62,9 +62,9 @@ public sealed class FrontWasmConfigSupprimerActeurTempsReelTests : TestContext
 
         // When — je clique le bouton supprimer de la ligne de grand-père (émission via le canal
         // d'écriture HTTP réel de l'API distante : POST /api/canal/supprimer-acteur).
-        var ligneGrandPere = config.FindAll("[data-testid='acteur-foyer']")
-            .Single(li => li.GetAttribute("data-acteur-id") == "grand-pere");
-        this.SurDispatcher(() => ligneGrandPere.QuerySelector("[data-testid='bouton-supprimer']")!.Click());
+        // Refonte s32 : la suppression se fait dans la MODAL ouverte au crayon de grand-père.
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "grand-pere");
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-supprimer']").Click());
 
         // Then (1) — sans rechargement (même instance rendue), grand-père quitte la liste relue.
         config.WaitForAssertion(

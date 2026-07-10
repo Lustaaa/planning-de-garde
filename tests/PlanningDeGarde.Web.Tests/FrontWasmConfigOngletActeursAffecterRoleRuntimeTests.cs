@@ -44,10 +44,10 @@ public sealed class FrontWasmConfigOngletActeursAffecterRoleRuntimeTests : TestC
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        // Then (sélecteur borné) — le sélecteur de rôle de « Alice » (parent-a) propose exactement les rôles
-        // du référentiel plus « sans rôle » : rien de plus, rien en dur.
-        var ligneAlice = config.FindAll("[data-testid='acteur-foyer']").Single(li => NomLigne(li) == "Alice");
-        var options = ligneAlice.QuerySelector("[data-testid='selecteur-role-acteur']")!
+        // Then (sélecteur borné) — refonte s32 : le sélecteur de rôle vit dans la MODAL ouverte au crayon.
+        // Ouvert sur « Alice » (parent-a), il propose exactement les rôles du référentiel plus « sans rôle ».
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
+        var options = config.Find("[data-testid='selecteur-role-acteur']")
             .QuerySelectorAll("option")
             .Select(o => o.TextContent.Trim())
             .ToList();
@@ -57,12 +57,12 @@ public sealed class FrontWasmConfigOngletActeursAffecterRoleRuntimeTests : TestC
         Assert.Equal(3, options.Count);
 
         // Then (acteur sans rôle = neutre) — avant toute affectation, la ligne d'Alice affiche « sans rôle ».
-        Assert.Equal("sans rôle", ligneAlice.QuerySelector("[data-testid='role-acteur-courant']")!.TextContent.Trim());
+        Assert.Equal("sans rôle", ConfigActeursModalHarness.LigneParNom(config, "Alice")
+            .QuerySelector("[data-testid='role-acteur-courant']")!.TextContent.Trim());
 
-        // When (affectation) — j'affecte « Nounou » à Alice via son sélecteur (POST /api/canal/affecter-role,
-        // la valeur émise est l'id de rôle du référentiel, jamais un libellé en dur).
-        this.SurDispatcher(() => config.FindAll("[data-testid='acteur-foyer']").Single(li => NomLigne(li) == "Alice")
-            .QuerySelector("[data-testid='selecteur-role-acteur']")!.Change(idNounou));
+        // When (affectation) — j'affecte « Nounou » à Alice via le sélecteur de la modal (POST
+        // /api/canal/affecter-role, la valeur émise est l'id de rôle du référentiel, jamais un libellé en dur).
+        this.SurDispatcher(() => config.Find("[data-testid='selecteur-role-acteur']").Change(idNounou));
 
         // Then (affectation persistée) — sans rechargement, la ligne d'Alice relue depuis le store affiche
         // « Nounou », tandis qu'un acteur sans rôle (Bruno) reste « sans rôle » (neutre).

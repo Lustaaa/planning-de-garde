@@ -5,8 +5,9 @@
 > dettes refermées. Source de vérité du *déjà fait* ; le *reste à faire* vit dans `BACKLOG.md`.
 > Le *pourquoi* vit dans la spec vivante [`docs/specs/`](specs/index.md).
 >
-> **28 sprints livrés · suite complète 485/485 verte (s28).** Fichiers de sprint clos archivés sous
-> [`docs/_archive/sprints/`](_archive/sprints/).
+> **32 sprints livrés · suite complète 569/569 verte (s32).** Fichiers de sprint clos archivés sous
+> [`docs/_archive/sprints/`](_archive/sprints/). *(Lignes s29→s31 non backfillées dans la table
+> ci-dessous — trail détaillé dans leurs fichiers de sprint archivés + `BACKLOG.md`.)*
 
 ## Sprints livrés
 
@@ -40,6 +41,7 @@
 | 26 | `refonte-graphique` — refonte visuelle complète « Studio » (habillage pur, zéro régression comportement) : tokens `--pdg-*`, typo Fraunces/Inter self-hosted, **thème clair/sombre persisté** (`localStorage`, `data-theme`), calendrier en mini-cartes, dialogs/légende/layout habillés, parité Safari iOS | Tokens `--pdg-*` (`:root` + `[data-theme]`) + polices offline + refonte de tous les écrans clair+sombre (14/14 ✅, **458/458**) — **épic É5 (refonte visuelle + thème sombre) livré** |
 | 27 | `coherence-config-planning` — lieux hissés en **référentiel foyer éditable + persisté**, pilotant validation de pose ET sélecteurs des dialogs ; ancien `ILieuRepository`/`FoyerLieuRepository` en dur retiré | Référentiel lieux (InMemory seedé / Mongo durable sans seed) + canal vivant unique validation+sélecteurs + couleur config→grille en non-régression (6/6, **466/466**) — **cohérence config→planning (lieux) livrée** |
 | 28 | `cablage-auth-reel-reset-et-motdepasse` — câblage auth **réel** : reset mot de passe **E2E** (SMTP dev Smtp4dev + store jetons Mongo durable + expiration 60 min + 2 écrans IHM), **login email+mot de passe** (back+IHM), rapprochement Google **logique**, **seed compte démo par chemin réel** (flag `Demo:SeedCompteDemo`, convergent) | Adaptateurs concrets `IEnvoiMail`/`IReferentielJetonsReset` + DI handlers récup/reset + endpoints + écrans mot-de-passe-oublié/redéfinir-par-jeton + champ mot de passe login + `ConnexionOAuthHandler`/endpoint `oauth/google/demarrer` (doublure+manuel) + seed démo convergent (10/10, **485/485**) — **reset + login MDP OPÉRATIONNELS en runtime réel ; solde la moitié de la dette câblage s25. Reliquat P0 : Google OAuth réel + écran `definir-mot-de-passe`** |
+| 32 | `refonte-config-acteurs-crayon-modal` — **1er incrément de l'épic Refonte Config foyer** : onglet Acteurs passé du patron **édition inline** au patron **tableau lecture seule + crayon → modal** (états actif/admin en pastille lecture ; modal éditant nom/couleur/rôle via les commandes CRUD existantes, id stable non éditable ; « Ajouter » = même modal vide) ; refus domaine → modal reste ouverte, motif + saisie conservés ; **Parent-gated** (Invité = lecture seule, ni crayon ni « Ajouter ») ; **temps réel SignalR** (2ᵉ écran converge sans reload) | Sprint pur @ihm (0 @back, réutilise le CRUD acteurs s05→s24, aucun handler/query neuf) : swap atomique inline→modal (Sc.1-4, ~34 fichiers d'acceptation migrés en un commit) + erreur/gating/SignalR en incréments propres (7/7 ✅, **569/569**) — **1er incrément épic Refonte Config foyer livré** |
 
 > **Refacto technique HORS pipeline (PR #21, avant s10)** : adaptateurs de droite par techno,
 > `PlanningDeGarde.SignalR` (adapter de gauche), rangement par type, pipeline allégé, `test-count.ps1`.

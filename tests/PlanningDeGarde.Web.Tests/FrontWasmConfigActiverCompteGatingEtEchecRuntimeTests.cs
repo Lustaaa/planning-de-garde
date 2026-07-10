@@ -56,11 +56,13 @@ public sealed class FrontWasmConfigActiverCompteGatingEtEchecRuntimeTests : Test
         // Then — sous « Invité », aucune action « Activer » n'est offerte (gating sur l'identité effective).
         Assert.Empty(config.FindAll("[data-testid='bouton-activer-compte']"));
 
-        // Contrôle positif (anti faux-vert) — sous « Parent », l'action REDEVIENT offerte pour le compte inactif.
+        // Contrôle positif (anti faux-vert) — sous « Parent », l'action REDEVIENT offerte pour le compte
+        // inactif : le crayon réapparaît (refonte s32) et, dans la modal ouverte, « Activer » est présent.
         session.Role = RoleAuteur.Parent;
         config.Render();
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         config.WaitForAssertion(
-            () => Assert.NotNull(LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")),
+            () => Assert.NotEmpty(config.FindAll("[data-testid='bouton-activer-compte']")),
             TimeSpan.FromSeconds(10));
     }
 
@@ -76,12 +78,14 @@ public sealed class FrontWasmConfigActiverCompteGatingEtEchecRuntimeTests : Test
         Services.AddSingleton(new SessionPlanning()); // Parent par défaut
 
         var config = RenderComponent<ConfigurationFoyer>();
+        // Refonte s32 : « Activer » vit dans la MODAL ouverte au crayon d'Alice.
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         config.WaitForAssertion(
-            () => Assert.NotNull(LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")),
+            () => Assert.NotEmpty(config.FindAll("[data-testid='bouton-activer-compte']")),
             TimeSpan.FromSeconds(10));
 
-        // When — je clique « Activer » alors que le canal d'activation est injoignable.
-        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-activer-compte']")!.Click());
+        // When — je clique « Activer » dans la modal alors que le canal d'activation est injoignable.
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-activer-compte']").Click());
 
         // Then — un message d'échec clair s'affiche dans la ligne, le statut affiché reste « inactif »
         // (aucun faux positif), et aucun accusé « Compte activé » n'apparaît.

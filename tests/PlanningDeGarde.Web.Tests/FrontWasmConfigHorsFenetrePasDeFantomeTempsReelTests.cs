@@ -53,9 +53,10 @@ public sealed class FrontWasmConfigHorsFenetrePasDeFantomeTempsReelTests : TestC
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        this.SurDispatcher(() => config.Find("select.form-select").Change("parent-c"));
+        // Refonte s32 : l'édition passe par la MODAL ouverte au crayon (plus de sélecteur d'acteur inline).
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-c");
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("Mathilde"));
-        this.SurDispatcher(() => config.Find("form").Submit());
+        this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
         // … re-diffusion de fond idempotente (le store est déjà muté) pour que le push SignalR tombe
         // après l'établissement de la connexion long polling vers le TestServer, sans dépendre du timing.
@@ -73,11 +74,17 @@ public sealed class FrontWasmConfigHorsFenetrePasDeFantomeTempsReelTests : TestC
 
         try
         {
-            // Then (1) — l'écran de configuration confirme l'édition (le renommage de parent-c a abouti
-            // côté API, indépendamment de la présence en fenêtre : la validation est « id connu + nom non
-            // vide », pas la fenêtre).
+            // Then (1) — l'édition a abouti côté config (refonte s32) : la modal se ferme et la table relue
+            // reflète « Mathilde » sur l'identifiant parent-c (id connu + nom non vide, indépendamment de la
+            // présence en fenêtre).
             config.WaitForAssertion(
-                () => Assert.Single(config.FindAll("[data-testid='confirmation-edition']")),
+                () =>
+                {
+                    Assert.Empty(config.FindAll("[data-testid='dialog-acteur']"));
+                    Assert.Equal("Mathilde", config.FindAll("[data-testid='acteur-foyer']")
+                        .Single(li => li.GetAttribute("data-acteur-id") == "parent-c")
+                        .QuerySelector(".acteur-nom")!.TextContent.Trim());
+                },
                 TimeSpan.FromSeconds(15));
 
             // Then (2) — après diffusion, la grille de la fenêtre courante reste inchangée et la légende ne

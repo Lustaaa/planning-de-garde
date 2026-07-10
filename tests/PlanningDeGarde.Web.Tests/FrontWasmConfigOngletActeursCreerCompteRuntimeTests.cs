@@ -47,9 +47,10 @@ public sealed class FrontWasmConfigOngletActeursCreerCompteRuntimeTests : TestCo
         // Then (avant création) — la ligne d'Alice n'affiche aucun compte associé.
         Assert.Empty(LigneDe(config, "Alice").QuerySelectorAll("[data-testid='compte-acteur']"));
 
-        // When — je saisis un email et crée le compte d'Alice (POST /api/canal/creer-compte réel).
-        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']")!.Change("alice@foyer.fr"));
-        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-creer-compte']")!.Click());
+        // When — refonte s32 : la création de compte se fait dans la MODAL ouverte au crayon d'Alice.
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
+        this.SurDispatcher(() => config.Find("[data-testid='champ-email-compte']").Change("alice@foyer.fr"));
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-creer-compte']").Click());
 
         // Then — sans rechargement, la ligne d'Alice relue depuis le store affiche son compte associé,
         // avec l'email et le statut « inactif ».
@@ -71,19 +72,20 @@ public sealed class FrontWasmConfigOngletActeursCreerCompteRuntimeTests : TestCo
         using var api = new ApiDistanteFactory();
         var config = RendreConfig(api);
 
-        // When — je soumets un email VIDE pour Alice (le handler réel refuse « email requis »).
-        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']")!.Change(""));
-        this.SurDispatcher(() => LigneDe(config, "Alice").QuerySelector("[data-testid='bouton-creer-compte']")!.Click());
+        // When — refonte s32 : dans la MODAL d'Alice, je soumets un email VIDE (le handler réel refuse
+        // « email requis »).
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
+        this.SurDispatcher(() => config.Find("[data-testid='champ-email-compte']").Change(""));
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-creer-compte']").Click());
 
-        // Then — un motif clair est surfacé, le champ email reste présent (formulaire ouvert), et AUCUN
-        // compte n'est associé à Alice (le store n'a rien écrit).
+        // Then — un motif clair est surfacé DANS la modal, le champ email reste présent (formulaire ouvert),
+        // et AUCUN compte n'est associé à Alice (le store n'a rien écrit, la ligne relue reste sans compte).
         config.WaitForAssertion(
             () =>
             {
-                var motif = LigneDe(config, "Alice").QuerySelector("[data-testid='motif-echec-compte']");
-                Assert.NotNull(motif);
-                Assert.False(string.IsNullOrWhiteSpace(motif!.TextContent));
-                Assert.NotNull(LigneDe(config, "Alice").QuerySelector("[data-testid='champ-email-compte']"));
+                var motif = config.Find("[data-testid='motif-echec-compte']");
+                Assert.False(string.IsNullOrWhiteSpace(motif.TextContent));
+                Assert.NotEmpty(config.FindAll("[data-testid='champ-email-compte']"));
                 Assert.Empty(LigneDe(config, "Alice").QuerySelectorAll("[data-testid='compte-acteur']"));
             },
             TimeSpan.FromSeconds(10));

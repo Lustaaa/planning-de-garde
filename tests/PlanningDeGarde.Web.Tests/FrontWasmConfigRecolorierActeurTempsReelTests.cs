@@ -59,9 +59,10 @@ public sealed class FrontWasmConfigRecolorierActeurTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        this.SurDispatcher(() => config.Find("select.form-select").Change("parent-b"));
+        // Refonte s32 : l'édition passe par la MODAL ouverte au crayon (plus de sélecteur d'acteur inline).
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-b");
         this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("violet"));
-        this.SurDispatcher(() => config.Find("form").Submit());
+        this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
         // … la connexion SignalR du front (long polling vers le TestServer) s'établit de façon
         // asynchrone : on ré-émet la diffusion en boucle de fond (idempotente — le store est déjà muté)

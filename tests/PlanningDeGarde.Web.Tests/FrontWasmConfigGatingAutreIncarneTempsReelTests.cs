@@ -27,15 +27,14 @@ namespace PlanningDeGarde.Web.Tests;
 /// </summary>
 public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContext
 {
-    // Affordances d'écriture (proxys des formulaires gatés) réparties par onglet depuis la refonte s20
-    // (Sc.2) : sous l'onglet « Acteurs » — champ-nom (édition), champ-nom-ajout (ajout), bouton-supprimer
-    // (suppression) ; sous l'onglet « Période de garde » — champ-nombre-semaines (cycle). Le gating règle 9
-    // (identité effective) est préservé DANS chaque onglet (Sc.7, s20).
+    // Affordances d'écriture (proxys des surfaces gatées). Refonte s32 : l'écriture d'un acteur passe par la
+    // MODAL — les entrées d'écriture VISIBLES dans la table sont le crayon d'édition (par ligne) et le bouton
+    // « Ajouter un acteur ». Sous « Période de garde » — champ-nombre-semaines (cycle). Le gating règle 9
+    // (identité effective) est préservé sur chacune (Sc.7, s20 ; s32 pour l'acteur).
     private static readonly string[] EcrituresOngletActeurs =
     {
-        "[data-testid='champ-nom']",
-        "[data-testid='champ-nom-ajout']",
-        "[data-testid='bouton-supprimer']",
+        "[data-testid='crayon-acteur']",
+        "[data-testid='bouton-ajouter-acteur']",
     };
 
     private const string EcritureOngletPeriodeGarde = "[data-testid='champ-nombre-semaines']";
@@ -112,14 +111,14 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
         config.Render();
         Assert.Contains("Vous incarnez Nina la nounou",
             config.Find("[data-testid='bandeau-incarnation']").TextContent);
-        Assert.Empty(config.FindAll("[data-testid='champ-nom']"));
+        Assert.Empty(config.FindAll("[data-testid='crayon-acteur']"));
 
         // En revenant à l'identité réelle DEPUIS la configuration : bandeau retiré, écritures restaurées sur
-        // chaque onglet (édition/ajout sous « Acteurs » actif, cycle sous « Période de garde », Sc.2/Sc.7 s20).
+        // chaque section (crayon/ajout d'acteur — refonte s32 —, cycle sous « Période de garde », Sc.2/Sc.7 s20).
         this.SurDispatcher(() => config.Find("[data-testid='revenir-identite-reelle']").Click());
         Assert.Empty(config.FindAll("[data-testid='bandeau-incarnation']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='champ-nom']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='champ-nom-ajout']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='crayon-acteur']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-acteur']"));
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
     }
 }

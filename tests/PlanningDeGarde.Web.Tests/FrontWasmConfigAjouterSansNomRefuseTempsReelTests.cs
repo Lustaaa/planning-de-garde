@@ -46,7 +46,9 @@ public sealed class FrontWasmConfigAjouterSansNomRefuseTempsReelTests : TestCont
             config.FindAll("[data-testid='acteur-foyer']"),
             li => string.IsNullOrWhiteSpace(li.QuerySelector(".acteur-nom")?.TextContent));
 
-        // When — un parent valide l'ajout en laissant le nom vide (émission via le canal d'écriture HTTP réel).
+        // When — un parent ouvre la modal d'ajout (refonte s32) et valide en laissant le nom vide (émission
+        // via le canal d'écriture HTTP réel). Sur refus, la modal RESTE OUVERTE avec le motif dedans.
+        ConfigActeursModalHarness.OuvrirAjout(this, config);
         this.SurDispatcher(() => config.Find("#form-ajout").Submit());
 
         // Then — l'ajout est refusé : le motif métier renvoyé par l'API est affiché clairement à l'écran.

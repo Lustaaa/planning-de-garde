@@ -60,11 +60,12 @@ public sealed class FrontWasmConfigCompteAdminDeuxEcransConvergenceTempsReelTest
 
         try
         {
-            // When (création de compte depuis l'écran 2) — le second écran crée le compte de Bruno.
+            // When (création de compte depuis l'écran 2) — refonte s32 : dans la MODAL de Bruno (crayon).
+            ConfigActeursModalHarness.OuvrirEdition(ecran2, config2, "parent-b");
             config2.InvokeAsync(() =>
-                LigneDe(config2, "Bruno").QuerySelector("[data-testid='champ-email-compte']")!.Change("bruno@foyer.fr"));
+                config2.Find("[data-testid='champ-email-compte']").Change("bruno@foyer.fr"));
             config2.InvokeAsync(() =>
-                LigneDe(config2, "Bruno").QuerySelector("[data-testid='bouton-creer-compte']")!.Click());
+                config2.Find("[data-testid='bouton-creer-compte']").Click());
 
             // Then (convergence création) — sans rechargement, le PREMIER écran voit le compte de Bruno.
             config1.WaitForAssertion(
@@ -76,18 +77,20 @@ public sealed class FrontWasmConfigCompteAdminDeuxEcransConvergenceTempsReelTest
                 },
                 TimeSpan.FromSeconds(15));
 
-            // When (désignation admin depuis l'écran 2) — le second écran désigne Alice (Parent) admin du foyer.
+            // When (désignation admin depuis l'écran 2) — refonte s32 : dans la MODAL d'Alice (crayon).
+            ConfigActeursModalHarness.OuvrirEdition(ecran2, config2, "parent-a");
             config2.InvokeAsync(() =>
-                LigneDe(config2, "Alice").QuerySelector("[data-testid='bouton-designer-admin']")!.Click());
+                config2.Find("[data-testid='bouton-designer-admin']").Click());
 
             // Then (convergence admin) — sans rechargement, le PREMIER écran affiche Alice comme admin.
             config1.WaitForAssertion(
                 () => Assert.NotEmpty(LigneDe(config1, "Alice").QuerySelectorAll("[data-testid='acteur-admin-marqueur']")),
                 TimeSpan.FromSeconds(15));
 
-            // When (suppression de l'acteur associé depuis l'écran 2) — le second écran supprime Bruno.
+            // When (suppression de l'acteur associé depuis l'écran 2) — refonte s32 : dans la MODAL de Bruno.
+            ConfigActeursModalHarness.OuvrirEdition(ecran2, config2, "parent-b");
             config2.InvokeAsync(() =>
-                LigneDe(config2, "Bruno").QuerySelector("[data-testid='bouton-supprimer']")!.Click());
+                config2.Find("[data-testid='bouton-supprimer']").Click());
 
             // Then (désassociation propre sur les DEUX écrans) — Bruno quitte la liste ; aucune ligne ne porte
             // plus son compte (compte désassocié, pas de compte fantôme référençant l'acteur absent).

@@ -59,9 +59,10 @@ public sealed class FrontWasmConfigCollisionCouleurTempsReelTests : TestContext
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        this.SurDispatcher(() => config.Find("select.form-select").Change("parent-b"));
+        // Refonte s32 : l'édition passe par la MODAL ouverte au crayon (plus de sélecteur d'acteur inline).
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-b");
         this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("bleu"));
-        this.SurDispatcher(() => config.Find("form").Submit());
+        this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
         // … re-diffusion de fond idempotente (le store est déjà muté) pour que le push SignalR tombe
         // après l'établissement de la connexion long polling vers le TestServer, sans dépendre du timing.

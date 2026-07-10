@@ -45,6 +45,18 @@ Tu portes **trois chapeaux** selon ce qu'on te dispatche. Un seul à la fois.
      réellement** (ou recalculer l'index annoncé). Ne jamais poser une date et un index
      incohérents : la dev-team s'arrête et escalade *(récit : JOURNAL-METHODE s16)*. En cas de doute,
      ancrer l'attendu sur la **règle de résolution**, pas sur un numéro d'index codé en dur.
+   - **GARDE du LOT ATOMIQUE sur une refonte de SURFACE (swap inline→modal & co.).** Quand un sprint
+     **remplace une surface d'écriture par une autre** (ex. retirer l'édition inline ET brancher la modal),
+     le **retrait de l'ancienne** surface et le **branchement de la neuve** sont les **deux faces d'un même
+     refactor** : ils partagent les mêmes commandes et les mêmes testids d'écriture, et les fichiers
+     d'acceptation qui pilotaient l'ancienne surface **migrent** vers la neuve. Un découpage naïf
+     **1 scénario = 1 commit** ouvrirait une **fenêtre rouge multi-scénarios** (suite non verte tant que la
+     neuve ne porte pas l'écriture) — **proscrit** (rempart suite-complète-verte). **AVANT d'écrire les
+     scénarios**, repère ce motif et **groupe explicitement les scénarios inséparables en UN lot atomique
+     « swap de surface » = un seul commit** (chaque scénario restant **individuellement asserté** dedans) ;
+     bascule ces lignes **✅ ensemble** ; laisse erreur/gating/temps-réel en **incréments propres** derrière.
+     **Interdit** : prescrire une coexistence durable ancienne+neuve (code mort + étape de démolition qui
+     contredirait le Gherkin du 1er scénario) *(récit : JOURNAL-METHODE s32)*.
    - **Section `# Retours produit (PO)`** vide en bas (remplie après le gate G3).
    - **Pas de dossier de suivi, pas de fichier-par-scénario.** Un seul fichier.
    → renvoie `{ "type":"sprint", … }`.

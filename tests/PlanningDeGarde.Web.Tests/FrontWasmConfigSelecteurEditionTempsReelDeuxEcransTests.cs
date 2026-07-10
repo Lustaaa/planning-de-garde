@@ -48,10 +48,11 @@ public sealed class FrontWasmConfigSelecteurEditionTempsReelDeuxEcransTests : Te
         });
     }
 
-    /// <summary>Identifiants stables (triés) proposés par le sélecteur d'édition de l'écran de configuration.</summary>
+    /// <summary>Identifiants stables (triés) énumérés par la table de l'écran de configuration (refonte s32 :
+    /// la table de lecture remplace le sélecteur d'édition inline ; le crayon de chaque ligne porte l'id).</summary>
     private static IReadOnlyList<string> IdsSelecteurEdition(IRenderedComponent<ConfigurationFoyer> config)
-        => config.FindAll("[data-testid='selecteur-acteur-edition'] option")
-            .Select(o => o.GetAttribute("value") ?? "")
+        => config.FindAll("[data-testid='acteur-foyer']")
+            .Select(li => li.GetAttribute("data-acteur-id") ?? "")
             .Where(v => v.Length > 0)
             .OrderBy(id => id)
             .ToList();
@@ -75,15 +76,16 @@ public sealed class FrontWasmConfigSelecteurEditionTempsReelDeuxEcransTests : Te
         var config2 = ecran2.RenderComponent<ConfigurationFoyer>();
         config2.WaitForState(() => config2.FindAll("[data-testid='acteur-foyer']").Count > 0, TimeSpan.FromSeconds(10));
 
-        // … cohérence de base (anti faux-vert) : le sélecteur d'édition du 1ᵉʳ écran propose EXACTEMENT les
-        // acteurs déclarés du store unifié (même source que dialogs + grille), et « Carla » n'y figure pas.
+        // … cohérence de base (anti faux-vert) : la table du 1ᵉʳ écran énumère EXACTEMENT les acteurs déclarés
+        // du store unifié (même source que dialogs + grille), et « Carla » n'y figure pas.
         Assert.Equal(SourceUnifiee(api), IdsSelecteurEdition(config1));
         Assert.DoesNotContain(
-            config1.FindAll("[data-testid='selecteur-acteur-edition'] option"),
-            o => o.TextContent.Trim() == "Carla");
+            config1.FindAll("[data-testid='acteur-foyer']"),
+            li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
-        // When — un parent ajoute « Carla » (rose) depuis le SECOND écran (canal d'écriture HTTP réel :
-        // POST /api/canal/ajouter-acteur → store partagé muté + diffusion temps réel déclenchée).
+        // When — un parent ajoute « Carla » (rose) depuis le SECOND écran via la MODAL d'ajout (refonte s32 ;
+        // canal d'écriture HTTP réel : POST /api/canal/ajouter-acteur → store partagé muté + diffusion).
+        ConfigActeursModalHarness.OuvrirAjout(ecran2, config2);
         config2.SurDispatcher(() => config2.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
         config2.SurDispatcher(() => config2.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
         config2.SurDispatcher(() => config2.Find("#form-ajout").Submit());
@@ -115,8 +117,8 @@ public sealed class FrontWasmConfigSelecteurEditionTempsReelDeuxEcransTests : Te
                 () =>
                 {
                     Assert.Contains(
-                        config1.FindAll("[data-testid='selecteur-acteur-edition'] option"),
-                        o => o.TextContent.Trim() == "Carla");
+                        config1.FindAll("[data-testid='acteur-foyer']"),
+                        li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
                     Assert.Equal(SourceUnifiee(api), IdsSelecteurEdition(config1));
                 },
                 TimeSpan.FromSeconds(15));

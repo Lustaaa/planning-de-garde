@@ -53,7 +53,8 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
             config.FindAll("[data-testid='acteur-foyer']"),
             li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
-        // … un parent a saisi « Carla » (rose) dans le formulaire d'ajout.
+        // … un parent ouvre la modal d'ajout (refonte s32) et saisit « Carla » (rose) dans le formulaire.
+        ConfigActeursModalHarness.OuvrirAjout(this, config);
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
         this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
 

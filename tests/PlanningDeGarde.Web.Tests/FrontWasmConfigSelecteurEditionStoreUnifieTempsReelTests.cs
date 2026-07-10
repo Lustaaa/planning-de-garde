@@ -46,18 +46,19 @@ public sealed class FrontWasmConfigSelecteurEditionStoreUnifieTempsReelTests : T
             () => config.FindAll("[data-testid='acteur-foyer']").Count > 0,
             TimeSpan.FromSeconds(10));
 
-        // Then — le sélecteur d'édition expose EXACTEMENT les acteurs du store vivant unifié (dont « carla »),
-        // strictement identiques à la source lue par les dialogs et la grille.
+        // Then — refonte s32 : la table (lecture) de l'écran énumère EXACTEMENT les acteurs du store vivant
+        // unifié (dont « carla »), chaque ligne portant l'id stable — même source que les dialogs et la grille
+        // (le crayon de chaque ligne ouvre la modal d'édition sur cet id, jamais une liste statique front).
         config.WaitForAssertion(
             () =>
             {
-                var idsSelecteur = config.FindAll("[data-testid='selecteur-acteur-edition'] option")
-                    .Select(o => o.GetAttribute("value") ?? "")
+                var idsTable = config.FindAll("[data-testid='acteur-foyer']")
+                    .Select(li => li.GetAttribute("data-acteur-id") ?? "")
                     .Where(v => v.Length > 0)
                     .OrderBy(id => id)
                     .ToList();
-                Assert.Equal(sourceUnifiee, idsSelecteur);
-                Assert.Contains("carla", idsSelecteur);
+                Assert.Equal(sourceUnifiee, idsTable);
+                Assert.Contains("carla", idsTable);
             },
             TimeSpan.FromSeconds(10));
     }

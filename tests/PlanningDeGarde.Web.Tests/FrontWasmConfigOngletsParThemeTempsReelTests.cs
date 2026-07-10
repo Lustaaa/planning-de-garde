@@ -49,8 +49,10 @@ public sealed class FrontWasmConfigOngletsParThemeTempsReelTests : TestContext
         Assert.NotEmpty(config.FindAll("[data-testid='panneau-roles']"));
         Assert.NotEmpty(config.FindAll("[data-testid='panneau-periode-garde']"));
 
-        // … le contenu du panneau Acteurs (sélecteur d'édition + table) et le cycle de fond sont présents.
-        Assert.NotEmpty(config.FindAll("[data-testid='selecteur-acteur-edition']"));
+        // … le contenu du panneau Acteurs (refonte s32 : crayon d'édition par ligne + bouton « Ajouter un
+        // acteur » + table de lecture) et le cycle de fond sont présents.
+        Assert.NotEmpty(config.FindAll("[data-testid='crayon-acteur']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-acteur']"));
         Assert.NotEmpty(config.FindAll("[data-testid='liste-acteurs']"));
         Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
     }
