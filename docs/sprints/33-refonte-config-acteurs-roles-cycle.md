@@ -26,13 +26,13 @@
 > - **Enfants / Activités / lien enfant↔parent** : autres incréments de l'épic, **non traités ici**.
 > - **Occurrence-unique vs série** (goal 4) : reporté s34.
 
-## Avancement — 2/11
+## Avancement — 3/11
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Adresse de résidence de l'acteur — modèle + persistance + édition (frontière Application) | back | ✅ |
 | 2 | Éditer / ajouter un rôle à la frontière Application (harmonisation Rôles) | back | ✅ déjà couvert s21 (filet non-régression) |
-| 3 | Lire TOUS les cycles déclarés/actifs du foyer (corrige le trou de lecture) | back | ⏳ |
+| 3 | Lire TOUS les cycles déclarés/actifs du foyer (corrige le trou de lecture) | back | ✅ |
 | 4 | Toggle actif/admin DANS la modal acteur (remplace la pastille lecture) | 🖥️ IHM | ⏳ |
 | 5 | Champ adresse éditable dans la modal + rendu dans le tableau lecture | 🖥️ IHM | ⏳ |
 | 6 | Palette couleur en picker minimal dans la modal | 🖥️ IHM | ⏳ |
@@ -94,7 +94,7 @@ Et l'affectation existante des acteurs au rôle reste cohérente (renommage ≠ 
 Et si cette capacité existe déjà (early-green), la dev-team le signale au SM (pas de handler neuf réinventé)
 ```
 
-### Sc.3 — Lire TOUS les cycles déclarés / actifs du foyer @back @pending
+### Sc.3 — Lire TOUS les cycles déclarés / actifs du foyer @back @vert
 ```gherkin
 Étant donné un foyer où plusieurs cycles sont DÉCLARÉS (settés / actifs)
 Quand la query de configuration du foyer est interrogée sur les cycles
