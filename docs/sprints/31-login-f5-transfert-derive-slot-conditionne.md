@@ -14,7 +14,7 @@
 > **Chaque invariant est borné séparément** (voir en tête de chaque volet). Interdiction de
 > travailler D1 et D3 en parallèle : un cœur à la fois, chacun vert avant le suivant.
 
-## Avancement — 14/14
+## Avancement — 15/15
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -35,8 +35,10 @@
 | 12 | Limite : jour où l'enfant n'est pas chez le poseur → occurrence masquée | back | ✅ |
 | 13 | Non-régression : slot **non conditionné** (défaut) → comportement s29 strictement inchangé | back | ✅ |
 | 14 | Toggle « seulement les jours où l'enfant est chez moi » dans la dialog « Poser un slot » | 🖥️ IHM | ✅ |
+| **Rework G3 — décision PO option A · rouvre le cœur D3 (3e résolution) : dériver aussi les relais du cycle de fond** ||||
+| 15 | Transfert dérivé sur bascule du CYCLE DE FOND (le responsable résolu change d'un jour à l'autre) | back | ✅ |
 
-**back : 9 · 🖥️ IHM : 5 · total : 14.**
+**back : 10 · 🖥️ IHM : 5 · total : 15.**
 
 ---
 
@@ -155,6 +157,24 @@ Scénario 10 — Rendu du transfert dérivé (présentation s29 réutilisée)
   Et un jour sans bascule reste unicolore, inchangé
 ```
 
+```gherkin
+@back @vert
+Scénario 15 — Rework G3 (option A PO) : transfert dérivé sur bascule du CYCLE DE FOND
+  Étant donné un cycle de fond en alternance hebdomadaire (le responsable résolu bascule chaque semaine)
+  Et un profil de données RÉALISTE (cycle de fond + périodes surchargées éparses, PAS de succession sur-mesure)
+  Quand la grille projette un jour où le responsable RÉSOLU (surcharge > fond) change d'un jour à l'autre du fait du cycle
+  Et qu'aucune période ne trace cette succession
+  Alors une pastille bicolore est dérivée ce jour-là (cédant = résolu de la veille, recevant = résolu du jour)
+  Et le motif « Transfert » apparaît en légende (en case comme en légende)
+  Et le chemin « période-existence » (Sc.5–Sc.9, orphelin neutre) reste INCHANGÉ (deux chemins séparés, SAISI > DÉRIVÉ, pas de doublon)
+```
+
+> **Note rework (G3, décision PO option A)** : le défaut détecté au gate = la dérivation D3 ne voyait que
+> les successions de **périodes saisies**, jamais les relais du **cycle de fond** qui pilotent le planning
+> réel. Fix = **second chemin de dérivation** « cycle-résolu » (lit `ResoudreResponsable` J-1 vs J), **séparé**
+> du chemin « période-existence » inchangé (Sc.9 tenu). Prouvé runtime sur le Mongo réel : 06/07 (Cyril→Esther)
+> et 10/08 (Esther→Cyril) portent la diagonale bicolore.
+
 ---
 
 ## Volet 3 — D1 : slot récurrent conditionné à la garde
@@ -208,4 +228,15 @@ Scénario 14 — Toggle de conditionnement dans la dialog de pose
 
 # Retours produit (PO)
 
-*(À remplir après le gate G3.)*
+## Défauts DANS le goal (rework au gate G3, sprint non clos)
+
+- **[D3] Le transfert AUTO-dérivé ne s'affiche pas du tout sur les données réelles de l'app.**
+  Sc.10 vert sur store semé mais surface réelle vide (« vert-qui-ment »). Rework en cours
+  (diagnostic systématique + exemple sur données existantes + fix + test d'acceptation sur profil
+  réaliste). Le gate G3 doit être rejoué après correction.
+
+## Ajouts HORS goal → backlog (triage /cloture ou /planning)
+
+- **Suppression d'un slot récurrent depuis l'IHM** — signalé au gate : « les slots récurrents ne
+  sont toujours pas supprimables ». Nouvelle surface IHM + commande/handler → hors goal s31
+  (Login F5 · D3 · D1). Déjà item connu du backlog. Candidat goal prochain `/planning`.
