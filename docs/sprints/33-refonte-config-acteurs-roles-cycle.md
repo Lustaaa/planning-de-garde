@@ -26,7 +26,7 @@
 > - **Enfants / Activités / lien enfant↔parent** : autres incréments de l'épic, **non traités ici**.
 > - **Occurrence-unique vs série** (goal 4) : reporté s34.
 
-## Avancement — 6/11
+## Avancement — 7/11
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -36,7 +36,7 @@
 | 4 | Toggle actif/admin DANS la modal acteur (remplace la pastille lecture) | 🖥️ IHM | ✅ |
 | 5 | Champ adresse éditable dans la modal + rendu dans le tableau lecture | 🖥️ IHM | ✅ |
 | 6 | Palette couleur en picker minimal dans la modal | 🖥️ IHM | ✅ |
-| 7 | Invariants Acteurs — refus→modal ouverte (adresse/toggle) + Parent-gated + SignalR | 🖥️ IHM | ⏳ |
+| 7 | Invariants Acteurs — refus→modal ouverte (adresse/toggle) + Parent-gated + SignalR | 🖥️ IHM | ✅ |
 | 8 | Onglet Rôles au patron tableau lecture + crayon → modal + « Ajouter » | 🖥️ IHM | ⏳ |
 | 9 | Invariants Rôles — refus→modal ouverte + Parent-gated + SignalR | 🖥️ IHM | ⏳ |
 | 10 | Onglet Cycle — tableau des cycles + cycles déclarés RENDUS VISIBLES + modal | 🖥️ IHM | ⏳ |
@@ -152,7 +152,7 @@ Alors la couleur choisie est persistée via la commande EXISTANTE et la grille d
 Et HORS scope : aucune gestion de palette custom (créer / renommer / supprimer des couleurs)
 ```
 
-### Sc.7 — Invariants Acteurs : refus→modal ouverte + gating + SignalR @ihm @pending
+### Sc.7 — Invariants Acteurs : refus→modal ouverte + gating + SignalR @ihm @vert
 ```gherkin
 Étant donné la modal acteur enrichie (toggle actif/admin, adresse, palette)
 Quand une valeur est refusée par le domaine (ex. nom vide / doublon, ou API injoignable) à l'enregistrement
