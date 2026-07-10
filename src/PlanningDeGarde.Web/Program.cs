@@ -44,6 +44,11 @@ builder.Services.AddScoped<IPreferencesTheme, PreferencesThemeJs>();
 builder.Services.AddScoped<IPersistanceSession, PersistanceSessionJs>();
 builder.Services.AddScoped<RestaurateurSession>();
 
+// Écoute Échap des modals de la Config foyer (finition PO s33) : capture au niveau DOCUMENT via le module JS
+// window.pdgModal (attach à l'ouverture, detach à la fermeture). Échap = « Annuler » (ferme sans muter).
+// Adaptateur de bord, aucune règle métier.
+builder.Services.AddScoped<IEcouteurEchapModal, EcouteurEchapModalJs>();
+
 // Câblage de la connexion au hub SignalR de lecture. Neutre en WASM réel (le navigateur négocie
 // en WebSocket vers l'API distante) ; surchargeable par un hôte de test pour pointer son TestServer.
 builder.Services.AddSingleton(new OptionsConnexionHub());

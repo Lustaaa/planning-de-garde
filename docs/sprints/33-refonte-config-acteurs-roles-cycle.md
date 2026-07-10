@@ -261,9 +261,17 @@ Alors le tableau du 2ᵉ écran CONVERGE sans rechargement, sans écriture par l
 4. **Fermeture Échap des modals** — les trois modals d'édition de la Config foyer (Acteurs, Rôles, Cycle) se
    ferment à la touche **Échap**, strictement comme « Annuler » : fermeture SANS mutation (aucune commande
    émise, saisie abandonnée), jamais confondu avec « Enregistrer ». **Factorisation** : nouveau composant
-   commun `Components/ModalConfig.razor` (backdrop + panneau + `@onkeydown` Échap → `OnFermer`, focus clavier
-   best-effort au montage) ; les trois backdrops inline sont remplacés par `<ModalConfig>` (DOM rendu
-   identique — mêmes `data-testid`/classes, acceptations existantes intactes). Invariant préservé : même en
-   état de **refus** (motif affiché, saisie conservée), Échap ferme quand même sans rien réémettre. Acceptation
-   runtime `FrontWasmConfigModalsEchapFermeSansMutationTests` (4 tests : un par onglet + le cas refus→Échap ;
-   store réel vérifié inchangé après Échap).
+   commun `Components/ModalConfig.razor` (backdrop + panneau + `OnFermer`) ; les trois backdrops inline sont
+   remplacés par `<ModalConfig>` (DOM rendu identique — mêmes `data-testid`/classes, acceptations existantes
+   intactes). **Correctif anti vert-qui-ment** (retour PO : « les modals ne se ferment toujours pas en
+   navigateur ») : la 1ʳᵉ tentative posait `@onkeydown`+focus sur le backdrop → bUnit dispatche le keydown sur
+   l'élément porteur (test vert) mais en navigateur réel l'événement part de `document` et n'atteint jamais une
+   modal non focus. **Cause racine corrigée** : capture au niveau **document** via le port
+   `IEcouteurEchapModal` (adaptateur `EcouteurEchapModalJs` → module JS `window.pdgModal` dans index.html :
+   `document.addEventListener('keydown')` filtre Échap, rappelle .NET `Declencher` → `OnFermer`) ; attaché à
+   l'ouverture, **détaché** à la fermeture/Dispose (aucune fuite). Invariant préservé : même en état de
+   **refus** (motif affiché, saisie conservée), Échap ferme quand même sans rien réémettre. Acceptation :
+   `FrontWasmConfigModalsEchapFermeSansMutationTests` (port doublé à la main) prouve, sur les 3 onglets + le
+   cas refus, que l'ouverture ATTACHE l'écouteur, que son déclenchement ferme SANS muter le store réel, et que
+   la fermeture DÉTACHE (pas de fuite) ; + garde d'asset sur `window.pdgModal`. **Limite honnête** : le
+   `document.addEventListener` JS lui-même n'est pas exécuté hors navigateur — preuve finale = gate navigateur PO.

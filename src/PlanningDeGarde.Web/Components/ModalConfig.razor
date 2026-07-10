@@ -1,11 +1,15 @@
+@using Microsoft.Extensions.DependencyInjection
+@implements IAsyncDisposable
+
 @* Composant modal COMMUN de la Config foyer (factorisation, finition PO s33) : backdrop + panneau, et
    fermeture à la touche Échap STRICTEMENT équivalente à « Annuler » — ferme sans muter, aucune commande
-   émise (la fermeture est déléguée au parent via OnFermer, qui n'émet rien). Le contenu (formulaire,
-   actions, motif de refus…) est passé tel quel en ChildContent — le DOM rendu reste identique à l'inline
-   d'origine (mêmes classes .dialog-backdrop/.dialog-panneau et même data-testid), les acceptations existantes
-   continuent de le cibler. La frappe Échap est captée sur le backdrop (@onkeydown) ; au montage, le backdrop
-   prend le focus clavier (FocusAsync, best-effort) afin que la frappe l'atteigne dans un vrai navigateur. *@
-<div class="dialog-backdrop" data-testid="@TestId" tabindex="-1" @ref="_backdrop" @onkeydown="SurTouche">
+   émise. La capture Échap est faite au niveau DOCUMENT via le port IEcouteurEchapModal (module JS
+   window.pdgModal) : c'est indispensable car un @onkeydown posé sur le backdrop ne reçoit RIEN en navigateur
+   réel tant que l'élément n'est pas focus (piège du vert-qui-ment). L'écouteur est attaché au montage et
+   DÉTACHÉ à la fermeture (Dispose) — aucune fuite. Le contenu (formulaire, actions, motif de refus…) est
+   passé tel quel en ChildContent — DOM rendu identique à l'inline d'origine (mêmes classes
+   .dialog-backdrop/.dialog-panneau et même data-testid) : les acceptations existantes le ciblent inchangé. *@
+<div class="dialog-backdrop" data-testid="@TestId">
     <div class="dialog-panneau">
         @ChildContent
     </div>
@@ -20,28 +24,34 @@
 
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    private ElementReference _backdrop;
+    /// <summary>Résolution OPTIONNELLE du port d'écoute Échap (miroir du hub SignalR de ConfigurationFoyer) :
+    /// présent (app réelle / test qui double le port) il capte Échap au niveau document ; absent (écrans qui ne
+    /// l'enregistrent pas) la modal reste fonctionnelle, fermable au bouton « Annuler ».</summary>
+    [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    /// <summary>Échap = « Annuler » : ferme sans muter. Toute autre touche est ignorée — jamais « Enregistrer ».</summary>
-    private async Task SurTouche(KeyboardEventArgs e)
-    {
-        if (e.Key == "Escape")
-            await OnFermer.InvokeAsync();
-    }
+    private IAsyncDisposable? _abonnementEchap;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (!firstRender)
             return;
-        try
+
+        var ecouteur = Services.GetService<IEcouteurEchapModal>();
+        if (ecouteur is null)
+            return;
+
+        // Échap au niveau document → « Annuler » : ferme sans muter, puis re-render du parent.
+        _abonnementEchap = await ecouteur.EcouterAsync(async () =>
         {
-            // Focus clavier sur le backdrop pour qu'Échap l'atteigne dans un vrai navigateur. Best-effort :
-            // sans JS (tests headless), l'appel est avalé — la frappe y est alors routée directement.
-            await _backdrop.FocusAsync();
-        }
-        catch
-        {
-            // Focus indisponible (pas de JS) : sans incidence, la fermeture Échap reste câblée sur @onkeydown.
-        }
+            await OnFermer.InvokeAsync();
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    /// <summary>Détache l'écouteur document à la fermeture de la modal (composant retiré du rendu) — pas de fuite.</summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (_abonnementEchap is not null)
+            await _abonnementEchap.DisposeAsync();
     }
 }
