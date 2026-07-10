@@ -14,7 +14,7 @@
 > édite uniquement les **champs existants** (nom, couleur, rôle ; email/compte via l'affordance
 > compte existante).
 
-## Avancement — 6/7
+## Avancement — 7/7
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -24,7 +24,7 @@
 | 4 | Bouton « Ajouter » → même modal VIDE → création (id stable neuf) | 🖥️ IHM | ✅ |
 | 5 | Erreur — refus domaine → modal reste ouverte, motif dedans, saisie conservée | 🖥️ IHM | ✅ |
 | 6 | Gating — Invité (non-Parent) : ni crayon ni « Ajouter », table lecture seule | 🖥️ IHM | ✅ |
-| 7 | Temps réel SignalR — un 2ᵉ écran édite/ajoute → table converge sans reload | 🖥️ IHM | ⏳ |
+| 7 | Temps réel SignalR — un 2ᵉ écran édite/ajoute → table converge sans reload | 🖥️ IHM | ✅ |
 
 > **⚠️ Lot atomique Sc.1→Sc.4 = UN seul commit « swap de surface » (décision SM).** Retirer la
 > surface d'écriture **inline** (Sc.1) et brancher la surface d'écriture **par la modal** (Sc.2-4)
@@ -113,7 +113,7 @@ Et aucune modal d'écriture n'est atteignable
 Et le gating par onglet (durcissement config s14/s20) est tenu, non régressé sur les autres onglets
 ```
 
-### Sc.7 — Temps réel SignalR : convergence sans rechargement @ihm @pending
+### Sc.7 — Temps réel SignalR : convergence sans rechargement @ihm @vert
 ```gherkin
 Étant donné deux écrans /configuration ouverts sur l'onglet « Acteurs »
 Quand un acteur est édité (nom/couleur/rôle) ou ajouté depuis le 1ᵉʳ écran via la modal
