@@ -14,7 +14,7 @@
 > édite uniquement les **champs existants** (nom, couleur, rôle ; email/compte via l'affordance
 > compte existante).
 
-## Avancement — 4/7
+## Avancement — 5/7
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -22,7 +22,7 @@
 | 2 | Crayon → modal pré-remplie avec les champs courants de l'acteur | 🖥️ IHM | ✅ |
 | 3 | Édition via la modal → enregistrer (CRUD existant) → table relue, modal fermée | 🖥️ IHM | ✅ |
 | 4 | Bouton « Ajouter » → même modal VIDE → création (id stable neuf) | 🖥️ IHM | ✅ |
-| 5 | Erreur — refus domaine → modal reste ouverte, motif dedans, saisie conservée | 🖥️ IHM | ⏳ |
+| 5 | Erreur — refus domaine → modal reste ouverte, motif dedans, saisie conservée | 🖥️ IHM | ✅ |
 | 6 | Gating — Invité (non-Parent) : ni crayon ni « Ajouter », table lecture seule | 🖥️ IHM | ⏳ |
 | 7 | Temps réel SignalR — un 2ᵉ écran édite/ajoute → table converge sans reload | 🖥️ IHM | ⏳ |
 
@@ -91,7 +91,7 @@ Alors la commande d'ajout EXISTANTE crée un acteur avec un identifiant stable N
 Et le nouvel acteur apparaît aussitôt dans le tableau (relecture du store) sans recharger la page
 ```
 
-### Sc.5 — Erreur : refus domaine → modal reste ouverte, motif dedans @ihm @pending
+### Sc.5 — Erreur : refus domaine → modal reste ouverte, motif dedans @ihm @vert
 ```gherkin
 Étant donné la modal d'édition (ou d'ajout) ouverte (Parent)
 Quand je tente d'enregistrer une valeur refusée par le domaine (ex. nom vide, ou doublon de nom)
