@@ -19,6 +19,7 @@ public sealed class FakeConfigurationFoyer : IEditeurConfigurationFoyer, IRefere
     private readonly Dictionary<string, string> _noms;
     private readonly Dictionary<string, string> _couleurs;
     private readonly Dictionary<string, string> _roles = new(); // acteurId → id de rôle
+    private readonly Dictionary<string, string> _adresses = new(); // acteurId → adresse de résidence (optionnelle)
 
     public FakeConfigurationFoyer(IDictionary<string, string> seed, IDictionary<string, string>? couleurs = null)
     {
@@ -36,6 +37,11 @@ public sealed class FakeConfigurationFoyer : IEditeurConfigurationFoyer, IRefere
     public void Renommer(string acteurId, string nouveauNom) => _noms[acteurId] = nouveauNom;
 
     public void Recolorier(string acteurId, string nouvelleCouleur) => _couleurs[acteurId] = nouvelleCouleur;
+
+    public void ChangerAdresse(string acteurId, string adresse) => _adresses[acteurId] = adresse;
+
+    /// <summary>Adresse de résidence portée par l'acteur, ou <c>null</c> s'il n'en porte aucune.</summary>
+    public string? AdresseDe(string acteurId) => _adresses.TryGetValue(acteurId, out var adresse) ? adresse : null;
 
     public void AffecterRole(string acteurId, string roleId) => _roles[acteurId] = roleId;
 

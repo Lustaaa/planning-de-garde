@@ -25,4 +25,6 @@ public sealed class FakeActeursTypes : IEnumerationActeursFoyer
         => _types.TryGetValue(acteurId, out var type) ? type : TypeActeur.Parent;
 
     public string? RoleDe(string acteurId) => null;
+
+    public string? AdresseDe(string acteurId) => null;
 }

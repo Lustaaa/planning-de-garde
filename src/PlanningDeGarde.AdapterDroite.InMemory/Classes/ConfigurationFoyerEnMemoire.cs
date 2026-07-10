@@ -18,6 +18,7 @@ public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEdi
     private readonly Dictionary<string, string> _noms;
     private readonly Dictionary<string, string> _couleurs;
     private readonly Dictionary<string, string> _roles = new(); // acteurId → id de rôle (attribut optionnel)
+    private readonly Dictionary<string, string> _adresses = new(); // acteurId → adresse de résidence (optionnelle)
 
     public ConfigurationFoyerEnMemoire()
     {
@@ -53,6 +54,13 @@ public sealed class ConfigurationFoyerEnMemoire : IReferentielResponsables, IEdi
 
     public void Recolorier(string acteurId, string nouvelleCouleur)
         => _couleurs[acteurId] = nouvelleCouleur; // dernière écriture gagne (surface distincte du nom)
+
+    public void ChangerAdresse(string acteurId, string adresse)
+        => _adresses[acteurId] = adresse; // surface optionnelle distincte ; dernière écriture gagne (vide licite)
+
+    /// <summary>Adresse de résidence de l'acteur, ou <c>null</c> s'il n'en porte aucune (attribut optionnel).</summary>
+    public string? AdresseDe(string acteurId)
+        => _adresses.TryGetValue(acteurId, out var adresse) ? adresse : null;
 
     public void AffecterRole(string acteurId, string roleId)
         => _roles[acteurId] = roleId; // surface distincte du nom/couleur : l'id de rôle porté par l'acteur

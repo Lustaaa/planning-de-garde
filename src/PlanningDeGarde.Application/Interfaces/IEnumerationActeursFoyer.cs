@@ -34,4 +34,12 @@ public interface IEnumerationActeursFoyer
     /// (Sc.6) et à l'affichage du rôle courant d'un acteur (Sc.8).
     /// </summary>
     string? RoleDe(string acteurId);
+
+    /// <summary>
+    /// Adresse de résidence de l'acteur (résolue sur son identifiant stable), ou <c>null</c> s'il n'en
+    /// porte aucune (attribut <b>optionnel</b>). Champ de modèle neuf (s33) persisté au même titre que le
+    /// nom / la couleur : relu par la query de configuration pour l'afficher, jamais recalculé. Une
+    /// adresse vide écrite explicitement est restituée telle quelle (<see cref="string.Empty"/>).
+    /// </summary>
+    string? AdresseDe(string acteurId);
 }
