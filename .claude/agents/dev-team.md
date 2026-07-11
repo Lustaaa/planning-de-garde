@@ -95,6 +95,16 @@ lancement.
     sévérité** dans `notes` (priorisation du rétrofit par le `scrum-master`).
   - Jamais d'extension du passe-droit à un autre test, jamais d'étiquette « flake » sans le re-run
     isolé qui l'a démontrée. *(Récits : `docs/sprints/JOURNAL-METHODE.md` s18, s21.)*
+- **Interaction clavier / focus (Échap, raccourcis) : jamais prouvée par `@onkeydown` bUnit.** Un test bUnit
+  qui **dispatche** le keydown **sur l'élément porteur** (`@onkeydown` sur un backdrop / div) passe **vert**
+  alors qu'en **navigateur réel** l'événement part de **`document`** et **n'atteint jamais** un élément non
+  focus (modal non focusée) → **vert-qui-ment**. Capte donc l'événement **au niveau `document`** via un
+  **port hexagonal** (adaptateur JS `document.addEventListener('keydown')` → rappel .NET), **attaché à
+  l'ouverture / détaché à la fermeture/Dispose** (aucune fuite) ; le test prouve l'**attache/détache** et
+  l'**effet sans mutation** sur le port doublé, mais la **preuve finale reste le gate navigateur PO** (le
+  `addEventListener` JS n'est pas exécuté hors navigateur — limite à assumer honnêtement). *(Récit :
+  JOURNAL-METHODE s33, fermeture Échap des modals Config foyer — 1er `@onkeydown` backdrop vert en bUnit,
+  non fonctionnel en navigateur, 2 allers-retours au gate.)*
 - **Seed / amorçage par le chemin réel = CONVERGENT, jamais insert-si-absent.** Tout amorçage via le
   chemin de production doit **réconcilier un état partiel préexistant** sur le store durable, pas
   seulement créer quand l'entité est absente. **Prouve les DEUX cas** (entité absente **et** entité

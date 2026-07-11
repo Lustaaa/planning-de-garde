@@ -23,6 +23,12 @@ public interface IEditeurConfigurationFoyer
     /// distincte du nom — recolorier ne touche jamais le nom).</summary>
     void Recolorier(string acteurId, string nouvelleCouleur);
 
+    /// <summary>Affecte une adresse de résidence à l'acteur identifié de façon stable (surface
+    /// <b>optionnelle</b> distincte du nom et de la couleur — la changer ne touche jamais les autres
+    /// surfaces). Une adresse vide (<see cref="string.Empty"/>) est une valeur licite, écrite telle
+    /// quelle (champ facultatif — contrairement au nom, jamais vide).</summary>
+    void ChangerAdresse(string acteurId, string adresse);
+
     /// <summary>Affecte un rôle du référentiel à l'acteur identifié de façon stable (surface distincte
     /// du nom et de la couleur — attribut optionnel d'organisation, réutilise le chemin d'écriture de
     /// la config acteur augmenté d'un id de rôle). La valeur est un <b>id de rôle</b> du référentiel,

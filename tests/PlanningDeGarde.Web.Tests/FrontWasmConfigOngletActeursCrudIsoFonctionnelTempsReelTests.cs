@@ -53,7 +53,7 @@ public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests
         // Refonte s32 : l'édition passe par la MODAL ouverte au crayon.
         ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom']").Change("Alicia"));
-        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur']").Change("vert"));
+        this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-vert']").Click()); // palette (Sc.6)
         this.SurDispatcher(() => config.Find("#form-edition").Submit());
 
         // Then (édition) — sur succès la modal se ferme et la table relue reflète « Alicia » (canal accepté,
@@ -69,7 +69,7 @@ public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests
         // When (ajout) — j'ouvre la modal d'ajout et j'ajoute « Carla » en rose (POST /api/canal/ajouter-acteur).
         ConfigActeursModalHarness.OuvrirAjout(this, config);
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
-        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
+        this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-ajout-rose']").Click()); // palette (Sc.6)
         this.SurDispatcher(() => config.Find("#form-ajout").Submit());
 
         // Then (ajout) — sans rechargement, la liste relue de l'écran contient désormais « Carla ».

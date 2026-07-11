@@ -53,6 +53,37 @@
                 try { localStorage.removeItem('pdg-session'); } catch (e) { }
             }
         };
+
+        // Module d'écoute Échap des modals de la Config foyer (finition PO s33), consommé par le port
+        // IEcouteurEchapModal via JS interop. La capture est au niveau DOCUMENT (jamais un div à focus :
+        // en navigateur réel le keydown part de document et n'atteint pas une modal non focus). attacher :
+        // pose un document.addEventListener('keydown') filtrant Échap et rappelle .NET (Declencher →
+        // OnFermer = « Annuler » sans mutation) ; renvoie un id opaque. detacher : retire CE listener (par
+        // id) — appelé à la fermeture/Dispose de la modal, donc pas de fuite ni de double abonnement.
+        window.pdgModal = (function () {
+            var registre = new Map();
+            var seq = 0;
+            return {
+                attacher: function (dotNetRef) {
+                    var id = ++seq;
+                    var handler = function (e) {
+                        if (e.key === 'Escape' || e.key === 'Esc') {
+                            dotNetRef.invokeMethodAsync('Declencher');
+                        }
+                    };
+                    document.addEventListener('keydown', handler);
+                    registre.set(id, handler);
+                    return id;
+                },
+                detacher: function (id) {
+                    var handler = registre.get(id);
+                    if (handler) {
+                        document.removeEventListener('keydown', handler);
+                        registre.delete(id);
+                    }
+                }
+            };
+        })();
     </script>
 </head>
 

@@ -84,9 +84,12 @@ public sealed class FrontWasmGrilleInverserMappingCycleTempsReelTests : TestCont
         Assert.Equal("bleu", caseInitiale.GetAttribute("data-couleur"));
         AssertLegende(grille, "Alice", "bleu");
 
-        // When — un parent inverse le mapping depuis la configuration : index pair (0) → parent-b, index
-        // impair (1) → parent-a, et valide (ré-définition complète, dernière écriture gagne). Émission via le
-        // canal d'écriture HTTP réel → le handler écrase le store cycle ET déclenche la diffusion temps réel.
+        // When — un parent RÉ-OUVRE la modal (le succès précédent l'a fermée, s33 Sc.10) et inverse le mapping
+        // depuis la configuration : index pair (0) → parent-b, index impair (1) → parent-a, et valide
+        // (ré-définition complète, dernière écriture gagne). Émission via le canal d'écriture HTTP réel → le
+        // handler écrase le store cycle ET déclenche la diffusion temps réel.
+        this.SurDispatcher(() => config.Find("[data-testid='crayon-cycle']").Click());
+        config.WaitForElement("[data-testid='dialog-cycle']", TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-0']").Change("parent-b"));
         this.SurDispatcher(() => config.Find("[data-testid='champ-cycle-index-1']").Change("parent-a"));
         this.SurDispatcher(() => config.Find("#form-cycle").Submit());

@@ -38,27 +38,26 @@ public sealed class FrontWasmConfigOngletActeursGererRolesRuntimeTests : TestCon
             TimeSpan.FromSeconds(10));
         // Fusion des sections (hors-sprint) : plus d'onglets — la gestion des rôles est sur la page unique.
 
-        // When (création) — je crée un rôle « Nounou » (canal d'écriture HTTP réel : POST /api/canal/creer-role).
-        config.Find("[data-testid='champ-libelle-role']").Change("Nounou");
-        config.Find("#form-creer-role").Submit();
+        // When (création) — refonte s33 Sc.8 : j'ouvre la modal d'ajout, saisis « Nounou » et enregistre
+        // (canal d'écriture HTTP réel : POST /api/canal/creer-role).
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-role']").Click());
+        this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Nounou"));
+        this.SurDispatcher(() => config.Find("#form-role").Submit());
 
         // Then (création) — sans rechargement, la liste relue des rôles (GET /api/foyer/roles) contient « Nounou ».
         config.WaitForAssertion(
             () => Assert.Contains(config.FindAll("[data-testid='role-foyer']"), li => LibelleLigne(li) == "Nounou"),
             TimeSpan.FromSeconds(10));
 
-        // When (renommage) — je renomme « Nounou » en « Assistante maternelle » (POST /api/canal/renommer-role,
-        // clé = identifiant stable du rôle, jamais le libellé). Le champ re-rend l'arbre à la saisie : je
-        // ré-issue le FindAll avant chaque interaction (workaround bUnit) et enveloppe find+click dans
-        // InvokeAsync pour qu'aucun re-render ne survienne entre la résolution et le déclenchement.
+        // When (renommage) — j'ouvre la modal au crayon de « Nounou », renomme en « Assistante maternelle » et
+        // enregistre (POST /api/canal/renommer-role, clé = identifiant stable du rôle, jamais le libellé).
         var idNounou = config.FindAll("[data-testid='role-foyer']").Single(li => LibelleLigne(li) == "Nounou")
             .GetAttribute("data-role-id");
-        config.InvokeAsync(() =>
+        this.SurDispatcher(() =>
             config.FindAll("[data-testid='role-foyer']").Single(li => li.GetAttribute("data-role-id") == idNounou)
-                .QuerySelector("[data-testid='champ-renommer-role']")!.Change("Assistante maternelle"));
-        config.InvokeAsync(() =>
-            config.FindAll("[data-testid='role-foyer']").Single(li => li.GetAttribute("data-role-id") == idNounou)
-                .QuerySelector("[data-testid='bouton-renommer-role']")!.Click());
+                .QuerySelector("[data-testid='crayon-role']")!.Click());
+        this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Assistante maternelle"));
+        this.SurDispatcher(() => config.Find("#form-role").Submit());
 
         // Then (renommage) — la liste relue reflète le nouveau libellé, sur le MÊME identifiant stable.
         config.WaitForAssertion(
@@ -67,20 +66,22 @@ public sealed class FrontWasmConfigOngletActeursGererRolesRuntimeTests : TestCon
                 li => LibelleLigne(li) == "Assistante maternelle" && li.GetAttribute("data-role-id") == idNounou),
             TimeSpan.FromSeconds(10));
 
-        // When (2e création) — je crée « Grand-parent ».
-        config.Find("[data-testid='champ-libelle-role']").Change("Grand-parent");
-        config.Find("#form-creer-role").Submit();
+        // When (2e création) — via la modal d'ajout, je crée « Grand-parent ».
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-role']").Click());
+        this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Grand-parent"));
+        this.SurDispatcher(() => config.Find("#form-role").Submit());
 
         // Then (2e création) — la liste relue contient les deux rôles.
         config.WaitForAssertion(
             () => Assert.Contains(config.FindAll("[data-testid='role-foyer']"), li => LibelleLigne(li) == "Grand-parent"),
             TimeSpan.FromSeconds(10));
 
-        // When (suppression) — je supprime « Grand-parent » via son bouton (POST /api/canal/supprimer-role).
-        config.FindAll("[data-testid='role-foyer']")
-            .Single(li => LibelleLigne(li) == "Grand-parent")
-            .QuerySelector("[data-testid='bouton-supprimer-role']")!
-            .Click();
+        // When (suppression) — j'ouvre la modal au crayon de « Grand-parent » et clique « Supprimer ce rôle »
+        // (POST /api/canal/supprimer-role).
+        this.SurDispatcher(() =>
+            config.FindAll("[data-testid='role-foyer']").Single(li => LibelleLigne(li) == "Grand-parent")
+                .QuerySelector("[data-testid='crayon-role']")!.Click());
+        this.SurDispatcher(() => config.Find("[data-testid='bouton-supprimer-role']").Click());
 
         // Then (suppression) — sans rechargement, « Grand-parent » quitte la liste relue ; « Assistante
         // maternelle » reste. Les écritures ont bien abouti sur le store réel (relu via l'API distante).

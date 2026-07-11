@@ -48,12 +48,19 @@ public sealed record Responsable(string Id, string Libelle);
 /// <see cref="RoleId"/> (s21) est l'identifiant stable du rôle du référentiel porté par l'acteur, ou
 /// <c>null</c> = « sans rôle » (attribut optionnel, neutre assumé) : pré-sélectionne le sélecteur de rôle
 /// borné au référentiel et affiche le rôle courant (jamais un libellé en dur).</summary>
-public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris", TypeActeur Type = TypeActeur.Parent, string? RoleId = null);
+public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris", TypeActeur Type = TypeActeur.Parent, string? RoleId = null, string? Adresse = null);
 
 /// <summary>Un rôle du référentiel du foyer <b>énuméré depuis le store durable</b> via le canal de
 /// lecture (s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable.
 /// Alimente la liste des rôles de l'onglet Acteurs et le sélecteur de rôle borné au référentiel.</summary>
 public sealed record RoleFoyer(string Id, string Libelle);
+
+/// <summary>Une affectation déclarée du cycle de fond <b>lue depuis le store</b> via le canal de lecture
+/// (s33, Sc.3, GET /api/foyer/cycles) : index de semaine (0..N-1) → identifiant stable du responsable de
+/// fond. Alimente le TABLEAU en lecture seule de l'onglet Cycle (Sc.10), qui rend visibles toutes les
+/// affectations déclarées (y compris celles auparavant invisibles, retour PO gate s32) ; le nom est
+/// résolu sur l'identifiant via la liste des acteurs, jamais un libellé en dur.</summary>
+public sealed record CycleFoyer(int IndexSemaine, string ResponsableId);
 
 /// <summary>Un lieu du référentiel du foyer <b>énuméré depuis le store vivant</b> via le canal de lecture
 /// (s27, GET /api/foyer/lieux) : identifiant stable (clé, bindé par les sélecteurs) + libellé d'affichage.

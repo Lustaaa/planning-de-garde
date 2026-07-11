@@ -38,7 +38,7 @@ public sealed class FrontWasmConfigActeursBoutonAjouterModalVideTests : TestCont
 
         // When — je saisis « Carla » en rose et j'enregistre (POST réel /api/canal/ajouter-acteur).
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
-        this.SurDispatcher(() => config.Find("[data-testid='champ-couleur-ajout']").Change("rose"));
+        this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-ajout-rose']").Click()); // palette (Sc.6)
         this.SurDispatcher(() => config.Find("#form-ajout").Submit());
 
         // Then — la modal se ferme et « Carla » apparaît dans le tableau relu depuis le store, avec un

@@ -8,11 +8,11 @@ namespace PlanningDeGarde.Application;
 /// une édition peut ne porter que le nom (Sc.1), que la couleur (Sc.2), un champ absent (null)
 /// n'est pas appliqué — la surface correspondante du store n'est pas touchée.
 /// </summary>
-public sealed record EditerActeurCommand(string ActeurId, string? Nom = null, string? Couleur = null);
+public sealed record EditerActeurCommand(string ActeurId, string? Nom = null, string? Couleur = null, string? Adresse = null);
 
 /// <summary>Confirmation de l'effet d'une édition aboutie : l'acteur et ses valeurs appliquées
-/// (nom et/ou couleur ; un champ non édité reste null).</summary>
-public sealed record ActeurConfigSnapshot(string ActeurId, string? Nom, string? Couleur);
+/// (nom, couleur et/ou adresse ; un champ non édité reste null).</summary>
+public sealed record ActeurConfigSnapshot(string ActeurId, string? Nom, string? Couleur, string? Adresse = null);
 
 /// <summary>
 /// Use case : éditer un acteur du foyer (renommer). Mute la configuration via le port
@@ -45,7 +45,11 @@ public sealed class EditerActeurHandler
             _configuration.Renommer(commande.ActeurId, commande.Nom);
         if (commande.Couleur is not null)
             _configuration.Recolorier(commande.ActeurId, commande.Couleur);
+        // Adresse : surface OPTIONNELLE indépendante — un champ absent (null) n'est pas appliqué ; une
+        // adresse vide fournie est acceptée et écrite telle quelle (champ facultatif, ≠ nom jamais vide).
+        if (commande.Adresse is not null)
+            _configuration.ChangerAdresse(commande.ActeurId, commande.Adresse);
         _notificateur.NotifierMiseAJour(); // diffusion temps réel sur édition aboutie
-        return Result<ActeurConfigSnapshot>.Succes(new ActeurConfigSnapshot(commande.ActeurId, commande.Nom, commande.Couleur));
+        return Result<ActeurConfigSnapshot>.Succes(new ActeurConfigSnapshot(commande.ActeurId, commande.Nom, commande.Couleur, commande.Adresse));
     }
 }

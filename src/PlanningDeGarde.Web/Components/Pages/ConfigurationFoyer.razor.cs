@@ -47,7 +47,15 @@ public partial class ConfigurationFoyer
         _modalAjout = false;
         _modalActeurId = acteurId;
         _form.ActeurId = acteurId;
-        _form.Couleur = "";
+        // Sc.6 : la palette pré-sélectionne la couleur COURANTE de l'acteur (pastille active). Comme le champ
+        // est pré-réglé, une édition nom/adresse-seule ré-émet la même couleur (idempotent), sans écrasement.
+        _form.Couleur = _acteurs.FirstOrDefault(x => x.Id == acteurId)?.Couleur ?? "";
+        // Toggles pré-réglés sur l'état COURANT (Sc.4) : admin si l'acteur est admin ; actif si son compte
+        // (s'il en porte un) est déjà actif. À l'Enregistrer, seule une bascule OFF→ON est appliquée.
+        _form.Admin = EstAdmin(acteurId);
+        _form.Actif = CompteDe(acteurId) is { } compte && !EstInactif(compte);
+        // Sc.5 : pré-remplit l'adresse avec la valeur courante de l'acteur (vide s'il n'en porte pas).
+        _form.Adresse = _acteurs.FirstOrDefault(x => x.Id == acteurId)?.Adresse ?? "";
         PreRemplirNom();
     }
 
@@ -78,6 +86,14 @@ public partial class ConfigurationFoyer
         public string ActeurId { get; set; } = "";
         public string Nom { get; set; } = "";
         public string Couleur { get; set; } = "";
+        // Sc.5 (s33) : adresse de résidence éditable, pré-remplie sur la valeur courante à l'ouverture.
+        // Champ optionnel (une adresse vide est acceptée, Sc.1) — envoyé tel quel à l'Enregistrer.
+        public string Adresse { get; set; } = "";
+        // Sc.4 (s33) : état désiré des toggles admin / actif de la modal, pré-réglés sur l'état courant à
+        // l'ouverture. SENS UNIQUE : seul OFF→ON est appliqué à l'Enregistrer (commandes existantes) ; un
+        // toggle déjà ON est rendu verrouillé (pas de commande inverse). Deux surfaces indépendantes.
+        public bool Admin { get; set; }
+        public bool Actif { get; set; }
     }
 
     private sealed class FormulaireAjout
@@ -112,6 +128,49 @@ public partial class ConfigurationFoyer
     private string? _confirmationCycle;
     private string? _motifEchecCycle;
 
+    /// <summary>Affectations déclarées du cycle de fond lues depuis le store (GET /api/foyer/cycles, Sc.3) :
+    /// alimentent le TABLEAU lecture seule de l'onglet Cycle (Sc.10), qui rend visibles toutes les semaines
+    /// affectées — y compris celles auparavant invisibles (retour PO gate s32).</summary>
+    private IReadOnlyList<CycleFoyer> _cyclesDeclares = Array.Empty<CycleFoyer>();
+
+    // ── État de la MODAL cycle (refonte s33, Sc.10 — patron crayon → modal) ──
+    // La modal héberge l'éditeur EXISTANT (N + selects par semaine) déplacé de l'inline (aucun autre changement).
+    private bool _modalCycleOuverte;
+
+    /// <summary>Ouvre la modal d'édition du cycle (clic « Éditer le cycle ») : l'éditeur est déjà pré-rempli
+    /// sur le cycle courant (<see cref="_cycle"/> synchronisé depuis les affectations déclarées).</summary>
+    private void OuvrirEditionCycle()
+    {
+        _modalCycleOuverte = true;
+        _confirmationCycle = null;
+        _motifEchecCycle = null;
+    }
+
+    /// <summary>Ferme la modal cycle (annuler ou après un enregistrement abouti), sans émettre de commande.
+    /// Ne touche pas <see cref="_confirmationCycle"/> : sur succès, l'accusé posé par <see cref="DefinirCycle"/>
+    /// reste affiché dans le panneau (hors modal) après fermeture.</summary>
+    private void FermerModalCycle()
+    {
+        _modalCycleOuverte = false;
+        _motifEchecCycle = null;
+    }
+
+    /// <summary>Résout le nom d'affichage du responsable d'une semaine du cycle (sur l'identifiant stable,
+    /// jamais un libellé en dur), pour le tableau lecture seule (Sc.10) ; repli sur l'id brut si non résolu.</summary>
+    private string NomResponsableCycle(string responsableId)
+        => _acteurs.FirstOrDefault(a => a.Id == responsableId)?.Nom ?? responsableId;
+
+    /// <summary>Libellé lisible d'une semaine du cycle (finition PO s33) : par parité pour le cas courant
+    /// (cycle ISO 2 semaines) — index 0 = « Semaine paire », index 1 = « Semaine impaire ». Pour un cycle
+    /// plus long (N &gt; 2), les index ≥ 2 conservent « Semaine d'index k » afin d'éviter des libellés paire/
+    /// impaire dupliqués et ambigus.</summary>
+    private static string LibelleSemaineCycle(int index) => index switch
+    {
+        0 => "Semaine paire",
+        1 => "Semaine impaire",
+        _ => $"Semaine d'index {index}",
+    };
+
     /// <summary>Affecte (ou retire, si vide) un responsable à un index de semaine du cycle en cours de
     /// saisie. La valeur bindée est l'identifiant stable de l'acteur (jamais le libellé, règle 19).</summary>
     private void AffecterIndex(int index, string? responsableId)
@@ -136,14 +195,43 @@ public partial class ConfigurationFoyer
     private readonly FormulaireRole _role = new();
     private string? _motifEchecRole;
 
+    // ── État de la MODAL rôle (refonte s33, Sc.8 — patron crayon → modal) ──
+    // Identifiant stable du rôle en cours d'édition (null = pas d'édition ouverte) ; posé par le crayon.
+    private string? _modalRoleId;
+    // Modal ouverte en mode CRÉATION (bouton « Ajouter un rôle ») : champ vide, aucun rôle porté.
+    private bool _modalRoleAjout;
+
+    /// <summary>Ouvre la modal d'ÉDITION sur un rôle (clic crayon) : porte son id stable, pré-remplit son
+    /// libellé courant, efface le motif d'échec précédent.</summary>
+    private void OuvrirEditionRole(string roleId)
+    {
+        _modalRoleAjout = false;
+        _modalRoleId = roleId;
+        _role.Libelle = _roles.FirstOrDefault(r => r.Id == roleId)?.Libelle ?? "";
+        _motifEchecRole = null;
+    }
+
+    /// <summary>Ouvre la MÊME modal en mode CRÉATION (bouton « Ajouter un rôle ») : champ vide, aucun rôle porté.</summary>
+    private void OuvrirAjoutRole()
+    {
+        _modalRoleId = null;
+        _modalRoleAjout = true;
+        _role.Libelle = "";
+        _motifEchecRole = null;
+    }
+
+    /// <summary>Ferme la modal rôle (annuler ou après un enregistrement abouti), sans émettre de commande.</summary>
+    private void FermerModalRole()
+    {
+        _modalRoleId = null;
+        _modalRoleAjout = false;
+        _motifEchecRole = null;
+    }
+
     /// <summary>Rôles du référentiel du foyer énumérés <b>depuis le store durable</b> (GET /api/foyer/roles),
     /// jamais un rôle en dur : alimente la liste des rôles de l'onglet Acteurs (créés / renommés / supprimés
     /// suivent sans rechargement, Sc.7).</summary>
     private IReadOnlyList<RoleFoyer> _roles = Array.Empty<RoleFoyer>();
-
-    /// <summary>Tampon d'édition du libellé par ligne de rôle (renommage inline) : clé = identifiant stable
-    /// du rôle, valeur = nouveau libellé saisi. La clé n'est jamais éditable (règle 19).</summary>
-    private readonly Dictionary<string, string> _renommageRole = new();
 
     /// <summary>Comptes utilisateurs du foyer énumérés <b>depuis le store durable</b> (GET /api/foyer/comptes),
     /// jamais en dur : alimente l'affichage du compte associé à chaque acteur et de son statut dans l'onglet
@@ -215,6 +303,27 @@ public partial class ConfigurationFoyer
         await RechargerAdmins();
         await RechargerLieux();
         await RechargerEnfants();
+        await RechargerCycles();
+    }
+
+    /// <summary>Ré-énumère les affectations déclarées du cycle de fond depuis le store (GET /api/foyer/cycles,
+    /// Sc.3) : alimente le tableau lecture seule de l'onglet Cycle (Sc.10). Quand la modal cycle n'est pas
+    /// ouverte, synchronise aussi l'éditeur <see cref="_cycle"/> sur le cycle courant (N dérivé de la plus
+    /// grande semaine affectée + 1, cas nominal « un responsable par semaine »), pour qu'un clic « Éditer le
+    /// cycle » l'ouvre pré-rempli — sans écraser une saisie en cours si la modal est ouverte.</summary>
+    private async Task RechargerCycles()
+    {
+        _cyclesDeclares = await Canal.GetFromJsonAsync<List<CycleFoyer>>("api/foyer/cycles")
+            ?? new List<CycleFoyer>();
+
+        if (!_modalCycleOuverte)
+        {
+            _cycle.Affectations.Clear();
+            foreach (var c in _cyclesDeclares)
+                _cycle.Affectations[c.IndexSemaine] = c.ResponsableId;
+            if (_cyclesDeclares.Count > 0)
+                _cycle.NombreSemaines = _cyclesDeclares.Max(c => c.IndexSemaine) + 1;
+        }
     }
 
     /// <summary>Ré-énumère les enfants du référentiel depuis le store vivant (GET /api/foyer/enfants) : c'est
@@ -291,6 +400,9 @@ public partial class ConfigurationFoyer
                 // Un ajout / une édition d'enfant abouti sur un autre écran (store partagé) fait suivre la
                 // liste des enfants sans rechargement — cohérence temps réel du référentiel d'enfants (S9/S10).
                 await RechargerEnfants();
+                // Une édition du cycle aboutie sur un autre écran fait converger le tableau des cycles déclarés
+                // sans rechargement (Sc.11) — diffusion en LECTURE SEULE (ré-énumération du store).
+                await RechargerCycles();
                 await InvokeAsync(StateHasChanged);
             });
 
@@ -333,24 +445,25 @@ public partial class ConfigurationFoyer
         _confirmation = null;
         _motifEchec = null;
 
-        // Un champ laissé vide n'est pas une édition : il part null (non appliqué côté handler), pour
-        // ne pas écraser le nom par une chaîne vide lors d'un recoloriage seul (et inversement).
+        // Couleur : une pastille non choisie (chaîne vide) part null (non appliquée). Depuis s33 Sc.6 la
+        // palette pré-sélectionne la couleur courante, donc une édition normale ré-émet cette couleur.
         var couleur = string.IsNullOrWhiteSpace(_form.Couleur) ? null : _form.Couleur;
-        // Sc.8 : un nom vide / tout-espaces soumis SANS recoloriage concurrent est une tentative de
-        // renommage à vide — on transmet la valeur brute pour que le serveur la refuse avec son motif
-        // métier (« le nom ne peut pas être vide »), surfacé à l'écran. Avec un recoloriage, un nom vide
-        // reste un recoloriage-seul (nom non appliqué, Sc.2) : il part null.
-        var nom = string.IsNullOrWhiteSpace(_form.Nom)
-            ? (couleur is null ? _form.Nom : null)
-            : _form.Nom;
+        // Nom : le champ est PRÉ-REMPLI à l'ouverture (patron modal s32/s33). On émet donc sa valeur telle
+        // quelle — un nom VIDÉ volontairement part vide et est refusé côté domaine (« le nom ne peut pas être
+        // vide », Sc.7), motif surfacé dans la modal restée ouverte. (L'ancien repli « nom vide + couleur =
+        // recoloriage-seul » est caduc : avec la palette pré-sélectionnée la couleur n'est jamais null, il
+        // avalait le nom vide et court-circuitait le refus — régression corrigée s33 Sc.6.)
+        var nom = _form.Nom;
 
         HttpResponseMessage reponse;
         try
         {
             // Émission de la commande d'édition via le canal HTTP de l'API distante (adaptateur de gauche).
+            // L'adresse (Sc.5) part telle quelle : pré-remplie sur la valeur courante, elle n'écrase donc pas
+            // par erreur lors d'une édition nom/couleur-seule, et une adresse vidée volontairement est acceptée (Sc.1).
             reponse = await Canal.PostAsJsonAsync(
                 "api/canal/editer-acteur",
-                new EditerActeurRequete(_form.ActeurId, nom, couleur));
+                new EditerActeurRequete(_form.ActeurId, nom, couleur, _form.Adresse));
         }
         catch (HttpRequestException)
         {
@@ -360,20 +473,61 @@ public partial class ConfigurationFoyer
             return;
         }
 
-        if (reponse.IsSuccessStatusCode)
+        if (!reponse.IsSuccessStatusCode)
         {
-            // Refonte s32 (Sc.3) : sur succès, la modal se FERME et le tableau est relu — il reflète le
-            // renommage / recoloriage sans rechargement de page (la grille partagée suit via la diffusion
-            // temps réel déclenchée côté API). Aucune confirmation persistante à afficher (modal fermée).
-            _confirmation = "Modification enregistrée.";
-            await RechargerActeurs();
-            FermerModal();
-        }
-        else
             // Le canal renvoie le motif métier en corps JSON (Results.BadRequest(string)) : on le
             // désérialise comme la chaîne qu'il est, pour surfacer un message propre (« le nom ne peut
             // pas être vide ») sans guillemets parasites (Sc.5). La modal RESTE OUVERTE, saisie conservée.
             _motifEchec = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        // Sc.4 (s33) : la modal porte désormais les toggles admin/actif appliqués au MÊME « Enregistrer ».
+        // SENS UNIQUE — n'émettre les commandes EXISTANTES que sur une bascule OFF→ON (un toggle déjà ON est
+        // verrouillé à l'écran, aucune bascule OFF no-op). Sur refus/injoignable, la modal reste ouverte avec
+        // le motif, sans écriture partielle relue (le tableau n'est relu qu'après le succès complet).
+        if (_form.Admin && !EstAdmin(_form.ActeurId) && !await AppliquerToggle("api/canal/designer-admin", new DesignerAdminRequete(_form.ActeurId)))
+            return;
+
+        if (_form.Actif && CompteDe(_form.ActeurId) is { } compteAActiver && EstInactif(compteAActiver))
+        {
+            if (!await AppliquerToggle("api/canal/activer-compte", new ActiverCompteRequete(compteAActiver.Id)))
+                return;
+            _accuseActivation = "Compte activé.";
+        }
+
+        // Succès complet : le tableau est relu (acteurs + comptes + admins) et la modal se ferme — l'état
+        // neuf (badge admin / actif) est reflété sans rechargement (la grille partagée suit via la diffusion).
+        _confirmation = "Modification enregistrée.";
+        await RechargerActeurs();
+        await RechargerComptes();
+        await RechargerAdmins();
+        FermerModal();
+    }
+
+    /// <summary>Émet une commande de toggle (Sc.4) via le canal HTTP réel et renvoie <c>true</c> en succès.
+    /// Sur service injoignable ou refus métier, pose le motif dans la modal (<c>_motifEchec</c>) et renvoie
+    /// <c>false</c> — la modal reste ouverte, aucun tableau relu (pas d'écriture partielle affichée).</summary>
+    private async Task<bool> AppliquerToggle<TRequete>(string route, TRequete requete)
+    {
+        HttpResponseMessage reponse;
+        try
+        {
+            reponse = await Canal.PostAsJsonAsync(route, requete);
+        }
+        catch (HttpRequestException)
+        {
+            _motifEchec = MessagesEcriture.ServiceInjoignable;
+            return false;
+        }
+
+        if (!reponse.IsSuccessStatusCode)
+        {
+            _motifEchec = await reponse.Content.ReadFromJsonAsync<string>();
+            return false;
+        }
+
+        return true;
     }
 
     /// <summary>
@@ -520,22 +674,23 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>
-    /// Crée un rôle du référentiel du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/creer-role</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
-    /// ré-énumère le référentiel pour faire apparaître le rôle créé <b>sans rechargement</b> (Sc.7). Le
-    /// front n'émet que le libellé ; l'identifiant stable neuf est généré côté handler. Sur refus métier
-    /// (libellé vide / doublon, Sc.3), le motif renvoyé par le canal est surfacé sans muter la liste.
+    /// Enregistre la modal rôle (Sc.8) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
+    /// en mode CRÉATION émet <c>POST /api/canal/creer-role</c> (id stable neuf généré côté handler), en mode
+    /// ÉDITION émet <c>POST /api/canal/renommer-role</c> sur l'id stable (jamais le libellé). Réutilise les
+    /// commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le référentiel (le libellé suit sans
+    /// rechargement, Sc.2) et la modal se ferme. Sur refus métier (libellé vide / doublon) ou service
+    /// injoignable, le motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée (Sc.9).
     /// </summary>
-    private async Task CreerRole()
+    private async Task SoumettreRole()
     {
         _motifEchecRole = null;
 
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/creer-role",
-                new CreerRoleRequete(_role.Libelle));
+            reponse = _modalRoleAjout
+                ? await Canal.PostAsJsonAsync("api/canal/creer-role", new CreerRoleRequete(_role.Libelle))
+                : await Canal.PostAsJsonAsync("api/canal/renommer-role", new RenommerRoleRequete(_modalRoleId!, _role.Libelle));
         }
         catch (HttpRequestException)
         {
@@ -550,53 +705,14 @@ public partial class ConfigurationFoyer
         }
 
         await RechargerRoles();
-        _role.Libelle = "";
-    }
-
-    /// <summary>Libellé courant du champ de renommage inline d'un rôle : le tampon saisi s'il existe,
-    /// sinon le libellé persisté (valeur de départ).</summary>
-    private string LibelleRenommage(string roleId, string libellePersiste)
-        => _renommageRole.TryGetValue(roleId, out var l) ? l : libellePersiste;
-
-    /// <summary>Mémorise le nouveau libellé saisi pour le renommage inline d'un rôle (clé = identifiant
-    /// stable, jamais éditable).</summary>
-    private void SaisirRenommage(string roleId, string? libelle)
-        => _renommageRole[roleId] = libelle ?? "";
-
-    /// <summary>Renomme un rôle du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>POST /api/canal/renommer-role</c>) : la clé est l'identifiant stable du rôle (jamais éditable,
-    /// règle 19), seul le libellé change. Sur succès, on relit le référentiel (le libellé suit sans
-    /// rechargement, même id, Sc.7) ; sur refus métier, le motif est surfacé.</summary>
-    private async Task RenommerRole(string roleId)
-    {
-        _motifEchecRole = null;
-        var nouveauLibelle = _renommageRole.TryGetValue(roleId, out var l) ? l : "";
-
-        HttpResponseMessage reponse;
-        try
-        {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/renommer-role",
-                new RenommerRoleRequete(roleId, nouveauLibelle));
-        }
-        catch (HttpRequestException)
-        {
-            _motifEchecRole = MessagesEcriture.ServiceInjoignable;
-            return;
-        }
-
-        if (!reponse.IsSuccessStatusCode)
-        {
-            _motifEchecRole = await reponse.Content.ReadFromJsonAsync<string>();
-            return;
-        }
-
-        await RechargerRoles();
+        FermerModalRole();
     }
 
     /// <summary>Supprime un rôle du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>POST /api/canal/supprimer-role</c>) : la clé est l'identifiant stable du rôle. Sur succès, on
-    /// relit le référentiel (le rôle quitte la liste sans rechargement, Sc.7). Idempotence côté handler.</summary>
+    /// (<c>POST /api/canal/supprimer-role</c>) depuis la modal d'édition (Sc.8) : la clé est l'identifiant
+    /// stable du rôle. Sur succès, on relit le référentiel (le rôle quitte la table sans rechargement) ET
+    /// les acteurs (un porteur du rôle supprimé retombe « sans rôle »), puis la modal se ferme. Idempotence
+    /// côté handler ; sur refus / service injoignable, le motif reste DANS la modal ouverte.</summary>
     private async Task SupprimerRole(string roleId)
     {
         _motifEchecRole = null;
@@ -621,6 +737,8 @@ public partial class ConfigurationFoyer
         }
 
         await RechargerRoles();
+        await RechargerActeurs(); // un porteur du rôle supprimé retombe « sans rôle » (repli neutre)
+        FermerModalRole();
     }
 
     /// <summary>
@@ -650,10 +768,20 @@ public partial class ConfigurationFoyer
             return;
         }
 
-        if (reponse.IsSuccessStatusCode)
-            _confirmationCycle = "Cycle de fond enregistré.";
-        else
+        if (!reponse.IsSuccessStatusCode)
+        {
+            // Refus métier (N < 1, Sc.11) : le motif reste DANS la modal ouverte, la saisie (N + affectations)
+            // est conservée, le tableau inchangé — aucune écriture partielle.
             _motifEchecCycle = await reponse.Content.ReadFromJsonAsync<string>();
+            return;
+        }
+
+        // Succès : le cycle est relu (le tableau reflète l'édition sans rechargement), la modal se ferme (l'accusé
+        // « Cycle de fond enregistré » reste affiché dans le panneau), et la grille partagée suit via la diffusion
+        // temps réel déclenchée côté API (Sc.10).
+        await RechargerCycles();
+        FermerModalCycle();
+        _confirmationCycle = "Cycle de fond enregistré.";
     }
 
     /// <summary>
@@ -858,93 +986,9 @@ public partial class ConfigurationFoyer
     /// supprimé » — D5) : affiché sans interrompre la consultation, effacé à l'activation suivante.</summary>
     private string? _accuseActivation;
 
-    /// <summary>Motif d'échec d'activation, par compte (clé = id stable du compte) : sur refus métier
-    /// (compte introuvable, Sc.3) ou service injoignable, ce motif clair est surfacé dans la ligne du compte,
-    /// sans faux positif — le statut affiché reste inchangé, aucun accusé « Compte activé » (Sc.6).</summary>
-    private readonly Dictionary<string, string> _motifEchecActivation = new();
-
-    private string? MotifEchecActivation(string compteId)
-        => _motifEchecActivation.TryGetValue(compteId, out var m) ? m : null;
-
     /// <summary>Vrai si le compte est de statut « inactif » (le statut est renvoyé en minuscules par le canal
-    /// de lecture) — condition d'affichage de l'action « Activer » (Sc.5). Aucune règle métier dans l'UI :
-    /// c'est une simple lecture du statut projeté ; l'activation est tranchée côté handler.</summary>
+    /// de lecture) — pilote l'actionnabilité du toggle « actif » de la modal (Sc.4). Aucune règle métier dans
+    /// l'UI : simple lecture du statut projeté ; l'activation est tranchée côté handler.</summary>
     private static bool EstInactif(CompteFoyer compte)
         => string.Equals(compte.Statut, "inactif", StringComparison.OrdinalIgnoreCase);
-
-    /// <summary>
-    /// Active un compte utilisateur via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/activer-compte</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
-    /// ré-énumère les comptes pour que le statut passe « actif » <b>sans rechargement</b> et que l'action
-    /// « Activer » disparaisse (Sc.5). Sur succès, un accusé non bloquant « Compte activé » s'affiche. Sur
-    /// refus métier (compte introuvable, Sc.3) ou <b>service injoignable</b> (échec de transport, règle 28),
-    /// un motif clair est surfacé dans la ligne et le statut affiché reste inchangé (aucun faux positif, Sc.6).
-    /// </summary>
-    private async Task ActiverCompte(string compteId)
-    {
-        _motifEchecActivation.Remove(compteId);
-
-        HttpResponseMessage reponse;
-        try
-        {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/activer-compte",
-                new ActiverCompteRequete(compteId));
-        }
-        catch (HttpRequestException)
-        {
-            _motifEchecActivation[compteId] = MessagesEcriture.ServiceInjoignable;
-            return;
-        }
-
-        if (!reponse.IsSuccessStatusCode)
-        {
-            _motifEchecActivation[compteId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de l'activation du compte.";
-            return;
-        }
-
-        _accuseActivation = "Compte activé.";
-        await RechargerComptes();
-    }
-
-    /// <summary>Motif d'échec de désignation d'admin d'une ligne d'acteur (clé = id stable), ou <c>null</c> :
-    /// sur refus métier (l'admin doit être un parent, Sc.4) ou service injoignable, le motif reste affiché
-    /// dans la ligne, sans écriture (Sc.8/Sc.9).</summary>
-    private readonly Dictionary<string, string> _motifEchecAdmin = new();
-
-    private string? MotifEchecAdmin(string acteurId)
-        => _motifEchecAdmin.TryGetValue(acteurId, out var m) ? m : null;
-
-    /// <summary>
-    /// Désigne un acteur comme admin du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/designer-admin</c>, règle 27 — aucune vue n'écrit le domaine en direct). L'invariant
-    /// admin=parent est tranché côté Domain : un acteur non-Parent est rejeté avec son motif, surfacé dans la
-    /// ligne (Sc.4). Sur succès, l'API diffuse la mise à jour (les écrans re-projettent l'admin sans rechargement,
-    /// Sc.9). Sur <b>service injoignable</b> (échec de transport, règle 28), un message dédié s'affiche.
-    /// </summary>
-    private async Task DesignerAdmin(string acteurId)
-    {
-        _motifEchecAdmin.Remove(acteurId);
-
-        HttpResponseMessage reponse;
-        try
-        {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/designer-admin",
-                new DesignerAdminRequete(acteurId));
-        }
-        catch (HttpRequestException)
-        {
-            _motifEchecAdmin[acteurId] = MessagesEcriture.ServiceInjoignable;
-            return;
-        }
-
-        if (!reponse.IsSuccessStatusCode)
-        {
-            _motifEchecAdmin[acteurId] = await reponse.Content.ReadFromJsonAsync<string>() ?? "Échec de la désignation.";
-            return;
-        }
-
-        await RechargerActeurs();
-    }
 }

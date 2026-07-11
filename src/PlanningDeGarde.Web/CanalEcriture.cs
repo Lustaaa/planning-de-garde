@@ -54,7 +54,7 @@ public static class CanalEcriture
     /// <summary>Corps de la requête d'édition d'un acteur émise via le canal d'écriture. Le nom et la
     /// couleur sont deux champs optionnels et indépendants : un champ absent (null) n'est pas appliqué
     /// (renommage seul au Sc.1, recoloriage seul au Sc.2). L'identifiant stable n'est jamais éditable.</summary>
-    public sealed record EditerActeurRequete(string ActeurId, string? Nom = null, string? Couleur = null);
+    public sealed record EditerActeurRequete(string ActeurId, string? Nom = null, string? Couleur = null, string? Adresse = null);
 
     /// <summary>Corps de la requête d'ajout d'un acteur neuf au foyer émise via le canal d'écriture.
     /// Le front ne fournit que le nom (+ couleur optionnelle) : l'identifiant stable neuf est généré

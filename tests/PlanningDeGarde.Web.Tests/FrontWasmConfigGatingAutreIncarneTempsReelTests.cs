@@ -37,7 +37,9 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
         "[data-testid='bouton-ajouter-acteur']",
     };
 
-    private const string EcritureOngletPeriodeGarde = "[data-testid='champ-nombre-semaines']";
+    // Refonte s33 Sc.10 : l'écriture du cycle passe par le crayon « Éditer le cycle » → modal (l'éditeur
+    // N + semaines n'est plus inline). Le crayon est le proxy d'écriture VISIBLE et gaté de cette section.
+    private const string EcritureOngletPeriodeGarde = "[data-testid='crayon-cycle']";
 
     [Fact]
     public void Should_MasquerToutesLesEcrituresDeLaConfiguration_When_OnIncarneUnActeurDeTypeAutre()
@@ -119,6 +121,6 @@ public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContex
         Assert.Empty(config.FindAll("[data-testid='bandeau-incarnation']"));
         Assert.NotEmpty(config.FindAll("[data-testid='crayon-acteur']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-acteur']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='crayon-cycle']")); // écriture cycle = crayon → modal (Sc.10)
     }
 }

@@ -67,6 +67,13 @@ public sealed class ConfigurationFoyerMongo : IReferentielResponsables, IEditeur
     public void Recolorier(string acteurId, string nouvelleCouleur)
         => Persister(acteurId, doc => doc.Couleur = nouvelleCouleur); // surface distincte du nom
 
+    public void ChangerAdresse(string acteurId, string adresse)
+        => Persister(acteurId, doc => doc.Adresse = adresse); // surface optionnelle durable (write-through, vide licite)
+
+    /// <summary>Adresse de résidence persistée de l'acteur, ou <c>null</c> s'il n'en porte aucune.</summary>
+    public string? AdresseDe(string acteurId)
+        => _cache.TryGetValue(acteurId, out var doc) ? doc.Adresse : null;
+
     public void AffecterRole(string acteurId, string roleId)
         => Persister(acteurId, doc => doc.RoleId = roleId); // id de rôle porté par l'acteur (write-through durable)
 
@@ -115,5 +122,6 @@ public sealed class ConfigurationFoyerMongo : IReferentielResponsables, IEditeur
         public string? Nom { get; set; }
         public string? Couleur { get; set; }
         public string? RoleId { get; set; } // id de rôle porté par l'acteur (null = « sans rôle »)
+        public string? Adresse { get; set; } // adresse de résidence (null = non renseignée, optionnelle)
     }
 }

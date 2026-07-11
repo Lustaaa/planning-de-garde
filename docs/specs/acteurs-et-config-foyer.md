@@ -206,6 +206,45 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   [champ neuf], **couleur vraie palette** [picker], et harmonisation **Rôles / Cycle / Enfants** sur le
   même patron. **Volet en tension à arbitrer (retour PO gate s32)** : réintroduire une **édition inline au
   clic de la valeur** *en plus* de la modal — **choix de direction non tranché** (cf. backlog).
+
+- **Config foyer — Acteurs enrichis + Rôles & Cycle harmonisés** *(livré s33, 2ᵉ incrément de la Refonte
+  Config foyer)* :
+  - **Acteurs — modal enrichie.** L'état **actif/admin** passe de **pastille lecture** à **TOGGLE éditable
+    DANS la modal**, pré-réglé sur l'état courant. **Sens ON uniquement** ce sprint : « Enregistrer » émet
+    les **commandes existantes** de **désignation d'admin** / **d'activation de compte** ; un toggle **déjà
+    ON est rendu VERROUILLÉ** — le domaine n'offre **aucune commande inverse** (dé-désignation /
+    désactivation), un OFF « no-op silencieux » serait un vert-qui-ment (**proscrit**) → les commandes
+    inverses sont **portées au backlog**. Le toggle **« actif »** n'est actionnable que si l'acteur **porte
+    un compte** (sinon désactivé, motif dedans). Un **champ « adresse de résidence »** [**champ de modèle
+    neuf**] est porté par l'agrégat acteur, **persisté Mongo durable**, relu par la query de config, éditable
+    dans la modal et **rendu dans le tableau lecture** ; **adresse vide acceptée** (optionnel, sans écriture
+    partielle des autres champs). La **couleur** passe en **palette / picker minimal** (choix borné au **set
+    de couleurs**, couleur courante pré-sélectionnée, persistée via la commande existante ; **pas** de palette
+    custom — créer/renommer/supprimer des couleurs **hors scope**) — **solde la dette « set couleurs par
+    défaut »**. **Contrat d'erreur** inchangé (refus → modal RESTE OUVERTE, motif dedans, saisie
+    dont adresse/toggle/couleur CONSERVÉE, aucune écriture partielle), **Parent-gated** + **temps réel
+    SignalR** convergent sur les champs neufs.
+  - **Rôles & Cycle au patron tableau lecture seule + crayon → modal** (miroir Acteurs s32, lot atomique de
+    surface). **Rôles** : une ligne par rôle en lecture seule + crayon → modal pré-remplie (édition via les
+    commandes de rôle **existantes** s21) + « Ajouter un rôle » (modal vide → id stable neuf). **Cycle** : un
+    **TABLEAU en lecture seule rend VISIBLES TOUS les cycles / affectations déclarés** (une ligne par semaine
+    {index → responsable}) — **corrige le trou du gate s32** (des affectations déclarées n'apparaissaient pas
+    dans la config) ; le crayon « Éditer le cycle » ouvre une **modal hébergeant l'éditeur `definir-cycle`
+    existant tel quel** (nombre de semaines N + un select responsable par semaine, pré-remplis). Le
+    **write-path `definir-cycle` reste ATOMIQUE** (N + toutes les affectations, pas de découpage per-semaine).
+    Libellés d'affichage : **« Semaine paire / impaire »** sur les seuls index 0/1 (cas ISO 2 semaines),
+    « Semaine d'index k » au-delà. Invariants réutilisés : refus → modal ouverte, **Parent-gated** (Invité =
+    lecture seule sans crayon ni « Ajouter »), **temps réel SignalR** convergent. **Hors scope** : édition
+    avancée du cycle (ancre / frontière de jour / plage / sur-cycle vacances / WE-only — cf. « cycle de fond
+    riche »).
+  - **Fermeture Échap des modals de Config foyer** (Acteurs, Rôles, Cycle) : la touche **Échap** ferme la
+    modal **strictement comme « Annuler »** — fermeture **SANS mutation** (aucune commande émise, saisie
+    abandonnée), jamais confondue avec « Enregistrer », effective **même en état de refus** (motif affiché,
+    saisie conservée). Capture au niveau **document** via le **port `IEcouteurEchapModal`** (adaptateur JS
+    `document.addEventListener('keydown')` → rappel .NET), **attaché à l'ouverture / détaché à la
+    fermeture** (aucune fuite). *NB méthode : un premier `@onkeydown` bUnit sur le backdrop passait vert en
+    test mais **jamais** en navigateur réel (l'événement part de `document`, pas du div non focus) → capture
+    document via port ; preuve finale = **gate navigateur PO**.*
 - **Impersonation bornée lecture** : session = identité **réelle** (configurateur fixe) vs identité
   **effective** (acteur incarné, ou **repli sur la réelle**) ; bandeau « Vous incarnez X » ; droit
   d'écriture dérivé du type de l'identité effective ; retour à l'identité réelle ; repli auto sur
@@ -463,13 +502,17 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **Borne anti-cliquet** : la persistance reste **bornée à la config foyer** ; le reste du domaine en
   queue (paliers « config foyer durable — reste » puis « persistance réelle »).
 - **Variantes refus/réaffectation de suppression** = porte G1 au make-gherkin si un vrai trou émerge.
-- **Refonte Config foyer — 1er incrément (Acteurs) livré s32** : onglet Acteurs migré au patron **tableau
-  lecture seule + crayon → modal** (cf. Mécaniques). **Restent au 2ᵉ incrément** : état actif/admin en
-  **toggle** dans la modal, **adresse de résidence** + **couleur vraie palette (picker)** [champs neufs],
-  harmonisation **Rôles / Cycle / Enfants** (dont **cycles déclarés non affichés** dans la config acteurs,
-  retour PO gate s32). **Tension ouverte à arbitrer G2** : le PO veut **en plus** une **édition inline au
-  clic de la valeur** — direction (inline seul / modal seule / cohabitation) **non tranchée**, à décider au
-  prochain `/planning` avant tout code (ne pas re-livrer l'inline sans arbitrage).
+- **Refonte Config foyer — Acteurs (s32) + Acteurs enrichis & Rôles/Cycle (s33) livrés** : onglet Acteurs
+  migré au patron **tableau lecture seule + crayon → modal** (s32), puis **enrichi s33** (toggle actif/admin
+  **sens ON** + verrou faute de commande inverse, **adresse de résidence** [champ neuf persisté], **palette
+  couleur (picker)**), **Rôles & Cycle harmonisés** au même patron avec **tous les cycles déclarés désormais
+  visibles** (corrige le trou gate s32) et **fermeture Échap** des modals (cf. Mécaniques). **Restent (3ᵉ
+  incrément)** : harmoniser **Lieux/Activités & Enfants** au même patron (retour PO gate s33), **commandes
+  inverses actif/admin** (dé-désignation admin + désactivation de compte, pour débloquer le sens OFF du
+  toggle), **lien enfant↔parent** (dont « lier un enfant à 2 parents », re-signalé gate s33). **Tension
+  ouverte à arbitrer G2** : le PO veut **en plus** une **édition inline au clic de la valeur** — direction
+  (inline seul / modal seule / cohabitation) **non tranchée**, à décider au prochain `/planning` avant tout
+  code (ne pas re-livrer l'inline sans arbitrage).
 - **Évolutions de surface config non priorisées** : refonte visuelle profonde du thème, contenu réel de
   l'onglet **Slot récurrent** (placeholder réservé au s20, aucune fonctionnalité neuve).
 - **Rôle sans effet fonctionnel encore** *(s21)* : le rôle est **livré comme caractéristique** (pas une

@@ -44,7 +44,8 @@ public sealed class FrontWasmConfigGatingInviteCompteAdminTempsReelTests : TestC
         // sont proposées ; la lecture (liste des acteurs) reste visible.
         Assert.Empty(config.FindAll("[data-testid='champ-email-compte']"));
         Assert.Empty(config.FindAll("[data-testid='bouton-creer-compte']"));
-        Assert.Empty(config.FindAll("[data-testid='bouton-designer-admin']"));
+        // Swap s33 Sc.4 : la désignation d'admin est le TOGGLE de la modal — inatteignable sous Invité (ni crayon ni modal).
+        Assert.Empty(config.FindAll("[data-testid='toggle-admin']"));
         Assert.NotEmpty(config.FindAll("[data-testid='acteur-foyer']"));
 
         // Non-régression durcissement s14/s20 — écritures d'acteur et gestion des rôles restent gatées.
@@ -60,6 +61,6 @@ public sealed class FrontWasmConfigGatingInviteCompteAdminTempsReelTests : TestC
         ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
         Assert.NotEmpty(config.FindAll("[data-testid='champ-email-compte']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-creer-compte']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='bouton-designer-admin']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='toggle-admin']"));
     }
 }

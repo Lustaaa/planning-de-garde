@@ -28,4 +28,7 @@ public sealed class FakeEnumerationActeursFoyer : IEnumerationActeursFoyer
     /// <summary>Rôle read-only (sprint 21) : ces scénarios (résolution grille/légende) ne portent pas
     /// de rôle — « sans rôle » par défaut, suffisant pour le contrat d'existence éprouvé ici.</summary>
     public string? RoleDe(string acteurId) => null;
+
+    /// <summary>Adresse read-only : ces scénarios ne portent pas d'adresse — non renseignée par défaut.</summary>
+    public string? AdresseDe(string acteurId) => null;
 }

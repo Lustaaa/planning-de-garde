@@ -77,10 +77,13 @@ public sealed class FrontWasmConfigCompteAdminDeuxEcransConvergenceTempsReelTest
                 },
                 TimeSpan.FromSeconds(15));
 
-            // When (désignation admin depuis l'écran 2) — refonte s32 : dans la MODAL d'Alice (crayon).
+            // When (désignation admin depuis l'écran 2) — refonte s32 + swap s33 Sc.4 : dans la MODAL d'Alice
+            // (crayon), on bascule le TOGGLE « admin » OFF→ON puis on enregistre.
             ConfigActeursModalHarness.OuvrirEdition(ecran2, config2, "parent-a");
             config2.InvokeAsync(() =>
-                config2.Find("[data-testid='bouton-designer-admin']").Click());
+                config2.Find("[data-testid='toggle-admin']").Change(true));
+            config2.InvokeAsync(() =>
+                config2.Find("#form-edition").Submit());
 
             // Then (convergence admin) — sans rechargement, le PREMIER écran affiche Alice comme admin.
             config1.WaitForAssertion(

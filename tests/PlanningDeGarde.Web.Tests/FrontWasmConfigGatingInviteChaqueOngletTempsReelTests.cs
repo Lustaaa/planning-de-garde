@@ -49,7 +49,9 @@ public sealed class FrontWasmConfigGatingInviteChaqueOngletTempsReelTests : Test
         Assert.NotEmpty(config.FindAll("[data-testid='liste-acteurs']"));
         Assert.NotEmpty(config.FindAll("[data-testid='acteur-foyer']"));
 
-        // Then (section « Cycle de fond ») — aucune écriture du cycle de fond n'est proposée (gatée).
+        // Then (section « Cycle de fond ») — refonte s33 Sc.10 : aucune écriture du cycle n'est proposée
+        // (crayon « Éditer le cycle » gaté ; l'éditeur vit dans la modal, non atteignable).
+        Assert.Empty(config.FindAll("[data-testid='crayon-cycle']"));
         Assert.Empty(config.FindAll("[data-testid='champ-nombre-semaines']"));
 
         // Contrôle positif (anti faux-vert) — sous l'identité Parent, les écritures REDEVIENNENT proposées
@@ -60,6 +62,6 @@ public sealed class FrontWasmConfigGatingInviteChaqueOngletTempsReelTests : Test
         config.Render();
         Assert.NotEmpty(config.FindAll("[data-testid='crayon-acteur']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-acteur']"));
-        Assert.NotEmpty(config.FindAll("[data-testid='champ-nombre-semaines']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='crayon-cycle']")); // écriture cycle = crayon → modal (Sc.10)
     }
 }

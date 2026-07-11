@@ -20,8 +20,10 @@ public static class CanalLecture
     /// sprint 14) pour piloter le rôle de l'identité effective lors d'une impersonation bornée. Le
     /// <see cref="RoleId"/> (s21) est l'identifiant stable du rôle du référentiel porté par l'acteur, ou
     /// <c>null</c> = « sans rôle » (attribut optionnel, neutre assumé) — pour afficher le rôle courant et
-    /// pré-sélectionner le sélecteur borné au référentiel (jamais un libellé en dur).</summary>
-    public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur, TypeActeur Type, string? RoleId);
+    /// pré-sélectionner le sélecteur borné au référentiel (jamais un libellé en dur). L'<see cref="Adresse"/>
+    /// (s33) est l'adresse de résidence persistée de l'acteur, ou <c>null</c> si non renseignée (champ
+    /// optionnel) — relue telle quelle par la configuration.</summary>
+    public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur, TypeActeur Type, string? RoleId, string? Adresse);
 
     /// <summary>Vue d'un rôle du référentiel du foyer énumérée pour l'écran de configuration (onglet
     /// Acteurs, s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable.
@@ -55,6 +57,12 @@ public static class CanalLecture
     /// seule — ne déclenche jamais la diffusion.</summary>
     public sealed record SlotDuJourVue(string Id, string EnfantId, string LieuId, DateTime Debut, DateTime Fin);
 
+    /// <summary>Vue d'un cycle de fond DÉCLARÉ énumérée pour l'écran de configuration (onglet Cycle, s33,
+    /// Sc.3) : index de semaine (identité stable de l'affectation) + id stable du responsable de fond
+    /// (attribut persisté, jamais le libellé). Corrige le trou de lecture (des cycles déclarés
+    /// n'apparaissaient pas dans la config, retour PO gate s32). Lecture seule.</summary>
+    public sealed record CycleFoyerVue(int IndexSemaine, string ResponsableId);
+
     public static IEndpointRouteBuilder MapperCanalLecture(this IEndpointRouteBuilder routes)
     {
         // Énumération des acteurs du foyer DEPUIS LE STORE (et non la liste statique front
@@ -65,9 +73,22 @@ public static class CanalLecture
             {
                 var acteurs = enumeration.EnumererActeurs()
                     .Select(id => new ActeurFoyerVue(
-                        id, referentiel.NomDe(id), palette.CouleurDe(id), enumeration.TypeDe(id), enumeration.RoleDe(id)))
+                        id, referentiel.NomDe(id), palette.CouleurDe(id), enumeration.TypeDe(id), enumeration.RoleDe(id), enumeration.AdresseDe(id)))
                     .ToList();
                 return Results.Ok(acteurs);
+            });
+
+        // Lecture des cycles DÉCLARÉS du cycle de fond DEPUIS LE STORE (s33, Sc.3) : l'onglet Cycle de
+        // l'écran config la lit pour lister TOUS les cycles settés/actifs — corrige le trou (des cycles
+        // déclarés n'apparaissaient pas dans la config, retour PO gate s32). Lecture seule, jamais de
+        // diffusion. Un foyer sans cycle déclaré renvoie une liste vide (pas d'erreur).
+        routes.MapGet("/api/foyer/cycles",
+            (CyclesFoyerQuery query) =>
+            {
+                var vues = query.Lire()
+                    .Select(c => new CycleFoyerVue(c.IndexSemaine, c.ResponsableId))
+                    .ToList();
+                return Results.Ok(vues);
             });
 
         // Énumération des rôles du référentiel du foyer DEPUIS LE STORE (s21) : l'onglet Acteurs de

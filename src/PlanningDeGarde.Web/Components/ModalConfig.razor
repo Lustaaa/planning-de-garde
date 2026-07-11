@@ -1,0 +1,57 @@
+@using Microsoft.Extensions.DependencyInjection
+@implements IAsyncDisposable
+
+@* Composant modal COMMUN de la Config foyer (factorisation, finition PO s33) : backdrop + panneau, et
+   fermeture à la touche Échap STRICTEMENT équivalente à « Annuler » — ferme sans muter, aucune commande
+   émise. La capture Échap est faite au niveau DOCUMENT via le port IEcouteurEchapModal (module JS
+   window.pdgModal) : c'est indispensable car un @onkeydown posé sur le backdrop ne reçoit RIEN en navigateur
+   réel tant que l'élément n'est pas focus (piège du vert-qui-ment). L'écouteur est attaché au montage et
+   DÉTACHÉ à la fermeture (Dispose) — aucune fuite. Le contenu (formulaire, actions, motif de refus…) est
+   passé tel quel en ChildContent — DOM rendu identique à l'inline d'origine (mêmes classes
+   .dialog-backdrop/.dialog-panneau et même data-testid) : les acceptations existantes le ciblent inchangé. *@
+<div class="dialog-backdrop" data-testid="@TestId">
+    <div class="dialog-panneau">
+        @ChildContent
+    </div>
+</div>
+
+@code {
+    /// <summary>Identifiant de test du backdrop (ex. « dialog-acteur ») — préserve les sélecteurs des acceptations.</summary>
+    [Parameter, EditorRequired] public string TestId { get; set; } = "";
+
+    /// <summary>Action de fermeture « Annuler » du parent : elle ne fait QUE fermer (aucune commande émise).</summary>
+    [Parameter] public EventCallback OnFermer { get; set; }
+
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+
+    /// <summary>Résolution OPTIONNELLE du port d'écoute Échap (miroir du hub SignalR de ConfigurationFoyer) :
+    /// présent (app réelle / test qui double le port) il capte Échap au niveau document ; absent (écrans qui ne
+    /// l'enregistrent pas) la modal reste fonctionnelle, fermable au bouton « Annuler ».</summary>
+    [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    private IAsyncDisposable? _abonnementEchap;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+            return;
+
+        var ecouteur = Services.GetService<IEcouteurEchapModal>();
+        if (ecouteur is null)
+            return;
+
+        // Échap au niveau document → « Annuler » : ferme sans muter, puis re-render du parent.
+        _abonnementEchap = await ecouteur.EcouterAsync(async () =>
+        {
+            await OnFermer.InvokeAsync();
+            await InvokeAsync(StateHasChanged);
+        });
+    }
+
+    /// <summary>Détache l'écouteur document à la fermeture de la modal (composant retiré du rendu) — pas de fuite.</summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (_abonnementEchap is not null)
+            await _abonnementEchap.DisposeAsync();
+    }
+}

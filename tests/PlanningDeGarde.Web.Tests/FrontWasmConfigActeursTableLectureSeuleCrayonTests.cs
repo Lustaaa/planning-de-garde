@@ -55,7 +55,8 @@ public sealed class FrontWasmConfigActeursTableLectureSeuleCrayonTests : TestCon
         Assert.Empty(config.FindAll("[data-testid='selecteur-role-acteur']"));
         Assert.Empty(config.FindAll("[data-testid='champ-email-compte']"));
         Assert.Empty(config.FindAll("[data-testid='bouton-supprimer']"));
-        Assert.Empty(config.FindAll("[data-testid='bouton-designer-admin']"));
+        // Swap s33 Sc.4 : l'admin est un TOGGLE de la MODAL (plus un bouton) — absent tant que la modal est fermée.
+        Assert.Empty(config.FindAll("[data-testid='toggle-admin']"));
         Assert.Empty(config.FindAll("[data-testid='dialog-acteur']"));
 
         // Then (crayon + ajouter) — une colonne Actions porte un crayon PAR ligne, et un bouton
