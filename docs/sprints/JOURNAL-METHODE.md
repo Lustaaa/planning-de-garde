@@ -69,6 +69,12 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   chapeau PLANNING du `scrum-master` (repérer le swap ancienne→neuve surface AVANT d'écrire les scénarios,
   grouper les scénarios inséparables en un seul commit, erreur/gating/temps-réel en incréments propres,
   jamais de coexistence durable ancienne+neuve).
+- 2026-07-11 — s33 : **vert-qui-ment bUnit sur interaction clavier** — la fermeture Échap des modals Config
+  foyer, testée verte via `@onkeydown`+focus sur le backdrop, était **non fonctionnelle en navigateur réel**
+  (le keydown part de `document`, pas du div non focus) → 2 allers-retours au gate avant capture au niveau
+  document via port `IEcouteurEchapModal`. Fix : garde-fou dans `dev-team` — les interactions clavier/focus
+  (Échap, raccourcis) ne se prouvent **jamais** par `@onkeydown` bUnit ; capter au niveau `document` via port
+  hexagonal (attaché à l'ouverture / détaché à la fermeture), preuve finale = **gate navigateur PO**.
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake
