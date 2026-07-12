@@ -169,6 +169,35 @@ public sealed class FrontWasmConfigModalsEchapFermeSansMutationTests : TestConte
     }
 
     [Fact]
+    public void Echap_document_sur_la_modal_Enfant_la_ferme_sans_muter_le_referentiel()
+    {
+        // Given — l'enfant « Léa » est semé ; modal d'édition ouverte dessus (crayon) ; je modifie le prénom.
+        using var api = new ApiDistanteFactory();
+        var (config, espion) = RendreConfig(api);
+        config.WaitForState(() => config.FindAll("[data-testid='enfant-foyer']").Count >= 1, TimeSpan.FromSeconds(10));
+
+        this.SurDispatcher(() => config.FindAll("[data-testid='crayon-enfant']")
+            .Single(b => b.GetAttribute("data-enfant-id") == "Léa").Click());
+        config.WaitForElement("[data-testid='dialog-enfant']", TimeSpan.FromSeconds(10));
+        config.WaitForAssertion(() => Assert.Equal(1, espion.Attachements), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-prenom-enfant']").Change("Renommage non enregistré"));
+
+        // When — Échap document.
+        this.SurDispatcher(() => espion.DeclencherEchapDocument().GetAwaiter().GetResult());
+
+        // Then — la modal se ferme, l'écouteur est détaché, et le référentiel porte toujours « Léa ».
+        config.WaitForAssertion(
+            () =>
+            {
+                Assert.Empty(config.FindAll("[data-testid='dialog-enfant']"));
+                Assert.Equal(1, espion.Detachements);
+            },
+            TimeSpan.FromSeconds(10));
+        var enfants = api.Services.GetRequiredService<IEnumerationEnfants>().EnumererEnfants();
+        Assert.Single(enfants, e => e.Prenom == "Léa");
+    }
+
+    [Fact]
     public void Echap_document_ferme_meme_une_modal_en_etat_de_refus_sans_rien_reemettre()
     {
         // Given — invariant : « Nounou » existe ; on ouvre l'ajout et on tente le doublon « Nounou » → REFUS

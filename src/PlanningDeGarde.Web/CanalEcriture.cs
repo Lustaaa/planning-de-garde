@@ -51,6 +51,14 @@ public static class CanalEcriture
     /// éditable) et le nouveau prénom. Refus métier (prénom vide / doublon d'un autre enfant) renvoyé.</summary>
     public sealed record EditerEnfantRequete(string EnfantId, string NouveauPrenom);
 
+    /// <summary>Corps de la requête de liaison d'un enfant à un parent-acteur (s34) : l'id stable de l'enfant
+    /// et l'id stable de l'acteur. Refus métier (inexistant / non-parent / 2 parents max) renvoyé ; déjà lié = neutre.</summary>
+    public sealed record LierEnfantParentRequete(string EnfantId, string ActeurId);
+
+    /// <summary>Corps de la requête de retrait du lien d'un enfant vers un parent-acteur (s34) : l'id stable de
+    /// l'enfant et l'id stable de l'acteur. Idempotent côté handler (parent déjà non lié = no-op qui réussit).</summary>
+    public sealed record DelierEnfantParentRequete(string EnfantId, string ActeurId);
+
     /// <summary>Corps de la requête d'édition d'un acteur émise via le canal d'écriture. Le nom et la
     /// couleur sont deux champs optionnels et indépendants : un champ absent (null) n'est pas appliqué
     /// (renommage seul au Sc.1, recoloriage seul au Sc.2). L'identifiant stable n'est jamais éditable.</summary>

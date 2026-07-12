@@ -17,5 +17,11 @@ public interface IEnumerationEnfants
 }
 
 /// <summary>Un enfant du référentiel du foyer : identifiant stable opaque (clé, jamais dérivé du
-/// prénom) et prénom d'affichage éditable.</summary>
-public sealed record EnfantFoyer(string Id, string Prenom);
+/// prénom), prénom d'affichage éditable et la <b>liste de ses parents liés</b> (0..2 identifiants
+/// stables d'acteurs, s34). Le lien est <b>optionnel</b> : un enfant sans aucun parent lié est valide
+/// (<see cref="ParentsLies"/> vide).</summary>
+public sealed record EnfantFoyer(string Id, string Prenom, IReadOnlyCollection<string> ParentsLies)
+{
+    /// <summary>Enfant sans aucun parent lié (lien optionnel, 0 parent accepté).</summary>
+    public EnfantFoyer(string Id, string Prenom) : this(Id, Prenom, System.Array.Empty<string>()) { }
+}

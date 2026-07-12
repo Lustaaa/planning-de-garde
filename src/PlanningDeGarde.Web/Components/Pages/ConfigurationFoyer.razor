@@ -583,51 +583,135 @@
             @* ══════════════ Panneau ENFANTS ══════════════ *@
             <section class="config-panneau @(_onglet == "enfants" ? null : "cacher")"
                      data-testid="panneau-enfants" aria-label="Enfants">
-                @* Référentiel d'enfants du foyer (s30) : lister / ajouter / éditer. L'enfant est désormais un
-                   agrégat de 1er rang, énuméré depuis ce référentiel vivant (jamais un enfant en dur / fantôme) ;
-                   il alimente le sélecteur d'enfant de la dialog de pose (S10). Écritures via le canal HTTP
-                   (POST /api/canal/{ajouter,editer}-enfant). Gating Parent. *@
+                @* Refonte s34 (Sc.4) : patron « tableau lecture seule + crayon → modal » (comme Acteurs s32 /
+                   Rôles-Cycle s33). La table des enfants est PUREMENT EN LECTURE (prénom + colonne « Parents
+                   liés » résolue en noms d'acteurs) ; toute l'écriture (ajouter / éditer le prénom, et — Sc.5 —
+                   lier/délier des parents) est déportée dans la MODAL ouverte par le crayon (édition) ou
+                   « Ajouter un enfant » (création). Réutilise les MÊMES commandes existantes (POST
+                   /api/canal/{ajouter,editer}-enfant) ; l'inline préexistant (form-ajouter-enfant,
+                   champ-editer-enfant) n'est PLUS rendu (lot atomique de surface). Gating d'identité EFFECTIVE
+                   (règle 9) : crayon, bouton d'ajout et modal ne sont rendus que Parent ; la table reste
+                   visible en lecture pour tous. *@
+                <h2 class="config-panneau-titre">Enfants du foyer</h2>
+                <p class="text-muted">Le référentiel d'enfants (Léa, Tom…) et, pour chacun, ses parents liés (0..2).
+                    Un enfant ajouté reçoit un identifiant stable neuf (jamais dérivé du prénom) ; éditer un prénom
+                    conserve l'identifiant. La table suit sans recharger la page.</p>
+
+                <div class="acteurs-defilement">
+                    <table class="acteurs-table" data-testid="liste-enfants">
+                        <thead>
+                            <tr>
+                                <th>Enfant</th>
+                                <th>Parents liés</th>
+                                @if (Session.EstParent)
+                                {
+                                    <th class="acteurs-col-actions">Actions</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var e in _enfants)
+                            {
+                                <tr data-testid="enfant-foyer" data-enfant-id="@e.Id">
+                                    <td><span class="role-libelle">@e.Prenom</span></td>
+                                    <td>
+                                        @* Colonne « Parents liés » en LECTURE : les identifiants stables des parents
+                                           résolus en noms d'acteurs (jamais un libellé en dur) ; « — » si aucun. *@
+                                        <span class="enfant-parents-lies" data-testid="enfant-parents-lies">@LibelleParentsLies(e)</span>
+                                    </td>
+                                    @if (Session.EstParent)
+                                    {
+                                        <td class="acteurs-col-actions">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm acteur-crayon"
+                                                    data-testid="crayon-enfant" data-enfant-id="@e.Id"
+                                                    @onclick="() => OuvrirEditionEnfant(e.Id)" aria-label="Modifier @e.Prenom">✏️</button>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
                 @if (Session.EstParent)
                 {
-                    <h2 class="config-panneau-titre">Enfants du foyer</h2>
-                    <p class="text-muted">Gérer le référentiel d'enfants (Léa, Tom…). Un enfant ajouté reçoit un
-                        identifiant stable neuf (jamais dérivé du prénom) et devient aussitôt sélectionnable à la
-                        pose d'un slot ; éditer un prénom conserve l'identifiant. La liste suit sans recharger la page.</p>
+                    <div class="acteurs-ajout">
+                        <button type="button" class="btn btn-primary" data-testid="bouton-ajouter-enfant"
+                                @onclick="OuvrirAjoutEnfant">Ajouter un enfant</button>
+                    </div>
 
-                    <EditForm Model="_enfant" OnValidSubmit="AjouterEnfant" FormName="ajouter-enfant" id="form-ajouter-enfant">
-                        <div class="input-group mb-3">
-                            <InputText class="form-control" @bind-Value="_enfant.Prenom" data-testid="champ-prenom-enfant"
-                                       placeholder="Prénom de l'enfant (ex. Tom)" />
-                            <button type="submit" class="btn btn-primary">Ajouter l'enfant</button>
-                        </div>
-                    </EditForm>
-
-                    @if (_motifEchecEnfant is not null)
+                    @* MODAL enfant (édition OU ajout) — rendue seulement quand ouverte et sous Parent. Réutilise
+                       les commandes existantes ajouter-enfant / editer-enfant ; le sélecteur de parents à
+                       lier/délier arrive en Sc.5. *@
+                    @if (_modalEnfantAjout || _modalEnfantId is not null)
                     {
-                        <div class="alert alert-danger mb-3" data-testid="motif-echec-enfant">@_motifEchecEnfant</div>
-                    }
+                        var enfantEdite = _modalEnfantId is null ? null : _enfants.FirstOrDefault(x => x.Id == _modalEnfantId);
+                        <ModalConfig TestId="dialog-enfant" OnFermer="FermerModalEnfant">
+                            <h2 class="h4 mb-3">@(_modalEnfantAjout ? "Ajouter un enfant" : "Modifier l'enfant")</h2>
 
-                    <ul class="list-group" data-testid="liste-enfants">
-                        @foreach (var e in _enfants)
-                        {
-                            <li class="list-group-item role-ligne" data-testid="enfant-foyer" data-enfant-id="@e.Id">
-                                <span class="role-libelle">@e.Prenom</span>
-                                <span class="role-actions">
-                                    <input type="text" class="form-control form-control-sm role-champ-renommer"
-                                           data-testid="champ-editer-enfant"
-                                           @bind:get="PrenomEdition(e.Id, e.Prenom)"
-                                           @bind:set="v => SaisirEditionEnfant(e.Id, v)" @bind:event="onchange" />
-                                    <button type="button" class="btn btn-outline-secondary btn-sm"
-                                            data-testid="bouton-editer-enfant"
-                                            @onclick="() => EditerEnfant(e.Id)">Éditer</button>
-                                </span>
-                            </li>
-                        }
-                    </ul>
-                }
-                else
-                {
-                    <p class="text-muted">La gestion des enfants est réservée aux parents du foyer.</p>
+                            @if (!_modalEnfantAjout && enfantEdite is { } enf)
+                            {
+                                <div data-testid="dialog-enfant-id" data-enfant-id="@enf.Id"></div>
+                            }
+
+                            <EditForm Model="_enfant" OnValidSubmit="SoumettreEnfant" FormName="enfant" id="form-enfant">
+                                <div class="mb-3">
+                                    <label class="form-label">Prénom</label>
+                                    <InputText class="form-control" @bind-Value="_enfant.Prenom" data-testid="champ-prenom-enfant"
+                                               placeholder="Prénom de l'enfant (ex. Tom)" />
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    <button type="button" class="btn btn-link" data-testid="dialog-enfant-annuler"
+                                            @onclick="FermerModalEnfant">Annuler</button>
+                                </div>
+                            </EditForm>
+
+                            @if (_motifEchecEnfant is not null)
+                            {
+                                <div class="alert alert-danger mt-3 mb-0" data-testid="motif-echec-enfant">@_motifEchecEnfant</div>
+                            }
+
+                            @if (!_modalEnfantAjout && enfantEdite is { } e2)
+                            {
+                                @* Parents liés COURANTS en lecture (Sc.4) : la modal montre les parents actuels
+                                   de l'enfant, résolus en noms. *@
+                                <hr />
+                                <div class="mb-2">
+                                    <label class="form-label">Parents liés</label>
+                                    <div class="enfant-parents-lies-modal" data-testid="enfant-parents-lies-modal">@LibelleParentsLies(e2)</div>
+                                </div>
+
+                                @* SÉLECTEUR des parents à lier / délier (Sc.5) : exactement les acteurs portant le
+                                   rôle « Parent » (référentiel acteurs + rôles), les parents DÉJÀ liés pré-cochés.
+                                   Borne « 2 parents max » (Sc.2) reflétée à l'écran : une case non cochée est
+                                   désactivée quand 2 sont déjà sélectionnés. À l'« Enregistrer » (SoumettreEnfant),
+                                   les diffs vis-à-vis des parents courants émettent lier-enfant-parent /
+                                   delier-enfant-parent via le canal HTTP. HORS scope : familles recomposées /
+                                   exactement-2 / vue graphe. *@
+                                <div class="mb-2" data-testid="selecteur-parents-enfant">
+                                    <label class="form-label">Lier des parents (2 max)</label>
+                                    @if (!ActeursParents().Any())
+                                    {
+                                        <div class="text-muted small" data-testid="aucun-parent-candidat">
+                                            Aucun acteur ne porte le rôle « Parent ».</div>
+                                    }
+                                    @foreach (var p in ActeursParents())
+                                    {
+                                        var acteur = p;
+                                        var lie = _selectionParents.Contains(acteur.Id);
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" class="form-check-input enfant-checkbox-parent" role="switch"
+                                                   id="parent-@acteur.Id" data-testid="checkbox-parent" data-acteur-id="@acteur.Id"
+                                                   checked="@lie" disabled="@(!lie && _selectionParents.Count >= 2)"
+                                                   @onchange="e => BasculerParent(acteur.Id, (bool)e.Value!)" />
+                                            <label class="form-check-label" for="parent-@acteur.Id">@acteur.Nom</label>
+                                        </div>
+                                    }
+                                </div>
+                            }
+                        </ModalConfig>
+                    }
                 }
             </section>
 

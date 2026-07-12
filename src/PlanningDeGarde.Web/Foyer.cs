@@ -74,7 +74,13 @@ public sealed record LieuFoyer(string Id, string Libelle);
 /// prénom) + prénom d'affichage. Alimente l'onglet Enfants de la config ET le sélecteur d'enfant de la
 /// dialog « Poser un slot » (un enfant ajouté / édité suit sans rechargement, temps réel SignalR lecture) —
 /// remplace le fantôme <c>Session.EnfantId</c> transmis à l'aveugle (s29).</summary>
-public sealed record EnfantFoyer(string Id, string Prenom);
+public sealed record EnfantFoyer(string Id, string Prenom)
+{
+    /// <summary>Identifiants stables des parents-acteurs liés (0..2, s34) — résolus en noms par la colonne
+    /// « Parents liés ». Propriété <c>init</c> (constructeur positionnel à 2 args préservé pour la pose /
+    /// les tests) : System.Text.Json la peuple depuis le JEU JSON quand présente, sinon liste vide.</summary>
+    public IReadOnlyCollection<string> ParentsLies { get; init; } = System.Array.Empty<string>();
+}
 
 /// <summary>Un compte utilisateur du foyer <b>énuméré depuis le store durable</b> via le canal de lecture
 /// (s22) : identifiant stable opaque (clé, jamais l'email) + email + statut (« inactif » / « actif ») +

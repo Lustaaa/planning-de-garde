@@ -59,6 +59,16 @@ public static class CanalEcriture
     /// (prénom vide / doublon d'un autre enfant) renvoyé avec son motif.</summary>
     public sealed record EditerEnfantRequete(string EnfantId, string NouveauPrenom);
 
+    /// <summary>Corps de la requête de liaison d'un enfant à un parent-acteur (s34) émise via le canal
+    /// d'écriture : l'identifiant stable de l'enfant + l'identifiant stable de l'acteur. Refus métier (acteur
+    /// inexistant / non-parent / borne 2 parents max) renvoyé avec son motif ; déjà lié = neutre.</summary>
+    public sealed record LierEnfantParentRequete(string EnfantId, string ActeurId);
+
+    /// <summary>Corps de la requête de retrait du lien d'un enfant vers un parent-acteur (s34) émise via le
+    /// canal d'écriture : l'identifiant stable de l'enfant + l'identifiant stable de l'acteur. Idempotent côté
+    /// handler (parent déjà non lié = no-op qui réussit).</summary>
+    public sealed record DelierEnfantParentRequete(string EnfantId, string ActeurId);
+
     /// <summary>Corps de la requête d'édition d'un acteur émise via le canal d'écriture. Le nom et la
     /// couleur sont deux champs optionnels et indépendants : un champ absent (null) n'est pas appliqué
     /// (renommage seul au Sc.1, recoloriage seul au Sc.2). L'identifiant stable n'est jamais éditable.</summary>
@@ -283,6 +293,37 @@ public static class CanalEcriture
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/lier-enfant-parent",
+            (LierEnfantParentRequete requete, LierEnfantParentHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new LierEnfantParentCommand(requete.EnfantId, requete.ActeurId));
+
+            // Même convention que les autres écritures : succès acquitté (le parent lié est relu dans la colonne
+            // « Parents liés » sans rechargement, s34 Sc.5), refus métier renvoyé avec son motif (acteur
+            // inexistant / non-parent / 2 parents max, Sc.2). Sur succès, l'adaptateur de gauche déclenche la
+            // DIFFUSION temps réel (lecture seule) : les autres écrans convergent sans rechargement (Sc.6).
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/delier-enfant-parent",
+            (DelierEnfantParentRequete requete, DelierEnfantParentHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new DelierEnfantParentCommand(requete.EnfantId, requete.ActeurId));
+
+            // Même convention : succès acquitté (le parent délié disparaît de la colonne « Parents liés » sans
+            // rechargement, Sc.5), idempotent côté handler (parent déjà non lié = no-op qui réussit). Sur succès,
+            // diffusion temps réel (lecture seule) : les autres écrans convergent sans rechargement (Sc.6).
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
         });
 
         routes.MapPost("/api/canal/editer-acteur", (EditerActeurRequete requete, EditerActeurHandler handler) =>
