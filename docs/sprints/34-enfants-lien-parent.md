@@ -26,7 +26,7 @@
 >   sprint = tableau + modal, pas de vue graphe).
 > - **Suppression d'un enfant** (Delete + borne « ≥1 enfant » R1) : hors goal.
 
-## Avancement — 4/6
+## Avancement — 5/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -34,7 +34,7 @@
 | 2 | Règles du lien : **« 2 parents max »** + rejets (inexistant / non-parent / déjà lié), sans écriture partielle | back | ✅ |
 | 3 | Commande **délier** un enfant d'un parent (idempotente, relue par la query) | back | ✅ |
 | 4 | Onglet Enfants au patron **tableau lecture + crayon → modal** + « Ajouter » (**swap de surface**, colonne « Parents liés ») | 🖥️ IHM | ✅ |
-| 5 | Modal enfant : **sélecteur des parents** à lier / délier (depuis le référentiel acteurs) | 🖥️ IHM | ⏳ |
+| 5 | Modal enfant : **sélecteur des parents** à lier / délier (depuis le référentiel acteurs) | 🖥️ IHM | ✅ |
 | 6 | Invariants Enfants — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
 
 > **⚠️ GARDE lot atomique de surface (Sc.4) — l'onglet Enfants porte AUJOURD'HUI une surface
@@ -118,7 +118,7 @@ Alors la MÊME modal s'ouvre VIDE (mode création) → « Enregistrer » crée u
 Et la fermeture Échap de la modal (patron s33) referme SANS mutation
 ```
 
-### Sc.5 — Modal enfant : sélecteur des parents à lier / délier @ihm @pending
+### Sc.5 — Modal enfant : sélecteur des parents à lier / délier @ihm @vert
 ```gherkin
 Étant donné la modal d'édition d'un enfant ouverte (Parent)
 Quand la modal est rendue

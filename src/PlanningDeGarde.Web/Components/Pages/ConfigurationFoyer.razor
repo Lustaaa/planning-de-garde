@@ -674,12 +674,40 @@
 
                             @if (!_modalEnfantAjout && enfantEdite is { } e2)
                             {
-                                @* Parents liés COURANTS en lecture (Sc.4) : la modal montre les parents actuels de
-                                   l'enfant, résolus en noms. Le sélecteur pour lier/délier arrive en Sc.5. *@
+                                @* Parents liés COURANTS en lecture (Sc.4) : la modal montre les parents actuels
+                                   de l'enfant, résolus en noms. *@
                                 <hr />
                                 <div class="mb-2">
                                     <label class="form-label">Parents liés</label>
                                     <div class="enfant-parents-lies-modal" data-testid="enfant-parents-lies-modal">@LibelleParentsLies(e2)</div>
+                                </div>
+
+                                @* SÉLECTEUR des parents à lier / délier (Sc.5) : exactement les acteurs portant le
+                                   rôle « Parent » (référentiel acteurs + rôles), les parents DÉJÀ liés pré-cochés.
+                                   Borne « 2 parents max » (Sc.2) reflétée à l'écran : une case non cochée est
+                                   désactivée quand 2 sont déjà sélectionnés. À l'« Enregistrer » (SoumettreEnfant),
+                                   les diffs vis-à-vis des parents courants émettent lier-enfant-parent /
+                                   delier-enfant-parent via le canal HTTP. HORS scope : familles recomposées /
+                                   exactement-2 / vue graphe. *@
+                                <div class="mb-2" data-testid="selecteur-parents-enfant">
+                                    <label class="form-label">Lier des parents (2 max)</label>
+                                    @if (!ActeursParents().Any())
+                                    {
+                                        <div class="text-muted small" data-testid="aucun-parent-candidat">
+                                            Aucun acteur ne porte le rôle « Parent ».</div>
+                                    }
+                                    @foreach (var p in ActeursParents())
+                                    {
+                                        var acteur = p;
+                                        var lie = _selectionParents.Contains(acteur.Id);
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" class="form-check-input enfant-checkbox-parent" role="switch"
+                                                   id="parent-@acteur.Id" data-testid="checkbox-parent" data-acteur-id="@acteur.Id"
+                                                   checked="@lie" disabled="@(!lie && _selectionParents.Count >= 2)"
+                                                   @onchange="e => BasculerParent(acteur.Id, (bool)e.Value!)" />
+                                            <label class="form-check-label" for="parent-@acteur.Id">@acteur.Nom</label>
+                                        </div>
+                                    }
                                 </div>
                             }
                         </ModalConfig>

@@ -278,23 +278,34 @@ public partial class ConfigurationFoyer
     // Modal ouverte en mode CRÉATION (bouton « Ajouter un enfant ») : champ vide, aucun enfant porté.
     private bool _modalEnfantAjout;
 
+    /// <summary>Sélection des parents-acteurs à lier dans la modal (Sc.5) : initialisée aux parents COURANTS de
+    /// l'enfant à l'ouverture (pré-cochés). À l'« Enregistrer », les diffs vis-à-vis des parents courants
+    /// émettent lier / délier. Bornée à 2 (l'UI désactive une case non cochée quand 2 sont sélectionnés).</summary>
+    private readonly HashSet<string> _selectionParents = new();
+
     /// <summary>Ouvre la modal d'ÉDITION sur un enfant (clic crayon) : porte son id stable, pré-remplit son
-    /// prénom courant, efface le motif d'échec précédent. Les parents liés courants sont affichés en lecture
-    /// (Sc.4) ; le sélecteur pour lier/délier arrive en Sc.5.</summary>
+    /// prénom courant et la sélection de parents sur les parents liés COURANTS (pré-cochés, Sc.5), efface le
+    /// motif d'échec précédent.</summary>
     private void OuvrirEditionEnfant(string enfantId)
     {
         _modalEnfantAjout = false;
         _modalEnfantId = enfantId;
-        _enfant.Prenom = _enfants.FirstOrDefault(e => e.Id == enfantId)?.Prenom ?? "";
+        var enfant = _enfants.FirstOrDefault(e => e.Id == enfantId);
+        _enfant.Prenom = enfant?.Prenom ?? "";
+        _selectionParents.Clear();
+        foreach (var parentId in enfant?.ParentsLies ?? Array.Empty<string>())
+            _selectionParents.Add(parentId);
         _motifEchecEnfant = null;
     }
 
-    /// <summary>Ouvre la MÊME modal en mode CRÉATION (bouton « Ajouter un enfant ») : champ vide, aucun enfant porté.</summary>
+    /// <summary>Ouvre la MÊME modal en mode CRÉATION (bouton « Ajouter un enfant ») : champ vide, aucun enfant
+    /// porté, aucune sélection de parent (les liens se posent après la création, en édition).</summary>
     private void OuvrirAjoutEnfant()
     {
         _modalEnfantId = null;
         _modalEnfantAjout = true;
         _enfant.Prenom = "";
+        _selectionParents.Clear();
         _motifEchecEnfant = null;
     }
 
@@ -303,7 +314,29 @@ public partial class ConfigurationFoyer
     {
         _modalEnfantId = null;
         _modalEnfantAjout = false;
+        _selectionParents.Clear();
         _motifEchecEnfant = null;
+    }
+
+    /// <summary>Acteurs candidats au lien parent (Sc.5) : exactement ceux portant le rôle « Parent » du
+    /// référentiel de rôles (libellé résolu sur l'id de rôle, jamais un rôle en dur). Alimente le sélecteur.</summary>
+    private IEnumerable<ActeurFoyer> ActeursParents()
+        => _acteurs.Where(a => a.RoleId is { } roleId
+            && _roles.FirstOrDefault(r => r.Id == roleId)?.Libelle == "Parent");
+
+    /// <summary>Bascule la sélection d'un parent dans la modal (Sc.5). Borne « 2 parents max » reflétée à
+    /// l'écran : on n'ajoute pas au-delà de 2 (les cases non cochées sont d'ailleurs désactivées).</summary>
+    private void BasculerParent(string acteurId, bool lie)
+    {
+        if (lie)
+        {
+            if (_selectionParents.Count < 2)
+                _selectionParents.Add(acteurId);
+        }
+        else
+        {
+            _selectionParents.Remove(acteurId);
+        }
     }
 
     /// <summary>Libellé de lecture des parents liés d'un enfant (Sc.4) : les identifiants stables des parents
@@ -901,27 +934,59 @@ public partial class ConfigurationFoyer
     {
         _motifEchecEnfant = null;
 
+        if (_modalEnfantAjout)
+        {
+            // Création : ajouter-enfant seul (les liens parents se posent ensuite en édition, Sc.5).
+            if (!await PosterEnfant("api/canal/ajouter-enfant", new AjouterEnfantRequete(_enfant.Prenom)))
+                return;
+        }
+        else
+        {
+            // Édition : prénom (editer-enfant) PUIS les diffs de parents liés (lier/délier). Sur le PREMIER
+            // refus (métier ou injoignable), on s'arrête, motif dans la modal restée ouverte (Sc.6) — le
+            // tableau n'est relu qu'après le succès complet.
+            if (!await PosterEnfant("api/canal/editer-enfant", new EditerEnfantRequete(_modalEnfantId!, _enfant.Prenom)))
+                return;
+
+            var courant = _enfants.FirstOrDefault(e => e.Id == _modalEnfantId)?.ParentsLies
+                ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+
+            foreach (var acteurId in _selectionParents.Where(id => !courant.Contains(id)).ToList())
+                if (!await PosterEnfant("api/canal/lier-enfant-parent", new LierEnfantParentRequete(_modalEnfantId!, acteurId)))
+                    return;
+
+            foreach (var acteurId in courant.Where(id => !_selectionParents.Contains(id)).ToList())
+                if (!await PosterEnfant("api/canal/delier-enfant-parent", new DelierEnfantParentRequete(_modalEnfantId!, acteurId)))
+                    return;
+        }
+
+        await RechargerEnfants();
+        FermerModalEnfant();
+    }
+
+    /// <summary>Émet une écriture enfant (ajouter / éditer / lier / délier) via le canal HTTP réel et renvoie
+    /// <c>true</c> en succès. Sur service injoignable ou refus métier, pose le motif dans la modal
+    /// (<c>_motifEchecEnfant</c>) et renvoie <c>false</c> — la modal reste ouverte, aucun tableau relu.</summary>
+    private async Task<bool> PosterEnfant<TRequete>(string route, TRequete requete)
+    {
         HttpResponseMessage reponse;
         try
         {
-            reponse = _modalEnfantAjout
-                ? await Canal.PostAsJsonAsync("api/canal/ajouter-enfant", new AjouterEnfantRequete(_enfant.Prenom))
-                : await Canal.PostAsJsonAsync("api/canal/editer-enfant", new EditerEnfantRequete(_modalEnfantId!, _enfant.Prenom));
+            reponse = await Canal.PostAsJsonAsync(route, requete);
         }
         catch (HttpRequestException)
         {
             _motifEchecEnfant = MessagesEcriture.ServiceInjoignable;
-            return;
+            return false;
         }
 
         if (!reponse.IsSuccessStatusCode)
         {
             _motifEchecEnfant = await reponse.Content.ReadFromJsonAsync<string>();
-            return;
+            return false;
         }
 
-        await RechargerEnfants();
-        FermerModalEnfant();
+        return true;
     }
 
     /// <summary>Compte utilisateur associé à un acteur (résolu sur son id stable), ou <c>null</c> s'il n'en
