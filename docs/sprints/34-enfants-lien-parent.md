@@ -26,13 +26,13 @@
 >   sprint = tableau + modal, pas de vue graphe).
 > - **Suppression d'un enfant** (Delete + borne « ≥1 enfant » R1) : hors goal.
 
-## Avancement — 2/6
+## Avancement — 3/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Modèle enfant enrichi d'un lien parents + commande **lier** (persistance Mongo durable) | back | ✅ |
 | 2 | Règles du lien : **« 2 parents max »** + rejets (inexistant / non-parent / déjà lié), sans écriture partielle | back | ✅ |
-| 3 | Commande **délier** un enfant d'un parent (idempotente, relue par la query) | back | ⏳ |
+| 3 | Commande **délier** un enfant d'un parent (idempotente, relue par la query) | back | ✅ |
 | 4 | Onglet Enfants au patron **tableau lecture + crayon → modal** + « Ajouter » (**swap de surface**, colonne « Parents liés ») | 🖥️ IHM | ⏳ |
 | 5 | Modal enfant : **sélecteur des parents** à lier / délier (depuis le référentiel acteurs) | 🖥️ IHM | ⏳ |
 | 6 | Invariants Enfants — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
@@ -92,7 +92,7 @@ Alors l'opération est REFUSÉE ou NEUTRE (pas de doublon de lien), sans écritu
 Et dans tous les cas de refus, le motif est restitué à l'appelant et le store reste INCHANGÉ
 ```
 
-### Sc.3 — Commande « délier » un enfant d'un parent @back @pending
+### Sc.3 — Commande « délier » un enfant d'un parent @back @vert
 ```gherkin
 Étant donné un enfant lié à un parent
 Quand la commande « délier un enfant d'un parent » est émise (enfantId, acteurId)

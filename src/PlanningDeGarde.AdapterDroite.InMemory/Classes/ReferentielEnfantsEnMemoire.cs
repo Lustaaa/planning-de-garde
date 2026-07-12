@@ -32,6 +32,13 @@ public sealed class ReferentielEnfantsEnMemoire : IEnumerationEnfants, IEditeurE
             parents.Add(acteurId);
     }
 
+    public void DelierParent(string enfantId, string acteurId)
+    {
+        // Retrait du lien (id de l'enfant et autres liens inchangés). Tolérant à l'absence (idempotent).
+        if (_parents.TryGetValue(enfantId, out var parents))
+            parents.Remove(acteurId);
+    }
+
     public IReadOnlyCollection<EnfantFoyer> EnumererEnfants()
         => _prenoms.Select(kv => new EnfantFoyer(kv.Key, kv.Value, ParentsDe(kv.Key))).ToList();
 

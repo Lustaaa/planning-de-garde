@@ -56,6 +56,17 @@ public sealed class ReferentielEnfantsMongo : IEnumerationEnfants, IEditeurEnfan
         Persister(doc);
     }
 
+    public void DelierParent(string enfantId, string acteurId)
+    {
+        // Retrait DURABLE du lien (id de l'enfant et prénom inchangés, autres liens conservés). Idempotent :
+        // un enfant absent ou un parent déjà non lié → aucune écriture (write-through seulement si mutation).
+        if (!_cache.TryGetValue(enfantId, out var existant) || !existant.ParentsLies.Contains(acteurId))
+            return;
+        var doc = new EnfantDocument { Id = existant.Id, Prenom = existant.Prenom, ParentsLies = new List<string>(existant.ParentsLies) };
+        doc.ParentsLies.Remove(acteurId);
+        Persister(doc);
+    }
+
     private void Persister(EnfantDocument doc)
     {
         _cache[doc.Id] = doc;

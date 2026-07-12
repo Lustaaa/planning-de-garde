@@ -34,6 +34,12 @@ public sealed class FakeReferentielEnfants : IEnumerationEnfants, IEditeurEnfant
             parents.Add(acteurId);
     }
 
+    public void DelierParent(string enfantId, string acteurId)
+    {
+        if (_parents.TryGetValue(enfantId, out var parents))
+            parents.Remove(acteurId); // tolérant à l'absence (idempotent)
+    }
+
     public IReadOnlyCollection<EnfantFoyer> EnumererEnfants()
         => _prenoms.Select(kv => new EnfantFoyer(kv.Key, kv.Value, ParentsDe(kv.Key))).ToList();
 

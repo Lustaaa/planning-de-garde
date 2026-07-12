@@ -22,4 +22,9 @@ public interface IEditeurEnfants
     /// (enrichissement, jamais recréation — l'id de l'enfant est la clé inchangée). Le lien est porté
     /// par le modèle et persisté ; relu ensuite via <see cref="EnfantFoyer.ParentsLies"/>.</summary>
     void LierParent(string enfantId, string acteurId);
+
+    /// <summary>Retire le lien vers un <b>parent-acteur</b> de l'enfant identifié de façon stable (l'id
+    /// de l'enfant et ses autres liens restent inchangés). <b>Idempotent</b> : délier un parent déjà
+    /// non lié (ou un enfant sans lien) est neutre — aucune écriture, aucune erreur.</summary>
+    void DelierParent(string enfantId, string acteurId);
 }
