@@ -39,23 +39,42 @@ public sealed class ReferentielEnfantsMongo : IEnumerationEnfants, IEditeurEnfan
     {
         // Écriture write-through : cache de session ET store durable (upsert sur l'id stable) — l'enfant
         // survit au redémarrage. Le même id reste un unique document (jamais de doublon) ; l'édition écrase
-        // le prénom sur la même clé (dernière écriture gagne).
-        var doc = new EnfantDocument { Id = enfantId, Prenom = prenom };
-        _cache[enfantId] = doc;
+        // le prénom sur la même clé (dernière écriture gagne). Les parents liés déjà persistés sont conservés.
+        var parents = _cache.TryGetValue(enfantId, out var existant) ? existant.ParentsLies : new List<string>();
+        Persister(new EnfantDocument { Id = enfantId, Prenom = prenom, ParentsLies = parents });
+    }
+
+    public void LierParent(string enfantId, string acteurId)
+    {
+        // Enrichissement durable : on ajoute le parent-acteur à la liste des parents liés de l'enfant
+        // (id de l'enfant inchangé, prénom conservé), write-through sur le store durable. Aucun doublon.
+        var doc = _cache.TryGetValue(enfantId, out var existant)
+            ? new EnfantDocument { Id = existant.Id, Prenom = existant.Prenom, ParentsLies = new List<string>(existant.ParentsLies) }
+            : new EnfantDocument { Id = enfantId, Prenom = string.Empty, ParentsLies = new List<string>() };
+        if (!doc.ParentsLies.Contains(acteurId))
+            doc.ParentsLies.Add(acteurId);
+        Persister(doc);
+    }
+
+    private void Persister(EnfantDocument doc)
+    {
+        _cache[doc.Id] = doc;
         _enfants.ReplaceOne(
-            Builders<EnfantDocument>.Filter.Eq(d => d.Id, enfantId),
+            Builders<EnfantDocument>.Filter.Eq(d => d.Id, doc.Id),
             doc,
             new ReplaceOptions { IsUpsert = true });
     }
 
     public IReadOnlyCollection<EnfantFoyer> EnumererEnfants()
-        => _cache.Values.Select(d => new EnfantFoyer(d.Id, d.Prenom)).ToList();
+        => _cache.Values.Select(d => new EnfantFoyer(d.Id, d.Prenom, d.ParentsLies.ToList())).ToList();
 
-    /// <summary>Document persisté d'un enfant du foyer : identifiant stable opaque (clé) et prénom.</summary>
+    /// <summary>Document persisté d'un enfant du foyer : identifiant stable opaque (clé), prénom et la
+    /// liste des identifiants stables de ses parents-acteurs liés (0..2, s34).</summary>
     private sealed class EnfantDocument
     {
         [BsonId]
         public string Id { get; set; } = default!;
         public string Prenom { get; set; } = default!;
+        public List<string> ParentsLies { get; set; } = new();
     }
 }

@@ -17,4 +17,9 @@ public interface IEditeurEnfants
     /// éditable — il est la clé) : dernière écriture gagne, aucun doublon (le même id reste un
     /// unique enfant).</summary>
     void Editer(string enfantId, string nouveauPrenom);
+
+    /// <summary>Lie un <b>parent-acteur</b> (identifiant stable) à l'enfant identifié de façon stable
+    /// (enrichissement, jamais recréation — l'id de l'enfant est la clé inchangée). Le lien est porté
+    /// par le modèle et persisté ; relu ensuite via <see cref="EnfantFoyer.ParentsLies"/>.</summary>
+    void LierParent(string enfantId, string acteurId);
 }
