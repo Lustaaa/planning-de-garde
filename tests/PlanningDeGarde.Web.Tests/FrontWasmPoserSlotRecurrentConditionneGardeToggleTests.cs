@@ -47,7 +47,7 @@ public sealed class FrontWasmPoserSlotRecurrentConditionneGardeToggleTests : Tes
     {
         // Given — la grille réellement câblée à l'API distante ; le lieu « piscine » existe au store réel.
         using var api = new ApiDistanteFactory();
-        api.Services.GetRequiredService<IEditeurLieux>().Ajouter("piscine", "piscine");
+        api.Services.GetRequiredService<IEditeurActivites>().Ajouter("piscine", "piscine");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Lundi_29_06_2026);
 
         // When — un Parent pose un slot récurrent en ACTIVANT le toggle « seulement les jours où l'enfant
@@ -74,7 +74,7 @@ public sealed class FrontWasmPoserSlotRecurrentConditionneGardeToggleTests : Tes
     {
         // Given — la grille réellement câblée ; le lieu « piscine » existe au store réel.
         using var api = new ApiDistanteFactory();
-        api.Services.GetRequiredService<IEditeurLieux>().Ajouter("piscine", "piscine");
+        api.Services.GetRequiredService<IEditeurActivites>().Ajouter("piscine", "piscine");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Lundi_29_06_2026);
 
         // When — un Parent pose un slot récurrent SANS activer le toggle (comportement par défaut), puis valide.

@@ -20,11 +20,11 @@ public sealed record PoserSlotRecurrentCommand(
 public sealed class PoserSlotRecurrentHandler
 {
     private readonly ISlotRecurrentRepository _slots;
-    private readonly IEnumerationLieux _lieux;
+    private readonly IEnumerationActivites _lieux;
     private readonly IEnumerationEnfants _enfants;
     private readonly INotificateurPlanning _notificateur;
 
-    public PoserSlotRecurrentHandler(ISlotRecurrentRepository slots, IEnumerationLieux lieux, IEnumerationEnfants enfants, INotificateurPlanning notificateur)
+    public PoserSlotRecurrentHandler(ISlotRecurrentRepository slots, IEnumerationActivites lieux, IEnumerationEnfants enfants, INotificateurPlanning notificateur)
     {
         _slots = slots;
         _lieux = lieux;
@@ -34,9 +34,9 @@ public sealed class PoserSlotRecurrentHandler
 
     public Result<SlotRecurrentSnapshot> Handle(PoserSlotRecurrentCommand commande)
     {
-        // Existence lue sur le référentiel de lieux VIVANT (IEnumerationLieux) — miroir strict de
+        // Existence lue sur le référentiel de lieux VIVANT (IEnumerationActivites) — miroir strict de
         // PoserSlotHandler : un lieu inconnu du foyer refuse la pose, sans écriture ni diffusion.
-        if (_lieux.EnumererLieux().All(lieu => lieu.Id != commande.LieuId))
+        if (_lieux.EnumererActivites().All(lieu => lieu.Id != commande.LieuId))
             return Result<SlotRecurrentSnapshot>.Echec("Le lieu visé n'existe pas dans les lieux du foyer.");
 
         // Existence de l'enfant lue sur le référentiel d'enfants VIVANT (IEnumerationEnfants, s30 S7) —

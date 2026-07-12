@@ -110,10 +110,13 @@ public static class CanalLecture
         // pour peupler leur sélecteur de lieu — un seul canal de lecture, jamais la liste en dur Foyer.Lieux.
         // Lecture seule — ne déclenche jamais la diffusion.
         routes.MapGet("/api/foyer/lieux",
-            (IEnumerationLieux lieux) =>
+            (IEnumerationActivites activites) =>
             {
-                var vues = lieux.EnumererLieux()
-                    .Select(l => new LieuFoyerVue(l.Id, l.Libelle))
+                // Seam de traduction (Option B, s35 Sc.1) : le nom HTTP « lieu » (route + DTO LieuFoyerVue
+                // inchangés, contrat de fil stable) est MAPPÉ sur le concept Application « Activité » renommé.
+                // Le renommage HTTP/IHM « Lieu→Activité » est absorbé par le SWAP de Sc.4.
+                var vues = activites.EnumererActivites()
+                    .Select(a => new LieuFoyerVue(a.Id, a.Libelle))
                     .ToList();
                 return Results.Ok(vues);
             });

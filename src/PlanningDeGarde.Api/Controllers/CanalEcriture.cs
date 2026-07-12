@@ -241,9 +241,11 @@ public static class CanalEcriture
         });
 
         routes.MapPost("/api/canal/ajouter-lieu",
-            (AjouterLieuRequete requete, AjouterLieuHandler handler, INotificateurPlanning notificateur) =>
+            (AjouterLieuRequete requete, AjouterActiviteHandler handler, INotificateurPlanning notificateur) =>
         {
-            var resultat = handler.Handle(new AjouterLieuCommand(requete.Libelle));
+            // Seam Option B (s35 Sc.1) : route + DTO HTTP « lieu » inchangés (contrat de fil stable),
+            // mappés sur la commande Application « Activité » renommée. Renommage HTTP absorbé par Sc.4.
+            var resultat = handler.Handle(new AjouterActiviteCommand(requete.Libelle));
 
             // Même convention que les autres écritures : succès acquitté (le lieu ajouté est désormais énuméré
             // depuis le store, disponible à la saisie), refus métier renvoyé avec son motif (libellé vide /
@@ -257,9 +259,11 @@ public static class CanalEcriture
         });
 
         routes.MapPost("/api/canal/supprimer-lieu",
-            (SupprimerLieuRequete requete, SupprimerLieuHandler handler, INotificateurPlanning notificateur) =>
+            (SupprimerLieuRequete requete, SupprimerActiviteHandler handler, INotificateurPlanning notificateur) =>
         {
-            var resultat = handler.Handle(new SupprimerLieuCommand(requete.LieuId));
+            // Seam Option B (s35 Sc.1) : route + DTO HTTP « lieu » inchangés, mappés sur la commande
+            // Application « Activité » renommée (requete.LieuId → l'id d'activité, positionnel).
+            var resultat = handler.Handle(new SupprimerActiviteCommand(requete.LieuId));
 
             // Même convention : succès acquitté (le lieu quitte le référentiel, plus proposé à la saisie),
             // refus métier renvoyé avec son motif. Idempotent côté handler. Sur succès, diffusion temps réel :

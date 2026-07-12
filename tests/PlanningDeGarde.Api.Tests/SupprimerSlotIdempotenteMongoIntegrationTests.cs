@@ -42,7 +42,7 @@ public sealed class SupprimerSlotIdempotenteMongoIntegrationTests : IDisposable
         var handler = serveur.Services.GetRequiredService<SupprimerSlotHandler>();
         // Mongo config foyer sans seed (s27/s30) : on établit les lieux « école »/« nounou » ET l'enfant
         // « Léa » avant les poses (la pose valide désormais l'existence de l'enfant, s30 S7).
-        var lieux = serveur.Services.GetRequiredService<IEditeurLieux>();
+        var lieux = serveur.Services.GetRequiredService<IEditeurActivites>();
         lieux.Ajouter("école", "école");
         lieux.Ajouter("nounou", "nounou");
         serveur.Services.GetRequiredService<IEditeurEnfants>().Ajouter("Léa", "Léa");

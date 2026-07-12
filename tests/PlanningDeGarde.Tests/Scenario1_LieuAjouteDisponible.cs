@@ -10,9 +10,9 @@ namespace PlanningDeGarde.Tests;
 
 // Sprint 27 — S1 — Un lieu ajouté au foyer devient disponible à la saisie (@back)
 //   Tranche BACKEND (frontière Application) : commande/handler AjouterLieu qui persiste le lieu via
-//   le port d'écriture IEditeurLieux, l'expose à l'énumération IEnumerationLieux, et — CRUCIAL — le
+//   le port d'écriture IEditeurActivites, l'expose à l'énumération IEnumerationActivites, et — CRUCIAL — le
 //   rend acceptable à la POSE d'un slot (PoserSlotHandler valide l'existence sur ce même canal de
-//   lecture vivant, plus la liste en dur Foyer.Lieux). La durabilité Mongo est prouvée en S4.
+//   lecture vivant, plus la liste en dur Foyer.Activites). La durabilité Mongo est prouvée en S4.
 public class Scenario1_LieuAjouteDisponible
 {
     private const string Piscine = "piscine";
@@ -23,16 +23,16 @@ public class Scenario1_LieuAjouteDisponible
     [Fact]
     public void Acceptation_Should_Enumerer_piscine_et_accepter_la_pose_d_un_slot_a_ce_lieu_When_le_parent_ajoute_le_lieu_piscine()
     {
-        var referentiel = new ReferentielLieuxEnMemoire();
-        var ajouter = new AjouterLieuHandler(referentiel, referentiel);
+        var referentiel = new ReferentielActivitesEnMemoire();
+        var ajouter = new AjouterActiviteHandler(referentiel, referentiel);
         var poser = new PoserSlotHandler(new FakeSlotRepository(), referentiel, new FakeReferentielEnfants().AvecEnfant("lea"), new FakeNotificateurPlanning());
 
-        var ajout = ajouter.Handle(new AjouterLieuCommand(Piscine));
+        var ajout = ajouter.Handle(new AjouterActiviteCommand(Piscine));
 
         Assert.True(ajout.EstSucces);
         var lieuId = ajout.Valeur!.LieuId;
         // L'énumération des lieux du foyer contient « piscine »
-        Assert.Contains(referentiel.EnumererLieux(), lieu => lieu.Libelle == Piscine);
+        Assert.Contains(referentiel.EnumererActivites(), lieu => lieu.Libelle == Piscine);
 
         // Poser un slot au lieu « piscine » est accepté (le lieu existe désormais)
         var pose = poser.Handle(new PoserSlotCommand("lea", lieuId,
@@ -42,19 +42,19 @@ public class Scenario1_LieuAjouteDisponible
 
     // ---------- Test #1 — Driver : un ajout fait EXISTER le lieu à l'énumération ----------
     // Contradiction : le handler ne persiste rien (stub) — le lieu ajouté reste absent de
-    // l'énumération. Force l'écriture via le port IEditeurLieux, de sorte que le lieu soit énuméré
+    // l'énumération. Force l'écriture via le port IEditeurActivites, de sorte que le lieu soit énuméré
     // avec son libellé « piscine ».
     [Fact]
     public void Should_Faire_exister_le_lieu_ajoute_a_l_enumeration_When_le_parent_ajoute_un_lieu()
     {
-        var referentiel = new FakeReferentielLieux();
-        var handler = new AjouterLieuHandler(referentiel, referentiel);
+        var referentiel = new FakeReferentielActivites();
+        var handler = new AjouterActiviteHandler(referentiel, referentiel);
 
-        var resultat = handler.Handle(new AjouterLieuCommand(Piscine));
+        var resultat = handler.Handle(new AjouterActiviteCommand(Piscine));
 
         Assert.True(resultat.EstSucces);
         var lieuId = resultat.Valeur!.LieuId;
-        var lieu = referentiel.EnumererLieux().Single(l => l.Id == lieuId);
+        var lieu = referentiel.EnumererActivites().Single(l => l.Id == lieuId);
         Assert.Equal(Piscine, lieu.Libelle); // le lieu ajouté est résolu par son libellé sur son id
     }
 }

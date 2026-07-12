@@ -29,7 +29,7 @@ public sealed class SlotRecurrentCanalEtGrilleRuntimeTests
 
         // Given — le lieu « piscine » ET l'enfant « lea » existent dans le référentiel du foyer (store réel).
         // La pose valide désormais l'existence de l'enfant (s30 S7) : on l'établit comme le lieu.
-        hote.Services.GetRequiredService<IEditeurLieux>().Ajouter("piscine", "piscine");
+        hote.Services.GetRequiredService<IEditeurActivites>().Ajouter("piscine", "piscine");
         hote.Services.GetRequiredService<IEditeurEnfants>().Ajouter("lea", "lea");
 
         // When — un Parent pose un slot récurrent le samedi de 11h30 à 12h15 au lieu « piscine ».

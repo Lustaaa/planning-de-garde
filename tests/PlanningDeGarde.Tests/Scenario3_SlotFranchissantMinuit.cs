@@ -19,7 +19,7 @@ public class Scenario3_SlotFranchissantMinuit
     {
         // Given
         var slots = new FakeSlotRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("domicile-a");
+        var lieux = new FakeReferentielActivites().AvecActivite("domicile-a");
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
         var debut = new System.DateTime(2025, 7, 15, 22, 0, 0);
@@ -50,7 +50,7 @@ public class Scenario3_SlotFranchissantMinuit
     private static PoserSlotHandler HandlerAvecDomicileA(out FakeSlotRepository slots)
     {
         slots = new FakeSlotRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("domicile-a");
+        var lieux = new FakeReferentielActivites().AvecActivite("domicile-a");
         var notificateur = new FakeNotificateurPlanning();
         return new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }

@@ -8,7 +8,7 @@ public static class Foyer
 {
     public static readonly IReadOnlyList<string> Enfants = new[] { "Léa" };
 
-    public static readonly IReadOnlyList<string> Lieux = new[]
+    public static readonly IReadOnlyList<string> Activites = new[]
     {
         "école", "domicile A", "domicile B", "nounou"
     };

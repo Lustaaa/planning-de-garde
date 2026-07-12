@@ -21,7 +21,7 @@ public class Scenario29_S2_PoserSlotRecurrentLieuInconnu
     {
         // Given — le foyer NE connaît PAS le lieu "Dojo".
         var slots = new FakeSlotRecurrentRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("piscine"); // "dojo" absent
+        var lieux = new FakeReferentielActivites().AvecActivite("piscine"); // "dojo" absent
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotRecurrentHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
 

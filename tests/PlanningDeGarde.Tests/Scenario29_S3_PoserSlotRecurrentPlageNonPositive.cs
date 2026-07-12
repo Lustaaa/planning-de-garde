@@ -24,7 +24,7 @@ public class Scenario29_S3_PoserSlotRecurrentPlageNonPositive
     {
         // Given — le foyer connaît le lieu "Piscine".
         var slots = new FakeSlotRecurrentRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("piscine");
+        var lieux = new FakeReferentielActivites().AvecActivite("piscine");
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotRecurrentHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
 

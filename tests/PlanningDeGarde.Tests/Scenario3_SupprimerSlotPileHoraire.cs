@@ -31,7 +31,7 @@ public class Scenario3_SupprimerSlotPileHoraire
     {
         // Given — trois slots de Léa le mardi 16/06 : École 08h30-12h00, Piscine 14h00-15h30, Chez Mamie 17h00-19h00.
         var slots = new FakeSlotRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu(Ecole).AvecLieu(Piscine).AvecLieu(ChezMamie);
+        var lieux = new FakeReferentielActivites().AvecActivite(Ecole).AvecActivite(Piscine).AvecActivite(ChezMamie);
         var handler = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), new FakeNotificateurPlanning());
         handler.Handle(new SlotBuilder().PourEnfant("lea").DansLieu(Ecole)
             .De(new DateTime(2026, 6, 16, 8, 30, 0)).A(new DateTime(2026, 6, 16, 12, 0, 0)).Build());
