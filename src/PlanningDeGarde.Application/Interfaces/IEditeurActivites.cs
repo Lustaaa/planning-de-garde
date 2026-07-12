@@ -27,4 +27,14 @@ public interface IEditeurActivites
     /// jamais le libellé (aucune écriture partielle). Une adresse vide (<see cref="string.Empty"/>) est une
     /// valeur licite, écrite telle quelle (champ facultatif). Write-through durable côté Mongo.</summary>
     void ChangerAdresse(string activiteId, string adresse);
+
+    /// <summary>Lie un <b>enfant</b> (référentiel s30) à l'activité identifiée de façon stable (lien N-M,
+    /// s35 Sc.3, miroir du lien enfant↔parent s34) : enrichissement (l'id de l'activité reste la clé). Ajoute
+    /// l'enfant aux enfants liés sans doublon (déjà lié = no-op). Ne touche ni le libellé ni l'adresse.</summary>
+    void LierEnfant(string activiteId, string enfantId);
+
+    /// <summary>Retire le lien d'un <b>enfant</b> vers l'activité identifiée de façon stable (s35 Sc.3) :
+    /// l'enfant quitte les enfants liés. Tolérant à l'absence (enfant déjà non lié = no-op qui réussit —
+    /// idempotence). Ne touche ni le libellé ni l'adresse ni les autres liens.</summary>
+    void DelierEnfant(string activiteId, string enfantId);
 }

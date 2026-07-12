@@ -32,13 +32,13 @@
 > - **Révision de la validation de pose** : ce sprint la **préserve iso**, ne la repense pas.
 > - **Familles recomposées R2/R3** (« exactement 2 parents », graphe enfant-racine) : autre incrément.
 
-## Avancement — 2/6
+## Avancement — 3/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Renommer le référentiel **« Lieux » → « Activités »** (refactor iso-comportement, validation de pose préservée) | back | ✅ |
 | 2 | Champ **« adresse »** sur l'agrégat Activité (Mongo durable, vide accepté, sans écriture partielle) | back | ✅ |
-| 3 | Lien **enfant↔activité N-M** : commandes lier/délier idempotentes + rejets sans écriture partielle | back | ⏳ |
+| 3 | Lien **enfant↔activité N-M** : commandes lier/délier idempotentes + rejets sans écriture partielle | back | ✅ |
 | 4 | **SWAP** onglet « Lieux » inline → onglet **« Activités »** tableau lecture + crayon → modal (+ renommage HTTP/DTO/record Web, lot atomique) | 🖥️ IHM | ⏳ |
 | 5 | Modal activité : **champ adresse** + **sélecteur des enfants** à lier / délier | 🖥️ IHM | ⏳ |
 | 6 | Invariants Activités — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
@@ -121,7 +121,7 @@ Et éditer l'adresse ne touche AUCUN autre champ (aucune écriture partielle, id
 Et un refus (ex. libellé vidé en même temps) laisse le store INCHANGÉ (pas d'écriture partielle de l'adresse)
 ```
 
-### Sc.3 — Lien enfant↔activité N-M : lier / délier + rejets @back @pending
+### Sc.3 — Lien enfant↔activité N-M : lier / délier + rejets @back @vert
 ```gherkin
 Étant donné un enfant déclaré (agrégat s30) et une activité déclarée (référentiel renommé, Sc.1)
 Quand la commande « lier un enfant à une activité » est émise (enfantId, activiteId)

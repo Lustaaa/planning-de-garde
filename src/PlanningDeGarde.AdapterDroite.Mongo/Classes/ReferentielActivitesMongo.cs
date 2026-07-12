@@ -74,16 +74,49 @@ public sealed class ReferentielActivitesMongo : IEnumerationActivites, IEditeurA
             doc.Adresse = adresse;
     }
 
-    public IReadOnlyCollection<ActiviteFoyer> EnumererActivites()
-        => _cache.Values.Select(d => new ActiviteFoyer(d.Id, d.Libelle, d.Adresse ?? "")).ToList();
+    public void LierEnfant(string activiteId, string enfantId)
+    {
+        // Lien N-M enfant↔activité (s35 Sc.3) : ajoute l'enfant aux enfants liés (sans doublon), write-through
+        // du SEUL champ EnfantsLies ($set ciblé) — libellé et adresse persistés NON touchés. Enrichissement
+        // (l'id de l'activité reste la clé) : le lien survit au redémarrage. Tolérant à l'activité absente du
+        // cache (crée la liste) — le handler garantit l'existence en amont.
+        var lies = _cache.TryGetValue(activiteId, out var doc) ? new List<string>(doc.EnfantsLies) : new List<string>();
+        if (lies.Contains(enfantId)) return; // déjà lié = no-op (aucune écriture, aucun doublon)
+        lies.Add(enfantId);
+        _lieux.UpdateOne(
+            Builders<ActiviteDocument>.Filter.Eq(d => d.Id, activiteId),
+            Builders<ActiviteDocument>.Update.Set(d => d.EnfantsLies, lies));
+        if (doc is not null) doc.EnfantsLies = lies;
+    }
 
-    /// <summary>Document persisté d'une activité du foyer : identifiant stable (clé), libellé et
-    /// <b>adresse</b> optionnelle (s35 Sc.2 ; <c>null</c> = non renseignée → énumérée « vide »).</summary>
+    public void DelierEnfant(string activiteId, string enfantId)
+    {
+        // Retrait du lien (s35 Sc.3) : tolérant à l'absence (enfant déjà non lié = no-op qui réussit).
+        // Write-through du SEUL champ EnfantsLies — autres liens, libellé et adresse NON touchés.
+        if (!_cache.TryGetValue(activiteId, out var doc) || !doc.EnfantsLies.Contains(enfantId)) return;
+        var lies = new List<string>(doc.EnfantsLies);
+        lies.Remove(enfantId);
+        _lieux.UpdateOne(
+            Builders<ActiviteDocument>.Filter.Eq(d => d.Id, activiteId),
+            Builders<ActiviteDocument>.Update.Set(d => d.EnfantsLies, lies));
+        doc.EnfantsLies = lies;
+    }
+
+    public IReadOnlyCollection<ActiviteFoyer> EnumererActivites()
+        => _cache.Values.Select(d => new ActiviteFoyer(d.Id, d.Libelle, d.Adresse ?? "")
+        {
+            EnfantsLies = d.EnfantsLies.ToList()
+        }).ToList();
+
+    /// <summary>Document persisté d'une activité du foyer : identifiant stable (clé), libellé,
+    /// <b>adresse</b> optionnelle (s35 Sc.2 ; <c>null</c> = non renseignée → énumérée « vide ») et les
+    /// <b>enfants liés</b> (s35 Sc.3, lien N-M — ids d'enfants du référentiel s30).</summary>
     private sealed class ActiviteDocument
     {
         [BsonId]
         public string Id { get; set; } = default!;
         public string Libelle { get; set; } = default!;
         public string? Adresse { get; set; } // adresse optionnelle (s35 Sc.2), null = non renseignée
+        public List<string> EnfantsLies { get; set; } = new(); // enfants liés (s35 Sc.3, lien N-M)
     }
 }

@@ -17,7 +17,15 @@ public interface IEnumerationActivites
     IReadOnlyCollection<ActiviteFoyer> EnumererActivites();
 }
 
-/// <summary>Une activité du référentiel du foyer : identifiant stable (clé), libellé d'affichage et
+/// <summary>Une activité du référentiel du foyer : identifiant stable (clé), libellé d'affichage,
 /// <b>adresse</b> (s35 Sc.2, miroir strict de l'adresse acteur s33 — champ <b>optionnel</b>, vide accepté,
-/// défaut <see cref="string.Empty"/>). Pas de slots imbriqués (hors périmètre, borne épic 6).</summary>
-public sealed record ActiviteFoyer(string Id, string Libelle, string Adresse = "");
+/// défaut <see cref="string.Empty"/>) et les <b>enfants liés</b> (s35 Sc.3 — lien N-M enfant↔activité :
+/// identifiants stables des enfants du référentiel s30 liés à cette activité, 0..N). Pas de slots imbriqués
+/// (hors périmètre, borne épic 6). Propriété <c>init</c> pour <see cref="EnfantsLies"/> (constructeurs
+/// positionnels 2/3-args préservés — la validation de pose et l'énumération existantes restent inchangées).</summary>
+public sealed record ActiviteFoyer(string Id, string Libelle, string Adresse = "")
+{
+    /// <summary>Identifiants stables des enfants (référentiel s30) liés à cette activité (lien N-M, s35 Sc.3) —
+    /// résolus en prénoms par la colonne « Enfants liés » (Sc.4). Liste vide par défaut (lien optionnel).</summary>
+    public IReadOnlyCollection<string> EnfantsLies { get; init; } = System.Array.Empty<string>();
+}
