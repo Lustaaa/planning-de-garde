@@ -282,6 +282,32 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   seed s15** : mode Mongo sans enfant seedé au 1er lancement. **Hors scope s30** : suppression d'enfant + borne
   défensive R1 au Delete ; vrai multi-enfants de bout en bout.
 
+- **Lien enfant↔parent + onglet Enfants au patron crayon → modal** *(livré s34, 3ᵉ incrément de la Refonte
+  Config foyer)* : l'enfant n'est plus l'agrégat **nu** `EnfantFoyer(Id, Prénom)` sans lien — il porte
+  désormais un **lien vers 1..2 parents-acteurs**. Un **parent** = un acteur portant le **rôle Parent**
+  (référentiel de rôles s21). Commandes/handlers **lier / délier** (canal requête/réponse : `enfantId`,
+  `acteurId`), lien **persisté Mongo durable** (relu par la query de config avec la **liste des parents
+  liés**), **id stable de l'enfant inchangé** (enrichissement, pas recréation), **0 parent accepté** (lien
+  optionnel). **Rejets SANS écriture partielle** (motif restitué, store inchangé, les liens existants
+  intacts) : **3ᵉ parent** (borne « 2 parents max »), **acteur inexistant** du référentiel, **acteur
+  non-Parent**, **parent déjà lié** (neutre / refusé, pas de doublon). **Délier est idempotent** (délier un
+  parent déjà non lié = no-op qui réussit, sans écriture partielle), les autres liens éventuels préservés.
+  **IHM — onglet « Enfants » harmonisé** au patron **tableau lecture seule + crayon → modal** (miroir Acteurs
+  s32 / Rôles-Cycle s33, **lot atomique de surface** : l'édition **inline** préexistante — liste `<ul>`,
+  `champ-editer-enfant`, `form-ajouter-enfant` — est **retirée** et remplacée par la modal dans le **même
+  refactor**, mêmes commandes d'écriture). Une ligne par enfant (prénom + **colonne « Parents liés »** en
+  lecture) + colonne **crayon** + bouton **« Ajouter un enfant »** ; crayon → **modal pré-remplie**, « Ajouter »
+  → modal **vide** (id stable neuf), fermeture **Échap** = « Annuler » sans mutation (port `IEcouteurEchapModal`
+  s33). La modal porte un **sélecteur des parents** (acteurs de rôle Parent, référentiel acteurs), parents
+  déjà liés pré-affichés ; lier/délier puis « Enregistrer » émet les commandes ci-dessus via le canal HTTP,
+  le tableau en lecture reflète la nouvelle liste. **Contrat d'erreur** (prénom vide/doublon, 3ᵉ parent,
+  non-parent, API injoignable) : **modal RESTE OUVERTE**, motif dedans, **saisie (prénom + sélection)
+  CONSERVÉE**, tableau inchangé (aucune écriture partielle). **Parent-gated** (Invité = tableau lecture seule,
+  ni crayon ni « Ajouter », aucune modal atteignable) + **temps réel SignalR** (2ᵉ écran converge sur prénom
+  et parents liés sans rechargement, diffusion lecture seule). **Hors scope s34** : familles recomposées
+  **R2/R3** (le sélecteur borne à 2 parents mais **n'impose pas « exactement 2 »**), **graphe enfant-racine**,
+  renommage Lieux → Activités, suppression d'enfant.
+
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
   rôles), doté d'un **id stable opaque** + **email** + **statut** (`Actif`/`Inactif`, défaut **Inactif** —
@@ -316,7 +342,13 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   rétro-affectation idempotente** des slots du fantôme « Léa » (utilitaire ops non auto-câblé). **Borne ≥1
   enfant** tenue par construction (fantôme → 1er enfant réel) ; **suppression d'enfant + borne défensive au
   Delete hors scope s30** ; **vrai multi-enfants de bout en bout pas encore exercé** (familles recomposées
-  R2 / graphe parents R3 / multi-enfants au cycle de fond restent ouverts).
+  R2 / graphe parents R3 / multi-enfants au cycle de fond restent ouverts). **Lien enfant↔parent livré s34** :
+  l'enfant porte un **lien vers 1..2 parents-acteurs** (parent = acteur de rôle Parent), commandes **lier /
+  délier** idempotentes, règle **« 2 parents max »**, rejets **acteur inexistant / non-parent / déjà lié
+  sans écriture partielle**, persistance **Mongo durable**, id enfant inchangé ; **onglet Enfants** au patron
+  **tableau lecture + crayon → modal** (swap inline→modal) avec **colonne « Parents liés »** + **sélecteur de
+  parents**. **R2/R3 restent ouverts** : le lien borne à 2 mais **n'impose pas « exactement 2 »**, et le
+  **graphe foyer recomposé** (enfants de parents différents, vue enfant-racine) n'est pas exercé.
 - **R4 — Acteurs « autres » ajoutables, éditables et supprimables.**
 - **R5 — Édition des acteurs (noms + couleurs)** : grille relue immédiatement, store vivant partout,
   type surfacé lecture seule. Distincte de la durabilité (R30). **Précisé s19** : sélecteurs des
@@ -502,14 +534,17 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **Borne anti-cliquet** : la persistance reste **bornée à la config foyer** ; le reste du domaine en
   queue (paliers « config foyer durable — reste » puis « persistance réelle »).
 - **Variantes refus/réaffectation de suppression** = porte G1 au make-gherkin si un vrai trou émerge.
-- **Refonte Config foyer — Acteurs (s32) + Acteurs enrichis & Rôles/Cycle (s33) livrés** : onglet Acteurs
-  migré au patron **tableau lecture seule + crayon → modal** (s32), puis **enrichi s33** (toggle actif/admin
-  **sens ON** + verrou faute de commande inverse, **adresse de résidence** [champ neuf persisté], **palette
-  couleur (picker)**), **Rôles & Cycle harmonisés** au même patron avec **tous les cycles déclarés désormais
-  visibles** (corrige le trou gate s32) et **fermeture Échap** des modals (cf. Mécaniques). **Restent (3ᵉ
-  incrément)** : harmoniser **Lieux/Activités & Enfants** au même patron (retour PO gate s33), **commandes
+- **Refonte Config foyer — Acteurs (s32) + Acteurs enrichis & Rôles/Cycle (s33) + Enfants & lien parent (s34)
+  livrés** : onglet Acteurs migré au patron **tableau lecture seule + crayon → modal** (s32), puis **enrichi
+  s33** (toggle actif/admin **sens ON** + verrou faute de commande inverse, **adresse de résidence** [champ
+  neuf persisté], **palette couleur (picker)**), **Rôles & Cycle harmonisés** au même patron avec **tous les
+  cycles déclarés désormais visibles** (corrige le trou gate s32) et **fermeture Échap** des modals ; **s34**
+  harmonise l'**onglet Enfants** au même patron (swap inline→modal) et pose le **lien enfant↔parent 1..2
+  parents** (lier/délier, 2 max, rejets sans écriture partielle, Mongo durable, sélecteur + colonne « Parents
+  liés » — traite « lier un enfant à 2 parents » du gate s33) (cf. Mécaniques). **Restent (4ᵉ
+  incrément)** : harmoniser **Lieux → « Activités »** au même patron (retour PO gate s33), **commandes
   inverses actif/admin** (dé-désignation admin + désactivation de compte, pour débloquer le sens OFF du
-  toggle), **lien enfant↔parent** (dont « lier un enfant à 2 parents », re-signalé gate s33). **Tension
+  toggle), **familles recomposées R2/R3** (« exactement 2 parents » + graphe enfant-racine). **Tension
   ouverte à arbitrer G2** : le PO veut **en plus** une **édition inline au clic de la valeur** — direction
   (inline seul / modal seule / cohabitation) **non tranchée**, à décider au prochain `/planning` avant tout
   code (ne pas re-livrer l'inline sans arbitrage).
