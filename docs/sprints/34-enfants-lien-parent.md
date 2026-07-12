@@ -26,7 +26,7 @@
 >   sprint = tableau + modal, pas de vue graphe).
 > - **Suppression d'un enfant** (Delete + borne « ≥1 enfant » R1) : hors goal.
 
-## Avancement — 5/6
+## Avancement — 6/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -35,7 +35,7 @@
 | 3 | Commande **délier** un enfant d'un parent (idempotente, relue par la query) | back | ✅ |
 | 4 | Onglet Enfants au patron **tableau lecture + crayon → modal** + « Ajouter » (**swap de surface**, colonne « Parents liés ») | 🖥️ IHM | ✅ |
 | 5 | Modal enfant : **sélecteur des parents** à lier / délier (depuis le référentiel acteurs) | 🖥️ IHM | ✅ |
-| 6 | Invariants Enfants — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
+| 6 | Invariants Enfants — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ✅ |
 
 > **⚠️ GARDE lot atomique de surface (Sc.4) — l'onglet Enfants porte AUJOURD'HUI une surface
 > INLINE.** L'onglet Enfants (`ConfigurationFoyer.razor`) rend une **liste `<ul>` avec édition
@@ -132,7 +132,7 @@ Alors la commande « délier » (Sc.3) est émise, le parent disparaît des pare
 Et HORS scope : familles recomposées / exactement-2-parents / vue graphe (le sélecteur borne à 2)
 ```
 
-### Sc.6 — Invariants Enfants : refus→modal ouverte + gating + SignalR @ihm @pending
+### Sc.6 — Invariants Enfants : refus→modal ouverte + gating + SignalR @ihm @vert
 ```gherkin
 Étant donné la modal enfant (prénom + sélecteur de parents)
 Quand une valeur est refusée par le domaine (prénom vide/doublon, 3ᵉ parent, non-parent) ou API injoignable
