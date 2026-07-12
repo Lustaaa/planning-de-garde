@@ -13,14 +13,20 @@ namespace PlanningDeGarde.Tests.Fakes;
 public sealed class FakeReferentielActivites : IEnumerationActivites, IEditeurActivites
 {
     private readonly Dictionary<string, string> _libelles = new();
+    private readonly Dictionary<string, string> _adresses = new(); // adresse optionnelle (s35 Sc.2), dict séparé
 
-    /// <summary>Amorce un lieu existant (id = libellé pour les lieux historiques).</summary>
+    /// <summary>Amorce une activité existante (id = libellé pour les activités historiques).</summary>
     public FakeReferentielActivites AvecActivite(string lieuId) { _libelles[lieuId] = lieuId; return this; }
 
     public void Ajouter(string lieuId, string libelle) => _libelles[lieuId] = libelle;
 
-    public void Supprimer(string lieuId) => _libelles.Remove(lieuId); // tolérant à l'absence (idempotence)
+    public void Supprimer(string lieuId) { _libelles.Remove(lieuId); _adresses.Remove(lieuId); } // tolérant à l'absence
+
+    public void Renommer(string activiteId, string libelle) => _libelles[activiteId] = libelle; // adresse intacte
+
+    public void ChangerAdresse(string activiteId, string adresse) => _adresses[activiteId] = adresse; // libellé intact ; vide licite
 
     public IReadOnlyCollection<ActiviteFoyer> EnumererActivites()
-        => _libelles.Select(kv => new ActiviteFoyer(kv.Key, kv.Value)).ToList();
+        => _libelles.Select(kv => new ActiviteFoyer(
+            kv.Key, kv.Value, _adresses.TryGetValue(kv.Key, out var a) ? a : "")).ToList();
 }

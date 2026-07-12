@@ -51,14 +51,39 @@ public sealed class ReferentielActivitesMongo : IEnumerationActivites, IEditeurA
         _lieux.DeleteOne(Builders<ActiviteDocument>.Filter.Eq(d => d.Id, lieuId));
     }
 
-    public IReadOnlyCollection<ActiviteFoyer> EnumererActivites()
-        => _cache.Values.Select(d => new ActiviteFoyer(d.Id, d.Libelle)).ToList();
+    public void Renommer(string activiteId, string libelle)
+    {
+        // Mise à jour write-through du SEUL champ libellé ($set ciblé) — l'adresse persistée n'est PAS
+        // touchée (aucune écriture partielle croisée, s35 Sc.2). Cache de session aligné.
+        _lieux.UpdateOne(
+            Builders<ActiviteDocument>.Filter.Eq(d => d.Id, activiteId),
+            Builders<ActiviteDocument>.Update.Set(d => d.Libelle, libelle));
+        if (_cache.TryGetValue(activiteId, out var doc))
+            doc.Libelle = libelle;
+    }
 
-    /// <summary>Document persisté d'un lieu du foyer : identifiant stable (clé) et libellé.</summary>
+    public void ChangerAdresse(string activiteId, string adresse)
+    {
+        // Mise à jour write-through du SEUL champ adresse ($set ciblé) — le libellé persisté n'est PAS
+        // touché (aucune écriture partielle, s35 Sc.2 ; miroir strict de l'adresse acteur s33). L'adresse
+        // survit au redémarrage ; une adresse vide est une valeur licite écrite telle quelle.
+        _lieux.UpdateOne(
+            Builders<ActiviteDocument>.Filter.Eq(d => d.Id, activiteId),
+            Builders<ActiviteDocument>.Update.Set(d => d.Adresse, adresse));
+        if (_cache.TryGetValue(activiteId, out var doc))
+            doc.Adresse = adresse;
+    }
+
+    public IReadOnlyCollection<ActiviteFoyer> EnumererActivites()
+        => _cache.Values.Select(d => new ActiviteFoyer(d.Id, d.Libelle, d.Adresse ?? "")).ToList();
+
+    /// <summary>Document persisté d'une activité du foyer : identifiant stable (clé), libellé et
+    /// <b>adresse</b> optionnelle (s35 Sc.2 ; <c>null</c> = non renseignée → énumérée « vide »).</summary>
     private sealed class ActiviteDocument
     {
         [BsonId]
         public string Id { get; set; } = default!;
         public string Libelle { get; set; } = default!;
+        public string? Adresse { get; set; } // adresse optionnelle (s35 Sc.2), null = non renseignée
     }
 }

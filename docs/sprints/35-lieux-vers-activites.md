@@ -32,12 +32,12 @@
 > - **Révision de la validation de pose** : ce sprint la **préserve iso**, ne la repense pas.
 > - **Familles recomposées R2/R3** (« exactement 2 parents », graphe enfant-racine) : autre incrément.
 
-## Avancement — 1/6
+## Avancement — 2/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Renommer le référentiel **« Lieux » → « Activités »** (refactor iso-comportement, validation de pose préservée) | back | ✅ |
-| 2 | Champ **« adresse »** sur l'agrégat Activité (Mongo durable, vide accepté, sans écriture partielle) | back | ⏳ |
+| 2 | Champ **« adresse »** sur l'agrégat Activité (Mongo durable, vide accepté, sans écriture partielle) | back | ✅ |
 | 3 | Lien **enfant↔activité N-M** : commandes lier/délier idempotentes + rejets sans écriture partielle | back | ⏳ |
 | 4 | **SWAP** onglet « Lieux » inline → onglet **« Activités »** tableau lecture + crayon → modal (+ renommage HTTP/DTO/record Web, lot atomique) | 🖥️ IHM | ⏳ |
 | 5 | Modal activité : **champ adresse** + **sélecteur des enfants** à lier / délier | 🖥️ IHM | ⏳ |
@@ -111,7 +111,7 @@ Et le nommage HTTP (routes /api/foyer/lieux, canal/*-lieu), les DTOs Api, le rec
   (l'adaptateur Api MAPPE « lieu » HTTP → « Activité » Application — seam temporaire, cohérent, vert)
 ```
 
-### Sc.2 — Champ « adresse » sur l'agrégat Activité @back @pending
+### Sc.2 — Champ « adresse » sur l'agrégat Activité @back @vert
 ```gherkin
 Étant donné une activité du référentiel (id stable + libellé, Sc.1)
 Quand elle est enrichie d'un champ « adresse » (miroir strict de l'adresse acteur s33)

@@ -17,4 +17,14 @@ public interface IEditeurActivites
     /// réussit — idempotence). Aucune réécriture rétroactive : un slot déjà posé sur ce lieu conserve
     /// son lieu (borne s27).</summary>
     void Supprimer(string lieuId);
+
+    /// <summary>Affecte un nouveau libellé à l'activité identifiée de façon stable (surface distincte
+    /// de l'adresse — renommer ne touche jamais l'adresse, s35 Sc.2). L'identifiant stable reste la clé.</summary>
+    void Renommer(string activiteId, string libelle);
+
+    /// <summary>Affecte une <b>adresse</b> à l'activité identifiée de façon stable (s35 Sc.2, miroir strict
+    /// de l'adresse acteur s33) : surface <b>optionnelle</b> distincte du libellé — la changer ne touche
+    /// jamais le libellé (aucune écriture partielle). Une adresse vide (<see cref="string.Empty"/>) est une
+    /// valeur licite, écrite telle quelle (champ facultatif). Write-through durable côté Mongo.</summary>
+    void ChangerAdresse(string activiteId, string adresse);
 }

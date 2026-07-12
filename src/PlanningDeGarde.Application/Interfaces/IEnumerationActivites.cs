@@ -17,6 +17,7 @@ public interface IEnumerationActivites
     IReadOnlyCollection<ActiviteFoyer> EnumererActivites();
 }
 
-/// <summary>Un lieu du référentiel du foyer : identifiant stable (clé) et libellé d'affichage. Les
-/// lieux ne portent ici qu'un libellé (pas de slots imbriqués, borne épic 6).</summary>
-public sealed record ActiviteFoyer(string Id, string Libelle);
+/// <summary>Une activité du référentiel du foyer : identifiant stable (clé), libellé d'affichage et
+/// <b>adresse</b> (s35 Sc.2, miroir strict de l'adresse acteur s33 — champ <b>optionnel</b>, vide accepté,
+/// défaut <see cref="string.Empty"/>). Pas de slots imbriqués (hors périmètre, borne épic 6).</summary>
+public sealed record ActiviteFoyer(string Id, string Libelle, string Adresse = "");
