@@ -26,14 +26,14 @@
 >   sprint = tableau + modal, pas de vue graphe).
 > - **Suppression d'un enfant** (Delete + borne « ≥1 enfant » R1) : hors goal.
 
-## Avancement — 3/6
+## Avancement — 4/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Modèle enfant enrichi d'un lien parents + commande **lier** (persistance Mongo durable) | back | ✅ |
 | 2 | Règles du lien : **« 2 parents max »** + rejets (inexistant / non-parent / déjà lié), sans écriture partielle | back | ✅ |
 | 3 | Commande **délier** un enfant d'un parent (idempotente, relue par la query) | back | ✅ |
-| 4 | Onglet Enfants au patron **tableau lecture + crayon → modal** + « Ajouter » (**swap de surface**, colonne « Parents liés ») | 🖥️ IHM | ⏳ |
+| 4 | Onglet Enfants au patron **tableau lecture + crayon → modal** + « Ajouter » (**swap de surface**, colonne « Parents liés ») | 🖥️ IHM | ✅ |
 | 5 | Modal enfant : **sélecteur des parents** à lier / délier (depuis le référentiel acteurs) | 🖥️ IHM | ⏳ |
 | 6 | Invariants Enfants — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
 
@@ -101,7 +101,7 @@ Et l'identifiant stable de l'enfant et ses autres liens éventuels restent incha
 Et délier un parent DÉJÀ non lié est IDEMPOTENT (neutre, sans erreur, sans écriture partielle)
 ```
 
-### Sc.4 — Onglet Enfants au patron tableau + crayon → modal (SWAP DE SURFACE) @ihm @pending
+### Sc.4 — Onglet Enfants au patron tableau + crayon → modal (SWAP DE SURFACE) @ihm @vert
 ```gherkin
 Étant donné l'onglet « Enfants » de /configuration, connecté en tant que Parent
 Quand la page est rendue

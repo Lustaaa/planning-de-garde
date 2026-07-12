@@ -44,7 +44,7 @@ public sealed class FrontWasmConfigEnfantsTempsReelTests : TestContext
             .ToList();
 
     [Fact]
-    public void L_onglet_Enfants_liste_ajoute_et_edite_un_enfant_et_refuse_prenom_vide_ou_doublon_sans_enregistrer()
+    public void L_onglet_Enfants_liste_ajoute_et_edite_un_enfant_via_la_modal_et_refuse_prenom_vide_ou_doublon_sans_enregistrer()
     {
         // Given — l'écran de config câblé à l'API distante réelle (store réel, seed InMemory de l'enfant « Léa »).
         using var api = new ApiDistanteFactory();
@@ -59,20 +59,23 @@ public sealed class FrontWasmConfigEnfantsTempsReelTests : TestContext
         // On ouvre l'onglet « Enfants » (présentation — le panneau est déjà dans le DOM).
         config.SurDispatcher(() => config.Find("[data-testid='onglet-enfants']").Click());
 
-        // When — le parent ajoute un enfant « Tom » valide et valide.
+        // When — le parent ajoute un enfant « Tom » valide via la MODAL d'ajout (patron s34).
+        config.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-enfant']").Click());
+        config.WaitForElement("[data-testid='dialog-enfant']", TimeSpan.FromSeconds(10));
         config.SurDispatcher(() => config.Find("[data-testid='champ-prenom-enfant']").Change("Tom"));
-        config.SurDispatcher(() => config.Find("#form-ajouter-enfant").Submit());
+        config.SurDispatcher(() => config.Find("#form-enfant").Submit());
 
-        // Then — « Tom » apparaît dans la liste sans rechargement (relecture du store vivant).
+        // Then — « Tom » apparaît dans la table sans rechargement (relecture du store vivant), modal fermée.
         config.WaitForAssertion(
             () => Assert.Contains("Tom", PrenomsListes(config)),
             TimeSpan.FromSeconds(10));
 
-        // When — un prénom vide est soumis.
+        // When — un prénom vide est soumis via la modal d'ajout.
+        config.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-enfant']").Click());
         config.SurDispatcher(() => config.Find("[data-testid='champ-prenom-enfant']").Change("   "));
-        config.SurDispatcher(() => config.Find("#form-ajouter-enfant").Submit());
+        config.SurDispatcher(() => config.Find("#form-enfant").Submit());
 
-        // Then — un message d'erreur s'affiche et aucun enfant n'est enregistré (toujours Léa + Tom).
+        // Then — le motif s'affiche DANS la modal restée ouverte et aucun enfant n'est enregistré (toujours Léa + Tom).
         config.WaitForAssertion(
             () =>
             {
@@ -81,11 +84,11 @@ public sealed class FrontWasmConfigEnfantsTempsReelTests : TestContext
             },
             TimeSpan.FromSeconds(10));
 
-        // When — un prénom en doublon (« Léa ») est soumis.
+        // When — un prénom en doublon (« Léa ») est soumis via la modal restée ouverte.
         config.SurDispatcher(() => config.Find("[data-testid='champ-prenom-enfant']").Change("Léa"));
-        config.SurDispatcher(() => config.Find("#form-ajouter-enfant").Submit());
+        config.SurDispatcher(() => config.Find("#form-enfant").Submit());
 
-        // Then — message d'erreur, aucun second « Léa » enregistré (toujours 2 enfants).
+        // Then — motif d'erreur, aucun second « Léa » enregistré (toujours 2 enfants).
         config.WaitForAssertion(
             () =>
             {
@@ -95,16 +98,18 @@ public sealed class FrontWasmConfigEnfantsTempsReelTests : TestContext
             },
             TimeSpan.FromSeconds(10));
 
-        // When — le parent édite le prénom de « Tom » en « Tomas » et valide (clé = identifiant stable).
+        // On ferme la modal d'ajout en refus (Annuler) avant d'éditer.
+        config.SurDispatcher(() => config.Find("[data-testid='dialog-enfant-annuler']").Click());
+
+        // When — le parent édite le prénom de « Tom » en « Tomas » via le crayon → modal (clé = identifiant stable).
         var ligneTom = config.FindAll("[data-testid='enfant-foyer']")
             .Single(li => li.QuerySelector(".role-libelle")!.TextContent.Trim() == "Tom");
-        var idTom = ligneTom.GetAttribute("data-enfant-id");
-        config.SurDispatcher(() => ligneTom.QuerySelector("[data-testid='champ-editer-enfant']")!.Change("Tomas"));
-        config.SurDispatcher(() => config.FindAll("[data-testid='enfant-foyer']")
-            .Single(li => li.GetAttribute("data-enfant-id") == idTom)
-            .QuerySelector("[data-testid='bouton-editer-enfant']")!.Click());
+        config.SurDispatcher(() => ligneTom.QuerySelector("[data-testid='crayon-enfant']")!.Click());
+        config.WaitForElement("[data-testid='dialog-enfant']", TimeSpan.FromSeconds(10));
+        config.SurDispatcher(() => config.Find("[data-testid='champ-prenom-enfant']").Change("Tomas"));
+        config.SurDispatcher(() => config.Find("#form-enfant").Submit());
 
-        // Then — la liste reflète « Tomas » (même identifiant stable), sans rechargement.
+        // Then — la table reflète « Tomas » (même identifiant stable), sans rechargement.
         config.WaitForAssertion(
             () =>
             {

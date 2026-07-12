@@ -272,14 +272,54 @@ public partial class ConfigurationFoyer
     private readonly FormulaireEnfant _enfant = new();
     private string? _motifEchecEnfant;
 
+    // ── État de la MODAL enfant (refonte s34, Sc.4 — patron crayon → modal) ──
+    // Identifiant stable de l'enfant en cours d'édition (null = pas d'édition ouverte) ; posé par le crayon.
+    private string? _modalEnfantId;
+    // Modal ouverte en mode CRÉATION (bouton « Ajouter un enfant ») : champ vide, aucun enfant porté.
+    private bool _modalEnfantAjout;
+
+    /// <summary>Ouvre la modal d'ÉDITION sur un enfant (clic crayon) : porte son id stable, pré-remplit son
+    /// prénom courant, efface le motif d'échec précédent. Les parents liés courants sont affichés en lecture
+    /// (Sc.4) ; le sélecteur pour lier/délier arrive en Sc.5.</summary>
+    private void OuvrirEditionEnfant(string enfantId)
+    {
+        _modalEnfantAjout = false;
+        _modalEnfantId = enfantId;
+        _enfant.Prenom = _enfants.FirstOrDefault(e => e.Id == enfantId)?.Prenom ?? "";
+        _motifEchecEnfant = null;
+    }
+
+    /// <summary>Ouvre la MÊME modal en mode CRÉATION (bouton « Ajouter un enfant ») : champ vide, aucun enfant porté.</summary>
+    private void OuvrirAjoutEnfant()
+    {
+        _modalEnfantId = null;
+        _modalEnfantAjout = true;
+        _enfant.Prenom = "";
+        _motifEchecEnfant = null;
+    }
+
+    /// <summary>Ferme la modal enfant (annuler ou après un enregistrement abouti), sans émettre de commande.</summary>
+    private void FermerModalEnfant()
+    {
+        _modalEnfantId = null;
+        _modalEnfantAjout = false;
+        _motifEchecEnfant = null;
+    }
+
+    /// <summary>Libellé de lecture des parents liés d'un enfant (Sc.4) : les identifiants stables des parents
+    /// résolus en noms d'acteurs (jamais un libellé en dur), séparés par « , » ; « — » si aucun parent lié.</summary>
+    private string LibelleParentsLies(EnfantFoyer enfant)
+    {
+        var noms = enfant.ParentsLies
+            .Select(id => _acteurs.FirstOrDefault(a => a.Id == id)?.Nom ?? id)
+            .ToList();
+        return noms.Count == 0 ? "—" : string.Join(", ", noms);
+    }
+
     /// <summary>Enfants du référentiel du foyer énumérés <b>depuis le store vivant</b> (GET /api/foyer/enfants),
     /// jamais un enfant en dur : alimente la liste de l'onglet Enfants (ajoutés / édités suivent sans
     /// rechargement, S9) — même source que le sélecteur d'enfant de la dialog de pose (S10).</summary>
     private IReadOnlyList<EnfantFoyer> _enfants = Array.Empty<EnfantFoyer>();
-
-    /// <summary>Tampon d'édition du prénom par ligne d'enfant (édition inline, miroir du renommage de rôle) :
-    /// clé = identifiant stable de l'enfant, valeur = nouveau prénom saisi. La clé n'est jamais éditable.</summary>
-    private readonly Dictionary<string, string> _editionEnfant = new();
 
     /// <summary>Lieux du référentiel du foyer énumérés <b>depuis le store vivant</b> (GET /api/foyer/lieux),
     /// jamais un lieu en dur : alimente la liste de l'onglet Lieux (ajoutés / supprimés suivent sans
@@ -849,22 +889,24 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>
-    /// Ajoute un enfant au référentiel du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/ajouter-enfant</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
-    /// ré-énumère le référentiel pour faire apparaître l'enfant ajouté <b>sans rechargement</b> (S9). Le front
-    /// n'émet que le prénom ; l'identifiant stable opaque est posé côté handler. Sur refus métier (prénom vide /
-    /// doublon, S2/S3) ou service injoignable, le motif est surfacé sans muter la liste.
+    /// Enregistre la modal enfant (Sc.4) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
+    /// en mode CRÉATION émet <c>POST /api/canal/ajouter-enfant</c> (id stable opaque neuf posé côté handler),
+    /// en mode ÉDITION émet <c>POST /api/canal/editer-enfant</c> sur l'id stable (jamais éditable, seul le
+    /// prénom change). Réutilise les commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le
+    /// référentiel (la table suit sans rechargement) et la modal se ferme. Sur refus métier (prénom vide /
+    /// doublon) ou service injoignable, le motif est surfacé DANS la modal, qui reste ouverte et la saisie
+    /// conservée (Sc.6).
     /// </summary>
-    private async Task AjouterEnfant()
+    private async Task SoumettreEnfant()
     {
         _motifEchecEnfant = null;
 
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/ajouter-enfant",
-                new AjouterEnfantRequete(_enfant.Prenom));
+            reponse = _modalEnfantAjout
+                ? await Canal.PostAsJsonAsync("api/canal/ajouter-enfant", new AjouterEnfantRequete(_enfant.Prenom))
+                : await Canal.PostAsJsonAsync("api/canal/editer-enfant", new EditerEnfantRequete(_modalEnfantId!, _enfant.Prenom));
         }
         catch (HttpRequestException)
         {
@@ -879,50 +921,7 @@ public partial class ConfigurationFoyer
         }
 
         await RechargerEnfants();
-        _enfant.Prenom = "";
-    }
-
-    /// <summary>Prénom courant du champ d'édition inline d'un enfant : le tampon saisi s'il existe, sinon le
-    /// prénom persisté (valeur de départ).</summary>
-    private string PrenomEdition(string enfantId, string prenomPersiste)
-        => _editionEnfant.TryGetValue(enfantId, out var p) ? p : prenomPersiste;
-
-    /// <summary>Mémorise le nouveau prénom saisi pour l'édition inline d'un enfant (clé = identifiant stable,
-    /// jamais éditable).</summary>
-    private void SaisirEditionEnfant(string enfantId, string? prenom)
-        => _editionEnfant[enfantId] = prenom ?? "";
-
-    /// <summary>
-    /// Édite le prénom d'un enfant via le <b>canal d'écriture HTTP</b> (<c>POST /api/canal/editer-enfant</c>) :
-    /// la clé est l'identifiant stable de l'enfant (jamais éditable, règle 19), seul le prénom change. Sur
-    /// succès, on relit le référentiel (le prénom suit sans rechargement, même id, S9) ; sur refus métier
-    /// (prénom vide / doublon d'un autre enfant) ou service injoignable, le motif est surfacé.
-    /// </summary>
-    private async Task EditerEnfant(string enfantId)
-    {
-        _motifEchecEnfant = null;
-        var nouveauPrenom = _editionEnfant.TryGetValue(enfantId, out var p) ? p : "";
-
-        HttpResponseMessage reponse;
-        try
-        {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/editer-enfant",
-                new EditerEnfantRequete(enfantId, nouveauPrenom));
-        }
-        catch (HttpRequestException)
-        {
-            _motifEchecEnfant = MessagesEcriture.ServiceInjoignable;
-            return;
-        }
-
-        if (!reponse.IsSuccessStatusCode)
-        {
-            _motifEchecEnfant = await reponse.Content.ReadFromJsonAsync<string>();
-            return;
-        }
-
-        await RechargerEnfants();
+        FermerModalEnfant();
     }
 
     /// <summary>Compte utilisateur associé à un acteur (résolu sur son id stable), ou <c>null</c> s'il n'en
