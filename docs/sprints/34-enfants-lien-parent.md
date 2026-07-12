@@ -26,12 +26,12 @@
 >   sprint = tableau + modal, pas de vue graphe).
 > - **Suppression d'un enfant** (Delete + borne « ≥1 enfant » R1) : hors goal.
 
-## Avancement — 1/6
+## Avancement — 2/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Modèle enfant enrichi d'un lien parents + commande **lier** (persistance Mongo durable) | back | ✅ |
-| 2 | Règles du lien : **« 2 parents max »** + rejets (inexistant / non-parent / déjà lié), sans écriture partielle | back | ⏳ |
+| 2 | Règles du lien : **« 2 parents max »** + rejets (inexistant / non-parent / déjà lié), sans écriture partielle | back | ✅ |
 | 3 | Commande **délier** un enfant d'un parent (idempotente, relue par la query) | back | ⏳ |
 | 4 | Onglet Enfants au patron **tableau lecture + crayon → modal** + « Ajouter » (**swap de surface**, colonne « Parents liés ») | 🖥️ IHM | ⏳ |
 | 5 | Modal enfant : **sélecteur des parents** à lier / délier (depuis le référentiel acteurs) | 🖥️ IHM | ⏳ |
@@ -78,7 +78,7 @@ Et l'identifiant stable de l'enfant reste inchangé (enrichissement, pas recréa
 Et un enfant sans aucun parent lié reste valide (lien optionnel, 0 parent accepté)
 ```
 
-### Sc.2 — Règles du lien : « 2 parents max » + rejets, sans écriture partielle @back @pending
+### Sc.2 — Règles du lien : « 2 parents max » + rejets, sans écriture partielle @back @vert
 ```gherkin
 Étant donné un enfant déjà lié à DEUX parents
 Quand la commande « lier » émet un TROISIÈME parent
