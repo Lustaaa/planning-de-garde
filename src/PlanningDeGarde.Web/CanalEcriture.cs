@@ -34,13 +34,18 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
 
-    /// <summary>Corps de la requête d'ajout d'un lieu au référentiel du foyer (s27) : le front n'émet que le
-    /// libellé ; l'identifiant stable est posé côté handler. Refus métier (libellé vide / doublon) renvoyé.</summary>
-    public sealed record AjouterLieuRequete(string Libelle);
+    /// <summary>Corps de la requête d'ajout d'une activité au référentiel du foyer (s35, ex-« lieu » s27) : le
+    /// front n'émet que le libellé ; l'identifiant stable est posé côté handler. Refus (libellé vide / doublon).</summary>
+    public sealed record AjouterActiviteRequete(string Libelle);
 
-    /// <summary>Corps de la requête de suppression d'un lieu du référentiel (s27) : la clé est l'identifiant
-    /// stable du lieu. Idempotente côté handler ; les slots déjà posés sur ce lieu conservent leur lieu.</summary>
-    public sealed record SupprimerLieuRequete(string LieuId);
+    /// <summary>Corps de la requête de suppression d'une activité du référentiel (s35) : la clé est l'identifiant
+    /// stable. Idempotente côté handler ; les slots déjà posés sur cette activité conservent leur lieu.</summary>
+    public sealed record SupprimerActiviteRequete(string ActiviteId);
+
+    /// <summary>Corps de la requête d'édition d'une activité (s35 Sc.2/Sc.4) : la clé est l'identifiant stable ;
+    /// libellé et adresse sont deux champs optionnels indépendants (absent (null) = non appliqué, aucune écriture
+    /// partielle croisée). L'adresse vide est acceptée (champ facultatif).</summary>
+    public sealed record EditerActiviteRequete(string ActiviteId, string? Libelle = null, string? Adresse = null);
 
     /// <summary>Corps de la requête d'ajout d'un enfant au référentiel du foyer (s30) : le front n'émet que le
     /// prénom ; l'identifiant stable neuf opaque est généré côté handler. Refus métier (prénom vide / doublon)

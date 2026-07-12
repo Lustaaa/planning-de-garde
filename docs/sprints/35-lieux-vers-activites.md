@@ -32,14 +32,14 @@
 > - **Révision de la validation de pose** : ce sprint la **préserve iso**, ne la repense pas.
 > - **Familles recomposées R2/R3** (« exactement 2 parents », graphe enfant-racine) : autre incrément.
 
-## Avancement — 3/6
+## Avancement — 4/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Renommer le référentiel **« Lieux » → « Activités »** (refactor iso-comportement, validation de pose préservée) | back | ✅ |
 | 2 | Champ **« adresse »** sur l'agrégat Activité (Mongo durable, vide accepté, sans écriture partielle) | back | ✅ |
 | 3 | Lien **enfant↔activité N-M** : commandes lier/délier idempotentes + rejets sans écriture partielle | back | ✅ |
-| 4 | **SWAP** onglet « Lieux » inline → onglet **« Activités »** tableau lecture + crayon → modal (+ renommage HTTP/DTO/record Web, lot atomique) | 🖥️ IHM | ⏳ |
+| 4 | **SWAP** onglet « Lieux » inline → onglet **« Activités »** tableau lecture + crayon → modal (+ renommage HTTP/DTO/record Web, lot atomique) | 🖥️ IHM | ✅ |
 | 5 | Modal activité : **champ adresse** + **sélecteur des enfants** à lier / délier | 🖥️ IHM | ⏳ |
 | 6 | Invariants Activités — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
 
@@ -134,7 +134,7 @@ Alors le lien est retiré et l'état PERSISTÉ ; délier un lien DÉJÀ absent e
 Alors le domaine REFUSE (motif restitué à l'appelant), sans écriture partielle (liens existants intacts)
 ```
 
-### Sc.4 — SWAP onglet « Lieux » inline → onglet « Activités » tableau + crayon → modal @ihm @pending
+### Sc.4 — SWAP onglet « Lieux » inline → onglet « Activités » tableau + crayon → modal @ihm @vert
 ```gherkin
 Étant donné l'onglet de config « Lieux » EXISTANT (onglet-lieux/panneau-lieux, ajout+suppression INLINE,
   liste-lieux, routes /api/foyer/lieux + canal/*-lieu, record Web LieuFoyer, tests Web dédiés)

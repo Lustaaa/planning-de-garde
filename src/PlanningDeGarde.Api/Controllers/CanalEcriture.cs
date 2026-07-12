@@ -39,15 +39,20 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
 
-    /// <summary>Corps de la requête d'ajout d'un lieu au référentiel du foyer (s27) émise via le canal
-    /// d'écriture : le front ne fournit que le libellé (l'identifiant stable est posé côté handler). Refus
-    /// métier (libellé vide / doublon) renvoyé avec son motif.</summary>
-    public sealed record AjouterLieuRequete(string Libelle);
+    /// <summary>Corps de la requête d'ajout d'une activité au référentiel du foyer (s35, ex-« lieu » s27) émise
+    /// via le canal d'écriture : le front ne fournit que le libellé (l'identifiant stable est posé côté handler).
+    /// Refus métier (libellé vide / doublon) renvoyé avec son motif.</summary>
+    public sealed record AjouterActiviteRequete(string Libelle);
 
-    /// <summary>Corps de la requête de suppression d'un lieu du référentiel du foyer (s27) émise via le
-    /// canal d'écriture : la clé est l'identifiant stable du lieu. Idempotente côté handler (id absent /
-    /// déjà supprimé = no-op qui réussit). Borne : les slots déjà posés sur ce lieu conservent leur lieu.</summary>
-    public sealed record SupprimerLieuRequete(string LieuId);
+    /// <summary>Corps de la requête de suppression d'une activité du référentiel du foyer (s35) émise via le
+    /// canal d'écriture : la clé est l'identifiant stable de l'activité. Idempotente côté handler (id absent /
+    /// déjà supprimé = no-op qui réussit). Borne : les slots déjà posés sur cette activité conservent leur lieu.</summary>
+    public sealed record SupprimerActiviteRequete(string ActiviteId);
+
+    /// <summary>Corps de la requête d'édition d'une activité (s35 Sc.2/Sc.4) émise via le canal d'écriture : la
+    /// clé est l'identifiant stable ; libellé et adresse sont deux champs OPTIONNELS et indépendants (un champ
+    /// absent (null) n'est pas appliqué — aucune écriture partielle croisée). Refus (libellé fourni vide) renvoyé.</summary>
+    public sealed record EditerActiviteRequete(string ActiviteId, string? Libelle = null, string? Adresse = null);
 
     /// <summary>Corps de la requête d'ajout d'un enfant au référentiel du foyer (s30) émise via le canal
     /// d'écriture : le front n'émet que le prénom ; l'identifiant stable neuf opaque est généré côté handler
@@ -240,17 +245,15 @@ public static class CanalEcriture
                 : Results.BadRequest(resultat.Motif);
         });
 
-        routes.MapPost("/api/canal/ajouter-lieu",
-            (AjouterLieuRequete requete, AjouterActiviteHandler handler, INotificateurPlanning notificateur) =>
+        routes.MapPost("/api/canal/ajouter-activite",
+            (AjouterActiviteRequete requete, AjouterActiviteHandler handler, INotificateurPlanning notificateur) =>
         {
-            // Seam Option B (s35 Sc.1) : route + DTO HTTP « lieu » inchangés (contrat de fil stable),
-            // mappés sur la commande Application « Activité » renommée. Renommage HTTP absorbé par Sc.4.
             var resultat = handler.Handle(new AjouterActiviteCommand(requete.Libelle));
 
-            // Même convention que les autres écritures : succès acquitté (le lieu ajouté est désormais énuméré
-            // depuis le store, disponible à la saisie), refus métier renvoyé avec son motif (libellé vide /
-            // doublon, S3). Sur succès, l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture
-            // seule) : les sélecteurs de lieu des dialogs des autres écrans suivent sans rechargement (S6).
+            // Même convention que les autres écritures : succès acquitté (l'activité ajoutée est désormais
+            // énumérée depuis le store, disponible à la saisie), refus métier renvoyé avec son motif (libellé
+            // vide / doublon). Sur succès, l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture
+            // seule) : la table Activités et les sélecteurs de lieu des autres écrans suivent sans rechargement.
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 
@@ -258,16 +261,29 @@ public static class CanalEcriture
             return Results.Ok();
         });
 
-        routes.MapPost("/api/canal/supprimer-lieu",
-            (SupprimerLieuRequete requete, SupprimerActiviteHandler handler, INotificateurPlanning notificateur) =>
+        routes.MapPost("/api/canal/supprimer-activite",
+            (SupprimerActiviteRequete requete, SupprimerActiviteHandler handler, INotificateurPlanning notificateur) =>
         {
-            // Seam Option B (s35 Sc.1) : route + DTO HTTP « lieu » inchangés, mappés sur la commande
-            // Application « Activité » renommée (requete.LieuId → l'id d'activité, positionnel).
-            var resultat = handler.Handle(new SupprimerActiviteCommand(requete.LieuId));
+            var resultat = handler.Handle(new SupprimerActiviteCommand(requete.ActiviteId));
 
-            // Même convention : succès acquitté (le lieu quitte le référentiel, plus proposé à la saisie),
+            // Même convention : succès acquitté (l'activité quitte le référentiel, plus proposée à la saisie),
             // refus métier renvoyé avec son motif. Idempotent côté handler. Sur succès, diffusion temps réel :
-            // les sélecteurs de lieu des dialogs ne proposent plus le lieu supprimé sans rechargement (S6).
+            // la table et les sélecteurs des dialogs ne proposent plus l'activité supprimée sans rechargement.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/editer-activite",
+            (EditerActiviteRequete requete, EditerActiviteHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new EditerActiviteCommand(requete.ActiviteId, requete.Libelle, requete.Adresse));
+
+            // Même convention : succès acquitté (libellé et/ou adresse mis à jour, relus sans rechargement),
+            // refus métier renvoyé avec son motif (libellé fourni vide). Sur succès, diffusion temps réel
+            // (lecture seule) : la table Activités des autres écrans converge sans rechargement (Sc.6).
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 

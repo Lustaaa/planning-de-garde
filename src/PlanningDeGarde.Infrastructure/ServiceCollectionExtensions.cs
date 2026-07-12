@@ -190,6 +190,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<SupprimerSlotRecurrentHandler>();
         services.AddScoped<AjouterActiviteHandler>();
         services.AddScoped<SupprimerActiviteHandler>();
+        services.AddScoped<EditerActiviteHandler>();
         services.AddScoped<AjouterEnfantHandler>();
         services.AddScoped<EditerEnfantHandler>();
         services.AddScoped<LierEnfantParentHandler>();
