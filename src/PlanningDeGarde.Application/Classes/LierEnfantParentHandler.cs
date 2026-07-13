@@ -68,6 +68,16 @@ public sealed class LierEnfantParentHandler
         // (s37, upsert par acteur, sans doublon). Ré-émettre le MÊME rôle reste neutre (idempotent).
         var dejaLie = parentsCourants.Any(p => p.ActeurId == commande.ActeurId);
 
+        // Règle rôle-du-lien EXCLUSIF (s37) : pas deux liens de même rôle père/mère sur un même enfant.
+        // Un AUTRE parent (id différent) portant déjà ce rôle exclusif → refus, sans écriture. « parent-libre »
+        // reste répétable (non exclusif). Changer le rôle de SON PROPRE parent n'est jamais un conflit.
+        if (commande.Role is RoleDuLien.Pere or RoleDuLien.Mere
+            && parentsCourants.Any(p => p.ActeurId != commande.ActeurId && p.Role == commande.Role))
+            return Result<LierEnfantParentResultat>.Echec(
+                commande.Role == RoleDuLien.Pere
+                    ? "un père est déjà lié à cet enfant"
+                    : "une mère est déjà liée à cet enfant");
+
         // Règle borne « 2 parents max » : un 3ᵉ parent NOUVEAU est refusé (les 2 liens existants intacts).
         // La mise à jour du rôle d'un parent déjà lié n'est PAS un ajout → la borne ne s'y applique pas.
         if (!dejaLie && parentsCourants.Count >= 2)

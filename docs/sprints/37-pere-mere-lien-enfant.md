@@ -25,12 +25,12 @@
 > - **Saisie/édition du `TypeActeur`**, champ père/mère au niveau de l'acteur lui-même : hors goal
 >   (le rôle-du-lien vit sur le **lien**, pas sur l'acteur).
 
-## Avancement — 1/5
+## Avancement — 2/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Lien enfant↔parent enrichi d'un **rôle-du-lien** {père/mère/parent-libre} + « lier » avec rôle (persistance Mongo durable, id enfant inchangé) | back | ✅ |
-| 2 | Rejets **sans écriture partielle** : deux « père » (ou deux « mère ») refusés ; borne 0..2 (s34) + éligibilité role-flag (s36) inchangées ; lier/délier idempotents | back | ⏳ |
+| 2 | Rejets **sans écriture partielle** : deux « père » (ou deux « mère ») refusés ; borne 0..2 (s34) + éligibilité role-flag (s36) inchangées ; lier/délier idempotents | back | ✅ |
 | 3 | **Compat + query** : le rôle-du-lien est relu au rechargement ; lien déjà persisté sans attribut → **défaut « parent-libre »** (pas de crash, pas de migration destructive) | back | ⏳ |
 | 4 | Modal Enfants : **sélecteur père/mère/parent** par parent lié (pré-réglé) ; refus→modal ouverte + motif + sélection conservée ; Échap=Annuler | 🖥️ IHM | ⏳ |
 | 5 | Colonne « Parents liés » affiche le **rôle-du-lien** à côté du nom ; **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
@@ -81,7 +81,7 @@ Et lier SANS préciser de rôle vaut « parent-libre » (défaut neutre, comport
 Et modifier le rôle-du-lien d'un parent déjà lié met à jour le lien SANS le dupliquer (id enfant + autres liens intacts)
 ```
 
-### Sc.2 — Rejets sans écriture partielle + bornes s34/s36 inchangées @back @pending
+### Sc.2 — Rejets sans écriture partielle + bornes s34/s36 inchangées @back @vert
 ```gherkin
 Étant donné un enfant déjà lié à un parent avec le rôle « père »
 Quand la commande « lier » désigne un SECOND parent avec le rôle « père »
