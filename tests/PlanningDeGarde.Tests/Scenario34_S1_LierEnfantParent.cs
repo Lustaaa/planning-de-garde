@@ -22,27 +22,26 @@ public class Scenario34_S1_LierEnfantParent
     private const string LeaId = "enfant-lea";
     private const string TomId = "enfant-tom";
 
-    /// <summary>Amorce un référentiel de rôles + config acteur avec un acteur portant le rôle « Parent »,
-    /// et retourne son identifiant stable — précondition valide du lien (S2 : seul un Parent est liable).</summary>
-    private static (ConfigurationFoyerEnMemoire config, ReferentielRolesEnMemoire roles, string parentId) FoyerAvecUnParent(string prenom)
+    /// <summary>Amorce une config acteur avec un acteur AJOUTÉ en session — de type
+    /// <see cref="TypeActeur.Parent"/> par défaut (Foyer.TypeParDefaut) et SANS aucun rôle — et retourne
+    /// son identifiant stable. Précondition valide du lien (option A, s36 : parent liable = TypeActeur.Parent,
+    /// le rôle du référentiel ne qualifie plus).</summary>
+    private static (ConfigurationFoyerEnMemoire config, string parentId) FoyerAvecUnParent(string prenom)
     {
-        var roles = new ReferentielRolesEnMemoire();
-        var roleParent = new CreerRoleHandler(roles, roles).Handle(new CreerRoleCommand("Parent")).Valeur!.RoleId;
         var config = new ConfigurationFoyerEnMemoire();
         var parentId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(prenom)).Valeur!.ActeurId;
-        new AffecterRoleActeurHandler(roles, config).Handle(new AffecterRoleActeurCommand(parentId, roleParent));
-        return (config, roles, parentId);
+        return (config, parentId);
     }
 
     // ---------- Acceptation (boucle externe, frontière Application) ----------
     [Fact]
     public void Acceptation_Should_Relire_l_enfant_avec_le_parent_lie_sur_le_meme_id_When_le_parent_est_lie()
     {
-        var (config, roles, papaId) = FoyerAvecUnParent("Papa");
+        var (config, papaId) = FoyerAvecUnParent("Papa");
         var referentiel = new FakeReferentielEnfants()
             .AvecEnfant(LeaId, "Léa")
             .AvecEnfant(TomId, "Tom");
-        var handler = new LierEnfantParentHandler(referentiel, config, roles, referentiel);
+        var handler = new LierEnfantParentHandler(referentiel, config, referentiel);
 
         var resultat = handler.Handle(new LierEnfantParentCommand(LeaId, papaId));
 
@@ -63,9 +62,9 @@ public class Scenario34_S1_LierEnfantParent
     [Fact]
     public void Should_Porter_le_parent_dans_la_liste_relue_When_la_commande_lier_est_emise()
     {
-        var (config, roles, papaId) = FoyerAvecUnParent("Papa");
+        var (config, papaId) = FoyerAvecUnParent("Papa");
         var referentiel = new FakeReferentielEnfants().AvecEnfant(LeaId, "Léa");
-        var handler = new LierEnfantParentHandler(referentiel, config, roles, referentiel);
+        var handler = new LierEnfantParentHandler(referentiel, config, referentiel);
 
         handler.Handle(new LierEnfantParentCommand(LeaId, papaId));
 

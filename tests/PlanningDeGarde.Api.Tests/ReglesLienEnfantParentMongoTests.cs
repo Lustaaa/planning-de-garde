@@ -29,27 +29,22 @@ public sealed class ReglesLienEnfantParentMongoTests : IDisposable
     [MongoRequisFact]
     public void Acceptation_Should_Conserver_exactement_les_deux_liens_durables_apres_des_refus_When_on_tente_un_3e_parent_un_inexistant_et_un_non_parent()
     {
-        // Foyer (adaptateurs InMemory réels) : trois Parents + un acteur non-Parent.
-        var roles = new ReferentielRolesEnMemoire();
-        var roleParent = new CreerRoleHandler(roles, roles).Handle(new CreerRoleCommand("Parent")).Valeur!.RoleId;
+        // Foyer (adaptateurs InMemory réels) : trois Parents (acteurs ajoutés en session, TypeActeur.Parent
+        // par défaut) + un acteur non-Parent (seed « grand-pere », TypeActeur.Autre — option A, s36).
         var config = new ConfigurationFoyerEnMemoire();
         string Parent(string p)
-        {
-            var id = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(p)).Valeur!.ActeurId;
-            new AffecterRoleActeurHandler(roles, config).Handle(new AffecterRoleActeurCommand(id, roleParent));
-            return id;
-        }
+            => new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(p)).Valeur!.ActeurId;
         var papa = Parent("Papa");
         var maman = Parent("Maman");
         var mamie = Parent("Mamie");
-        var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId; // non-Parent
+        const string bob = "grand-pere"; // acteur seed EXISTANT de type TypeActeur.Autre → non liable
 
         string leaId;
         {
             var store1 = NouveauStore();
             leaId = new AjouterEnfantHandler(store1, store1, new NotificateurMuet())
                 .Handle(new AjouterEnfantCommand("Léa")).Valeur!.EnfantId;
-            var lier = new LierEnfantParentHandler(store1, config, roles, store1);
+            var lier = new LierEnfantParentHandler(store1, config, store1);
 
             Assert.True(lier.Handle(new LierEnfantParentCommand(leaId, papa)).EstSucces);
             Assert.True(lier.Handle(new LierEnfantParentCommand(leaId, maman)).EstSucces);

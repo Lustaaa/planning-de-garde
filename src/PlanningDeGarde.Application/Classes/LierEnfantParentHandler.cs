@@ -18,30 +18,27 @@ public sealed record LierEnfantParentResultat(string EnfantId, string ActeurId);
 /// <summary>
 /// Use case : lier un enfant à un parent-acteur. Persiste le lien via le port d'écriture du référentiel,
 /// sous les règles du lien (S2) — TOUTES vérifiées AVANT toute écriture (aucune écriture partielle en
-/// cas de refus) : l'acteur doit exister, porter le rôle « Parent » (référentiel de rôles), lier un
-/// parent déjà lié est neutre (idempotent, pas de doublon), et borne « 2 parents max ». Familles
-/// recomposées / exactement-2-parents restent hors scope (spec R2/R3).
+/// cas de refus) : l'acteur doit exister, être de type <see cref="TypeActeur.Parent"/> (option A, s36 —
+/// même source de vérité que l'invariant admin=Parent, <see cref="AdministrationFoyer.DesignerAdmin"/>,
+/// s22), lier un parent déjà lié est neutre (idempotent, pas de doublon), et borne « 2 parents max ».
+/// Le libellé de rôle du référentiel (s21) ne qualifie PLUS l'éligibilité. Familles recomposées /
+/// exactement-2-parents restent hors scope (spec R2/R3).
 /// </summary>
 public sealed class LierEnfantParentHandler
 {
     private readonly IEnumerationEnfants _enfants;
     private readonly IEnumerationActeursFoyer _acteurs;
-    private readonly IEnumerationRoles _roles;
     private readonly IEditeurEnfants _referentiel;
 
     public LierEnfantParentHandler(
         IEnumerationEnfants enfants,
         IEnumerationActeursFoyer acteurs,
-        IEnumerationRoles roles,
         IEditeurEnfants referentiel)
     {
         _enfants = enfants;
         _acteurs = acteurs;
-        _roles = roles;
         _referentiel = referentiel;
     }
-
-    private const string RoleParent = "Parent";
 
     public Result<LierEnfantParentResultat> Handle(LierEnfantParentCommand commande)
     {
@@ -49,11 +46,11 @@ public sealed class LierEnfantParentHandler
         if (!_acteurs.EnumererActeurs().Contains(commande.ActeurId))
             return Result<LierEnfantParentResultat>.Echec("acteur inexistant");
 
-        // Règle 2 — l'acteur doit porter le rôle « Parent » (référentiel de rôles, cadrage SM) : son id de
-        // rôle est résolu en libellé sur le référentiel — seul un « Parent » est liable comme parent.
-        var roleId = _acteurs.RoleDe(commande.ActeurId);
-        var estParent = roleId is not null
-            && _roles.EnumererRoles().Any(r => r.Id == roleId && r.Libelle == RoleParent);
+        // Règle 2 (option A, s36) — l'acteur doit être PARENT PAR NATURE : TypeActeur.Parent. C'est
+        // EXACTEMENT le prédicat déjà porté par l'invariant admin=Parent (DesignerAdmin, s22) — source de
+        // vérité UNIQUE. Le libellé de rôle du référentiel (s21) est redevenu un attribut d'affichage libre
+        // (Papa/Maman) : il ne qualifie PLUS l'éligibilité « parent liable ».
+        var estParent = _acteurs.TypeDe(commande.ActeurId) == TypeActeur.Parent;
         if (!estParent)
             return Result<LierEnfantParentResultat>.Echec("acteur non parent");
 

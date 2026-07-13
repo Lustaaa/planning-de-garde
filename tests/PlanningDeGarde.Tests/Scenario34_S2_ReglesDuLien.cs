@@ -16,37 +16,27 @@ namespace PlanningDeGarde.Tests;
 //   Et dans tous les cas de refus, le motif est restitué et le store reste INCHANGÉ
 //
 // Frontière Application : le handler LierEnfantParent vérifie TOUTES les règles AVANT toute écriture.
-// « Parent » = acteur portant le rôle « Parent » du référentiel de rôles (cadrage SM).
+// « Parent liable » = acteur de type TypeActeur.Parent (option A, s36 : même source que l'invariant
+// admin=Parent) — le libellé de rôle du référentiel ne qualifie PLUS l'éligibilité.
 public class Scenario34_S2_ReglesDuLien
 {
     private const string LeaId = "enfant-lea";
 
+    // Acteur seed de type TypeActeur.Autre (Foyer.TypesParActeur) : existe au foyer mais non liable.
+    private const string GrandPere = "grand-pere";
+
     private sealed class FoyerBuilder
     {
-        public ReferentielRolesEnMemoire Roles { get; } = new();
         public ConfigurationFoyerEnMemoire Config { get; } = new();
-        private readonly string _roleParent;
 
-        public FoyerBuilder()
-        {
-            _roleParent = new CreerRoleHandler(Roles, Roles).Handle(new CreerRoleCommand("Parent")).Valeur!.RoleId;
-        }
-
-        /// <summary>Acteur portant le rôle « Parent » — candidat valide au lien.</summary>
+        /// <summary>Acteur AJOUTÉ en session — de type TypeActeur.Parent par défaut (Foyer.TypeParDefaut),
+        /// sans aucun rôle : candidat VALIDE au lien (option A, s36).</summary>
         public string Parent(string prenom)
-        {
-            var id = new AjouterActeurHandler(Config).Handle(new AjouterActeurCommand(prenom)).Valeur!.ActeurId;
-            new AffecterRoleActeurHandler(Roles, Config).Handle(new AffecterRoleActeurCommand(id, _roleParent));
-            return id;
-        }
-
-        /// <summary>Acteur existant SANS rôle « Parent » — non liable.</summary>
-        public string NonParent(string prenom)
             => new AjouterActeurHandler(Config).Handle(new AjouterActeurCommand(prenom)).Valeur!.ActeurId;
     }
 
     private static LierEnfantParentHandler Handler(FoyerBuilder foyer, IEnumerationEnfants enfants, IEditeurEnfants referentiel)
-        => new(enfants, foyer.Config, foyer.Roles, referentiel);
+        => new(enfants, foyer.Config, referentiel);
 
     // ---------- Acceptation — « 2 parents max » : un 3ᵉ parent est refusé sans écriture ----------
     [Fact]
@@ -89,16 +79,16 @@ public class Scenario34_S2_ReglesDuLien
         Assert.Empty(referentiel.EnumererEnfants().Single(e => e.Id == LeaId).ParentsLies);
     }
 
-    // ---------- Driver — acteur existant mais non Parent : refus sans écriture ----------
+    // ---------- Driver — acteur existant mais non Parent (TypeActeur.Autre) : refus sans écriture ----------
     [Fact]
-    public void Should_Refuser_un_acteur_non_parent_sans_ecriture_When_l_acteur_ne_porte_pas_le_role_Parent()
+    public void Should_Refuser_un_acteur_non_parent_sans_ecriture_When_l_acteur_est_de_type_Autre()
     {
         var foyer = new FoyerBuilder();
-        var bob = foyer.NonParent("Bob"); // existe mais sans rôle Parent
+        var mamie = GrandPere; // acteur seed EXISTANT, de type TypeActeur.Autre → non liable (option A, s36)
         var referentiel = new FakeReferentielEnfants().AvecEnfant(LeaId, "Léa");
         var handler = Handler(foyer, referentiel, referentiel);
 
-        var resultat = handler.Handle(new LierEnfantParentCommand(LeaId, bob));
+        var resultat = handler.Handle(new LierEnfantParentCommand(LeaId, mamie));
 
         Assert.False(resultat.EstSucces);
         Assert.Equal("acteur non parent", resultat.Motif);
