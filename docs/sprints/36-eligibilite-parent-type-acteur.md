@@ -39,7 +39,7 @@
 > - **Saisie / édition du `TypeActeur` lui-même** : hors scope (le type n'est plus le pivot de
 >   l'éligibilité ; il reste au seul service du gating d'écriture R8/R9, inchangé).
 
-## Avancement — 6/7
+## Avancement — 7/7
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -49,7 +49,7 @@
 | 4 | **`LierEnfantParentHandler`** — éligibilité = l'acteur **porte un rôle marqué parent** (REMPLACE `TypeActeur.Parent`) ; rôle non-parent (Nounou/Grand-parent) ou sans rôle = REFUSÉ, sans écriture partielle | back | ✅ |
 | 5 | Sélecteur parents modal Enfants **`ActeursParents()`** énumère les acteurs à **rôle marqué parent** (l'IHM suit exactement la règle back) | 🖥️ IHM | ✅ |
 | 6 | **Case « rôle parent »** dans la modal Rôles (patron crayon→modal s33) : coche/décoche, Échap=Annuler, **Parent-gated**, convergence **SignalR** temps réel | 🖥️ IHM | ✅ |
-| 7 | **Preuve runtime seed** : Valérie (Nounou) et Mamie (Grand-parent) **N'apparaissent PAS** ; Alice/Bruno (Papa/Maman marqués parent) apparaissent et sont liables ; décocher « parent » les retire en temps réel | 🖥️ IHM | ⏳ |
+| 7 | **Preuve runtime seed** : Valérie (Nounou) et Mamie (Grand-parent) **N'apparaissent PAS** ; Alice/Bruno (Papa/Maman marqués parent) apparaissent et sont liables ; décocher « parent » les retire en temps réel | 🖥️ IHM | ✅ |
 
 > **⚠️ GARDE — lot atomique : REMPLACEMENT de l'option A, pas coexistence (Sc.4).** Les commits s36
 > déjà poussés portent l'option A (`LierEnfantParentHandler` L53 `TypeDe==Parent`, filet Sc.2 s36,
@@ -156,7 +156,7 @@ Quand un autre écran Parent bascule le flag d'un rôle
 Alors la modal/tableau de rôles converge en TEMPS RÉEL (SignalR lecture seule) sans rechargement
 ```
 
-### Sc.7 — Preuve runtime seed : Nounou/Grand-parent exclus, Papa/Maman liables, décoche en direct @ihm @pending
+### Sc.7 — Preuve runtime seed : Nounou/Grand-parent exclus, Papa/Maman liables, décoche en direct @ihm @vert
 ```gherkin
 Étant donné l'app lancée sur le seed démo (Alice→Papa & Bruno→Maman marqués parent ; Valérie→Nounou & Mamie→Grand-parent non marqués)
 Et un enfant déclaré dans le foyer
