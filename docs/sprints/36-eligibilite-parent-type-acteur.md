@@ -26,12 +26,12 @@
 > - **Familles recomposées R2/R3** (« exactement 2 parents », graphe enfant-racine) : autre
 >   incrément, **non traité ici** (le lien reste borné 0..2 comme s34).
 
-## Avancement — 1/5
+## Avancement — 2/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Éligibilité du lien basculée sur **`TypeActeur.Parent`** dans `LierEnfantParentHandler` (source unique, alignée admin=Parent s22) | back | ✅ |
-| 2 | **Filet d'invariant révisé** : Parent-par-nature SANS rôle « Parent » = LIABLE ; `TypeActeur.Autre` (Mamie) = REFUSÉ même avec un rôle libellé « Parent », sans écriture partielle | back | ⏳ |
+| 2 | **Filet d'invariant révisé** : Parent-par-nature SANS rôle « Parent » = LIABLE ; `TypeActeur.Autre` (Mamie) = REFUSÉ même avec un rôle libellé « Parent », sans écriture partielle | back | ✅ |
 | 3 | Non-régression **gating impersonation R8/R9** (porté par `TypeActeur`, aucune dérive du droit d'écriture) | back | ⏳ |
 | 4 | Sélecteur de la modal Enfants `ActeursParents()` énumère les acteurs **`TypeActeur.Parent`** (l'IHM suit exactement la règle back) | 🖥️ IHM | ⏳ |
 | 5 | **Preuve runtime** : seed démo (Alice/Bruno = Parent) liable DIRECTEMENT, sans créer de rôle « Parent » ; Papa/Maman distingués par le NOM | 🖥️ IHM | ⏳ |
@@ -73,7 +73,7 @@ Et l'éligibilité « parent liable » est résolue sur TypeActeur.Parent
 Et le critère « rôle du référentiel de libellé littéral 'Parent' » n'intervient PLUS dans l'éligibilité
 ```
 
-### Sc.2 — Filet d'invariant révisé : nature ≠ libellé de rôle @back @pending
+### Sc.2 — Filet d'invariant révisé : nature ≠ libellé de rôle @back @vert
 ```gherkin
 Étant donné un acteur de type TypeActeur.Parent qui n'a AUCUN rôle affecté (RoleDe = null)
 Quand la commande « lier » le désigne comme parent d'un enfant
