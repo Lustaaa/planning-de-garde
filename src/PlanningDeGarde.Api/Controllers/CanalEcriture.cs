@@ -54,6 +54,16 @@ public static class CanalEcriture
     /// absent (null) n'est pas appliqué — aucune écriture partielle croisée). Refus (libellé fourni vide) renvoyé.</summary>
     public sealed record EditerActiviteRequete(string ActiviteId, string? Libelle = null, string? Adresse = null);
 
+    /// <summary>Corps de la requête de liaison d'un enfant à une activité (s35 Sc.3/Sc.5) émise via le canal
+    /// d'écriture : l'identifiant stable de l'enfant + l'identifiant stable de l'activité. Lien N-M (aucune borne
+    /// de cardinalité). Refus métier (enfant / activité inexistant) renvoyé avec son motif ; déjà lié = neutre.</summary>
+    public sealed record LierEnfantActiviteRequete(string EnfantId, string ActiviteId);
+
+    /// <summary>Corps de la requête de retrait du lien d'un enfant vers une activité (s35 Sc.3/Sc.5) émise via
+    /// le canal d'écriture : l'identifiant stable de l'enfant + l'identifiant stable de l'activité. Idempotent
+    /// côté handler (enfant déjà non lié = no-op qui réussit).</summary>
+    public sealed record DelierEnfantActiviteRequete(string EnfantId, string ActiviteId);
+
     /// <summary>Corps de la requête d'ajout d'un enfant au référentiel du foyer (s30) émise via le canal
     /// d'écriture : le front n'émet que le prénom ; l'identifiant stable neuf opaque est généré côté handler
     /// (jamais dérivé du prénom). Refus métier (prénom vide / doublon) renvoyé avec son motif.</summary>
@@ -284,6 +294,36 @@ public static class CanalEcriture
             // Même convention : succès acquitté (libellé et/ou adresse mis à jour, relus sans rechargement),
             // refus métier renvoyé avec son motif (libellé fourni vide). Sur succès, diffusion temps réel
             // (lecture seule) : la table Activités des autres écrans converge sans rechargement (Sc.6).
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/lier-enfant-activite",
+            (LierEnfantActiviteRequete requete, LierEnfantActiviteHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new LierEnfantActiviteCommand(requete.EnfantId, requete.ActiviteId));
+
+            // Même convention : succès acquitté (l'enfant lié est relu dans la colonne « Enfants liés » sans
+            // rechargement, Sc.5), refus métier renvoyé avec son motif (enfant / activité inexistant, Sc.3).
+            // Sur succès, diffusion temps réel (lecture seule) : les autres écrans convergent sans rechargement (Sc.6).
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/delier-enfant-activite",
+            (DelierEnfantActiviteRequete requete, DelierEnfantActiviteHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new DelierEnfantActiviteCommand(requete.EnfantId, requete.ActiviteId));
+
+            // Même convention : succès acquitté (l'enfant délié disparaît de la colonne « Enfants liés » sans
+            // rechargement, Sc.5), idempotent côté handler (enfant déjà non lié = no-op qui réussit). Sur succès,
+            // diffusion temps réel (lecture seule) : les autres écrans convergent sans rechargement (Sc.6).
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 

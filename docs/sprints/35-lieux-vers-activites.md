@@ -32,7 +32,7 @@
 > - **Révision de la validation de pose** : ce sprint la **préserve iso**, ne la repense pas.
 > - **Familles recomposées R2/R3** (« exactement 2 parents », graphe enfant-racine) : autre incrément.
 
-## Avancement — 4/6
+## Avancement — 5/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -40,7 +40,7 @@
 | 2 | Champ **« adresse »** sur l'agrégat Activité (Mongo durable, vide accepté, sans écriture partielle) | back | ✅ |
 | 3 | Lien **enfant↔activité N-M** : commandes lier/délier idempotentes + rejets sans écriture partielle | back | ✅ |
 | 4 | **SWAP** onglet « Lieux » inline → onglet **« Activités »** tableau lecture + crayon → modal (+ renommage HTTP/DTO/record Web, lot atomique) | 🖥️ IHM | ✅ |
-| 5 | Modal activité : **champ adresse** + **sélecteur des enfants** à lier / délier | 🖥️ IHM | ⏳ |
+| 5 | Modal activité : **champ adresse** + **sélecteur des enfants** à lier / délier | 🖥️ IHM | ✅ |
 | 6 | Invariants Activités — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
 
 > **⚠️ POINT DE VIGILANCE — le renommage Lieux→Activités est un REFACTOR TRANSVERSE, TRANCHÉ EN DEUX
@@ -154,7 +154,7 @@ Et la fermeture Échap de la modal referme SANS mutation (port IEcouteurEchapMod
 Et aucune surface d'édition inline « Lieux » ne subsiste (pas de code mort ni de coexistence durable)
 ```
 
-### Sc.5 — Modal activité : champ adresse + sélecteur des enfants @ihm @pending
+### Sc.5 — Modal activité : champ adresse + sélecteur des enfants @ihm @vert
 ```gherkin
 Étant donné la modal d'édition d'une activité ouverte (Parent)
 Quand la modal est rendue

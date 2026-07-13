@@ -270,8 +270,14 @@ public partial class ConfigurationFoyer
     // Modal ouverte en mode CRÉATION (bouton « Ajouter une activité ») : champs vides, aucune activité portée.
     private bool _modalActiviteAjout;
 
+    /// <summary>Sélection des enfants à lier dans la modal activité (Sc.5) : initialisée aux enfants COURANTS de
+    /// l'activité à l'ouverture (pré-cochés). À l'« Enregistrer », les diffs vis-à-vis des enfants courants
+    /// émettent lier / délier. Lien N-M : AUCUNE borne de cardinalité (0..N des deux côtés, cadrage SM).</summary>
+    private readonly HashSet<string> _selectionEnfants = new();
+
     /// <summary>Ouvre la modal d'ÉDITION sur une activité (clic crayon) : porte son id stable, pré-remplit son
-    /// libellé + adresse courants, efface le motif d'échec précédent.</summary>
+    /// libellé + adresse courants et la sélection d'enfants sur les enfants liés COURANTS (pré-cochés, Sc.5),
+    /// efface le motif d'échec précédent.</summary>
     private void OuvrirEditionActivite(string activiteId)
     {
         _modalActiviteAjout = false;
@@ -279,17 +285,21 @@ public partial class ConfigurationFoyer
         var activite = _activites.FirstOrDefault(a => a.Id == activiteId);
         _activite.Libelle = activite?.Libelle ?? "";
         _activite.Adresse = activite?.Adresse ?? "";
+        _selectionEnfants.Clear();
+        foreach (var enfantId in activite?.EnfantsLies ?? Array.Empty<string>())
+            _selectionEnfants.Add(enfantId);
         _motifEchecActivite = null;
     }
 
     /// <summary>Ouvre la MÊME modal en mode CRÉATION (bouton « Ajouter une activité ») : champs vides, aucune
-    /// activité portée (les liens enfant se posent après la création, en édition).</summary>
+    /// activité portée, aucune sélection d'enfant (les liens se posent après la création, en édition).</summary>
     private void OuvrirAjoutActivite()
     {
         _modalActiviteId = null;
         _modalActiviteAjout = true;
         _activite.Libelle = "";
         _activite.Adresse = "";
+        _selectionEnfants.Clear();
         _motifEchecActivite = null;
     }
 
@@ -298,7 +308,18 @@ public partial class ConfigurationFoyer
     {
         _modalActiviteId = null;
         _modalActiviteAjout = false;
+        _selectionEnfants.Clear();
         _motifEchecActivite = null;
+    }
+
+    /// <summary>Bascule la sélection d'un enfant dans la modal activité (Sc.5). Lien N-M : aucune borne — on
+    /// ajoute / retire librement l'id stable de l'enfant (jamais son prénom).</summary>
+    private void BasculerEnfant(string enfantId, bool lie)
+    {
+        if (lie)
+            _selectionEnfants.Add(enfantId);
+        else
+            _selectionEnfants.Remove(enfantId);
     }
 
     /// <summary>Libellé de lecture des enfants liés d'une activité (Sc.4) : les identifiants stables des enfants
@@ -927,11 +948,23 @@ public partial class ConfigurationFoyer
         }
         else
         {
-            // Édition : libellé + adresse (editer-activite). Sur refus (métier ou injoignable), on s'arrête,
-            // motif dans la modal restée ouverte (Sc.6) — le tableau n'est relu qu'après le succès.
+            // Édition : libellé + adresse (editer-activite) PUIS les diffs d'enfants liés (lier/délier). Sur le
+            // PREMIER refus (métier ou injoignable), on s'arrête, motif dans la modal restée ouverte (Sc.6) — le
+            // tableau n'est relu qu'après le succès complet.
             if (!await PosterActivite("api/canal/editer-activite",
                 new EditerActiviteRequete(_modalActiviteId!, _activite.Libelle, _activite.Adresse)))
                 return;
+
+            var courant = _activites.FirstOrDefault(a => a.Id == _modalActiviteId)?.EnfantsLies
+                ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+
+            foreach (var enfantId in _selectionEnfants.Where(id => !courant.Contains(id)).ToList())
+                if (!await PosterActivite("api/canal/lier-enfant-activite", new LierEnfantActiviteRequete(enfantId, _modalActiviteId!)))
+                    return;
+
+            foreach (var enfantId in courant.Where(id => !_selectionEnfants.Contains(id)).ToList())
+                if (!await PosterActivite("api/canal/delier-enfant-activite", new DelierEnfantActiviteRequete(enfantId, _modalActiviteId!)))
+                    return;
         }
 
         await RechargerActivites();

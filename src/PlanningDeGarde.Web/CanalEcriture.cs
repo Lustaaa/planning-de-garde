@@ -47,6 +47,15 @@ public static class CanalEcriture
     /// partielle croisée). L'adresse vide est acceptée (champ facultatif).</summary>
     public sealed record EditerActiviteRequete(string ActiviteId, string? Libelle = null, string? Adresse = null);
 
+    /// <summary>Corps de la requête de liaison d'un enfant à une activité (s35 Sc.5) : l'id stable de l'enfant et
+    /// l'id stable de l'activité. Lien N-M (aucune borne). Refus métier (enfant / activité inexistant) renvoyé ;
+    /// déjà lié = neutre.</summary>
+    public sealed record LierEnfantActiviteRequete(string EnfantId, string ActiviteId);
+
+    /// <summary>Corps de la requête de retrait du lien d'un enfant vers une activité (s35 Sc.5) : l'id stable de
+    /// l'enfant et l'id stable de l'activité. Idempotent côté handler (enfant déjà non lié = no-op qui réussit).</summary>
+    public sealed record DelierEnfantActiviteRequete(string EnfantId, string ActiviteId);
+
     /// <summary>Corps de la requête d'ajout d'un enfant au référentiel du foyer (s30) : le front n'émet que le
     /// prénom ; l'identifiant stable neuf opaque est généré côté handler. Refus métier (prénom vide / doublon)
     /// renvoyé avec son motif.</summary>

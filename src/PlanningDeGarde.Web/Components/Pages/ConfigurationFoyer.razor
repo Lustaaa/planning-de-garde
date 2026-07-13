@@ -645,11 +645,36 @@
                             @if (!_modalActiviteAjout && activiteEditee is { } act2)
                             {
                                 @* Enfants liés COURANTS en lecture (Sc.4) : la modal montre les enfants actuels
-                                   de l'activité, résolus en prénoms. Le SÉLECTEUR à lier/délier arrive en Sc.5. *@
+                                   de l'activité, résolus en prénoms. *@
                                 <hr />
                                 <div class="mb-2">
                                     <label class="form-label">Enfants liés</label>
                                     <div class="enfant-parents-lies-modal" data-testid="activite-enfants-lies-modal">@LibelleEnfantsLies(act2)</div>
+                                </div>
+
+                                @* SÉLECTEUR des enfants à lier / délier (Sc.5) : tout le référentiel d'enfants (s30),
+                                   les enfants DÉJÀ liés pré-cochés. Lien N-M : AUCUNE borne de cardinalité (0..N).
+                                   À l'« Enregistrer » (SoumettreActivite), les diffs vis-à-vis des enfants courants
+                                   émettent lier-enfant-activite / delier-enfant-activite via le canal HTTP. HORS
+                                   scope : liste de slots par activité, lien adresse acteur↔lieu. *@
+                                <div class="mb-2" data-testid="selecteur-enfants-activite">
+                                    <label class="form-label">Lier des enfants</label>
+                                    @if (!_enfants.Any())
+                                    {
+                                        <div class="text-muted small" data-testid="aucun-enfant-candidat">
+                                            Aucun enfant dans le référentiel.</div>
+                                    }
+                                    @foreach (var enf in _enfants)
+                                    {
+                                        var enfant = enf;
+                                        var lie = _selectionEnfants.Contains(enfant.Id);
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" class="form-check-input enfant-checkbox-parent" role="switch"
+                                                   id="enfant-activite-@enfant.Id" data-testid="checkbox-enfant-activite" data-enfant-id="@enfant.Id"
+                                                   checked="@lie" @onchange="e => BasculerEnfant(enfant.Id, (bool)e.Value!)" />
+                                            <label class="form-check-label" for="enfant-activite-@enfant.Id">@enfant.Prenom</label>
+                                        </div>
+                                    }
                                 </div>
 
                                 <hr />

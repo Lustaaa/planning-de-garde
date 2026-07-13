@@ -191,6 +191,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AjouterActiviteHandler>();
         services.AddScoped<SupprimerActiviteHandler>();
         services.AddScoped<EditerActiviteHandler>();
+        services.AddScoped<LierEnfantActiviteHandler>();
+        services.AddScoped<DelierEnfantActiviteHandler>();
         services.AddScoped<AjouterEnfantHandler>();
         services.AddScoped<EditerEnfantHandler>();
         services.AddScoped<LierEnfantParentHandler>();
