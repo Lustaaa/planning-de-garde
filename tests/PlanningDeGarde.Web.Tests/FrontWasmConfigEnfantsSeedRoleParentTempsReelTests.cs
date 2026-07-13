@@ -90,8 +90,8 @@ public sealed class FrontWasmConfigEnfantsSeedRoleParentTempsReelTests : TestCon
             },
             TimeSpan.FromSeconds(10));
         var lies = api.Services.GetRequiredService<IEnumerationEnfants>().EnumererEnfants().Single(e => e.Id == "Léa").ParentsLies;
-        Assert.Contains("parent-a", lies);
-        Assert.Contains("parent-b", lies);
+        Assert.Contains(lies, p => p.ActeurId == "parent-a");
+        Assert.Contains(lies, p => p.ActeurId == "parent-b");
     }
 
     [Fact]

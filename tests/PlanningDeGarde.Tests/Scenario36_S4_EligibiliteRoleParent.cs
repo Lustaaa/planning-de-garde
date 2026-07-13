@@ -48,7 +48,7 @@ public class Scenario36_S4_EligibiliteRoleParent
 
         // Then — le lien est ACCEPTÉ et PERSISTÉ (relu par la query).
         Assert.True(resultat.EstSucces);
-        Assert.Contains(papaId, referentiel.EnumererEnfants().Single(e => e.Id == LeaId).ParentsLies);
+        Assert.Contains(referentiel.EnumererEnfants().Single(e => e.Id == LeaId).ParentsLies, p => p.ActeurId == papaId);
     }
 
     // ---------- Driver — un acteur à rôle NON marqué parent est REFUSÉ, sans écriture partielle ----------
@@ -75,7 +75,7 @@ public class Scenario36_S4_EligibiliteRoleParent
         Assert.Equal("acteur sans rôle-parent", resultat.Motif);
         var lea = referentiel.EnumererEnfants().Single(e => e.Id == LeaId);
         Assert.Single(lea.ParentsLies);
-        Assert.DoesNotContain(nounouId, lea.ParentsLies);
+        Assert.DoesNotContain(lea.ParentsLies, p => p.ActeurId == nounouId);
     }
 
     // ---------- Driver — un acteur SANS aucun rôle est REFUSÉ (aucun rôle marqué parent porté) ----------

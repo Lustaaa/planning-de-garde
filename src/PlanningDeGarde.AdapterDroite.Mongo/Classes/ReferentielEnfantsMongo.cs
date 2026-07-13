@@ -10,13 +10,19 @@ namespace PlanningDeGarde.Infrastructure;
 /// Adaptateur de droite <b>durable</b> (Mongo) du référentiel d'enfants du foyer (s30) — réalise,
 /// derrière les <b>ports inchangés</b>, la lecture (<see cref="IEnumerationEnfants"/>) et l'écriture
 /// (<see cref="IEditeurEnfants"/>). Remplaçant durable de <c>ReferentielEnfantsEnMemoire</c> : un enfant
-/// ajouté/édité survit au redémarrage du serveur (une instance fraîche = un redémarrage relit l'état
+/// ajouté/édité/lié survit au redémarrage du serveur (une instance fraîche = un redémarrage relit l'état
 /// persisté), prouvé contre un store Mongo réel (Docker).
 ///
 /// <para><b>Borné à la config foyer</b> : réutilise le socle Mongo config déjà acquis (même base),
-/// collection dédiée « enfants ». <b>Aucun seed</b> (parité asymétrie seed s15, comme lieux/rôles/config
-/// acteurs) : la base ouvre vide et se peuple par les écritures write-through — l'InMemory conserve son
-/// seed pour la non-régression, jamais le Mongo. La clé est l'identifiant stable opaque de l'enfant.</para>
+/// collection dédiée « enfants ». <b>Aucun seed</b> (parité asymétrie seed s15). La clé est l'identifiant
+/// stable opaque de l'enfant.</para>
+///
+/// <para><b>Rôle-du-lien (s37) — enrichissement ADDITIF, compat non destructive.</b> La forme s34 du lien
+/// (<c>ParentsLies</c> = liste d'ids d'acteurs) est <b>conservée telle quelle</b> ; le rôle-du-lien est
+/// porté par un champ parallèle <c>RolesDesLiens</c> (id d'acteur → rôle), ABSENT sur les documents s34
+/// déjà persistés. À la lecture, un parent sans entrée dans <c>RolesDesLiens</c> est relu à
+/// <see cref="RoleDuLien.ParentLibre"/> (défaut neutre) — jamais un crash de désérialisation, aucune
+/// migration destructive du store.</para>
 /// </summary>
 public sealed class ReferentielEnfantsMongo : IEnumerationEnfants, IEditeurEnfants
 {
@@ -38,21 +44,22 @@ public sealed class ReferentielEnfantsMongo : IEnumerationEnfants, IEditeurEnfan
     private void EcrireWriteThrough(string enfantId, string prenom)
     {
         // Écriture write-through : cache de session ET store durable (upsert sur l'id stable) — l'enfant
-        // survit au redémarrage. Le même id reste un unique document (jamais de doublon) ; l'édition écrase
-        // le prénom sur la même clé (dernière écriture gagne). Les parents liés déjà persistés sont conservés.
-        var parents = _cache.TryGetValue(enfantId, out var existant) ? existant.ParentsLies : new List<string>();
-        Persister(new EnfantDocument { Id = enfantId, Prenom = prenom, ParentsLies = parents });
+        // survit au redémarrage. Le même id reste un unique document ; l'édition écrase le prénom sur la
+        // même clé. Les parents liés déjà persistés ET leurs rôles-du-lien sont conservés.
+        var doc = Copie(enfantId);
+        doc.Prenom = prenom;
+        Persister(doc);
     }
 
-    public void LierParent(string enfantId, string acteurId)
+    public void LierParent(string enfantId, string acteurId, RoleDuLien role = RoleDuLien.ParentLibre)
     {
-        // Enrichissement durable : on ajoute le parent-acteur à la liste des parents liés de l'enfant
-        // (id de l'enfant inchangé, prénom conservé), write-through sur le store durable. Aucun doublon.
-        var doc = _cache.TryGetValue(enfantId, out var existant)
-            ? new EnfantDocument { Id = existant.Id, Prenom = existant.Prenom, ParentsLies = new List<string>(existant.ParentsLies) }
-            : new EnfantDocument { Id = enfantId, Prenom = string.Empty, ParentsLies = new List<string>() };
+        // Enrichissement durable : le parent-acteur lié (forme s34 conservée) + son rôle-du-lien (champ
+        // additif s37), write-through sur le store durable. Upsert par acteur : re-lier un parent déjà
+        // lié MET À JOUR son rôle-du-lien sans dupliquer le lien (id de l'enfant, prénom, autres liens inchangés).
+        var doc = Copie(enfantId);
         if (!doc.ParentsLies.Contains(acteurId))
             doc.ParentsLies.Add(acteurId);
+        (doc.RolesDesLiens ??= new Dictionary<string, RoleDuLien>())[acteurId] = role;
         Persister(doc);
     }
 
@@ -62,10 +69,23 @@ public sealed class ReferentielEnfantsMongo : IEnumerationEnfants, IEditeurEnfan
         // un enfant absent ou un parent déjà non lié → aucune écriture (write-through seulement si mutation).
         if (!_cache.TryGetValue(enfantId, out var existant) || !existant.ParentsLies.Contains(acteurId))
             return;
-        var doc = new EnfantDocument { Id = existant.Id, Prenom = existant.Prenom, ParentsLies = new List<string>(existant.ParentsLies) };
+        var doc = Copie(enfantId);
         doc.ParentsLies.Remove(acteurId);
+        doc.RolesDesLiens?.Remove(acteurId);
         Persister(doc);
     }
+
+    /// <summary>Copie profonde du document existant (ou un document neuf) : mutation locale avant write-through.</summary>
+    private EnfantDocument Copie(string enfantId)
+        => _cache.TryGetValue(enfantId, out var existant)
+            ? new EnfantDocument
+            {
+                Id = existant.Id,
+                Prenom = existant.Prenom,
+                ParentsLies = new List<string>(existant.ParentsLies),
+                RolesDesLiens = existant.RolesDesLiens is null ? null : new Dictionary<string, RoleDuLien>(existant.RolesDesLiens),
+            }
+            : new EnfantDocument { Id = enfantId, Prenom = string.Empty, ParentsLies = new List<string>() };
 
     private void Persister(EnfantDocument doc)
     {
@@ -77,15 +97,28 @@ public sealed class ReferentielEnfantsMongo : IEnumerationEnfants, IEditeurEnfan
     }
 
     public IReadOnlyCollection<EnfantFoyer> EnumererEnfants()
-        => _cache.Values.Select(d => new EnfantFoyer(d.Id, d.Prenom, d.ParentsLies.ToList())).ToList();
+        => _cache.Values.Select(d => new EnfantFoyer(d.Id, d.Prenom, ParentsDe(d))).ToList();
 
-    /// <summary>Document persisté d'un enfant du foyer : identifiant stable opaque (clé), prénom et la
-    /// liste des identifiants stables de ses parents-acteurs liés (0..2, s34).</summary>
+    /// <summary>Relit les parents liés d'un document AVEC leur rôle-du-lien : le rôle est cherché dans le
+    /// champ additif <c>RolesDesLiens</c> ; un parent sans entrée (document s34 sans le champ) est relu à
+    /// <see cref="RoleDuLien.ParentLibre"/> (défaut neutre, compat non destructive).</summary>
+    private static IReadOnlyCollection<ParentLie> ParentsDe(EnfantDocument doc)
+        => doc.ParentsLies
+            .Select(id => new ParentLie(id, doc.RolesDesLiens is not null && doc.RolesDesLiens.TryGetValue(id, out var r) ? r : RoleDuLien.ParentLibre))
+            .ToList();
+
+    /// <summary>Document persisté d'un enfant du foyer : identifiant stable opaque (clé), prénom, la liste
+    /// des ids stables de ses parents-acteurs liés (0..2, forme s34 inchangée) et le champ ADDITIF s37
+    /// <see cref="RolesDesLiens"/> (id d'acteur → rôle-du-lien), <b>absent sur les documents s34</b>
+    /// (<c>null</c> → tous « parent-libre » à la lecture, compat non destructive).</summary>
     private sealed class EnfantDocument
     {
         [BsonId]
         public string Id { get; set; } = default!;
         public string Prenom { get; set; } = default!;
         public List<string> ParentsLies { get; set; } = new();
+
+        [BsonIgnoreIfNull]
+        public Dictionary<string, RoleDuLien>? RolesDesLiens { get; set; }
     }
 }

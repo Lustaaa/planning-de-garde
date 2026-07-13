@@ -10,7 +10,7 @@ namespace PlanningDeGarde.Application;
 /// persiste le lien via le port d'écriture <see cref="IEditeurEnfants.LierParent"/>, relu ensuite par
 /// la query de configuration dans <see cref="EnfantFoyer.ParentsLies"/>.
 /// </summary>
-public sealed record LierEnfantParentCommand(string EnfantId, string ActeurId);
+public sealed record LierEnfantParentCommand(string EnfantId, string ActeurId, RoleDuLien Role = RoleDuLien.ParentLibre);
 
 /// <summary>Confirmation d'un lien abouti : l'enfant (id stable inchangé) et le parent-acteur lié.</summary>
 public sealed record LierEnfantParentResultat(string EnfantId, string ActeurId);
@@ -62,18 +62,19 @@ public sealed class LierEnfantParentHandler
         // État courant du lien (relu par la query) : sert la neutralité « déjà lié » et la borne « 2 max ».
         var parentsCourants = _enfants.EnumererEnfants()
             .FirstOrDefault(e => e.Id == commande.EnfantId)?.ParentsLies
-            ?? (IReadOnlyCollection<string>)System.Array.Empty<string>();
+            ?? (IReadOnlyCollection<ParentLie>)System.Array.Empty<ParentLie>();
 
-        // Règle 3 — parent DÉJÀ lié : opération NEUTRE (idempotente), aucune écriture, aucun doublon.
-        if (parentsCourants.Contains(commande.ActeurId))
-            return Result<LierEnfantParentResultat>.Succes(new LierEnfantParentResultat(commande.EnfantId, commande.ActeurId));
+        // Parent DÉJÀ lié (s34) : re-lier n'AJOUTE pas un parent — c'est une mise à jour du rôle-du-lien
+        // (s37, upsert par acteur, sans doublon). Ré-émettre le MÊME rôle reste neutre (idempotent).
+        var dejaLie = parentsCourants.Any(p => p.ActeurId == commande.ActeurId);
 
-        // Règle 4 — borne « 2 parents max » : un 3ᵉ parent est refusé (les 2 liens existants intacts).
-        if (parentsCourants.Count >= 2)
+        // Règle borne « 2 parents max » : un 3ᵉ parent NOUVEAU est refusé (les 2 liens existants intacts).
+        // La mise à jour du rôle d'un parent déjà lié n'est PAS un ajout → la borne ne s'y applique pas.
+        if (!dejaLie && parentsCourants.Count >= 2)
             return Result<LierEnfantParentResultat>.Echec("2 parents max");
 
-        // Toutes les règles satisfaites : on persiste le lien (première écriture, après toutes les gardes).
-        _referentiel.LierParent(commande.EnfantId, commande.ActeurId);
+        // Toutes les règles satisfaites : on persiste le lien avec son rôle-du-lien (après toutes les gardes).
+        _referentiel.LierParent(commande.EnfantId, commande.ActeurId, commande.Role);
         return Result<LierEnfantParentResultat>.Succes(new LierEnfantParentResultat(commande.EnfantId, commande.ActeurId));
     }
 }

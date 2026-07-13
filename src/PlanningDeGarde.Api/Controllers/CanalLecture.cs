@@ -131,7 +131,7 @@ public static class CanalLecture
             (IEnumerationEnfants enfants) =>
             {
                 var vues = enfants.EnumererEnfants()
-                    .Select(e => new EnfantFoyerVue(e.Id, e.Prenom, e.ParentsLies))
+                    .Select(e => new EnfantFoyerVue(e.Id, e.Prenom, e.ParentsLies.Select(p => p.ActeurId).ToList()))
                     .ToList();
                 return Results.Ok(vues);
             });

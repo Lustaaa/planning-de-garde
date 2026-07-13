@@ -77,7 +77,8 @@ public sealed class FrontWasmConfigEnfantsSelecteurParentsRoleFlagTests : TestCo
                 Assert.Equal("Alice", ParentsLies(config));
             },
             TimeSpan.FromSeconds(10));
-        Assert.Contains("parent-a",
-            api.Services.GetRequiredService<IEnumerationEnfants>().EnumererEnfants().Single(e => e.Id == "Léa").ParentsLies);
+        Assert.Contains(
+            api.Services.GetRequiredService<IEnumerationEnfants>().EnumererEnfants().Single(e => e.Id == "Léa").ParentsLies,
+            p => p.ActeurId == "parent-a");
     }
 }

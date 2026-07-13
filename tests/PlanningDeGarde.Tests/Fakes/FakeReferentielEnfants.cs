@@ -13,7 +13,7 @@ namespace PlanningDeGarde.Tests.Fakes;
 public sealed class FakeReferentielEnfants : IEnumerationEnfants, IEditeurEnfants
 {
     private readonly Dictionary<string, string> _prenoms = new();
-    private readonly Dictionary<string, List<string>> _parents = new();
+    private readonly Dictionary<string, List<ParentLie>> _parents = new();
 
     /// <summary>Amorce un enfant existant sur un identifiant stable + prénom (par défaut id = prénom).</summary>
     public FakeReferentielEnfants AvecEnfant(string enfantId, string? prenom = null)
@@ -26,23 +26,27 @@ public sealed class FakeReferentielEnfants : IEnumerationEnfants, IEditeurEnfant
 
     public void Editer(string enfantId, string nouveauPrenom) => _prenoms[enfantId] = nouveauPrenom;
 
-    public void LierParent(string enfantId, string acteurId)
+    public void LierParent(string enfantId, string acteurId, RoleDuLien role = RoleDuLien.ParentLibre)
     {
+        // Upsert par acteur : re-lier un parent déjà lié met à jour son rôle-du-lien sans dupliquer (s37).
         if (!_parents.TryGetValue(enfantId, out var parents))
-            _parents[enfantId] = parents = new List<string>();
-        if (!parents.Contains(acteurId))
-            parents.Add(acteurId);
+            _parents[enfantId] = parents = new List<ParentLie>();
+        var index = parents.FindIndex(p => p.ActeurId == acteurId);
+        if (index >= 0)
+            parents[index] = new ParentLie(acteurId, role);
+        else
+            parents.Add(new ParentLie(acteurId, role));
     }
 
     public void DelierParent(string enfantId, string acteurId)
     {
         if (_parents.TryGetValue(enfantId, out var parents))
-            parents.Remove(acteurId); // tolérant à l'absence (idempotent)
+            parents.RemoveAll(p => p.ActeurId == acteurId); // tolérant à l'absence (idempotent)
     }
 
     public IReadOnlyCollection<EnfantFoyer> EnumererEnfants()
         => _prenoms.Select(kv => new EnfantFoyer(kv.Key, kv.Value, ParentsDe(kv.Key))).ToList();
 
-    private IReadOnlyCollection<string> ParentsDe(string enfantId)
-        => _parents.TryGetValue(enfantId, out var parents) ? parents.ToList() : System.Array.Empty<string>();
+    private IReadOnlyCollection<ParentLie> ParentsDe(string enfantId)
+        => _parents.TryGetValue(enfantId, out var parents) ? parents.ToList() : System.Array.Empty<ParentLie>();
 }

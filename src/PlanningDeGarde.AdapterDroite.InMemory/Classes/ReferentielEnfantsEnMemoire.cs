@@ -14,7 +14,7 @@ namespace PlanningDeGarde.Infrastructure;
 public sealed class ReferentielEnfantsEnMemoire : IEnumerationEnfants, IEditeurEnfants
 {
     private readonly Dictionary<string, string> _prenoms = new();
-    private readonly Dictionary<string, List<string>> _parents = new();
+    private readonly Dictionary<string, List<ParentLie>> _parents = new();
 
     public void Ajouter(string enfantId, string prenom)
         => _prenoms[enfantId] = prenom; // l'enfant neuf existe désormais sur son id stable
@@ -22,26 +22,29 @@ public sealed class ReferentielEnfantsEnMemoire : IEnumerationEnfants, IEditeurE
     public void Editer(string enfantId, string nouveauPrenom)
         => _prenoms[enfantId] = nouveauPrenom; // dernière écriture gagne sur l'id stable (clé inchangée)
 
-    public void LierParent(string enfantId, string acteurId)
+    public void LierParent(string enfantId, string acteurId, RoleDuLien role = RoleDuLien.ParentLibre)
     {
-        // Enrichissement du modèle enfant : on ajoute le parent-acteur à la liste de ses parents liés
-        // (id de l'enfant inchangé). Aucun doublon (le même parent n'est ajouté qu'une fois).
+        // Enrichissement du modèle enfant : le parent-acteur lié + son rôle-du-lien (s37). Upsert par
+        // acteur : re-lier un parent déjà lié MET À JOUR son rôle-du-lien sans dupliquer le lien.
         if (!_parents.TryGetValue(enfantId, out var parents))
-            _parents[enfantId] = parents = new List<string>();
-        if (!parents.Contains(acteurId))
-            parents.Add(acteurId);
+            _parents[enfantId] = parents = new List<ParentLie>();
+        var index = parents.FindIndex(p => p.ActeurId == acteurId);
+        if (index >= 0)
+            parents[index] = new ParentLie(acteurId, role);
+        else
+            parents.Add(new ParentLie(acteurId, role));
     }
 
     public void DelierParent(string enfantId, string acteurId)
     {
         // Retrait du lien (id de l'enfant et autres liens inchangés). Tolérant à l'absence (idempotent).
         if (_parents.TryGetValue(enfantId, out var parents))
-            parents.Remove(acteurId);
+            parents.RemoveAll(p => p.ActeurId == acteurId);
     }
 
     public IReadOnlyCollection<EnfantFoyer> EnumererEnfants()
         => _prenoms.Select(kv => new EnfantFoyer(kv.Key, kv.Value, ParentsDe(kv.Key))).ToList();
 
-    private IReadOnlyCollection<string> ParentsDe(string enfantId)
-        => _parents.TryGetValue(enfantId, out var parents) ? parents.ToList() : System.Array.Empty<string>();
+    private IReadOnlyCollection<ParentLie> ParentsDe(string enfantId)
+        => _parents.TryGetValue(enfantId, out var parents) ? parents.ToList() : System.Array.Empty<ParentLie>();
 }

@@ -62,9 +62,9 @@ public sealed class DelierEnfantParentMongoDurabiliteTests : IDisposable
         // --- Redémarrage : le retrait est durable, l'autre lien conservé ---
         var store2 = NouveauStore();
         var lea = store2.EnumererEnfants().Single(e => e.Id == leaId);
-        Assert.DoesNotContain(papa, lea.ParentsLies); // parent délié absent durablement
+        Assert.DoesNotContain(lea.ParentsLies, p => p.ActeurId == papa); // parent délié absent durablement
         Assert.Single(lea.ParentsLies);
-        Assert.Contains(maman, lea.ParentsLies);      // l'autre lien intact
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == maman);      // l'autre lien intact
     }
 
     public void Dispose()

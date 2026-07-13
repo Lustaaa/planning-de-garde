@@ -71,9 +71,9 @@ public class Scenario34_S2_ReglesDuLien
         // Les 2 liens existants restent intacts, le 3ᵉ absent (aucune écriture partielle)
         var lea = referentiel.EnumererEnfants().Single(e => e.Id == LeaId);
         Assert.Equal(2, lea.ParentsLies.Count);
-        Assert.Contains(papa, lea.ParentsLies);
-        Assert.Contains(maman, lea.ParentsLies);
-        Assert.DoesNotContain(mamie, lea.ParentsLies);
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == papa);
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == maman);
+        Assert.DoesNotContain(lea.ParentsLies, p => p.ActeurId == mamie);
     }
 
     // ---------- Driver — acteur inexistant : refus sans écriture ----------
@@ -124,6 +124,6 @@ public class Scenario34_S2_ReglesDuLien
         // Neutre : pas d'échec, et surtout AUCUN doublon de lien
         var lea = referentiel.EnumererEnfants().Single(e => e.Id == LeaId);
         Assert.Single(lea.ParentsLies);
-        Assert.Contains(papa, lea.ParentsLies);
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == papa);
     }
 }

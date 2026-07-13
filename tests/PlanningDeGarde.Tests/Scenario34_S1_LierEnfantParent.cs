@@ -54,7 +54,7 @@ public class Scenario34_S1_LierEnfantParent
         // L'enfant relu porte le parent lié, avec le MÊME identifiant stable (enrichissement)
         var lea = referentiel.EnumererEnfants().Single(e => e.Id == LeaId);
         Assert.Equal("Léa", lea.Prenom);
-        Assert.Contains(papaId, lea.ParentsLies);
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == papaId);
 
         // Un enfant sans aucun parent lié reste valide (0 parent accepté)
         var tom = referentiel.EnumererEnfants().Single(e => e.Id == TomId);
@@ -72,6 +72,6 @@ public class Scenario34_S1_LierEnfantParent
         handler.Handle(new LierEnfantParentCommand(LeaId, papaId));
 
         var lea = referentiel.EnumererEnfants().Single(e => e.Id == LeaId);
-        Assert.Contains(papaId, lea.ParentsLies);
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == papaId);
     }
 }

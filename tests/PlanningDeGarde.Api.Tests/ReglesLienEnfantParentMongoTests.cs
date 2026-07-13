@@ -66,10 +66,10 @@ public sealed class ReglesLienEnfantParentMongoTests : IDisposable
         var store2 = NouveauStore();
         var lea = store2.EnumererEnfants().Single(e => e.Id == leaId);
         Assert.Equal(2, lea.ParentsLies.Count);
-        Assert.Contains(papa, lea.ParentsLies);
-        Assert.Contains(maman, lea.ParentsLies);
-        Assert.DoesNotContain(mamie, lea.ParentsLies);
-        Assert.DoesNotContain(bob, lea.ParentsLies);
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == papa);
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == maman);
+        Assert.DoesNotContain(lea.ParentsLies, p => p.ActeurId == mamie);
+        Assert.DoesNotContain(lea.ParentsLies, p => p.ActeurId == bob);
     }
 
     public void Dispose()
