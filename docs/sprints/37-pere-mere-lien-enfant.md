@@ -25,13 +25,13 @@
 > - **Saisie/édition du `TypeActeur`**, champ père/mère au niveau de l'acteur lui-même : hors goal
 >   (le rôle-du-lien vit sur le **lien**, pas sur l'acteur).
 
-## Avancement — 2/5
+## Avancement — 3/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Lien enfant↔parent enrichi d'un **rôle-du-lien** {père/mère/parent-libre} + « lier » avec rôle (persistance Mongo durable, id enfant inchangé) | back | ✅ |
 | 2 | Rejets **sans écriture partielle** : deux « père » (ou deux « mère ») refusés ; borne 0..2 (s34) + éligibilité role-flag (s36) inchangées ; lier/délier idempotents | back | ✅ |
-| 3 | **Compat + query** : le rôle-du-lien est relu au rechargement ; lien déjà persisté sans attribut → **défaut « parent-libre »** (pas de crash, pas de migration destructive) | back | ⏳ |
+| 3 | **Compat + query** : le rôle-du-lien est relu au rechargement ; lien déjà persisté sans attribut → **défaut « parent-libre »** (pas de crash, pas de migration destructive) | back | ✅ |
 | 4 | Modal Enfants : **sélecteur père/mère/parent** par parent lié (pré-réglé) ; refus→modal ouverte + motif + sélection conservée ; Échap=Annuler | 🖥️ IHM | ⏳ |
 | 5 | Colonne « Parents liés » affiche le **rôle-du-lien** à côté du nom ; **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
 
@@ -95,7 +95,7 @@ Et dans tous les cas de refus, le motif est restitué à l'appelant et le store 
 Et lier (rôle inclus) et délier restent IDEMPOTENTS (ré-émission neutre, sans doublon, sans écriture partielle)
 ```
 
-### Sc.3 — Compat des liens déjà persistés + relecture du rôle @back @pending
+### Sc.3 — Compat des liens déjà persistés + relecture du rôle @back @vert
 ```gherkin
 Étant donné un lien enfant↔parent DÉJÀ persisté par un sprint antérieur (s34), SANS attribut rôle-du-lien
 Quand la query de config relit cet enfant après rechargement du store
