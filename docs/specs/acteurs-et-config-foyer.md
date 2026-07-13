@@ -267,7 +267,9 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   **Rejets sans écriture** : libellé vide ou en doublon. **Borne** : un slot déjà posé sur un lieu supprimé
   **conserve** son lieu. `Foyer.Lieux` static + `ILieuRepository` / `FoyerLieuRepository` en dur **retirés** →
   un seul chemin de lecture. **Parité seed s15** : mode Mongo sans lieux au départ ⇒ aucun slot posable tant
-  qu'aucun lieu n'est configuré.
+  qu'aucun lieu n'est configuré. **⚠️ Concept renommé « Activités » en s35** (Domaine + Application ; enrichi
+  d'une adresse + d'un lien enfant↔activité + onglet au patron crayon → modal — cf. bloc s35 ci-dessous) ;
+  l'**axe LOCALISATION `LieuId`** du slot reste distinct et **non renommé**.
 
 - **Référentiel d'enfants éditable + persisté** *(livré s30, miroir strict du hissage lieux s27)* :
   agrégat **`Enfant`** (**id stable opaque** + **snapshot prénom**, jamais dérivé du libellé), **port
@@ -307,6 +309,57 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   et parents liés sans rechargement, diffusion lecture seule). **Hors scope s34** : familles recomposées
   **R2/R3** (le sélecteur borne à 2 parents mais **n'impose pas « exactement 2 »**), **graphe enfant-racine**,
   renommage Lieux → Activités, suppression d'enfant.
+
+- **Référentiel « Lieux » renommé « Activités » + adresse + lien enfant↔activité + onglet au patron
+  crayon → modal** *(livré s35, 4ᵉ incrément de la Refonte Config foyer)* : le PO **repense le « lieu »
+  comme une « activité » liée à l'enfant** (« lieux n'est pas le bon terme »). Trois volets :
+  - **Renommage sémantique iso-comportement.** Le **concept « Lieux »** (référentiel foyer s27) est renommé
+    **« Activités »** côté **Domaine + Application** (agrégat, ports `IEnumeration*` / `IEditeur*`, query de
+    config, handlers, commandes, **deux adaptateurs** InMemory seedé + Mongo durable). Le **comportement
+    reste STRICTEMENT iso** : ajouter / supprimer une activité, **rejets libellé vide / doublon**, **id stable
+    + libellé**, et surtout la **validation de pose reste PRÉSERVÉE** (poser un slot sur une activité
+    **inconnue** est refusé **sans écriture**, miroir « lieu inconnu » s29) ; une activité déjà référencée par
+    un slot posé **conserve** sa référence (aucune réécriture rétroactive). **Seul le nom du concept change.**
+    L'**axe LOCALISATION du slot** (`SlotSnapshot.LieuId`, `PoserSlotCommand.LieuId`, grille, transfert) porte
+    le **« où » de la garde** — c'est un **axe DISTINCT** du référentiel, **hors périmètre, NON renommé** ce
+    sprint (ni back ni HTTP/IHM), préservé iso.
+  - **Champ « adresse » sur l'agrégat Activité** (**miroir strict de l'adresse acteur s33**) : **persisté Mongo
+    durable**, relu par la query de config, **vide accepté** (optionnel), éditer l'adresse **ne touche aucun
+    autre champ** (id + libellé inchangés, aucune écriture partielle ; un refus concomitant laisse le store
+    inchangé).
+  - **Lien enfant↔activité N-M** : commandes/handlers **lier / délier** (canal requête/réponse : `enfantId`,
+    `activiteId`), lien **persisté Mongo durable** (relu par la query de config), **id stables enfant et
+    activité inchangés** (enrichissement). Le lien est **N-M** (plusieurs enfants partagent une même activité ;
+    un enfant porte plusieurs activités), **optionnel** (0 accepté), **aucune borne de cardinalité** imposée ce
+    sprint — **distinct** du lien enfant↔parent s34 (borné 0..2). **Délier est idempotent** (lien déjà absent =
+    no-op qui réussit). **Rejets SANS écriture partielle** (motif restitué, liens existants intacts) : **enfant
+    OU activité inconnu** du référentiel. La validation de pose reste sur l'**existence de l'activité** (pas sur
+    le lien enfant↔activité, non exigé à la pose ce sprint).
+  - **IHM — onglet « Activités » harmonisé** au patron **tableau lecture seule + crayon → modal** (miroir
+    Acteurs s32 / Rôles-Cycle s33 / Enfants s34, **lot atomique de surface**). L'onglet **« Lieux »**
+    préexistant (édition **inline** : `onglet-lieux`/`panneau-lieux`, ajout+suppression inline, `liste-lieux`)
+    est **retiré ET** remplacé par le tableau + modal dans le **MÊME commit (SWAP atomique)**, qui **absorbe
+    aussi le renommage de surface** non fait en volet back : **routes HTTP `/api/foyer/lieux → activites`**,
+    **canal `*-lieu → *-activite`**, **DTOs Api**, **record Web `LieuFoyer → ActiviteFoyer`**, testids/labels
+    « Lieux » → « Activités » — les **tests Web de l'inline MIGRANT vers la modal** (même commit). Une ligne par
+    activité (**libellé + adresse + colonne « Enfants liés »** en lecture) + colonne **crayon** + bouton
+    **« Ajouter une activité »** ; crayon → **modal pré-remplie** (libellé, adresse, enfants liés courants),
+    « Ajouter » → modal **vide** (id stable neuf) ; la modal porte le **champ adresse** + un **sélecteur des
+    enfants** (référentiel enfants s30, enfants déjà liés pré-affichés) émettant les commandes lier/délier via
+    le canal HTTP ; fermeture **Échap** = « Annuler » sans mutation (port `IEcouteurEchapModal` s33).
+    **Contrat d'erreur** (libellé vide/doublon, enfant/activité inconnu, API injoignable) : **modal RESTE
+    OUVERTE**, motif dedans, **saisie (libellé + adresse + sélection) CONSERVÉE**, tableau inchangé (aucune
+    écriture partielle). **Parent-gated** (Invité = tableau lecture seule, ni crayon ni « Ajouter », aucune
+    modal atteignable) + **temps réel SignalR** (2ᵉ écran converge sur libellé + adresse + enfants liés sans
+    rechargement, diffusion lecture seule).
+  > **Carve-out du renommage transverse (2 seams, décision SM).** Le volet back (Sc.1) renomme **Domaine +
+  > Application UNIQUEMENT** ; le **nommage HTTP / DTOs / record Web / onglet « Lieux »** reste **inchangé** en
+  > Sc.1 — l'adaptateur **Api MAPPE « lieu » HTTP → « Activité » Application** (seam **transitoire, cohérent,
+  > vert**, pas une incohérence qui traîne). Ce seam est **remplacé par le vrai nom HTTP « activite »** au
+  > **SWAP de surface (Sc.4)**, dans le même lot atomique (pas de churn jetable des testids).
+  > **Hors scope s35** : **liste de slots par activité** (récurrents/non — extension du modèle de slots),
+  > **lien adresse acteur↔lieu/domicile** de l'enfant en garde, **révision de la validation de pose**
+  > (préservée iso ici), familles recomposées **R2/R3** + graphe enfant-racine.
 
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
@@ -541,10 +594,16 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   cycles déclarés désormais visibles** (corrige le trou gate s32) et **fermeture Échap** des modals ; **s34**
   harmonise l'**onglet Enfants** au même patron (swap inline→modal) et pose le **lien enfant↔parent 1..2
   parents** (lier/délier, 2 max, rejets sans écriture partielle, Mongo durable, sélecteur + colonne « Parents
-  liés » — traite « lier un enfant à 2 parents » du gate s33) (cf. Mécaniques). **Restent (4ᵉ
-  incrément)** : harmoniser **Lieux → « Activités »** au même patron (retour PO gate s33), **commandes
-  inverses actif/admin** (dé-désignation admin + désactivation de compte, pour débloquer le sens OFF du
-  toggle), **familles recomposées R2/R3** (« exactement 2 parents » + graphe enfant-racine). **Tension
+  liés » — traite « lier un enfant à 2 parents » du gate s33) ; **s35** renomme le référentiel **« Lieux » →
+  « Activités »** (iso-comportement Domaine + Application, validation de pose préservée, axe LOCALISATION
+  `LieuId` distinct non renommé), l'enrichit d'un **champ adresse** + d'un **lien enfant↔activité N-M**, et
+  harmonise l'**onglet Activités** au même patron (swap inline→modal, renommage HTTP au SWAP) — **Acteurs /
+  Rôles / Cycle / Enfants / Activités sont désormais TOUS harmonisés** (cf. Mécaniques). **Restent** :
+  **liste de slots par activité** (récurrents/non, hors scope s35), **lien adresse acteur↔lieu/domicile**,
+  **révision de la validation de pose** (préservée iso s35), **commandes inverses actif/admin**
+  (dé-désignation admin + désactivation de compte, pour débloquer le sens OFF du toggle), **familles
+  recomposées R2/R3** (« exactement 2 parents » + graphe enfant-racine), **éligibilité « parent »** du lien
+  enfant↔parent (retour PO gate s35, à trancher G2 s36). **Tension
   ouverte à arbitrer G2** : le PO veut **en plus** une **édition inline au clic de la valeur** — direction
   (inline seul / modal seule / cohabitation) **non tranchée**, à décider au prochain `/planning` avant tout
   code (ne pas re-livrer l'inline sans arbitrage).

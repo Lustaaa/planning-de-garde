@@ -198,6 +198,36 @@ public sealed class FrontWasmConfigModalsEchapFermeSansMutationTests : TestConte
     }
 
     [Fact]
+    public void Echap_document_sur_la_modal_Activite_la_ferme_sans_muter_le_referentiel()
+    {
+        // Given — l'activité « école » est semée (référentiel) ; modal d'édition ouverte dessus (crayon) ;
+        // je modifie le libellé.
+        using var api = new ApiDistanteFactory();
+        var (config, espion) = RendreConfig(api);
+        config.WaitForState(() => config.FindAll("[data-testid='activite-foyer']").Count >= 1, TimeSpan.FromSeconds(10));
+
+        this.SurDispatcher(() => config.FindAll("[data-testid='crayon-activite']")
+            .Single(b => b.GetAttribute("data-activite-id") == "école").Click());
+        config.WaitForElement("[data-testid='dialog-activite']", TimeSpan.FromSeconds(10));
+        config.WaitForAssertion(() => Assert.Equal(1, espion.Attachements), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-activite']").Change("Renommage non enregistré"));
+
+        // When — Échap document.
+        this.SurDispatcher(() => espion.DeclencherEchapDocument().GetAwaiter().GetResult());
+
+        // Then — la modal se ferme, l'écouteur est détaché, et le référentiel porte toujours « école ».
+        config.WaitForAssertion(
+            () =>
+            {
+                Assert.Empty(config.FindAll("[data-testid='dialog-activite']"));
+                Assert.Equal(1, espion.Detachements);
+            },
+            TimeSpan.FromSeconds(10));
+        var activites = api.Services.GetRequiredService<IEnumerationActivites>().EnumererActivites();
+        Assert.Single(activites, a => a.Libelle == "école");
+    }
+
+    [Fact]
     public void Echap_document_ferme_meme_une_modal_en_etat_de_refus_sans_rien_reemettre()
     {
         // Given — invariant : « Nounou » existe ; on ouvre l'ajout et on tente le doublon « Nounou » → REFUS

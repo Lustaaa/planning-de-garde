@@ -19,20 +19,20 @@ public class Scenario3_RejetsEcritureLieu
     [Fact]
     public void Acceptation_Should_Rejeter_sans_ecriture_le_libelle_vide_et_le_doublon_When_le_parent_tente_ces_ajouts()
     {
-        var referentiel = new FakeReferentielLieux().AvecLieu(Ecole);
-        var handler = new AjouterLieuHandler(referentiel, referentiel);
-        var avant = referentiel.EnumererLieux().Count;
+        var referentiel = new FakeReferentielActivites().AvecActivite(Ecole);
+        var handler = new AjouterActiviteHandler(referentiel, referentiel);
+        var avant = referentiel.EnumererActivites().Count;
 
-        var vide = handler.Handle(new AjouterLieuCommand("   "));
+        var vide = handler.Handle(new AjouterActiviteCommand("   "));
         Assert.False(vide.EstSucces);
         Assert.False(string.IsNullOrWhiteSpace(vide.Motif)); // motif clair
 
-        var doublon = handler.Handle(new AjouterLieuCommand(Ecole));
+        var doublon = handler.Handle(new AjouterActiviteCommand(Ecole));
         Assert.False(doublon.EstSucces);
         Assert.False(string.IsNullOrWhiteSpace(doublon.Motif)); // motif clair
 
         // Aucune écriture : le référentiel est resté strictement inchangé (ni lieu vide, ni doublon)
-        Assert.Equal(avant, referentiel.EnumererLieux().Count);
+        Assert.Equal(avant, referentiel.EnumererActivites().Count);
     }
 
     // ---------- Test #1 — Driver : libellé vide rejeté sans écriture ----------
@@ -40,13 +40,13 @@ public class Scenario3_RejetsEcritureLieu
     [Fact]
     public void Should_Rejeter_sans_ecriture_When_le_libelle_est_vide()
     {
-        var referentiel = new FakeReferentielLieux();
-        var handler = new AjouterLieuHandler(referentiel, referentiel);
+        var referentiel = new FakeReferentielActivites();
+        var handler = new AjouterActiviteHandler(referentiel, referentiel);
 
-        var resultat = handler.Handle(new AjouterLieuCommand("   "));
+        var resultat = handler.Handle(new AjouterActiviteCommand("   "));
 
         Assert.False(resultat.EstSucces);
-        Assert.Empty(referentiel.EnumererLieux());
+        Assert.Empty(referentiel.EnumererActivites());
     }
 
     // ---------- Test #2 — Driver : libellé en doublon rejeté sans écriture ----------
@@ -55,12 +55,12 @@ public class Scenario3_RejetsEcritureLieu
     [Fact]
     public void Should_Rejeter_sans_ecriture_le_second_ajout_When_le_libelle_est_deja_present()
     {
-        var referentiel = new FakeReferentielLieux().AvecLieu(Ecole);
-        var handler = new AjouterLieuHandler(referentiel, referentiel);
+        var referentiel = new FakeReferentielActivites().AvecActivite(Ecole);
+        var handler = new AjouterActiviteHandler(referentiel, referentiel);
 
-        var resultat = handler.Handle(new AjouterLieuCommand(Ecole));
+        var resultat = handler.Handle(new AjouterActiviteCommand(Ecole));
 
         Assert.False(resultat.EstSucces);
-        Assert.Single(referentiel.EnumererLieux()); // toujours un seul « école »
+        Assert.Single(referentiel.EnumererActivites()); // toujours un seul « école »
     }
 }

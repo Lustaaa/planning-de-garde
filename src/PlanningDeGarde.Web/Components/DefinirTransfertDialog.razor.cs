@@ -49,11 +49,12 @@ public partial class DefinirTransfertDialog
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
-    /// <summary>Lieux du référentiel du foyer (id stable + libellé), fournis par le parent depuis le store
-    /// vivant (GET /api/foyer/lieux) : le sélecteur de lieu ne propose que ces lieux réels (jamais la liste
-    /// en dur <c>Foyer.Lieux</c>), suivant en temps réel un ajout / une suppression en config (S6).</summary>
+    /// <summary>Activités du référentiel du foyer (id stable + libellé), fournies par le parent depuis le store
+    /// vivant (GET /api/foyer/activites, s35) : le sélecteur de lieu (axe LOCALISATION du slot, préservé) ne
+    /// propose que ces activités réelles (jamais la liste en dur), suivant en temps réel un ajout / une
+    /// suppression en config (S6).</summary>
     [Parameter]
-    public IReadOnlyList<LieuFoyer> Lieux { get; set; } = Array.Empty<LieuFoyer>();
+    public IReadOnlyList<ActiviteFoyer> Lieux { get; set; } = Array.Empty<ActiviteFoyer>();
 
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et lève l'accusé
     /// « Transfert défini » à part, non bloquant.</summary>

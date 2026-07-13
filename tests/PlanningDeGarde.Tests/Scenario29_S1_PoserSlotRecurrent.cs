@@ -17,11 +17,11 @@ namespace PlanningDeGarde.Tests;
 // Boucle externe à la frontière Application (handler + ports, doublures à la main).
 public class Scenario29_S1_PoserSlotRecurrent
 {
-    private static PoserSlotRecurrentHandler HandlerAvecLieuPiscine(
+    private static PoserSlotRecurrentHandler HandlerAvecActivitePiscine(
         out FakeSlotRecurrentRepository slots, out FakeNotificateurPlanning notificateur)
     {
         slots = new FakeSlotRecurrentRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("piscine");
+        var lieux = new FakeReferentielActivites().AvecActivite("piscine");
         notificateur = new FakeNotificateurPlanning();
         return new PoserSlotRecurrentHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }
@@ -32,7 +32,7 @@ public class Scenario29_S1_PoserSlotRecurrent
     public void Should_enregistrer_le_slot_recurrent_avec_id_stable_snapshot_complet_et_notifier_When_un_Parent_pose_un_slot_recurrent_valide()
     {
         // Given — le foyer connaît le lieu "Piscine".
-        var handler = HandlerAvecLieuPiscine(out var slots, out var notificateur);
+        var handler = HandlerAvecActivitePiscine(out var slots, out var notificateur);
         var commande = new SlotRecurrentBuilder()
             .PourEnfant("lea").DansLieu("piscine")
             .LeJour(DayOfWeek.Saturday).De(new TimeSpan(11, 30, 0)).A(new TimeSpan(12, 15, 0))
@@ -66,7 +66,7 @@ public class Scenario29_S1_PoserSlotRecurrent
     [Fact]
     public void Should_confirmer_la_pose_When_le_slot_recurrent_est_valide()
     {
-        var handler = HandlerAvecLieuPiscine(out _, out _);
+        var handler = HandlerAvecActivitePiscine(out _, out _);
 
         var resultat = handler.Handle(new SlotRecurrentBuilder().Build());
 
@@ -77,7 +77,7 @@ public class Scenario29_S1_PoserSlotRecurrent
     [Fact]
     public void Should_inscrire_le_slot_recurrent_dans_le_store_When_un_Parent_a_pose_le_slot()
     {
-        var handler = HandlerAvecLieuPiscine(out var slots, out _);
+        var handler = HandlerAvecActivitePiscine(out var slots, out _);
 
         handler.Handle(new SlotRecurrentBuilder().PourEnfant("lea").DansLieu("piscine").LeJour(DayOfWeek.Saturday).Build());
 
@@ -91,7 +91,7 @@ public class Scenario29_S1_PoserSlotRecurrent
     [Fact]
     public void Should_declencher_la_diffusion_temps_reel_When_un_Parent_a_pose_le_slot_recurrent()
     {
-        var handler = HandlerAvecLieuPiscine(out _, out var notificateur);
+        var handler = HandlerAvecActivitePiscine(out _, out var notificateur);
 
         handler.Handle(new SlotRecurrentBuilder().Build());
 

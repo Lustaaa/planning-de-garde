@@ -44,9 +44,9 @@
                     data-testid="onglet-cycles" @onclick='() => ChoisirOnglet("cycles")'>
                 <span class="config-nav-ic" aria-hidden="true">🔁</span>Cycles
             </button>
-            <button type="button" class="config-nav-item @(_onglet == "lieux" ? "actif" : null)"
-                    data-testid="onglet-lieux" @onclick='() => ChoisirOnglet("lieux")'>
-                <span class="config-nav-ic" aria-hidden="true">📍</span>Lieux
+            <button type="button" class="config-nav-item @(_onglet == "activites" ? "actif" : null)"
+                    data-testid="onglet-activites" @onclick='() => ChoisirOnglet("activites")'>
+                <span class="config-nav-ic" aria-hidden="true">📍</span>Activités
             </button>
             <button type="button" class="config-nav-item @(_onglet == "enfants" ? "actif" : null)"
                     data-testid="onglet-enfants" @onclick='() => ChoisirOnglet("enfants")'>
@@ -533,50 +533,157 @@
                 }
             </section>
 
-            @* ══════════════ Panneau LIEUX ══════════════ *@
-            <section class="config-panneau @(_onglet == "lieux" ? null : "cacher")"
-                     data-testid="panneau-lieux" aria-label="Lieux">
-                @* Référentiel de lieux du foyer (s27) : ajouter / supprimer. Les lieux disponibles à la saisie
-                   (sélecteurs des dialogs Poser un slot / Définir un transfert) proviennent EXCLUSIVEMENT de ce
-                   référentiel vivant (jamais un lieu en dur). Écritures via le canal HTTP
-                   (POST /api/canal/{ajouter,supprimer}-lieu). Gating Parent. *@
+            @* ══════════════ Panneau ACTIVITÉS ══════════════ *@
+            <section class="config-panneau @(_onglet == "activites" ? null : "cacher")"
+                     data-testid="panneau-activites" aria-label="Activités">
+                @* Refonte s35 (Sc.4) : patron « tableau lecture seule + crayon → modal » (comme Acteurs s32 /
+                   Enfants s34). Le référentiel de « lieux » (s27) devient « Activités » liées à l'enfant. La
+                   table des activités est PUREMENT EN LECTURE (libellé + adresse + colonne « Enfants liés »
+                   résolue en prénoms) ; toute l'écriture (ajouter / éditer libellé + adresse, supprimer, et —
+                   Sc.5 — lier/délier des enfants) est déportée dans la MODAL ouverte par le crayon (édition) ou
+                   « Ajouter une activité » (création). Les activités disponibles à la saisie (sélecteurs des
+                   dialogs Poser un slot / Définir un transfert, axe LOCALISATION du slot préservé) proviennent
+                   EXCLUSIVEMENT de ce référentiel vivant. Écritures via le canal HTTP (POST
+                   /api/canal/{ajouter,editer,supprimer}-activite). Gating d'identité EFFECTIVE (règle 9) : crayon,
+                   bouton d'ajout et modal ne sont rendus que Parent ; la table reste visible en lecture pour tous. *@
+                <h2 class="config-panneau-titre">Activités du foyer</h2>
+                <p class="text-muted">Le référentiel d'activités (école, nounou, piscine…) et, pour chacune, son
+                    adresse et les enfants liés. Une activité ajoutée devient aussitôt disponible à la saisie d'un
+                    slot ou d'un transfert ; une activité supprimée n'est plus proposée. La table suit sans
+                    recharger la page.</p>
+
+                <div class="acteurs-defilement">
+                    <table class="acteurs-table" data-testid="liste-activites">
+                        <thead>
+                            <tr>
+                                <th>Activité</th>
+                                <th>Adresse</th>
+                                <th>Enfants liés</th>
+                                @if (Session.EstParent)
+                                {
+                                    <th class="acteurs-col-actions">Actions</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var a in _activites)
+                            {
+                                <tr data-testid="activite-foyer" data-activite-id="@a.Id">
+                                    <td><span class="role-libelle">@a.Libelle</span></td>
+                                    <td>
+                                        @* Adresse (Sc.2) en LECTURE : rendue seulement si renseignée (champ optionnel). *@
+                                        @if (!string.IsNullOrEmpty(a.Adresse))
+                                        {
+                                            <span class="acteur-adresse" data-testid="activite-adresse">@a.Adresse</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @* Colonne « Enfants liés » en LECTURE : les identifiants stables des enfants
+                                           résolus en prénoms (jamais un libellé en dur) ; « — » si aucun. *@
+                                        <span class="enfant-parents-lies" data-testid="activite-enfants-lies">@LibelleEnfantsLies(a)</span>
+                                    </td>
+                                    @if (Session.EstParent)
+                                    {
+                                        <td class="acteurs-col-actions">
+                                            <button type="button" class="btn btn-outline-secondary btn-sm acteur-crayon"
+                                                    data-testid="crayon-activite" data-activite-id="@a.Id"
+                                                    @onclick="() => OuvrirEditionActivite(a.Id)" aria-label="Modifier @a.Libelle">✏️</button>
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
                 @if (Session.EstParent)
                 {
-                    <h2 class="config-panneau-titre">Lieux du foyer</h2>
-                    <p class="text-muted">Gérer le référentiel de lieux (école, domicile, nounou, piscine…). Un lieu
-                        ajouté devient aussitôt disponible à la saisie d'un slot ou d'un transfert ; un lieu supprimé
-                        n'est plus proposé. La liste et les sélecteurs suivent sans recharger la page.</p>
+                    <div class="acteurs-ajout">
+                        <button type="button" class="btn btn-primary" data-testid="bouton-ajouter-activite"
+                                @onclick="OuvrirAjoutActivite">Ajouter une activité</button>
+                    </div>
 
-                    <EditForm Model="_lieu" OnValidSubmit="AjouterLieu" FormName="ajouter-lieu" id="form-ajouter-lieu">
-                        <div class="input-group mb-3">
-                            <InputText class="form-control" @bind-Value="_lieu.Libelle" data-testid="champ-libelle-lieu"
-                                       placeholder="Libellé du lieu (ex. piscine)" />
-                            <button type="submit" class="btn btn-primary">Ajouter le lieu</button>
-                        </div>
-                    </EditForm>
-
-                    @if (_motifEchecLieu is not null)
+                    @* MODAL activité (édition OU ajout) — rendue seulement quand ouverte et sous Parent. Réutilise
+                       les commandes existantes ajouter-activite / editer-activite / supprimer-activite ; le
+                       sélecteur d'enfants à lier/délier arrive en Sc.5. *@
+                    @if (_modalActiviteAjout || _modalActiviteId is not null)
                     {
-                        <div class="alert alert-danger mb-3" data-testid="motif-echec-lieu">@_motifEchecLieu</div>
-                    }
+                        var activiteEditee = _modalActiviteId is null ? null : _activites.FirstOrDefault(x => x.Id == _modalActiviteId);
+                        <ModalConfig TestId="dialog-activite" OnFermer="FermerModalActivite">
+                            <h2 class="h4 mb-3">@(_modalActiviteAjout ? "Ajouter une activité" : "Modifier l'activité")</h2>
 
-                    <ul class="list-group" data-testid="liste-lieux">
-                        @foreach (var l in _lieux)
-                        {
-                            <li class="list-group-item role-ligne" data-testid="lieu-foyer" data-lieu-id="@l.Id">
-                                <span class="role-libelle">@l.Libelle</span>
-                                <span class="role-actions">
-                                    <button type="button" class="btn btn-outline-danger btn-sm"
-                                            data-testid="bouton-supprimer-lieu"
-                                            @onclick="() => SupprimerLieu(l.Id)" aria-label="Supprimer @l.Libelle">Supprimer</button>
-                                </span>
-                            </li>
-                        }
-                    </ul>
-                }
-                else
-                {
-                    <p class="text-muted">La gestion des lieux est réservée aux parents du foyer.</p>
+                            @if (!_modalActiviteAjout && activiteEditee is { } act)
+                            {
+                                <div data-testid="dialog-activite-id" data-activite-id="@act.Id"></div>
+                            }
+
+                            <EditForm Model="_activite" OnValidSubmit="SoumettreActivite" FormName="activite" id="form-activite">
+                                <div class="mb-3">
+                                    <label class="form-label">Libellé</label>
+                                    <InputText class="form-control" @bind-Value="_activite.Libelle" data-testid="champ-libelle-activite"
+                                               placeholder="Libellé de l'activité (ex. piscine)" />
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Adresse</label>
+                                    @* Champ ADRESSE (Sc.2) : pré-rempli sur la valeur courante, éditable. Optionnel —
+                                       une adresse vide est acceptée et n'écrase pas le libellé (surfaces indépendantes). *@
+                                    <InputText class="form-control" @bind-Value="_activite.Adresse" data-testid="champ-adresse-activite"
+                                               placeholder="Adresse de l'activité (optionnelle)" />
+                                </div>
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
+                                    <button type="button" class="btn btn-link" data-testid="dialog-activite-annuler"
+                                            @onclick="FermerModalActivite">Annuler</button>
+                                </div>
+                            </EditForm>
+
+                            @if (_motifEchecActivite is not null)
+                            {
+                                <div class="alert alert-danger mt-3 mb-0" data-testid="motif-echec-activite">@_motifEchecActivite</div>
+                            }
+
+                            @if (!_modalActiviteAjout && activiteEditee is { } act2)
+                            {
+                                @* Enfants liés COURANTS en lecture (Sc.4) : la modal montre les enfants actuels
+                                   de l'activité, résolus en prénoms. *@
+                                <hr />
+                                <div class="mb-2">
+                                    <label class="form-label">Enfants liés</label>
+                                    <div class="enfant-parents-lies-modal" data-testid="activite-enfants-lies-modal">@LibelleEnfantsLies(act2)</div>
+                                </div>
+
+                                @* SÉLECTEUR des enfants à lier / délier (Sc.5) : tout le référentiel d'enfants (s30),
+                                   les enfants DÉJÀ liés pré-cochés. Lien N-M : AUCUNE borne de cardinalité (0..N).
+                                   À l'« Enregistrer » (SoumettreActivite), les diffs vis-à-vis des enfants courants
+                                   émettent lier-enfant-activite / delier-enfant-activite via le canal HTTP. HORS
+                                   scope : liste de slots par activité, lien adresse acteur↔lieu. *@
+                                <div class="mb-2" data-testid="selecteur-enfants-activite">
+                                    <label class="form-label">Lier des enfants</label>
+                                    @if (!_enfants.Any())
+                                    {
+                                        <div class="text-muted small" data-testid="aucun-enfant-candidat">
+                                            Aucun enfant dans le référentiel.</div>
+                                    }
+                                    @foreach (var enf in _enfants)
+                                    {
+                                        var enfant = enf;
+                                        var lie = _selectionEnfants.Contains(enfant.Id);
+                                        <div class="form-check form-switch">
+                                            <input type="checkbox" class="form-check-input enfant-checkbox-parent" role="switch"
+                                                   id="enfant-activite-@enfant.Id" data-testid="checkbox-enfant-activite" data-enfant-id="@enfant.Id"
+                                                   checked="@lie" @onchange="e => BasculerEnfant(enfant.Id, (bool)e.Value!)" />
+                                            <label class="form-check-label" for="enfant-activite-@enfant.Id">@enfant.Prenom</label>
+                                        </div>
+                                    }
+                                </div>
+
+                                <hr />
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        data-testid="bouton-supprimer-activite" data-activite-id="@act2.Id"
+                                        @onclick="() => SupprimerActivite(act2.Id)" aria-label="Supprimer @act2.Libelle">Supprimer cette activité</button>
+                            }
+                        </ModalConfig>
+                    }
                 }
             </section>
 

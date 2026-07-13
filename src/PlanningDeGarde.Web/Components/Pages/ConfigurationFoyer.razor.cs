@@ -252,15 +252,85 @@ public partial class ConfigurationFoyer
     /// aboutie ailleurs sans rechargement (temps réel SignalR, Sc.9).</summary>
     private IReadOnlyList<string> _admins = Array.Empty<string>();
 
-    /// <summary>Formulaire de saisie du libellé d'un lieu à ajouter (référentiel du foyer, s27). Le front
-    /// n'émet que le libellé ; l'identifiant stable est posé côté handler.</summary>
-    private sealed class FormulaireLieu
+    /// <summary>Formulaire d'édition / création d'une activité (référentiel du foyer, s35, patron crayon →
+    /// modal miroir Acteurs s32 / Enfants s34) : libellé + adresse (optionnelle). L'identifiant stable est
+    /// posé côté handler en création (jamais dérivé du libellé) ; en édition il est porté par la modal.</summary>
+    private sealed class FormulaireActivite
     {
         public string Libelle { get; set; } = "";
+        public string Adresse { get; set; } = "";
     }
 
-    private readonly FormulaireLieu _lieu = new();
-    private string? _motifEchecLieu;
+    private readonly FormulaireActivite _activite = new();
+    private string? _motifEchecActivite;
+
+    // ── État de la MODAL activité (refonte s35, Sc.4 — patron crayon → modal) ──
+    // Identifiant stable de l'activité en cours d'édition (null = pas d'édition ouverte) ; posé par le crayon.
+    private string? _modalActiviteId;
+    // Modal ouverte en mode CRÉATION (bouton « Ajouter une activité ») : champs vides, aucune activité portée.
+    private bool _modalActiviteAjout;
+
+    /// <summary>Sélection des enfants à lier dans la modal activité (Sc.5) : initialisée aux enfants COURANTS de
+    /// l'activité à l'ouverture (pré-cochés). À l'« Enregistrer », les diffs vis-à-vis des enfants courants
+    /// émettent lier / délier. Lien N-M : AUCUNE borne de cardinalité (0..N des deux côtés, cadrage SM).</summary>
+    private readonly HashSet<string> _selectionEnfants = new();
+
+    /// <summary>Ouvre la modal d'ÉDITION sur une activité (clic crayon) : porte son id stable, pré-remplit son
+    /// libellé + adresse courants et la sélection d'enfants sur les enfants liés COURANTS (pré-cochés, Sc.5),
+    /// efface le motif d'échec précédent.</summary>
+    private void OuvrirEditionActivite(string activiteId)
+    {
+        _modalActiviteAjout = false;
+        _modalActiviteId = activiteId;
+        var activite = _activites.FirstOrDefault(a => a.Id == activiteId);
+        _activite.Libelle = activite?.Libelle ?? "";
+        _activite.Adresse = activite?.Adresse ?? "";
+        _selectionEnfants.Clear();
+        foreach (var enfantId in activite?.EnfantsLies ?? Array.Empty<string>())
+            _selectionEnfants.Add(enfantId);
+        _motifEchecActivite = null;
+    }
+
+    /// <summary>Ouvre la MÊME modal en mode CRÉATION (bouton « Ajouter une activité ») : champs vides, aucune
+    /// activité portée, aucune sélection d'enfant (les liens se posent après la création, en édition).</summary>
+    private void OuvrirAjoutActivite()
+    {
+        _modalActiviteId = null;
+        _modalActiviteAjout = true;
+        _activite.Libelle = "";
+        _activite.Adresse = "";
+        _selectionEnfants.Clear();
+        _motifEchecActivite = null;
+    }
+
+    /// <summary>Ferme la modal activité (annuler ou après un enregistrement abouti), sans émettre de commande.</summary>
+    private void FermerModalActivite()
+    {
+        _modalActiviteId = null;
+        _modalActiviteAjout = false;
+        _selectionEnfants.Clear();
+        _motifEchecActivite = null;
+    }
+
+    /// <summary>Bascule la sélection d'un enfant dans la modal activité (Sc.5). Lien N-M : aucune borne — on
+    /// ajoute / retire librement l'id stable de l'enfant (jamais son prénom).</summary>
+    private void BasculerEnfant(string enfantId, bool lie)
+    {
+        if (lie)
+            _selectionEnfants.Add(enfantId);
+        else
+            _selectionEnfants.Remove(enfantId);
+    }
+
+    /// <summary>Libellé de lecture des enfants liés d'une activité (Sc.4) : les identifiants stables des enfants
+    /// résolus en prénoms (jamais un libellé en dur), séparés par « , » ; « — » si aucun enfant lié.</summary>
+    private string LibelleEnfantsLies(ActiviteFoyer activite)
+    {
+        var noms = activite.EnfantsLies
+            .Select(id => _enfants.FirstOrDefault(e => e.Id == id)?.Prenom ?? id)
+            .ToList();
+        return noms.Count == 0 ? "—" : string.Join(", ", noms);
+    }
 
     /// <summary>Formulaire de saisie du prénom d'un enfant à ajouter (référentiel du foyer, s30). Le front
     /// n'émet que le prénom ; l'identifiant stable opaque est généré côté handler.</summary>
@@ -354,10 +424,10 @@ public partial class ConfigurationFoyer
     /// rechargement, S9) — même source que le sélecteur d'enfant de la dialog de pose (S10).</summary>
     private IReadOnlyList<EnfantFoyer> _enfants = Array.Empty<EnfantFoyer>();
 
-    /// <summary>Lieux du référentiel du foyer énumérés <b>depuis le store vivant</b> (GET /api/foyer/lieux),
-    /// jamais un lieu en dur : alimente la liste de l'onglet Lieux (ajoutés / supprimés suivent sans
-    /// rechargement, S6) — même source que les sélecteurs de lieu des dialogs.</summary>
-    private IReadOnlyList<LieuFoyer> _lieux = Array.Empty<LieuFoyer>();
+    /// <summary>Activités du référentiel du foyer énumérées <b>depuis le store vivant</b> (GET /api/foyer/activites,
+    /// s35), jamais une activité en dur : alimente le tableau de l'onglet Activités (ajoutées / éditées / supprimées
+    /// suivent sans rechargement, S6) — même source que les sélecteurs de lieu des dialogs.</summary>
+    private IReadOnlyList<ActiviteFoyer> _activites = Array.Empty<ActiviteFoyer>();
 
     /// <summary>Fournisseur de services pour résoudre <see cref="OptionsConnexionHub"/> de façon
     /// <b>optionnelle</b> : présent, il redirige la connexion au hub vers le TestServer (acceptation runtime
@@ -374,7 +444,7 @@ public partial class ConfigurationFoyer
         await RechargerRoles();
         await RechargerComptes();
         await RechargerAdmins();
-        await RechargerLieux();
+        await RechargerActivites();
         await RechargerEnfants();
         await RechargerCycles();
     }
@@ -405,11 +475,12 @@ public partial class ConfigurationFoyer
         => _enfants = await Canal.GetFromJsonAsync<List<EnfantFoyer>>("api/foyer/enfants")
             ?? new List<EnfantFoyer>();
 
-    /// <summary>Ré-énumère les lieux du référentiel depuis le store vivant (GET /api/foyer/lieux) : c'est
-    /// cette relecture qui fait suivre la liste des lieux après ajout / suppression (S6), sans rechargement.</summary>
-    private async Task RechargerLieux()
-        => _lieux = await Canal.GetFromJsonAsync<List<LieuFoyer>>("api/foyer/lieux")
-            ?? new List<LieuFoyer>();
+    /// <summary>Ré-énumère les activités du référentiel depuis le store vivant (GET /api/foyer/activites, s35) :
+    /// c'est cette relecture qui fait suivre le tableau des activités après ajout / édition / suppression (S6),
+    /// sans rechargement.</summary>
+    private async Task RechargerActivites()
+        => _activites = await Canal.GetFromJsonAsync<List<ActiviteFoyer>>("api/foyer/activites")
+            ?? new List<ActiviteFoyer>();
 
     private async Task RechargerActeurs()
         => _acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs")
@@ -467,9 +538,9 @@ public partial class ConfigurationFoyer
                 await RechargerRoles();
                 await RechargerComptes();
                 await RechargerAdmins();
-                // Un ajout / une suppression de lieu abouti sur un autre écran (store partagé) fait suivre la
-                // liste des lieux sans rechargement — cohérence temps réel du référentiel de lieux (S6).
-                await RechargerLieux();
+                // Un ajout / une édition / une suppression d'activité abouti sur un autre écran (store partagé)
+                // fait suivre le tableau des activités sans rechargement — cohérence temps réel du référentiel (S6).
+                await RechargerActivites();
                 // Un ajout / une édition d'enfant abouti sur un autre écran (store partagé) fait suivre la
                 // liste des enfants sans rechargement — cohérence temps réel du référentiel d'enfants (S9/S10).
                 await RechargerEnfants();
@@ -858,67 +929,85 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>
-    /// Ajoute un lieu au référentiel du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/ajouter-lieu</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
-    /// ré-énumère le référentiel pour faire apparaître le lieu ajouté <b>sans rechargement</b> (S6). Le front
-    /// n'émet que le libellé ; l'identifiant stable est posé côté handler. Sur refus métier (libellé vide /
-    /// doublon, S3) ou service injoignable, le motif est surfacé sans muter la liste.
+    /// Enregistre la modal activité (Sc.4) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
+    /// en mode CRÉATION émet <c>POST /api/canal/ajouter-activite</c> (id stable neuf posé côté handler), en mode
+    /// ÉDITION émet <c>POST /api/canal/editer-activite</c> sur l'id stable (jamais éditable) — libellé + adresse.
+    /// Réutilise les commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le référentiel (le tableau
+    /// suit sans rechargement) et la modal se ferme. Sur refus métier (libellé vide) ou service injoignable, le
+    /// motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée (Sc.6).
     /// </summary>
-    private async Task AjouterLieu()
+    private async Task SoumettreActivite()
     {
-        _motifEchecLieu = null;
+        _motifEchecActivite = null;
 
-        HttpResponseMessage reponse;
-        try
+        if (_modalActiviteAjout)
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/ajouter-lieu",
-                new AjouterLieuRequete(_lieu.Libelle));
+            // Création : ajouter-activite seul (les liens enfant se posent ensuite en édition, Sc.5).
+            if (!await PosterActivite("api/canal/ajouter-activite", new AjouterActiviteRequete(_activite.Libelle)))
+                return;
         }
-        catch (HttpRequestException)
+        else
         {
-            _motifEchecLieu = MessagesEcriture.ServiceInjoignable;
-            return;
+            // Édition : libellé + adresse (editer-activite) PUIS les diffs d'enfants liés (lier/délier). Sur le
+            // PREMIER refus (métier ou injoignable), on s'arrête, motif dans la modal restée ouverte (Sc.6) — le
+            // tableau n'est relu qu'après le succès complet.
+            if (!await PosterActivite("api/canal/editer-activite",
+                new EditerActiviteRequete(_modalActiviteId!, _activite.Libelle, _activite.Adresse)))
+                return;
+
+            var courant = _activites.FirstOrDefault(a => a.Id == _modalActiviteId)?.EnfantsLies
+                ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+
+            foreach (var enfantId in _selectionEnfants.Where(id => !courant.Contains(id)).ToList())
+                if (!await PosterActivite("api/canal/lier-enfant-activite", new LierEnfantActiviteRequete(enfantId, _modalActiviteId!)))
+                    return;
+
+            foreach (var enfantId in courant.Where(id => !_selectionEnfants.Contains(id)).ToList())
+                if (!await PosterActivite("api/canal/delier-enfant-activite", new DelierEnfantActiviteRequete(enfantId, _modalActiviteId!)))
+                    return;
         }
 
-        if (!reponse.IsSuccessStatusCode)
-        {
-            _motifEchecLieu = await reponse.Content.ReadFromJsonAsync<string>();
-            return;
-        }
-
-        await RechargerLieux();
-        _lieu.Libelle = "";
+        await RechargerActivites();
+        FermerModalActivite();
     }
 
-    /// <summary>Supprime un lieu du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>POST /api/canal/supprimer-lieu</c>) : la clé est l'identifiant stable du lieu. Sur succès, on relit
-    /// le référentiel (le lieu quitte la liste et n'est plus proposé à la saisie, sans rechargement — S6).
-    /// Idempotence côté handler ; borne : les slots déjà posés sur ce lieu conservent leur lieu.</summary>
-    private async Task SupprimerLieu(string lieuId)
+    /// <summary>Émet une écriture activité (ajouter / éditer / lier / délier) via le canal HTTP réel et renvoie
+    /// <c>true</c> en succès. Sur service injoignable ou refus métier, pose le motif dans la modal
+    /// (<c>_motifEchecActivite</c>) et renvoie <c>false</c> — la modal reste ouverte, aucun tableau relu.</summary>
+    private async Task<bool> PosterActivite<TRequete>(string route, TRequete requete)
     {
-        _motifEchecLieu = null;
-
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/supprimer-lieu",
-                new SupprimerLieuRequete(lieuId));
+            reponse = await Canal.PostAsJsonAsync(route, requete);
         }
         catch (HttpRequestException)
         {
-            _motifEchecLieu = MessagesEcriture.ServiceInjoignable;
-            return;
+            _motifEchecActivite = MessagesEcriture.ServiceInjoignable;
+            return false;
         }
 
         if (!reponse.IsSuccessStatusCode)
         {
-            _motifEchecLieu = await reponse.Content.ReadFromJsonAsync<string>();
-            return;
+            _motifEchecActivite = await reponse.Content.ReadFromJsonAsync<string>();
+            return false;
         }
 
-        await RechargerLieux();
+        return true;
+    }
+
+    /// <summary>Supprime une activité du référentiel via le <b>canal d'écriture HTTP</b>
+    /// (<c>POST /api/canal/supprimer-activite</c>) depuis la modal d'édition (Sc.4) : la clé est l'identifiant
+    /// stable. Sur succès, on relit le référentiel (l'activité quitte le tableau et n'est plus proposée à la
+    /// saisie, sans rechargement — S6), puis la modal se ferme. Idempotence côté handler ; borne : les slots
+    /// déjà posés sur cette activité conservent leur lieu. Sur refus / injoignable, le motif reste DANS la modal.</summary>
+    private async Task SupprimerActivite(string activiteId)
+    {
+        if (!await PosterActivite("api/canal/supprimer-activite", new SupprimerActiviteRequete(activiteId)))
+            return;
+
+        await RechargerActivites();
+        FermerModalActivite();
     }
 
     /// <summary>

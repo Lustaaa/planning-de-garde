@@ -42,7 +42,7 @@ public sealed class FrontWasmPoserSlotRecurrentDialogUnifieeTests : TestContext
     {
         // Given — la grille réellement câblée à l'API distante ; le lieu « piscine » existe au store réel.
         using var api = new ApiDistanteFactory();
-        api.Services.GetRequiredService<IEditeurLieux>().Ajouter("piscine", "piscine");
+        api.Services.GetRequiredService<IEditeurActivites>().Ajouter("piscine", "piscine");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Lundi_29_06_2026);
 
         // … aucune occurrence « piscine » n'est encore présente sur les samedis visibles.
@@ -89,7 +89,7 @@ public sealed class FrontWasmPoserSlotRecurrentDialogUnifieeTests : TestContext
     {
         // Given — la grille réellement câblée ; le lieu « piscine » existe au store réel.
         using var api = new ApiDistanteFactory();
-        api.Services.GetRequiredService<IEditeurLieux>().Ajouter("piscine", "piscine");
+        api.Services.GetRequiredService<IEditeurActivites>().Ajouter("piscine", "piscine");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Lundi_29_06_2026);
 
         // When — un Parent coche « Répéter chaque semaine » et valide une plage NON positive (fin 11:30 ≤ début 12:15).

@@ -26,7 +26,7 @@ public class Scenario1_SupprimerSlot
     {
         // Given — le store comporte un slot durable plaçant "Léa" à "École" le mardi 16/06/2026 08h30–16h30.
         var slots = new FakeSlotRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
+        var lieux = new FakeReferentielActivites().AvecActivite("ecole");
         var notificateur = new FakeNotificateurPlanning();
         new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur).Handle(
             new SlotBuilder().PourEnfant("lea").DansLieu("ecole").De(Mardi16Juin2026_0830).A(Mardi16Juin2026_1630).Build());

@@ -21,12 +21,12 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<IResponsableRepository, FoyerResponsableRepository>();
 
         // Référentiel de lieux du foyer (petit agrégat de config foyer, s27) : store mutable seedé
-        // depuis Foyer.Lieux, réalise la lecture IEnumerationLieux (validation de pose + sélecteurs)
-        // et l'écriture IEditeurLieux (ajouter). Remplace la liste en dur Foyer.Lieux lue par
+        // depuis Foyer.Activites, réalise la lecture IEnumerationActivites (validation de pose + sélecteurs)
+        // et l'écriture IEditeurActivites (ajouter). Remplace la liste en dur Foyer.Activites lue par
         // l'ancien FoyerLieuRepository (trou s27). Le remplaçant durable Mongo est branché en S4.
-        services.AddSingleton<ReferentielLieuxEnMemoire>();
-        services.AddSingleton<IEnumerationLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
-        services.AddSingleton<IEditeurLieux>(sp => sp.GetRequiredService<ReferentielLieuxEnMemoire>());
+        services.AddSingleton<ReferentielActivitesEnMemoire>();
+        services.AddSingleton<IEnumerationActivites>(sp => sp.GetRequiredService<ReferentielActivitesEnMemoire>());
+        services.AddSingleton<IEditeurActivites>(sp => sp.GetRequiredService<ReferentielActivitesEnMemoire>());
 
         // Référentiel d'enfants du foyer (petit agrégat de config foyer hissé en 1er rang, s30 — miroir
         // strict du référentiel de lieux) : store mutable, réalise la lecture IEnumerationEnfants
@@ -85,13 +85,13 @@ public static class ServiceCollectionExtensions
             services.AddSingleton<IEditeurReferentielRoles>(sp => sp.GetRequiredService<ReferentielRolesMongo>());
 
             // Référentiel de lieux (petit agrégat de config foyer, s27) durable Mongo, borné à la config
-            // foyer (même socle Mongo, collection dédiée « lieux ») : lecture IEnumerationLieux (validation
-            // de pose + sélecteurs) + écriture IEditeurLieux, un lieu ajouté/supprimé survit au redémarrage.
+            // foyer (même socle Mongo, collection dédiée « lieux ») : lecture IEnumerationActivites (validation
+            // de pose + sélecteurs) + écriture IEditeurActivites, un lieu ajouté/supprimé survit au redémarrage.
             // Aucun seed Mongo (parité asymétrie seed s15) — SURCHARGE l'enregistrement InMemory seedé posé
             // plus haut (dernière inscription gagne à la résolution).
-            services.AddSingleton(_ => new ReferentielLieuxMongo(connectionString, baseDeDonnees));
-            services.AddSingleton<IEnumerationLieux>(sp => sp.GetRequiredService<ReferentielLieuxMongo>());
-            services.AddSingleton<IEditeurLieux>(sp => sp.GetRequiredService<ReferentielLieuxMongo>());
+            services.AddSingleton(_ => new ReferentielActivitesMongo(connectionString, baseDeDonnees));
+            services.AddSingleton<IEnumerationActivites>(sp => sp.GetRequiredService<ReferentielActivitesMongo>());
+            services.AddSingleton<IEditeurActivites>(sp => sp.GetRequiredService<ReferentielActivitesMongo>());
 
             // Référentiel d'enfants (petit agrégat de config foyer hissé en 1er rang, s30) durable Mongo,
             // borné à la config foyer (même socle Mongo, collection dédiée « enfants ») : lecture
@@ -188,8 +188,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PoserSlotHandler>();
         services.AddScoped<PoserSlotRecurrentHandler>();
         services.AddScoped<SupprimerSlotRecurrentHandler>();
-        services.AddScoped<AjouterLieuHandler>();
-        services.AddScoped<SupprimerLieuHandler>();
+        services.AddScoped<AjouterActiviteHandler>();
+        services.AddScoped<SupprimerActiviteHandler>();
+        services.AddScoped<EditerActiviteHandler>();
+        services.AddScoped<LierEnfantActiviteHandler>();
+        services.AddScoped<DelierEnfantActiviteHandler>();
         services.AddScoped<AjouterEnfantHandler>();
         services.AddScoped<EditerEnfantHandler>();
         services.AddScoped<LierEnfantParentHandler>();

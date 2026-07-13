@@ -70,7 +70,7 @@ public sealed class ItemDomaineSurvitRedemarrageMongoTests : IDisposable
             // Mongo config foyer sans seed (s27/s30) : le lieu « école » ET l'enfant « Léa » n'existent pas
             // par défaut, on les établit explicitement — parité avec l'établissement des acteurs (AjouterAlice)
             // déjà pratiqué ici. La pose valide désormais l'existence de l'enfant (s30 S7), plus un fantôme.
-            serveur1.Services.GetRequiredService<IEditeurLieux>().Ajouter("école", "école");
+            serveur1.Services.GetRequiredService<IEditeurActivites>().Ajouter("école", "école");
             serveur1.Services.GetRequiredService<IEditeurEnfants>().Ajouter("Léa", "Léa");
             var pose = await c1.PostAsJsonAsync("/api/canal/poser-slot",
                 new { EnfantId = "Léa", LieuId = "école", Debut = new DateTime(2026, 6, 10, 8, 0, 0), Fin = new DateTime(2026, 6, 10, 17, 0, 0) });

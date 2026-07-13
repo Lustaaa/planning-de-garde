@@ -11,11 +11,11 @@ public sealed record PoserSlotCommand(string EnfantId, string LieuId, DateTime D
 public sealed class PoserSlotHandler
 {
     private readonly ISlotRepository _slots;
-    private readonly IEnumerationLieux _lieux;
+    private readonly IEnumerationActivites _lieux;
     private readonly IEnumerationEnfants _enfants;
     private readonly INotificateurPlanning _notificateur;
 
-    public PoserSlotHandler(ISlotRepository slots, IEnumerationLieux lieux, IEnumerationEnfants enfants, INotificateurPlanning notificateur)
+    public PoserSlotHandler(ISlotRepository slots, IEnumerationActivites lieux, IEnumerationEnfants enfants, INotificateurPlanning notificateur)
     {
         _slots = slots;
         _lieux = lieux;
@@ -25,9 +25,9 @@ public sealed class PoserSlotHandler
 
     public Result<SlotSnapshot> Handle(PoserSlotCommand commande)
     {
-        // Existence lue sur le référentiel de lieux VIVANT (IEnumerationLieux), plus la liste en dur
-        // Foyer.Lieux (trou s27) : un lieu fraîchement ajouté est immédiatement acceptable à la saisie.
-        if (_lieux.EnumererLieux().All(lieu => lieu.Id != commande.LieuId))
+        // Existence lue sur le référentiel de lieux VIVANT (IEnumerationActivites), plus la liste en dur
+        // Foyer.Activites (trou s27) : un lieu fraîchement ajouté est immédiatement acceptable à la saisie.
+        if (_lieux.EnumererActivites().All(lieu => lieu.Id != commande.LieuId))
             return Result<SlotSnapshot>.Echec("Le lieu visé n'existe pas dans les lieux du foyer.");
 
         // Existence de l'enfant lue sur le référentiel d'enfants VIVANT (IEnumerationEnfants, s30 S7) :

@@ -17,8 +17,8 @@ namespace PlanningDeGarde.Web.Tests;
 /// <summary>
 /// Sprint 27 — S6 (🖥️ @ihm — acceptation de NIVEAU RUNTIME, 100 % temps réel SignalR) : le <b>sélecteur de
 /// lieu</b> des dialogs « Poser un slot » ET « Définir un transfert » de l'écran de planning reflète le
-/// <b>référentiel de lieux configuré</b> (store vivant, GET /api/foyer/lieux — jamais la liste en dur
-/// <c>Foyer.Lieux</c>) : quand un parent AJOUTE le lieu « piscine » depuis un second écran (config), le
+/// <b>référentiel d'activités configuré</b> (store vivant, GET /api/foyer/activites, s35 — jamais la liste en
+/// dur <c>Foyer.Lieux</c>) : quand un parent AJOUTE l'activité « piscine » depuis un second écran (config), le
 /// sélecteur du premier écran le propose <b>sans rechargement</b> (propagé par la diffusion SignalR) ; quand
 /// il SUPPRIME « nounou », le sélecteur ne le propose plus.
 ///
@@ -77,7 +77,7 @@ public sealed class FrontWasmConfigSelecteurLieuDialogsTempsReelTests : TestCont
         using var ecranConfig = new TestContext();
         ConfigurerEcranConfig(ecranConfig, api);
         var config = ecranConfig.RenderComponent<ConfigurationFoyer>();               // écran 2 : config
-        config.WaitForState(() => config.FindAll("[data-testid='lieu-foyer']").Count > 0, TimeSpan.FromSeconds(10));
+        config.WaitForState(() => config.FindAll("[data-testid='activite-foyer']").Count > 0, TimeSpan.FromSeconds(10));
 
         // … écran 1 : le parent ouvre la dialog « Poser un slot » depuis la case du 16/06.
         OuvrirDialog(grille, "action-poser-slot", "dialog-poser-slot");
@@ -102,12 +102,14 @@ public sealed class FrontWasmConfigSelecteurLieuDialogsTempsReelTests : TestCont
 
         try
         {
-            // When — le parent AJOUTE le lieu « piscine » depuis l'écran de config (canal d'écriture HTTP réel :
-            // POST /api/canal/ajouter-lieu → store partagé muté + diffusion temps réel déclenchée).
-            config.SurDispatcher(() => config.Find("[data-testid='champ-libelle-lieu']").Change("piscine"));
-            config.SurDispatcher(() => config.Find("#form-ajouter-lieu").Submit());
+            // When — le parent AJOUTE l'activité « piscine » via la MODAL de config (patron s35, canal d'écriture
+            // HTTP réel : POST /api/canal/ajouter-activite → store partagé muté + diffusion temps réel déclenchée).
+            config.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-activite']").Click());
+            config.WaitForElement("[data-testid='dialog-activite']", TimeSpan.FromSeconds(10));
+            config.SurDispatcher(() => config.Find("[data-testid='champ-libelle-activite']").Change("piscine"));
+            config.SurDispatcher(() => config.Find("#form-activite").Submit());
             config.WaitForAssertion(
-                () => Assert.Contains(config.FindAll("[data-testid='lieu-foyer']"),
+                () => Assert.Contains(config.FindAll("[data-testid='activite-foyer']"),
                     li => li.QuerySelector(".role-libelle")!.TextContent.Trim() == "piscine"),
                 TimeSpan.FromSeconds(10));
 
@@ -117,11 +119,13 @@ public sealed class FrontWasmConfigSelecteurLieuDialogsTempsReelTests : TestCont
                 () => Assert.Contains("piscine", LieuxProposes(grille)),
                 TimeSpan.FromSeconds(15));
 
-            // When — le parent SUPPRIME le lieu « nounou » depuis l'écran de config.
-            config.SurDispatcher(() => config.FindAll("[data-testid='lieu-foyer']")
+            // When — le parent SUPPRIME l'activité « nounou » via la MODAL (crayon → « Supprimer cette activité »).
+            config.SurDispatcher(() => config.FindAll("[data-testid='activite-foyer']")
                 .Single(li => li.QuerySelector(".role-libelle")!.TextContent.Trim() == "nounou")
-                .QuerySelector("[data-testid='bouton-supprimer-lieu']")!
+                .QuerySelector("[data-testid='crayon-activite']")!
                 .Click());
+            config.WaitForElement("[data-testid='dialog-activite']", TimeSpan.FromSeconds(10));
+            config.SurDispatcher(() => config.Find("[data-testid='bouton-supprimer-activite']").Click());
 
             // Then — sans rechargement, le sélecteur de lieu de la dialog ne propose plus « nounou ».
             grille.WaitForAssertion(

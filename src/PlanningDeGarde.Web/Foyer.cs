@@ -62,12 +62,20 @@ public sealed record RoleFoyer(string Id, string Libelle);
 /// résolu sur l'identifiant via la liste des acteurs, jamais un libellé en dur.</summary>
 public sealed record CycleFoyer(int IndexSemaine, string ResponsableId);
 
-/// <summary>Un lieu du référentiel du foyer <b>énuméré depuis le store vivant</b> via le canal de lecture
-/// (s27, GET /api/foyer/lieux) : identifiant stable (clé, bindé par les sélecteurs) + libellé d'affichage.
-/// Remplace la liste en dur <see cref="Foyer.Lieux"/> — alimente l'onglet Lieux de la config ET les
-/// sélecteurs de lieu des dialogs « Poser un slot » / « Définir un transfert » (un lieu ajouté / supprimé
-/// suit sans rechargement, temps réel SignalR lecture).</summary>
-public sealed record LieuFoyer(string Id, string Libelle);
+/// <summary>Une activité du référentiel du foyer <b>énumérée depuis le store vivant</b> via le canal de lecture
+/// (s35, GET /api/foyer/activites — ex-« lieu » s27) : identifiant stable (clé, bindé par les sélecteurs) +
+/// libellé d'affichage + <b>adresse</b> (Sc.2, optionnelle, vide par défaut) + <b>enfants liés</b> (Sc.3, ids
+/// stables résolus en prénoms par la colonne « Enfants liés »). Remplace la liste en dur <see cref="Foyer.Lieux"/>
+/// — alimente l'onglet Activités de la config ET les sélecteurs de lieu (axe LOCALISATION du slot, préservé)
+/// des dialogs « Poser un slot » / « Définir un transfert » (une activité ajoutée / éditée / supprimée suit sans
+/// rechargement, temps réel SignalR lecture).</summary>
+public sealed record ActiviteFoyer(string Id, string Libelle, string Adresse = "")
+{
+    /// <summary>Identifiants stables des enfants (référentiel s30) liés à cette activité (lien N-M, s35 Sc.3) —
+    /// résolus en prénoms par la colonne « Enfants liés » (Sc.4). Propriété <c>init</c> peuplée depuis le JSON
+    /// quand présente, sinon liste vide (lien optionnel).</summary>
+    public IReadOnlyCollection<string> EnfantsLies { get; init; } = System.Array.Empty<string>();
+}
 
 /// <summary>Un enfant du référentiel du foyer <b>énuméré depuis le store vivant</b> via le canal de lecture
 /// (s30, GET /api/foyer/enfants) : identifiant stable opaque (clé, bindé par les sélecteurs, jamais le

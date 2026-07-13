@@ -47,7 +47,7 @@ public sealed class FrontWasmSelecteurEnfantDialogPoseTempsReelTests : TestConte
         // et le lieu « piscine » (école est déjà seedé InMemory) — établis AVANT le rendu de la grille.
         using var api = new ApiDistanteFactory();
         api.Services.GetRequiredService<IEditeurEnfants>().Ajouter("enfant-tom", "Tom");
-        api.Services.GetRequiredService<IEditeurLieux>().Ajouter("piscine", "piscine");
+        api.Services.GetRequiredService<IEditeurActivites>().Ajouter("piscine", "piscine");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Lundi_29_06_2026);
 
         // === Phase 1 — slot PONCTUEL ===

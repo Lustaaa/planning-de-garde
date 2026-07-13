@@ -20,7 +20,7 @@ public class Scenario1_PoserSlot
     {
         // Given
         var slots = new FakeSlotRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
+        var lieux = new FakeReferentielActivites().AvecActivite("ecole");
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
         var commande = new SlotBuilder()
@@ -50,12 +50,12 @@ public class Scenario1_PoserSlot
 
     // ---------- Tests unitaires (boucle interne, TDD) ----------
 
-    private static PoserSlotHandler HandlerAvecLieuEcole(
+    private static PoserSlotHandler HandlerAvecActiviteEcole(
         out FakeSlotRepository slots,
         out FakeNotificateurPlanning notificateur)
     {
         slots = new FakeSlotRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
+        var lieux = new FakeReferentielActivites().AvecActivite("ecole");
         notificateur = new FakeNotificateurPlanning();
         return new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }
@@ -64,7 +64,7 @@ public class Scenario1_PoserSlot
     [Fact]
     public void Should_confirmer_la_pose_du_slot_When_un_Parent_place_un_enfant_dans_un_lieu_existant_sur_un_creneau_valide()
     {
-        var handler = HandlerAvecLieuEcole(out _, out _);
+        var handler = HandlerAvecActiviteEcole(out _, out _);
         var commande = new SlotBuilder().Build();
 
         var resultat = handler.Handle(commande);
@@ -76,7 +76,7 @@ public class Scenario1_PoserSlot
     [Fact]
     public void Should_exposer_l_enfant_le_lieu_et_les_bornes_du_slot_pose_When_un_Parent_place_un_enfant_dans_un_lieu_existant_sur_un_creneau_valide()
     {
-        var handler = HandlerAvecLieuEcole(out _, out _);
+        var handler = HandlerAvecActiviteEcole(out _, out _);
         var debut = new System.DateTime(2025, 7, 15, 8, 30, 0);
         var fin = new System.DateTime(2025, 7, 15, 16, 30, 0);
         var commande = new SlotBuilder()
@@ -96,7 +96,7 @@ public class Scenario1_PoserSlot
     [Fact]
     public void Should_inscrire_le_slot_dans_le_planning_partage_du_foyer_When_un_Parent_a_pose_le_slot()
     {
-        var handler = HandlerAvecLieuEcole(out var slots, out _);
+        var handler = HandlerAvecActiviteEcole(out var slots, out _);
         var debut = new System.DateTime(2025, 7, 15, 8, 30, 0);
         var fin = new System.DateTime(2025, 7, 15, 16, 30, 0);
         var commande = new SlotBuilder()

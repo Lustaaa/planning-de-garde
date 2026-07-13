@@ -31,10 +31,12 @@ public static class CanalLecture
     /// Alimente la liste des rôles et le sélecteur de rôle borné au référentiel (jamais de rôle en dur).</summary>
     public sealed record RoleFoyerVue(string Id, string Libelle);
 
-    /// <summary>Vue d'un lieu du référentiel du foyer énumérée pour l'écran de configuration (onglet Lieux,
-    /// s27) et les sélecteurs de lieu des dialogs : identifiant stable (clé, bindé par les sélecteurs) +
-    /// libellé d'affichage. Lue depuis le store vivant (jamais la liste en dur Foyer.Lieux).</summary>
-    public sealed record LieuFoyerVue(string Id, string Libelle);
+    /// <summary>Vue d'une activité du référentiel du foyer énumérée pour l'écran de configuration (onglet
+    /// Activités, s35) et les sélecteurs de lieu des dialogs (axe LOCALISATION du slot, préservé) : identifiant
+    /// stable (clé, bindé par les sélecteurs) + libellé d'affichage + <b>adresse</b> (s35 Sc.2, optionnelle) +
+    /// <b>enfants liés</b> (s35 Sc.3, ids stables résolus en prénoms par la colonne « Enfants liés »). Lue depuis
+    /// le store vivant (jamais la liste en dur Foyer.Activites).</summary>
+    public sealed record ActiviteFoyerVue(string Id, string Libelle, string Adresse, IReadOnlyCollection<string> EnfantsLies);
 
     /// <summary>Vue d'un enfant du référentiel du foyer énumérée pour l'écran de configuration (onglet Enfants,
     /// s30) et le sélecteur d'enfant des dialogs de pose : identifiant stable opaque (clé, bindé par les
@@ -105,15 +107,17 @@ public static class CanalLecture
                 return Results.Ok(vues);
             });
 
-        // Énumération des lieux du référentiel du foyer DEPUIS LE STORE VIVANT (s27) : l'onglet Lieux de
-        // l'écran config la lit pour lister les lieux, ET les dialogs (Poser un slot / Définir un transfert)
-        // pour peupler leur sélecteur de lieu — un seul canal de lecture, jamais la liste en dur Foyer.Lieux.
-        // Lecture seule — ne déclenche jamais la diffusion.
-        routes.MapGet("/api/foyer/lieux",
-            (IEnumerationLieux lieux) =>
+        // Énumération des activités du référentiel du foyer DEPUIS LE STORE VIVANT (s35, ex-« lieux » s27) :
+        // l'onglet Activités de l'écran config la lit pour lister les activités (libellé + adresse + enfants
+        // liés), ET les dialogs (Poser un slot / Définir un transfert) pour peupler leur sélecteur de lieu (axe
+        // LOCALISATION du slot, préservé) — un seul canal de lecture, jamais la liste en dur Foyer.Activites.
+        // Lecture seule — ne déclenche jamais la diffusion. Le renommage HTTP « lieux → activites » (SWAP s35
+        // Sc.4) absorbe le seam de traduction temporaire posé en Sc.1.
+        routes.MapGet("/api/foyer/activites",
+            (IEnumerationActivites activites) =>
             {
-                var vues = lieux.EnumererLieux()
-                    .Select(l => new LieuFoyerVue(l.Id, l.Libelle))
+                var vues = activites.EnumererActivites()
+                    .Select(a => new ActiviteFoyerVue(a.Id, a.Libelle, a.Adresse, a.EnfantsLies))
                     .ToList();
                 return Results.Ok(vues);
             });

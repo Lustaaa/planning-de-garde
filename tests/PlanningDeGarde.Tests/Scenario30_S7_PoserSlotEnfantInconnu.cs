@@ -23,7 +23,7 @@ public class Scenario30_S7_PoserSlotEnfantInconnu
     public void Should_Rejeter_sans_ecriture_ni_diffusion_le_slot_ponctuel_When_l_enfant_est_inconnu_du_foyer()
     {
         var slots = new FakeSlotRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("ecole"); // le lieu EXISTE (isole l'échec sur l'enfant)
+        var lieux = new FakeReferentielActivites().AvecActivite("ecole"); // le lieu EXISTE (isole l'échec sur l'enfant)
         var enfants = new FakeReferentielEnfants().AvecEnfant("lea"); // "enfant-x" ABSENT
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotHandler(slots, lieux, enfants, notificateur);
@@ -44,7 +44,7 @@ public class Scenario30_S7_PoserSlotEnfantInconnu
     public void Should_Rejeter_sans_ecriture_ni_diffusion_le_slot_recurrent_When_l_enfant_est_inconnu_du_foyer()
     {
         var slots = new FakeSlotRecurrentRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("piscine"); // le lieu EXISTE
+        var lieux = new FakeReferentielActivites().AvecActivite("piscine"); // le lieu EXISTE
         var enfants = new FakeReferentielEnfants().AvecEnfant("lea"); // "enfant-x" ABSENT
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotRecurrentHandler(slots, lieux, enfants, notificateur);

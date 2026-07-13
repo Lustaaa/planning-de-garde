@@ -36,11 +36,11 @@ public partial class PlanningPartage
     private List<ActeurFoyer> _acteursFoyer = new();
     private bool _acteursFoyerCharges;
 
-    // Lieux du référentiel du foyer (énumérés depuis le store vivant via api/foyer/lieux) : source UNIQUE
+    // Activités du référentiel du foyer (énumérées depuis le store vivant via api/foyer/activites, s35) : source UNIQUE
     // des sélecteurs de lieu des dialogs Poser un slot / Définir un transfert, passée en paramètre (les
     // dialogs ne lisent plus la liste en dur Foyer.Lieux). Rafraîchie à l'init, à l'ouverture de dialog et à
     // chaque diffusion temps réel — un lieu ajouté / supprimé en config suit sans rechargement (S6).
-    private List<LieuFoyer> _lieuxFoyer = new();
+    private List<ActiviteFoyer> _lieuxFoyer = new();
 
     // Enfants du référentiel du foyer (énumérés depuis le store vivant via api/foyer/enfants) : source UNIQUE
     // du sélecteur d'enfant de la dialog « Poser un slot », passée en paramètre (la dialog ne lit plus le
@@ -163,14 +163,14 @@ public partial class PlanningPartage
         }
     }
 
-    /// <summary>Charge les lieux du référentiel du foyer depuis le store vivant via le canal de lecture HTTP
-    /// (<c>GET /api/foyer/lieux</c>) : alimente le sélecteur de lieu des dialogs (jamais la liste en dur
-    /// Foyer.Lieux). Lecture seule ; sur référentiel distant injoignable, la liste reste inchangée.</summary>
+    /// <summary>Charge les activités du référentiel du foyer depuis le store vivant via le canal de lecture HTTP
+    /// (<c>GET /api/foyer/activites</c>, s35 — ex-« lieux ») : alimente le sélecteur de lieu (axe LOCALISATION du
+    /// slot, préservé) des dialogs. Lecture seule ; sur référentiel distant injoignable, la liste reste inchangée.</summary>
     private async Task ChargerLieuxAsync()
     {
         try
         {
-            var lieux = await Canal.GetFromJsonAsync<List<LieuFoyer>>("api/foyer/lieux");
+            var lieux = await Canal.GetFromJsonAsync<List<ActiviteFoyer>>("api/foyer/activites");
             if (lieux is not null)
                 _lieuxFoyer = lieux;
         }

@@ -51,12 +51,12 @@ public partial class PoserSlotDialog
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
-    /// <summary>Lieux du référentiel du foyer (id stable + libellé), fournis par le parent depuis le store
-    /// vivant (GET /api/foyer/lieux) : le sélecteur de lieu ne propose que ces lieux réels (jamais la liste
-    /// en dur <c>Foyer.Lieux</c>), y compris un lieu fraîchement ajouté / privé d'un lieu supprimé, propagé
-    /// en temps réel par le parent (S6).</summary>
+    /// <summary>Activités du référentiel du foyer (id stable + libellé), fournies par le parent depuis le store
+    /// vivant (GET /api/foyer/activites, s35) : le sélecteur de lieu (axe LOCALISATION du slot, préservé) ne
+    /// propose que ces activités réelles (jamais la liste en dur), y compris une activité fraîchement ajoutée /
+    /// privée d'une activité supprimée, propagée en temps réel par le parent (S6).</summary>
     [Parameter]
-    public IReadOnlyList<LieuFoyer> Lieux { get; set; } = Array.Empty<LieuFoyer>();
+    public IReadOnlyList<ActiviteFoyer> Lieux { get; set; } = Array.Empty<ActiviteFoyer>();
 
     /// <summary>Enfants du référentiel du foyer (id stable opaque + prénom), fournis par le parent depuis le
     /// store vivant (GET /api/foyer/enfants) : le sélecteur d'enfant ne propose que ces enfants réels (jamais

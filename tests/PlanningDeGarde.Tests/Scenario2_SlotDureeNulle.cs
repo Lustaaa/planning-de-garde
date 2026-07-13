@@ -19,7 +19,7 @@ public class Scenario2_SlotDureeNulle
     {
         // Given
         var slots = new FakeSlotRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
+        var lieux = new FakeReferentielActivites().AvecActivite("ecole");
         var notificateur = new FakeNotificateurPlanning();
         var handler = new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
         var instant = new System.DateTime(2025, 7, 15, 16, 30, 0);
@@ -42,12 +42,12 @@ public class Scenario2_SlotDureeNulle
 
     // ---------- Tests unitaires (boucle interne, TDD) ----------
 
-    private static PoserSlotHandler HandlerAvecLieuEcole(
+    private static PoserSlotHandler HandlerAvecActiviteEcole(
         out FakeSlotRepository slots,
         out FakeNotificateurPlanning notificateur)
     {
         slots = new FakeSlotRepository();
-        var lieux = new FakeReferentielLieux().AvecLieu("ecole");
+        var lieux = new FakeReferentielActivites().AvecActivite("ecole");
         notificateur = new FakeNotificateurPlanning();
         return new PoserSlotHandler(slots, lieux, new FakeReferentielEnfants().AvecEnfant("lea"), notificateur);
     }
@@ -57,7 +57,7 @@ public class Scenario2_SlotDureeNulle
     [Fact]
     public void Should_refuser_la_pose_au_motif_de_duree_nulle_When_la_fin_du_slot_est_egale_au_debut()
     {
-        var handler = HandlerAvecLieuEcole(out _, out _);
+        var handler = HandlerAvecActiviteEcole(out _, out _);
         var instant = new System.DateTime(2025, 7, 15, 16, 30, 0);
         var commande = new SlotBuilder().De(instant).A(instant).Build();
 
@@ -71,7 +71,7 @@ public class Scenario2_SlotDureeNulle
     [Fact]
     public void Should_n_inscrire_aucun_slot_dans_le_planning_partage_When_la_pose_est_refusee_pour_duree_nulle()
     {
-        var handler = HandlerAvecLieuEcole(out var slots, out _);
+        var handler = HandlerAvecActiviteEcole(out var slots, out _);
         var instant = new System.DateTime(2025, 7, 15, 16, 30, 0);
         var commande = new SlotBuilder().De(instant).A(instant).Build();
 
