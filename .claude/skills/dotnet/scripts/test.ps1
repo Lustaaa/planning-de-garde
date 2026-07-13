@@ -16,15 +16,27 @@
 .PARAMETER Filter
   Filtre xUnit optionnel (`dotnet test --filter`). RED ciblé uniquement.
 
+.PARAMETER Serial
+  Sérialise l'exécution des assemblies (`-- RunConfiguration.MaxCpuCount=1`) : les projets de
+  test tournent l'un APRÈS l'autre au lieu d'en parallèle. Reste une suite COMPLÈTE / build
+  COMPLET (non-régression valide, ne masque AUCUNE régression : un rouge déterministe reste
+  rouge en série). Sert au GATE quand le run parallèle montre un rouge *TempsReel* isolé-vert
+  (flake de charge SignalR/I/O, dette backlog) : plutôt que re-tourner toute la suite en
+  parallèle en espérant un vert (coût 2e/3e run), la relancer en `-Serial` supprime le
+  blast-radius de charge parallèle. Le run parallèle reste le défaut (plus rapide).
+
 .PARAMETER Solution
   Chemin de la solution/projet (défaut : PlanningDeGarde.slnx à la racine).
 
 .EXAMPLE
   pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1
+.EXAMPLE
+  pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1 -Serial
 #>
 [CmdletBinding()]
 param(
     [string]$Filter,
+    [switch]$Serial,
     [string]$Solution = 'PlanningDeGarde.slnx'
 )
 
@@ -46,6 +58,10 @@ if ($zombies) { Start-Sleep -Milliseconds 500 }  # laisse l'OS relâcher les ver
 
 $dotnetArgs = @('test', $Solution, '--nologo')
 if ($Filter) { $dotnetArgs += @('--filter', $Filter) }
+# Sérialisation des assemblies : MaxCpuCount=1 côté RunSettings (après `--`) fait tourner les
+# projets de test l'un après l'autre → supprime le blast-radius des flakes *TempsReel* de charge
+# parallèle (SignalR/I/O). Ne masque pas une régression : un rouge déterministe reste rouge.
+if ($Serial) { $dotnetArgs += @('--', 'RunConfiguration.MaxCpuCount=1') }
 
 $raw = & dotnet @dotnetArgs 2>&1
 $exit = $LASTEXITCODE

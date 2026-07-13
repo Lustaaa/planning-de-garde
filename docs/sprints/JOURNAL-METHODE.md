@@ -75,6 +75,16 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   document via port `IEcouteurEchapModal`. Fix : garde-fou dans `dev-team` — les interactions clavier/focus
   (Échap, raccourcis) ne se prouvent **jamais** par `@onkeydown` bUnit ; capter au niveau `document` via port
   hexagonal (attaché à l'ouverture / détaché à la fermeture), preuve finale = **gate navigateur PO**.
+- 2026-07-13 — s36 : **5ᵉ montée du flake P1 SignalR *TempsReel* (blast-radius), coût désormais tangible
+  AU GATE** — le runner `test.ps1` (parallèle) a viré rouge **~1 fois sur 2** (4 runs : rouge/rouge/vert/
+  vert ; Web.Tests isolé 258/258 vert ; `dotnet test slnx` **sérialisé** vert), soit un 2e/3e run manuel à
+  CHAQUE gate. Contrairement aux sprints où « le protocole a tenu → skip », le coût récurrent est chiffrable
+  et le remède identifié. Fix (2 volets, sans masquer de régression) : (1) `test.ps1` gagne un switch
+  **`-Serial`** (`-- RunConfiguration.MaxCpuCount=1`) — suite COMPLÈTE mais assemblies sérialisées, mode gate
+  anti-flake documenté dans `dotnet/SKILL.md` (relancer en série plutôt que rejouer toute la suite en
+  parallèle) ; un rouge déterministe reste rouge en série, le triage flake s21 reste la règle. (2) Backlog :
+  la dette « rétrofit *TempsReel* » (P1) est **remontée en TÊTE** avec la solution technique (collections
+  xUnit non parallèles pour les tests I/O), à traiter avant tout nouveau client SignalR.
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake
