@@ -421,6 +421,19 @@
                                         <InputText class="form-control" @bind-Value="_role.Libelle" data-testid="champ-libelle-role"
                                                    placeholder="Libellé du rôle (ex. Nounou)" />
                                     </div>
+                                    @* Sc.6 (s36) — case « rôle parent » (édition seule) : reflète le flag COURANT du rôle
+                                       (source de vérité de l'éligibilité au lien enfant↔parent, jamais le libellé). Un rôle
+                                       créé démarre non-parent (Sc.3), la case n'apparaît qu'en édition. *@
+                                    @if (!_modalRoleAjout)
+                                    {
+                                        <div class="mb-3 form-check form-switch">
+                                            <input type="checkbox" class="form-check-input" role="switch" id="role-parent-flag"
+                                                   data-testid="checkbox-role-parent" checked="@_role.EstParent"
+                                                   @onchange="e => _role.EstParent = (bool)e.Value!" />
+                                            <label class="form-check-label" for="role-parent-flag">
+                                                Rôle parent (les acteurs qui le portent sont liables comme parents d'un enfant)</label>
+                                        </div>
+                                    }
                                     <div class="d-flex gap-2">
                                         <button type="submit" class="btn btn-primary">Enregistrer</button>
                                         <button type="button" class="btn btn-link" data-testid="dialog-role-annuler"

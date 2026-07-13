@@ -39,7 +39,7 @@
 > - **Saisie / édition du `TypeActeur` lui-même** : hors scope (le type n'est plus le pivot de
 >   l'éligibilité ; il reste au seul service du gating d'écriture R8/R9, inchangé).
 
-## Avancement — 5/7
+## Avancement — 6/7
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -48,7 +48,7 @@
 | 3 | **Amorçage B2** : au seed du foyer, rôles Papa/Maman/Parent **pré-cochés parent** (autres non) ; un rôle créé ensuite démarre **non-parent** ; seed démo affecte un rôle-parent aux acteurs-parents | back | ✅ |
 | 4 | **`LierEnfantParentHandler`** — éligibilité = l'acteur **porte un rôle marqué parent** (REMPLACE `TypeActeur.Parent`) ; rôle non-parent (Nounou/Grand-parent) ou sans rôle = REFUSÉ, sans écriture partielle | back | ✅ |
 | 5 | Sélecteur parents modal Enfants **`ActeursParents()`** énumère les acteurs à **rôle marqué parent** (l'IHM suit exactement la règle back) | 🖥️ IHM | ✅ |
-| 6 | **Case « rôle parent »** dans la modal Rôles (patron crayon→modal s33) : coche/décoche, Échap=Annuler, **Parent-gated**, convergence **SignalR** temps réel | 🖥️ IHM | ⏳ |
+| 6 | **Case « rôle parent »** dans la modal Rôles (patron crayon→modal s33) : coche/décoche, Échap=Annuler, **Parent-gated**, convergence **SignalR** temps réel | 🖥️ IHM | ✅ |
 | 7 | **Preuve runtime seed** : Valérie (Nounou) et Mamie (Grand-parent) **N'apparaissent PAS** ; Alice/Bruno (Papa/Maman marqués parent) apparaissent et sont liables ; décocher « parent » les retire en temps réel | 🖥️ IHM | ⏳ |
 
 > **⚠️ GARDE — lot atomique : REMPLACEMENT de l'option A, pas coexistence (Sc.4).** Les commits s36
@@ -141,7 +141,7 @@ Alors la commande « lier » (Sc.4) est émise via le canal HTTP et le tableau r
 Et l'IHM suit EXACTEMENT la règle back (aucun critère d'éligibilité divergent entre back et IHM)
 ```
 
-### Sc.6 — Case « rôle parent » dans la modal Rôles (crayon→modal s33) @ihm @pending
+### Sc.6 — Case « rôle parent » dans la modal Rôles (crayon→modal s33) @ihm @vert
 ```gherkin
 Étant donné l'onglet Rôles de la config (tableau lecture seule + crayon→modal, s33), connecté en tant que Parent
 Quand j'ouvre la modal d'édition d'un rôle

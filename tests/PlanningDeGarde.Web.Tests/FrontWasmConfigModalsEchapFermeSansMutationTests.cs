@@ -121,11 +121,14 @@ public sealed class FrontWasmConfigModalsEchapFermeSansMutationTests : TestConte
         config.WaitForElement("[data-testid='dialog-role']", TimeSpan.FromSeconds(10));
         config.WaitForAssertion(() => Assert.Equal(1, espion.Attachements), TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Renommage non enregistré"));
+        // Sc.6 (s36) : je coche aussi la case « rôle parent » (non enregistrée) — Échap doit l'abandonner.
+        this.SurDispatcher(() => config.Find("[data-testid='checkbox-role-parent']").Change(true));
 
         // When — Échap document.
         this.SurDispatcher(() => espion.DeclencherEchapDocument().GetAwaiter().GetResult());
 
-        // Then — la modal se ferme, l'écouteur est détaché, et le référentiel porte toujours « Nounou ».
+        // Then — la modal se ferme, l'écouteur est détaché, et le référentiel porte toujours « Nounou »
+        // NON marqué parent (aucune mutation : ni libellé, ni flag).
         config.WaitForAssertion(
             () =>
             {
@@ -135,6 +138,7 @@ public sealed class FrontWasmConfigModalsEchapFermeSansMutationTests : TestConte
             TimeSpan.FromSeconds(10));
         var roles = api.Services.GetRequiredService<IEnumerationRoles>().EnumererRoles();
         Assert.Equal("Nounou", roles.Single(r => r.Id == "role-nounou").Libelle);
+        Assert.False(roles.Single(r => r.Id == "role-nounou").EstRoleParent); // flag intact (Échap = annuler)
     }
 
     [Fact]
