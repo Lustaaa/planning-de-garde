@@ -44,11 +44,23 @@ public sealed class ReferentielRolesMongo : IEnumerationRoles, IEditeurReferenti
         _roles.DeleteOne(Builders<RoleDocument>.Filter.Eq(d => d.Id, roleId));
     }
 
-    /// <summary>Écrit le libellé du rôle sur son id stable (write-through Mongo, upsert) — survit
-    /// au redémarrage. Le même id reste un unique document (jamais de doublon).</summary>
-    private void Persister(string roleId, string libelle)
+    public void MarquerParent(string roleId, bool estParent)
     {
-        var doc = new RoleDocument { Id = roleId, Libelle = libelle };
+        // Pose/retire le flag « est un rôle parent » (s36, B1), write-through durable, SANS toucher au
+        // libellé (surface distincte) : on relit le libellé courant pour ne réécrire QUE le flag.
+        var libelle = _cache.TryGetValue(roleId, out var courant) ? courant.Libelle : string.Empty;
+        Persister(roleId, libelle, estParent);
+    }
+
+    /// <summary>Écrit le libellé du rôle sur son id stable (write-through Mongo, upsert) — survit
+    /// au redémarrage. Le même id reste un unique document (jamais de doublon). Le flag parent (surface
+    /// distincte) est PRÉSERVÉ : renommer ne le réinitialise pas (on relit l'état courant).</summary>
+    private void Persister(string roleId, string libelle)
+        => Persister(roleId, libelle, _cache.TryGetValue(roleId, out var courant) && courant.EstRoleParent);
+
+    private void Persister(string roleId, string libelle, bool estRoleParent)
+    {
+        var doc = new RoleDocument { Id = roleId, Libelle = libelle, EstRoleParent = estRoleParent };
         _cache[roleId] = doc;
         _roles.ReplaceOne(
             Builders<RoleDocument>.Filter.Eq(d => d.Id, roleId),
@@ -57,13 +69,17 @@ public sealed class ReferentielRolesMongo : IEnumerationRoles, IEditeurReferenti
     }
 
     public IReadOnlyCollection<RoleFoyer> EnumererRoles()
-        => _cache.Values.Select(d => new RoleFoyer(d.Id, d.Libelle)).ToList();
+        => _cache.Values.Select(d => new RoleFoyer(d.Id, d.Libelle, d.EstRoleParent)).ToList();
 
-    /// <summary>Document persisté d'un rôle du foyer : identifiant stable (clé) et libellé.</summary>
+    /// <summary>Document persisté d'un rôle du foyer : identifiant stable (clé), libellé et flag
+    /// « est un rôle parent » (s36, B1). Défaut BSON <c>false</c> : un document antérieur sans ce
+    /// champ (donnée d'avant s36) se relit non-parent, sans crash.</summary>
     private sealed class RoleDocument
     {
         [BsonId]
         public string Id { get; set; } = default!;
         public string Libelle { get; set; } = default!;
+        [BsonDefaultValue(false)]
+        public bool EstRoleParent { get; set; }
     }
 }

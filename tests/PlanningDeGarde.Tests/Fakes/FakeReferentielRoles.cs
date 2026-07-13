@@ -13,13 +13,21 @@ namespace PlanningDeGarde.Tests.Fakes;
 public sealed class FakeReferentielRoles : IEditeurReferentielRoles, IEnumerationRoles
 {
     private readonly Dictionary<string, string> _libelles = new();
+    private readonly Dictionary<string, bool> _parents = new(); // s36 : flag « est rôle parent » (surface distincte)
 
     public void Creer(string roleId, string libelle) => _libelles[roleId] = libelle;
 
     public void Renommer(string roleId, string nouveauLibelle) => _libelles[roleId] = nouveauLibelle;
 
-    public void Supprimer(string roleId) => _libelles.Remove(roleId); // tolérant à l'absence (idempotence)
+    public void Supprimer(string roleId)
+    {
+        _libelles.Remove(roleId); // tolérant à l'absence (idempotence)
+        _parents.Remove(roleId);
+    }
+
+    public void MarquerParent(string roleId, bool estParent) => _parents[roleId] = estParent;
 
     public IReadOnlyCollection<RoleFoyer> EnumererRoles()
-        => _libelles.Select(kv => new RoleFoyer(kv.Key, kv.Value)).ToList();
+        => _libelles.Select(kv => new RoleFoyer(
+            kv.Key, kv.Value, _parents.TryGetValue(kv.Key, out var p) && p)).ToList();
 }
