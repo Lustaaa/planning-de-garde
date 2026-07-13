@@ -39,13 +39,13 @@
 > - **Saisie / édition du `TypeActeur` lui-même** : hors scope (le type n'est plus le pivot de
 >   l'éligibilité ; il reste au seul service du gating d'écriture R8/R9, inchangé).
 
-## Avancement — 2/7
+## Avancement — 3/7
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | `RoleFoyer` enrichi d'un flag **« est rôle parent »** (modèle + port lecture `IEnumerationRoles` + persistance **InMemory ET Mongo durable**) | back | ✅ |
 | 2 | Commande/handler **`MarquerRoleParent`** : bascule le flag d'un rôle (coche/décoche), idempotent, rôle inexistant refusé sans écriture | back | ✅ |
-| 3 | **Amorçage B2** : au seed du foyer, rôles Papa/Maman/Parent **pré-cochés parent** (autres non) ; un rôle créé ensuite démarre **non-parent** ; seed démo affecte un rôle-parent aux acteurs-parents | back | ⏳ |
+| 3 | **Amorçage B2** : au seed du foyer, rôles Papa/Maman/Parent **pré-cochés parent** (autres non) ; un rôle créé ensuite démarre **non-parent** ; seed démo affecte un rôle-parent aux acteurs-parents | back | ✅ |
 | 4 | **`LierEnfantParentHandler`** — éligibilité = l'acteur **porte un rôle marqué parent** (REMPLACE `TypeActeur.Parent`) ; rôle non-parent (Nounou/Grand-parent) ou sans rôle = REFUSÉ, sans écriture partielle | back | ⏳ |
 | 5 | Sélecteur parents modal Enfants **`ActeursParents()`** énumère les acteurs à **rôle marqué parent** (l'IHM suit exactement la règle back) | 🖥️ IHM | ⏳ |
 | 6 | **Case « rôle parent »** dans la modal Rôles (patron crayon→modal s33) : coche/décoche, Échap=Annuler, **Parent-gated**, convergence **SignalR** temps réel | 🖥️ IHM | ⏳ |
@@ -101,7 +101,7 @@ Quand la commande de bascule le désigne
 Alors le domaine REFUSE (rôle inexistant), le motif est restitué, AUCUNE écriture ne touche le store
 ```
 
-### Sc.3 — Amorçage B2 : Papa/Maman/Parent pré-cochés au seed, rôle créé ensuite non-parent @back @pending
+### Sc.3 — Amorçage B2 : Papa/Maman/Parent pré-cochés au seed, rôle créé ensuite non-parent @back @vert
 ```gherkin
 Étant donné la création (seed) d'un foyer avec les rôles Papa, Maman, Parent, Nounou, Grand-parent
 Alors les rôles de libellé Papa, Maman et Parent démarrent « est rôle parent » = true (pré-cochés)

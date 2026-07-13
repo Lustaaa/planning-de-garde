@@ -27,14 +27,11 @@ public sealed class FrontWasmConfigOngletActeursAffecterRoleRuntimeTests : TestC
     public void Should_affecter_un_role_a_un_acteur_via_un_selecteur_borne_au_referentiel()
     {
         // Given — l'écran de configuration réellement câblé à l'API distante réelle (store réel), identité
-        // Parent. On sème DEUX rôles dans le référentiel réel (Nounou, Grand-parent) via le port d'écriture
-        // réel — le sélecteur devra proposer exactement ces deux libellés (plus « sans rôle »), jamais un
-        // rôle en dur.
+        // Parent. Le référentiel porte les rôles du seed B2 (s36) : le sélecteur devra proposer EXACTEMENT ces
+        // libellés (plus « sans rôle »), jamais un rôle en dur.
         using var api = new ApiDistanteFactory();
-        var editeurRoles = api.Services.GetRequiredService<IEditeurReferentielRoles>();
-        var idNounou = "role-nounou";
-        editeurRoles.Creer(idNounou, "Nounou");
-        editeurRoles.Creer("role-grand-parent", "Grand-parent");
+        var libellesSeed = api.Services.GetRequiredService<IEnumerationRoles>()
+            .EnumererRoles().Select(r => r.Libelle).ToList();
 
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
         Services.AddSingleton(new SessionPlanning());
@@ -51,28 +48,34 @@ public sealed class FrontWasmConfigOngletActeursAffecterRoleRuntimeTests : TestC
             .QuerySelectorAll("option")
             .Select(o => o.TextContent.Trim())
             .ToList();
-        Assert.Contains("Nounou", options);
-        Assert.Contains("Grand-parent", options);
+        foreach (var libelle in libellesSeed)
+            Assert.Contains(libelle, options);
         Assert.Contains("sans rôle", options);
-        Assert.Equal(3, options.Count);
+        Assert.Equal(libellesSeed.Count + 1, options.Count);
+        ConfigActeursModalHarness.Fermer(this, config);
 
-        // Then (acteur sans rôle = neutre) — avant toute affectation, la ligne d'Alice affiche « sans rôle ».
-        Assert.Equal("sans rôle", ConfigActeursModalHarness.LigneParNom(config, "Alice")
+        // Then (acteur sans rôle = neutre) — Marie-Hélène (parent-c) ne porte aucun rôle au seed → « sans rôle ».
+        Assert.Equal("sans rôle", ConfigActeursModalHarness.LigneParNom(config, "Marie-Hélène Grand-Dubois")
             .QuerySelector("[data-testid='role-acteur-courant']")!.TextContent.Trim());
 
-        // When (affectation) — j'affecte « Nounou » à Alice via le sélecteur de la modal (POST
+        // Alice porte « Papa » au seed (Alice → Papa, marqué parent).
+        Assert.Equal("Papa", ConfigActeursModalHarness.LigneParNom(config, "Alice")
+            .QuerySelector("[data-testid='role-acteur-courant']")!.TextContent.Trim());
+
+        // When (affectation) — j'affecte « Grand-parent » à Alice via le sélecteur de la modal (POST
         // /api/canal/affecter-role, la valeur émise est l'id de rôle du référentiel, jamais un libellé en dur).
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-role-acteur']").Change(idNounou));
+        ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
+        this.SurDispatcher(() => config.Find("[data-testid='selecteur-role-acteur']").Change("role-grand-parent"));
 
         // Then (affectation persistée) — sans rechargement, la ligne d'Alice relue depuis le store affiche
-        // « Nounou », tandis qu'un acteur sans rôle (Bruno) reste « sans rôle » (neutre).
+        // « Grand-parent », tandis que Marie-Hélène (sans rôle) reste « sans rôle » (neutre).
         config.WaitForAssertion(
             () =>
             {
                 var alice = config.FindAll("[data-testid='acteur-foyer']").Single(li => NomLigne(li) == "Alice");
-                Assert.Equal("Nounou", alice.QuerySelector("[data-testid='role-acteur-courant']")!.TextContent.Trim());
-                var bruno = config.FindAll("[data-testid='acteur-foyer']").Single(li => NomLigne(li) == "Bruno");
-                Assert.Equal("sans rôle", bruno.QuerySelector("[data-testid='role-acteur-courant']")!.TextContent.Trim());
+                Assert.Equal("Grand-parent", alice.QuerySelector("[data-testid='role-acteur-courant']")!.TextContent.Trim());
+                var mh = config.FindAll("[data-testid='acteur-foyer']").Single(li => NomLigne(li) == "Marie-Hélène Grand-Dubois");
+                Assert.Equal("sans rôle", mh.QuerySelector("[data-testid='role-acteur-courant']")!.TextContent.Trim());
             },
             TimeSpan.FromSeconds(10));
     }

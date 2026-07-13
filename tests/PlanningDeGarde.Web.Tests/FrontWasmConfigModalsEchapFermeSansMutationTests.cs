@@ -110,11 +110,11 @@ public sealed class FrontWasmConfigModalsEchapFermeSansMutationTests : TestConte
     [Fact]
     public void Echap_document_sur_la_modal_Role_la_ferme_sans_muter_le_referentiel()
     {
-        // Given — un rôle « Nounou » est semé ; modal d'édition ouverte dessus ; je modifie le libellé.
+        // Given — le rôle « Nounou » est présent au référentiel (seed B2, s36) ; modal d'édition ouverte
+        // dessus ; je modifie le libellé.
         using var api = new ApiDistanteFactory();
-        api.Services.GetRequiredService<IEditeurReferentielRoles>().Creer("role-nounou", "Nounou");
         var (config, espion) = RendreConfig(api);
-        config.WaitForState(() => config.FindAll("[data-testid='role-foyer']").Count == 1, TimeSpan.FromSeconds(10));
+        config.WaitForState(() => config.FindAll("[data-testid='role-foyer']").Count >= 1, TimeSpan.FromSeconds(10));
 
         this.SurDispatcher(() => config.FindAll("[data-testid='crayon-role']")
             .Single(b => b.GetAttribute("data-role-id") == "role-nounou").Click());
@@ -230,12 +230,12 @@ public sealed class FrontWasmConfigModalsEchapFermeSansMutationTests : TestConte
     [Fact]
     public void Echap_document_ferme_meme_une_modal_en_etat_de_refus_sans_rien_reemettre()
     {
-        // Given — invariant : « Nounou » existe ; on ouvre l'ajout et on tente le doublon « Nounou » → REFUS
-        // (motif affiché, saisie conservée, modal restée ouverte).
+        // Given — invariant : « Nounou » existe (seed B2, s36) ; on ouvre l'ajout et on tente le doublon
+        // « Nounou » → REFUS (motif affiché, saisie conservée, modal restée ouverte).
         using var api = new ApiDistanteFactory();
-        api.Services.GetRequiredService<IEditeurReferentielRoles>().Creer("role-nounou", "Nounou");
+        var nbRolesAvant = api.Services.GetRequiredService<IEnumerationRoles>().EnumererRoles().Count;
         var (config, espion) = RendreConfig(api);
-        config.WaitForState(() => config.FindAll("[data-testid='role-foyer']").Count == 1, TimeSpan.FromSeconds(10));
+        config.WaitForState(() => config.FindAll("[data-testid='role-foyer']").Count >= 1, TimeSpan.FromSeconds(10));
 
         this.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-role']").Click());
         this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Nounou"));
@@ -245,11 +245,14 @@ public sealed class FrontWasmConfigModalsEchapFermeSansMutationTests : TestConte
         // When — Échap document sur la modal EN ÉTAT DE REFUS.
         this.SurDispatcher(() => espion.DeclencherEchapDocument().GetAwaiter().GetResult());
 
-        // Then — Échap ferme quand même (= annuler) et n'a rien réémis : toujours un seul rôle « Nounou ».
+        // Then — Échap ferme quand même (= annuler) et n'a rien réémis : le référentiel est INCHANGÉ
+        // (aucun rôle gagné, toujours un unique « Nounou »).
         config.WaitForAssertion(
             () => Assert.Empty(config.FindAll("[data-testid='dialog-role']")),
             TimeSpan.FromSeconds(10));
-        Assert.Single(api.Services.GetRequiredService<IEnumerationRoles>().EnumererRoles());
+        var rolesApres = api.Services.GetRequiredService<IEnumerationRoles>().EnumererRoles();
+        Assert.Equal(nbRolesAvant, rolesApres.Count);
+        Assert.Single(rolesApres, r => r.Libelle == "Nounou");
     }
 
     // ── Garde d'asset : le module JS window.pdgModal capte Échap au niveau DOCUMENT et le détache (miroir de

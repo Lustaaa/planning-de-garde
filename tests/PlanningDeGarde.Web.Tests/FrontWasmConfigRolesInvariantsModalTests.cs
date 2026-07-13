@@ -38,11 +38,12 @@ public sealed class FrontWasmConfigRolesInvariantsModalTests : TestContext
     [Fact]
     public void Un_libelle_doublon_laisse_la_modal_ouverte_avec_le_motif_dedans_la_saisie_conservee_et_la_table_inchangee()
     {
-        // Given — un rôle « Nounou » existe ; on ouvre la modal d'ajout et on tente de recréer « Nounou ».
+        // Given — le rôle « Nounou » existe (seed B2, s36) ; on ouvre la modal d'ajout et on tente de
+        // recréer « Nounou ».
         using var api = new ApiDistanteFactory();
-        api.Services.GetRequiredService<IEditeurReferentielRoles>().Creer("role-nounou", "Nounou");
+        var nbRolesAvant = api.Services.GetRequiredService<IEnumerationRoles>().EnumererRoles().Count;
         var config = RendreConfig(api);
-        config.WaitForState(() => config.FindAll("[data-testid='role-foyer']").Count == 1, TimeSpan.FromSeconds(10));
+        config.WaitForState(() => config.FindAll("[data-testid='role-foyer']").Count >= 1, TimeSpan.FromSeconds(10));
 
         this.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-role']").Click());
         this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Nounou"));
@@ -56,7 +57,9 @@ public sealed class FrontWasmConfigRolesInvariantsModalTests : TestContext
                 var modal = config.Find("[data-testid='dialog-role']");
                 Assert.NotNull(modal.QuerySelector("[data-testid='motif-echec-role']"));
                 Assert.Equal("Nounou", modal.QuerySelector("[data-testid='champ-libelle-role']")!.GetAttribute("value"));
-                Assert.Single(config.FindAll("[data-testid='role-foyer']"));
+                // Aucune écriture partielle : le référentiel n'a pas gagné de rôle, un seul « Nounou ».
+                Assert.Equal(nbRolesAvant, config.FindAll("[data-testid='role-foyer']").Count);
+                Assert.Single(config.FindAll("[data-testid='role-foyer']"), li => LibelleLigne(li) == "Nounou");
             },
             TimeSpan.FromSeconds(10));
     }

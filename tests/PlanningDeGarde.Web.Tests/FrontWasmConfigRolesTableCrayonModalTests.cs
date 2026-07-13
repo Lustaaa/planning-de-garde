@@ -65,8 +65,7 @@ public sealed class FrontWasmConfigRolesTableCrayonModalTests : TestContext
     public void Le_crayon_ouvre_une_modal_preremplie_qui_renomme_et_Ajouter_ouvre_la_meme_modal_vide_qui_cree()
     {
         using var api = new ApiDistanteFactory();
-        api.Services.GetRequiredService<IEditeurReferentielRoles>().Creer("role-nounou", "Nounou");
-        var config = RendreConfig(api);
+        var config = RendreConfig(api); // le rôle « Nounou » est présent au référentiel (seed B2, s36)
         config.WaitForState(() => config.FindAll("[data-testid='role-foyer']").Count > 0, TimeSpan.FromSeconds(10));
 
         // When (édition) — je clique le crayon du rôle : la modal s'ouvre PRÉ-REMPLIE avec « Nounou ».
@@ -86,17 +85,18 @@ public sealed class FrontWasmConfigRolesTableCrayonModalTests : TestContext
             },
             TimeSpan.FromSeconds(10));
 
-        // When (création) — « Ajouter un rôle » ouvre la MÊME modal VIDE → j'y crée « Grand-parent ».
+        // When (création) — « Ajouter un rôle » ouvre la MÊME modal VIDE → j'y crée « Baby-sitter » (libellé
+        // neuf, non déjà semé).
         this.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-role']").Click());
         config.WaitForElement("[data-testid='dialog-role']", TimeSpan.FromSeconds(10));
         Assert.Equal("", config.Find("[data-testid='champ-libelle-role']").GetAttribute("value"));
-        this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Grand-parent"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Baby-sitter"));
         this.SurDispatcher(() => config.Find("#form-role").Submit());
         config.WaitForAssertion(
             () =>
             {
                 Assert.Empty(config.FindAll("[data-testid='dialog-role']"));
-                Assert.Contains(config.FindAll("[data-testid='role-foyer']"), li => LibelleLigne(li) == "Grand-parent");
+                Assert.Contains(config.FindAll("[data-testid='role-foyer']"), li => LibelleLigne(li) == "Baby-sitter");
             },
             TimeSpan.FromSeconds(10));
     }

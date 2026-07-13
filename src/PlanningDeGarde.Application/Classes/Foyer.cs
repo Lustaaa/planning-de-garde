@@ -84,4 +84,42 @@ public static class Foyer
     /// <summary>Type par défaut d'un acteur non déclaré dans <see cref="TypesParActeur"/> (acteur ajouté
     /// en session) : Parent (aucune saisie de type, borne anti-cliquet règle 30).</summary>
     public const TypeActeur TypeParDefaut = TypeActeur.Parent;
+
+    /// <summary>
+    /// Rôles pré-définis du foyer au SEED (amorçage B2, s36) : identifiant stable opaque + libellé +
+    /// flag « est un rôle parent ». Les rôles Papa / Maman / Parent démarrent <b>pré-cochés parent</b>
+    /// (source de vérité de l'éligibilité au lien enfant↔parent) ; Nounou / Grand-parent démarrent
+    /// non-parent. Le pré-cochage ne vaut QUE pour ce seed initial : un rôle créé ensuite via
+    /// <c>CreerRole</c> démarre non-parent, même si son libellé est « Papa/Maman/Parent » (le flag reste
+    /// posé explicitement, jamais reconnu au libellé — anti-piège s35). Amorcé au composition root
+    /// (parité seed InMemory enfants/acteurs, asymétrie s15 : jamais côté Mongo).
+    /// </summary>
+    public static readonly IReadOnlyList<RoleSeed> RolesSeed = new[]
+    {
+        new RoleSeed("role-papa", "Papa", true),
+        new RoleSeed("role-maman", "Maman", true),
+        new RoleSeed("role-parent", "Parent", true),
+        new RoleSeed("role-nounou", "Nounou", false),
+        new RoleSeed("role-grand-parent", "Grand-parent", false),
+    };
+
+    /// <summary>
+    /// Affectation de rôle par acteur au SEED (amorçage B2, s36) : les acteurs-parents portent un
+    /// rôle marqué parent (Alice → Papa, Bruno → Maman) pour rester <b>liables</b> sous l'éligibilité
+    /// role-based ; les intervenants portent un rôle non-parent (Nina → Nounou, grand-père →
+    /// Grand-parent) donc <b>non liables</b>. Marie-Hélène (Admin) ne porte aucun rôle-parent (absente
+    /// → « sans rôle », non liable). Amorcé au composition root sur le store des acteurs.
+    /// </summary>
+    public static readonly IReadOnlyDictionary<string, string> RolesParActeur =
+        new Dictionary<string, string>
+        {
+            ["parent-a"] = "role-papa",          // Alice → Papa (marqué parent → liable)
+            ["parent-b"] = "role-maman",         // Bruno → Maman (marqué parent → liable)
+            ["nounou"] = "role-nounou",          // Nina → Nounou (non-parent → non liable)
+            ["grand-pere"] = "role-grand-parent",// grand-père → Grand-parent (non-parent → non liable)
+        };
 }
+
+/// <summary>Un rôle pré-défini du foyer au seed (B2, s36) : id stable opaque, libellé, et flag
+/// « est un rôle parent » posé à l'amorçage.</summary>
+public sealed record RoleSeed(string Id, string Libelle, bool EstRoleParent);
