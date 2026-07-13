@@ -443,15 +443,15 @@ public partial class ConfigurationFoyer
         _ => "parent",
     };
 
-    /// <summary>Libellé de lecture des parents liés d'un enfant (Sc.4) : chaque parent résolu en NOM d'acteur
-    /// (jamais un libellé en dur), séparés par « , » ; « — » si aucun parent lié. L'affichage du rôle-du-lien
-    /// dans la colonne arrive en Sc.5.</summary>
+    /// <summary>Libellé de lecture des parents liés d'un enfant (Sc.4/Sc.5) : chaque parent résolu en NOM
+    /// d'acteur (jamais un libellé en dur) suivi de son <b>rôle-du-lien</b> entre parenthèses
+    /// (« Alice (père) », s37), séparés par « , » ; « — » si aucun parent lié.</summary>
     private string LibelleParentsLies(EnfantFoyer enfant)
     {
-        var noms = enfant.ParentsLies
-            .Select(p => _acteurs.FirstOrDefault(a => a.Id == p.ActeurId)?.Nom ?? p.ActeurId)
+        var libelles = enfant.ParentsLies
+            .Select(p => $"{_acteurs.FirstOrDefault(a => a.Id == p.ActeurId)?.Nom ?? p.ActeurId} ({LibelleRoleDuLien(p.Role)})")
             .ToList();
-        return noms.Count == 0 ? "—" : string.Join(", ", noms);
+        return libelles.Count == 0 ? "—" : string.Join(", ", libelles);
     }
 
     /// <summary>Enfants du référentiel du foyer énumérés <b>depuis le store vivant</b> (GET /api/foyer/enfants),

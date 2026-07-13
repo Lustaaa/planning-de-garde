@@ -25,7 +25,7 @@
 > - **Saisie/édition du `TypeActeur`**, champ père/mère au niveau de l'acteur lui-même : hors goal
 >   (le rôle-du-lien vit sur le **lien**, pas sur l'acteur).
 
-## Avancement — 4/5
+## Avancement — 5/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -33,7 +33,7 @@
 | 2 | Rejets **sans écriture partielle** : deux « père » (ou deux « mère ») refusés ; borne 0..2 (s34) + éligibilité role-flag (s36) inchangées ; lier/délier idempotents | back | ✅ |
 | 3 | **Compat + query** : le rôle-du-lien est relu au rechargement ; lien déjà persisté sans attribut → **défaut « parent-libre »** (pas de crash, pas de migration destructive) | back | ✅ |
 | 4 | Modal Enfants : **sélecteur père/mère/parent** par parent lié (pré-réglé) ; refus→modal ouverte + motif + sélection conservée ; Échap=Annuler | 🖥️ IHM | ✅ |
-| 5 | Colonne « Parents liés » affiche le **rôle-du-lien** à côté du nom ; **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
+| 5 | Colonne « Parents liés » affiche le **rôle-du-lien** à côté du nom ; **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ✅ |
 
 > **⚠️ Point de vigilance — compat des liens déjà persistés (Sc.3).** Le lien enfant↔parent (s34)
 > est déjà **persisté Mongo** sans rôle-du-lien. L'ajout de l'attribut est **rétro-compatible** :
@@ -119,7 +119,7 @@ Et le tableau reste INCHANGÉ (aucune écriture partielle)
 Et la fermeture Échap (port IEcouteurEchapModal s33) referme SANS mutation (aucune commande émise)
 ```
 
-### Sc.5 — Colonne « Parents liés » affiche le rôle-du-lien + gating + SignalR @ihm @pending
+### Sc.5 — Colonne « Parents liés » affiche le rôle-du-lien + gating + SignalR @ihm @vert
 ```gherkin
 Étant donné l'onglet « Enfants » de /configuration, connecté en tant que Parent
 Quand le tableau est rendu

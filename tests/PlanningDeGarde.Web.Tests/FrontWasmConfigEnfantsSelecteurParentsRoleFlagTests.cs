@@ -74,7 +74,7 @@ public sealed class FrontWasmConfigEnfantsSelecteurParentsRoleFlagTests : TestCo
             () =>
             {
                 Assert.Empty(config.FindAll("[data-testid='dialog-enfant']"));
-                Assert.Equal("Alice", ParentsLies(config));
+                Assert.Equal("Alice (parent)", ParentsLies(config));
             },
             TimeSpan.FromSeconds(10));
         Assert.Contains(
