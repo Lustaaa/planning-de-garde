@@ -26,15 +26,15 @@
 > - **Familles recomposées R2/R3** (« exactement 2 parents », graphe enfant-racine) : autre
 >   incrément, **non traité ici** (le lien reste borné 0..2 comme s34).
 
-## Avancement — 3/5
+## Avancement — 5/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Éligibilité du lien basculée sur **`TypeActeur.Parent`** dans `LierEnfantParentHandler` (source unique, alignée admin=Parent s22) | back | ✅ |
 | 2 | **Filet d'invariant révisé** : Parent-par-nature SANS rôle « Parent » = LIABLE ; `TypeActeur.Autre` (Mamie) = REFUSÉ même avec un rôle libellé « Parent », sans écriture partielle | back | ✅ |
 | 3 | Non-régression **gating impersonation R8/R9** (porté par `TypeActeur`, aucune dérive du droit d'écriture) | back | ✅ |
-| 4 | Sélecteur de la modal Enfants `ActeursParents()` énumère les acteurs **`TypeActeur.Parent`** (l'IHM suit exactement la règle back) | 🖥️ IHM | ⏳ |
-| 5 | **Preuve runtime** : seed démo (Alice/Bruno = Parent) liable DIRECTEMENT, sans créer de rôle « Parent » ; Papa/Maman distingués par le NOM | 🖥️ IHM | ⏳ |
+| 4 | Sélecteur de la modal Enfants `ActeursParents()` énumère les acteurs **`TypeActeur.Parent`** (l'IHM suit exactement la règle back) | 🖥️ IHM | ✅ |
+| 5 | **Preuve runtime** : seed démo (Alice/Bruno = Parent) liable DIRECTEMENT, sans créer de rôle « Parent » ; Papa/Maman distingués par le NOM | 🖥️ IHM | ✅ |
 
 > **⚠️ GARDE — bascule d'invariant ⇒ lot atomique règle ↔ tests dépendants (Sc.1/Sc.2).** Le lien
 > s34 fixait l'éligibilité sur le **libellé de rôle** ; **les tests d'acceptation s34** rendaient un
@@ -95,7 +95,7 @@ Et la non-régression impersonation s14 (retour à l'identité réelle, repli su
 Et la suite COMPLÈTE reste verte (aucun scénario hors-cible cassé par la révision d'invariant)
 ```
 
-### Sc.4 — Sélecteur de la modal Enfants aligné sur `TypeActeur.Parent` @ihm @pending
+### Sc.4 — Sélecteur de la modal Enfants aligné sur `TypeActeur.Parent` @ihm @vert
 ```gherkin
 Étant donné la modal d'édition d'un enfant ouverte (onglet Enfants, connecté en tant que Parent)
 Et le sélecteur des parents alimenté par ActeursParents() (ConfigurationFoyer.razor.cs)
@@ -108,7 +108,7 @@ Alors la commande « lier » (Sc.1) est émise via le canal HTTP et le tableau r
 Et l'IHM suit EXACTEMENT la règle back (aucun critère d'éligibilité divergent entre back et IHM)
 ```
 
-### Sc.5 — Preuve runtime : seed démo liable directement + distinction par le nom @ihm @pending
+### Sc.5 — Preuve runtime : seed démo liable directement + distinction par le nom @ihm @vert
 ```gherkin
 Étant donné l'app lancée sur le seed démo (Alice et Bruno, tous deux TypeActeur.Parent)
 Et un enfant déclaré dans le foyer
