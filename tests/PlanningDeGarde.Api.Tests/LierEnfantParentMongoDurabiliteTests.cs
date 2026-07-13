@@ -28,21 +28,24 @@ public sealed class LierEnfantParentMongoDurabiliteTests : IDisposable
         public void NotifierMiseAJour() { }
     }
 
-    /// <summary>Foyer (adaptateurs InMemory réels) avec un acteur AJOUTÉ en session — de type
-    /// <see cref="TypeActeur.Parent"/> par défaut (Foyer.TypeParDefaut), SANS aucun rôle — précondition
-    /// valide du lien (option A, s36 : parent liable = TypeActeur.Parent, le rôle ne qualifie plus).
-    /// Retourne l'identifiant stable du parent.</summary>
-    private static (ConfigurationFoyerEnMemoire config, string parentId) FoyerAvecUnParent(string prenom)
+    /// <summary>Foyer (adaptateurs InMemory réels) avec un acteur AJOUTÉ en session portant un rôle marqué
+    /// « est rôle parent » — précondition valide du lien (option B1, s36 : parent liable = l'acteur porte un
+    /// rôle marqué parent). Retourne la config, le référentiel de rôles et l'identifiant stable du parent.</summary>
+    private static (ConfigurationFoyerEnMemoire config, ReferentielRolesEnMemoire roles, string parentId) FoyerAvecUnParent(string prenom)
     {
+        var roles = new ReferentielRolesEnMemoire();
+        roles.Creer("role-papa", "Papa");
+        roles.MarquerParent("role-papa", true);
         var config = new ConfigurationFoyerEnMemoire();
         var parentId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(prenom)).Valeur!.ActeurId;
-        return (config, parentId);
+        config.AffecterRole(parentId, "role-papa");
+        return (config, roles, parentId);
     }
 
     [MongoRequisFact]
     public void Acceptation_Should_Relire_le_parent_lie_sur_le_meme_id_apres_redemarrage_When_l_enfant_a_ete_lie_sur_le_store_Mongo_reel()
     {
-        var (config, papaId) = FoyerAvecUnParent("Papa");
+        var (config, roles, papaId) = FoyerAvecUnParent("Papa");
 
         // --- Serveur #1 : ajout de « Léa » et « Tom », puis lien Léa → parent-acteur « Papa » ---
         string leaId, tomId;
@@ -52,7 +55,7 @@ public sealed class LierEnfantParentMongoDurabiliteTests : IDisposable
             leaId = ajout.Handle(new AjouterEnfantCommand("Léa")).Valeur!.EnfantId;
             tomId = ajout.Handle(new AjouterEnfantCommand("Tom")).Valeur!.EnfantId;
 
-            var lier = new LierEnfantParentHandler(store1, config, store1);
+            var lier = new LierEnfantParentHandler(store1, config, roles, store1);
             var resultat = lier.Handle(new LierEnfantParentCommand(leaId, papaId));
             Assert.True(resultat.EstSucces);
         }

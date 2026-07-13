@@ -29,11 +29,18 @@ public sealed class DelierEnfantParentMongoDurabiliteTests : IDisposable
     [MongoRequisFact]
     public void Acceptation_Should_Relire_l_enfant_sans_le_parent_delie_mais_avec_l_autre_apres_redemarrage_When_on_delie_sur_le_store_Mongo_reel()
     {
-        // Foyer (adaptateurs InMemory réels) : deux Parents (acteurs ajoutés en session, TypeActeur.Parent
-        // par défaut — option A, s36 : le rôle du référentiel ne qualifie plus l'éligibilité).
+        // Foyer (adaptateurs InMemory réels) : deux acteurs portant un rôle marqué « est rôle parent »
+        // (option B1, s36 : parent liable = l'acteur porte un rôle marqué parent).
+        var roles = new ReferentielRolesEnMemoire();
+        roles.Creer("role-papa", "Papa");
+        roles.MarquerParent("role-papa", true);
         var config = new ConfigurationFoyerEnMemoire();
         string Parent(string p)
-            => new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(p)).Valeur!.ActeurId;
+        {
+            var id = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(p)).Valeur!.ActeurId;
+            config.AffecterRole(id, "role-papa");
+            return id;
+        }
         var papa = Parent("Papa");
         var maman = Parent("Maman");
         var mamie = Parent("Mamie"); // jamais liée — cible du délier idempotent
@@ -43,7 +50,7 @@ public sealed class DelierEnfantParentMongoDurabiliteTests : IDisposable
             var store1 = NouveauStore();
             leaId = new AjouterEnfantHandler(store1, store1, new NotificateurMuet())
                 .Handle(new AjouterEnfantCommand("Léa")).Valeur!.EnfantId;
-            var lier = new LierEnfantParentHandler(store1, config, store1);
+            var lier = new LierEnfantParentHandler(store1, config, roles, store1);
             lier.Handle(new LierEnfantParentCommand(leaId, papa));
             lier.Handle(new LierEnfantParentCommand(leaId, maman));
 
