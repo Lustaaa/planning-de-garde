@@ -388,11 +388,13 @@ public partial class ConfigurationFoyer
         _motifEchecEnfant = null;
     }
 
-    /// <summary>Acteurs candidats au lien parent (Sc.5) : exactement ceux portant le rôle « Parent » du
-    /// référentiel de rôles (libellé résolu sur l'id de rôle, jamais un rôle en dur). Alimente le sélecteur.</summary>
+    /// <summary>Acteurs candidats au lien parent (s34 Sc.5, éligibilité role-based s36 Sc.4/Sc.5) : exactement
+    /// ceux dont le rôle affecté est marqué « est rôle parent » (le FLAG du rôle, résolu sur l'id, jamais le
+    /// libellé ni le TypeActeur). L'IHM suit EXACTEMENT la règle back (<c>LierEnfantParentHandler</c>) — aucun
+    /// critère divergent. Un acteur sans rôle, ou à rôle non marqué (Nounou/Grand-parent), n'apparaît pas.</summary>
     private IEnumerable<ActeurFoyer> ActeursParents()
         => _acteurs.Where(a => a.RoleId is { } roleId
-            && _roles.FirstOrDefault(r => r.Id == roleId)?.Libelle == "Parent");
+            && _roles.FirstOrDefault(r => r.Id == roleId)?.EstRoleParent == true);
 
     /// <summary>Bascule la sélection d'un parent dans la modal (Sc.5). Borne « 2 parents max » reflétée à
     /// l'écran : on n'ajoute pas au-delà de 2 (les cases non cochées sont d'ailleurs désactivées).</summary>

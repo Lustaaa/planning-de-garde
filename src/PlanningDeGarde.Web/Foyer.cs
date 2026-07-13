@@ -51,9 +51,11 @@ public sealed record Responsable(string Id, string Libelle);
 public sealed record ActeurFoyer(string Id, string Nom, string Couleur = "gris", TypeActeur Type = TypeActeur.Parent, string? RoleId = null, string? Adresse = null);
 
 /// <summary>Un rôle du référentiel du foyer <b>énuméré depuis le store durable</b> via le canal de
-/// lecture (s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable.
-/// Alimente la liste des rôles de l'onglet Acteurs et le sélecteur de rôle borné au référentiel.</summary>
-public sealed record RoleFoyer(string Id, string Libelle);
+/// lecture (s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable +
+/// flag <see cref="EstRoleParent"/> « est un rôle parent » (s36, B1 — source de vérité de l'éligibilité
+/// au lien enfant↔parent, jamais le libellé). Alimente la liste des rôles de l'onglet Acteurs, le sélecteur
+/// de rôle borné au référentiel, la case « rôle parent » de la modal Rôles et le sélecteur des parents.</summary>
+public sealed record RoleFoyer(string Id, string Libelle, bool EstRoleParent = false);
 
 /// <summary>Une affectation déclarée du cycle de fond <b>lue depuis le store</b> via le canal de lecture
 /// (s33, Sc.3, GET /api/foyer/cycles) : index de semaine (0..N-1) → identifiant stable du responsable de

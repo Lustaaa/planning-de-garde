@@ -27,9 +27,11 @@ public static class CanalLecture
     public sealed record ActeurFoyerVue(string Id, string Nom, string Couleur, TypeActeur Type, string? RoleId, string? Adresse);
 
     /// <summary>Vue d'un rôle du référentiel du foyer énumérée pour l'écran de configuration (onglet
-    /// Acteurs, s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable.
-    /// Alimente la liste des rôles et le sélecteur de rôle borné au référentiel (jamais de rôle en dur).</summary>
-    public sealed record RoleFoyerVue(string Id, string Libelle);
+    /// Acteurs, s21) : identifiant stable opaque (clé, jamais le libellé) + libellé d'affichage éditable +
+    /// flag <see cref="EstRoleParent"/> « est un rôle parent » (s36, B1 — source de vérité de l'éligibilité
+    /// au lien enfant↔parent). Alimente la liste des rôles, le sélecteur de rôle borné au référentiel et la
+    /// case « rôle parent » de la modal Rôles (jamais de rôle en dur, jamais une reconnaissance de libellé).</summary>
+    public sealed record RoleFoyerVue(string Id, string Libelle, bool EstRoleParent);
 
     /// <summary>Vue d'une activité du référentiel du foyer énumérée pour l'écran de configuration (onglet
     /// Activités, s35) et les sélecteurs de lieu des dialogs (axe LOCALISATION du slot, préservé) : identifiant
@@ -102,7 +104,7 @@ public static class CanalLecture
             (IEnumerationRoles roles) =>
             {
                 var vues = roles.EnumererRoles()
-                    .Select(r => new RoleFoyerVue(r.Id, r.Libelle))
+                    .Select(r => new RoleFoyerVue(r.Id, r.Libelle, r.EstRoleParent))
                     .ToList();
                 return Results.Ok(vues);
             });
