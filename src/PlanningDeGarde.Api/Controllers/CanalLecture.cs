@@ -42,9 +42,10 @@ public static class CanalLecture
 
     /// <summary>Vue d'un enfant du référentiel du foyer énumérée pour l'écran de configuration (onglet Enfants,
     /// s30) et le sélecteur d'enfant des dialogs de pose : identifiant stable opaque (clé, bindé par les
-    /// sélecteurs, jamais le prénom) + prénom d'affichage + la <b>liste des identifiants stables des parents-acteurs
-    /// liés</b> (0..2, s34 — la colonne « Parents liés » les résout en noms). Lue depuis le store vivant.</summary>
-    public sealed record EnfantFoyerVue(string Id, string Prenom, IReadOnlyCollection<string> ParentsLies);
+    /// sélecteurs, jamais le prénom) + prénom d'affichage + la <b>liste de ses parents liés</b> (0..2, s34),
+    /// chacun avec son <b>rôle-du-lien</b> (père / mère / parent-libre, s37 — la colonne « Parents liés » résout
+    /// l'id en nom ET affiche le rôle). Lue depuis le store vivant (record <see cref="ParentLie"/> réutilisé).</summary>
+    public sealed record EnfantFoyerVue(string Id, string Prenom, IReadOnlyCollection<ParentLie> ParentsLies);
 
     /// <summary>Vue d'un compte utilisateur du foyer énumérée pour l'écran de configuration (onglet Acteurs,
     /// s22) : identifiant stable opaque (clé, jamais l'email) + email + statut (« inactif » / « actif ») +
@@ -131,7 +132,7 @@ public static class CanalLecture
             (IEnumerationEnfants enfants) =>
             {
                 var vues = enfants.EnumererEnfants()
-                    .Select(e => new EnfantFoyerVue(e.Id, e.Prenom, e.ParentsLies.Select(p => p.ActeurId).ToList()))
+                    .Select(e => new EnfantFoyerVue(e.Id, e.Prenom, e.ParentsLies))
                     .ToList();
                 return Results.Ok(vues);
             });

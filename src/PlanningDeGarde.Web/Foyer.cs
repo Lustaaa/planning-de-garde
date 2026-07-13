@@ -86,10 +86,11 @@ public sealed record ActiviteFoyer(string Id, string Libelle, string Adresse = "
 /// remplace le fantôme <c>Session.EnfantId</c> transmis à l'aveugle (s29).</summary>
 public sealed record EnfantFoyer(string Id, string Prenom)
 {
-    /// <summary>Identifiants stables des parents-acteurs liés (0..2, s34) — résolus en noms par la colonne
-    /// « Parents liés ». Propriété <c>init</c> (constructeur positionnel à 2 args préservé pour la pose /
-    /// les tests) : System.Text.Json la peuple depuis le JEU JSON quand présente, sinon liste vide.</summary>
-    public IReadOnlyCollection<string> ParentsLies { get; init; } = System.Array.Empty<string>();
+    /// <summary>Parents-acteurs liés (0..2, s34), chacun avec son <b>rôle-du-lien</b> (père / mère /
+    /// parent-libre, s37) — résolus en noms + rôle par la colonne « Parents liés ». Propriété <c>init</c>
+    /// (constructeur positionnel à 2 args préservé pour la pose / les tests) : System.Text.Json la peuple
+    /// depuis le JEU JSON quand présente, sinon liste vide. Record <see cref="ParentLie"/> réutilisé.</summary>
+    public IReadOnlyCollection<ParentLie> ParentsLies { get; init; } = System.Array.Empty<ParentLie>();
 }
 
 /// <summary>Un compte utilisateur du foyer <b>énuméré depuis le store durable</b> via le canal de lecture

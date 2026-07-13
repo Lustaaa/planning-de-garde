@@ -67,7 +67,7 @@ public static class CanalEcriture
 
     /// <summary>Corps de la requête de liaison d'un enfant à un parent-acteur (s34) : l'id stable de l'enfant
     /// et l'id stable de l'acteur. Refus métier (inexistant / non-parent / 2 parents max) renvoyé ; déjà lié = neutre.</summary>
-    public sealed record LierEnfantParentRequete(string EnfantId, string ActeurId);
+    public sealed record LierEnfantParentRequete(string EnfantId, string ActeurId, PlanningDeGarde.Application.RoleDuLien Role = PlanningDeGarde.Application.RoleDuLien.ParentLibre);
 
     /// <summary>Corps de la requête de retrait du lien d'un enfant vers un parent-acteur (s34) : l'id stable de
     /// l'enfant et l'id stable de l'acteur. Idempotent côté handler (parent déjà non lié = no-op qui réussit).</summary>

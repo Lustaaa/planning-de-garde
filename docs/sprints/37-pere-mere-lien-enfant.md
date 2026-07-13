@@ -25,14 +25,14 @@
 > - **Saisie/édition du `TypeActeur`**, champ père/mère au niveau de l'acteur lui-même : hors goal
 >   (le rôle-du-lien vit sur le **lien**, pas sur l'acteur).
 
-## Avancement — 3/5
+## Avancement — 4/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | Lien enfant↔parent enrichi d'un **rôle-du-lien** {père/mère/parent-libre} + « lier » avec rôle (persistance Mongo durable, id enfant inchangé) | back | ✅ |
 | 2 | Rejets **sans écriture partielle** : deux « père » (ou deux « mère ») refusés ; borne 0..2 (s34) + éligibilité role-flag (s36) inchangées ; lier/délier idempotents | back | ✅ |
 | 3 | **Compat + query** : le rôle-du-lien est relu au rechargement ; lien déjà persisté sans attribut → **défaut « parent-libre »** (pas de crash, pas de migration destructive) | back | ✅ |
-| 4 | Modal Enfants : **sélecteur père/mère/parent** par parent lié (pré-réglé) ; refus→modal ouverte + motif + sélection conservée ; Échap=Annuler | 🖥️ IHM | ⏳ |
+| 4 | Modal Enfants : **sélecteur père/mère/parent** par parent lié (pré-réglé) ; refus→modal ouverte + motif + sélection conservée ; Échap=Annuler | 🖥️ IHM | ✅ |
 | 5 | Colonne « Parents liés » affiche le **rôle-du-lien** à côté du nom ; **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
 
 > **⚠️ Point de vigilance — compat des liens déjà persistés (Sc.3).** Le lien enfant↔parent (s34)
@@ -106,7 +106,7 @@ Quand le store est rechargé
 Alors le rôle-du-lien « mère » est relu tel quel (round-trip durable), l'id enfant inchangé
 ```
 
-### Sc.4 — Modal Enfants : sélecteur père/mère/parent par parent lié @ihm @pending
+### Sc.4 — Modal Enfants : sélecteur père/mère/parent par parent lié @ihm @vert
 ```gherkin
 Étant donné la modal d'édition d'un enfant ouverte (Parent), avec un ou deux parents liés (patron crayon→modal s34)
 Quand la modal est rendue

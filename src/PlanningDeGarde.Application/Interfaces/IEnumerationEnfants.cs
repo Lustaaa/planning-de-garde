@@ -28,9 +28,6 @@ public sealed record EnfantFoyer(string Id, string Prenom, IReadOnlyCollection<P
 
 /// <summary>Un lien enfant→parent (s34) enrichi de son <b>rôle-du-lien</b> (s37) : l'identifiant stable
 /// du parent-acteur lié + le rôle-du-lien (père / mère / parent-libre) qui distingue les deux parents.
-/// Défaut neutre <see cref="RoleDuLien.ParentLibre"/> (compat des liens déjà persistés sans attribut).</summary>
-public sealed record ParentLie(string ActeurId, RoleDuLien Role)
-{
-    /// <summary>Lien sans rôle-du-lien explicite : vaut « parent-libre » (défaut neutre, comportement s34).</summary>
-    public ParentLie(string ActeurId) : this(ActeurId, RoleDuLien.ParentLibre) { }
-}
+/// Défaut neutre <see cref="RoleDuLien.ParentLibre"/> (compat des liens déjà persistés sans attribut).
+/// Constructeur unique (sérialisation JSON du canal de lecture : un seul ctor paramétré, pas d'ambiguïté).</summary>
+public sealed record ParentLie(string ActeurId, RoleDuLien Role);
