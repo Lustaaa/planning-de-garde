@@ -39,12 +39,12 @@
 > - **Saisie / édition du `TypeActeur` lui-même** : hors scope (le type n'est plus le pivot de
 >   l'éligibilité ; il reste au seul service du gating d'écriture R8/R9, inchangé).
 
-## Avancement — 1/7
+## Avancement — 2/7
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | `RoleFoyer` enrichi d'un flag **« est rôle parent »** (modèle + port lecture `IEnumerationRoles` + persistance **InMemory ET Mongo durable**) | back | ✅ |
-| 2 | Commande/handler **`MarquerRoleParent`** : bascule le flag d'un rôle (coche/décoche), idempotent, rôle inexistant refusé sans écriture | back | ⏳ |
+| 2 | Commande/handler **`MarquerRoleParent`** : bascule le flag d'un rôle (coche/décoche), idempotent, rôle inexistant refusé sans écriture | back | ✅ |
 | 3 | **Amorçage B2** : au seed du foyer, rôles Papa/Maman/Parent **pré-cochés parent** (autres non) ; un rôle créé ensuite démarre **non-parent** ; seed démo affecte un rôle-parent aux acteurs-parents | back | ⏳ |
 | 4 | **`LierEnfantParentHandler`** — éligibilité = l'acteur **porte un rôle marqué parent** (REMPLACE `TypeActeur.Parent`) ; rôle non-parent (Nounou/Grand-parent) ou sans rôle = REFUSÉ, sans écriture partielle | back | ⏳ |
 | 5 | Sélecteur parents modal Enfants **`ActeursParents()`** énumère les acteurs à **rôle marqué parent** (l'IHM suit exactement la règle back) | 🖥️ IHM | ⏳ |
@@ -88,7 +88,7 @@ Et l'adaptateur Mongo le PERSISTE et le relit DURABLEMENT (round-trip store rée
 Et un rôle existant sans flag stocké (donnée antérieure) se relit avec « est rôle parent » = false (défaut neutre, pas de crash)
 ```
 
-### Sc.2 — Commande `MarquerRoleParent` : bascule le flag @back @pending
+### Sc.2 — Commande `MarquerRoleParent` : bascule le flag @back @vert
 ```gherkin
 Étant donné un rôle existant du référentiel dont « est rôle parent » = false
 Quand la commande « marquer un rôle comme rôle parent » (roleId, estParent=true) est émise
