@@ -123,14 +123,38 @@ public static class ServiceCollectionExtensions
         }
         else
         {
-            services.AddSingleton<ConfigurationFoyerEnMemoire>();
+            // Config acteurs InMemory SEEDÉE des affectations de rôle B2 (s36) : les acteurs-parents du
+            // seed portent un rôle marqué parent (Alice → Papa, Bruno → Maman) pour rester liables sous
+            // l'éligibilité role-based ; les intervenants un rôle non-parent (Nina → Nounou, grand-père →
+            // Grand-parent). Posé ICI (pas dans le ctor) : les `new ConfigurationFoyerEnMemoire()` des tests
+            // unitaires restent sans affectation. Parité seed InMemory enfants/rôles (asymétrie s15).
+            services.AddSingleton<ConfigurationFoyerEnMemoire>(_ =>
+            {
+                var config = new ConfigurationFoyerEnMemoire();
+                foreach (var (acteurId, roleId) in Foyer.RolesParActeur)
+                    config.AffecterRole(acteurId, roleId);
+                return config;
+            });
             services.AddSingleton<IReferentielResponsables>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
             services.AddSingleton<IPaletteCouleurs>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
             services.AddSingleton<IEditeurConfigurationFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
             services.AddSingleton<IEnumerationActeursFoyer>(sp => sp.GetRequiredService<ConfigurationFoyerEnMemoire>());
 
-            // Référentiel de rôles InMemory (volatile, re-parti vide au redémarrage) — même ports.
-            services.AddSingleton<ReferentielRolesEnMemoire>();
+            // Référentiel de rôles InMemory SEEDÉ (amorçage B2, s36) : les rôles Papa/Maman/Parent
+            // pré-cochés « est rôle parent », Nounou/Grand-parent non — source de vérité de l'éligibilité.
+            // Le pré-cochage ne vaut QUE pour ce seed initial (un rôle créé ensuite démarre non-parent).
+            // Posé ICI (pas dans le ctor) : les `new ReferentielRolesEnMemoire()` des tests restent vierges.
+            services.AddSingleton<ReferentielRolesEnMemoire>(_ =>
+            {
+                var roles = new ReferentielRolesEnMemoire();
+                foreach (var seed in Foyer.RolesSeed)
+                {
+                    roles.Creer(seed.Id, seed.Libelle);
+                    if (seed.EstRoleParent)
+                        roles.MarquerParent(seed.Id, true);
+                }
+                return roles;
+            });
             services.AddSingleton<IEnumerationRoles>(sp => sp.GetRequiredService<ReferentielRolesEnMemoire>());
             services.AddSingleton<IEditeurReferentielRoles>(sp => sp.GetRequiredService<ReferentielRolesEnMemoire>());
 
@@ -210,6 +234,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DefinirCycleHandler>();
         services.AddScoped<CreerRoleHandler>();
         services.AddScoped<RenommerRoleHandler>();
+        services.AddScoped<MarquerRoleParentHandler>();
         services.AddScoped<SupprimerRoleHandler>();
         services.AddScoped<AffecterRoleActeurHandler>();
         services.AddScoped<RetirerRoleActeurHandler>();

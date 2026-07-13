@@ -190,6 +190,10 @@ public partial class ConfigurationFoyer
     private sealed class FormulaireRole
     {
         public string Libelle { get; set; } = "";
+        // Sc.6 (s36) : état désiré de la case « rôle parent » de la modal, pré-réglé sur le flag COURANT du
+        // rôle à l'ouverture. À l'« Enregistrer » en édition, une bascule vis-à-vis du flag courant émet
+        // marquer-role-parent (source de vérité de l'éligibilité, jamais le libellé).
+        public bool EstParent { get; set; }
     }
 
     private readonly FormulaireRole _role = new();
@@ -207,7 +211,9 @@ public partial class ConfigurationFoyer
     {
         _modalRoleAjout = false;
         _modalRoleId = roleId;
-        _role.Libelle = _roles.FirstOrDefault(r => r.Id == roleId)?.Libelle ?? "";
+        var role = _roles.FirstOrDefault(r => r.Id == roleId);
+        _role.Libelle = role?.Libelle ?? "";
+        _role.EstParent = role?.EstRoleParent ?? false; // case pré-réglée sur le flag COURANT (Sc.6)
         _motifEchecRole = null;
     }
 
@@ -217,6 +223,7 @@ public partial class ConfigurationFoyer
         _modalRoleId = null;
         _modalRoleAjout = true;
         _role.Libelle = "";
+        _role.EstParent = false; // un rôle créé démarre non-parent (Sc.3) ; la case se coche après création
         _motifEchecRole = null;
     }
 
@@ -388,11 +395,13 @@ public partial class ConfigurationFoyer
         _motifEchecEnfant = null;
     }
 
-    /// <summary>Acteurs candidats au lien parent (Sc.5) : exactement ceux portant le rôle « Parent » du
-    /// référentiel de rôles (libellé résolu sur l'id de rôle, jamais un rôle en dur). Alimente le sélecteur.</summary>
+    /// <summary>Acteurs candidats au lien parent (s34 Sc.5, éligibilité role-based s36 Sc.4/Sc.5) : exactement
+    /// ceux dont le rôle affecté est marqué « est rôle parent » (le FLAG du rôle, résolu sur l'id, jamais le
+    /// libellé ni le TypeActeur). L'IHM suit EXACTEMENT la règle back (<c>LierEnfantParentHandler</c>) — aucun
+    /// critère divergent. Un acteur sans rôle, ou à rôle non marqué (Nounou/Grand-parent), n'apparaît pas.</summary>
     private IEnumerable<ActeurFoyer> ActeursParents()
         => _acteurs.Where(a => a.RoleId is { } roleId
-            && _roles.FirstOrDefault(r => r.Id == roleId)?.Libelle == "Parent");
+            && _roles.FirstOrDefault(r => r.Id == roleId)?.EstRoleParent == true);
 
     /// <summary>Bascule la sélection d'un parent dans la modal (Sc.5). Borne « 2 parents max » reflétée à
     /// l'écran : on n'ajoute pas au-delà de 2 (les cases non cochées sont d'ailleurs désactivées).</summary>
@@ -846,6 +855,35 @@ public partial class ConfigurationFoyer
         {
             _motifEchecRole = await reponse.Content.ReadFromJsonAsync<string>();
             return;
+        }
+
+        // Sc.6 (s36) — en ÉDITION, si la case « rôle parent » a basculé vis-à-vis du flag COURANT, émet
+        // marquer-role-parent (surface DISTINCTE du libellé, source de vérité de l'éligibilité). Aucun POST
+        // si le flag est inchangé (rien à réémettre). En création, le rôle démarre non-parent (Sc.3).
+        if (!_modalRoleAjout)
+        {
+            var flagCourant = _roles.FirstOrDefault(r => r.Id == _modalRoleId)?.EstRoleParent ?? false;
+            if (_role.EstParent != flagCourant)
+            {
+                HttpResponseMessage reponseFlag;
+                try
+                {
+                    reponseFlag = await Canal.PostAsJsonAsync(
+                        "api/canal/marquer-role-parent",
+                        new MarquerRoleParentRequete(_modalRoleId!, _role.EstParent));
+                }
+                catch (HttpRequestException)
+                {
+                    _motifEchecRole = MessagesEcriture.ServiceInjoignable;
+                    return;
+                }
+
+                if (!reponseFlag.IsSuccessStatusCode)
+                {
+                    _motifEchecRole = await reponseFlag.Content.ReadFromJsonAsync<string>();
+                    return;
+                }
+            }
         }
 
         await RechargerRoles();

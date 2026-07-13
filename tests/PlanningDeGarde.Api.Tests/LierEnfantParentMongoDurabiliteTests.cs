@@ -28,15 +28,17 @@ public sealed class LierEnfantParentMongoDurabiliteTests : IDisposable
         public void NotifierMiseAJour() { }
     }
 
-    /// <summary>Foyer (adaptateurs InMemory réels) avec un acteur portant le rôle « Parent » — précondition
-    /// valide du lien (S2 : seul un Parent est liable). Retourne l'identifiant stable du parent.</summary>
+    /// <summary>Foyer (adaptateurs InMemory réels) avec un acteur AJOUTÉ en session portant un rôle marqué
+    /// « est rôle parent » — précondition valide du lien (option B1, s36 : parent liable = l'acteur porte un
+    /// rôle marqué parent). Retourne la config, le référentiel de rôles et l'identifiant stable du parent.</summary>
     private static (ConfigurationFoyerEnMemoire config, ReferentielRolesEnMemoire roles, string parentId) FoyerAvecUnParent(string prenom)
     {
         var roles = new ReferentielRolesEnMemoire();
-        var roleParent = new CreerRoleHandler(roles, roles).Handle(new CreerRoleCommand("Parent")).Valeur!.RoleId;
+        roles.Creer("role-papa", "Papa");
+        roles.MarquerParent("role-papa", true);
         var config = new ConfigurationFoyerEnMemoire();
         var parentId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(prenom)).Valeur!.ActeurId;
-        new AffecterRoleActeurHandler(roles, config).Handle(new AffecterRoleActeurCommand(parentId, roleParent));
+        config.AffecterRole(parentId, "role-papa");
         return (config, roles, parentId);
     }
 

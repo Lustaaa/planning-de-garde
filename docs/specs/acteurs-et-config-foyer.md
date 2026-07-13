@@ -287,7 +287,9 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **Lien enfant↔parent + onglet Enfants au patron crayon → modal** *(livré s34, 3ᵉ incrément de la Refonte
   Config foyer)* : l'enfant n'est plus l'agrégat **nu** `EnfantFoyer(Id, Prénom)` sans lien — il porte
   désormais un **lien vers 1..2 parents-acteurs**. Un **parent** = un acteur portant le **rôle Parent**
-  (référentiel de rôles s21). Commandes/handlers **lier / délier** (canal requête/réponse : `enfantId`,
+  (référentiel de rôles s21). *(⚠️ **Éligibilité RÉVISÉE s36** : « rôle Parent » ≡ match du **libellé
+  littéral** « Parent », rejeté au gate → remplacé par le **flag « rôle parent »** sur `RoleFoyer` — voir
+  le bloc s36 dédié ci-dessous.)* Commandes/handlers **lier / délier** (canal requête/réponse : `enfantId`,
   `acteurId`), lien **persisté Mongo durable** (relu par la query de config avec la **liste des parents
   liés**), **id stable de l'enfant inchangé** (enrichissement, pas recréation), **0 parent accepté** (lien
   optionnel). **Rejets SANS écriture partielle** (motif restitué, store inchangé, les liens existants
@@ -360,6 +362,44 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   > **Hors scope s35** : **liste de slots par activité** (récurrents/non — extension du modèle de slots),
   > **lien adresse acteur↔lieu/domicile** de l'enfant en garde, **révision de la validation de pose**
   > (préservée iso ici), familles recomposées **R2/R3** + graphe enfant-racine.
+
+- **Éligibilité « parent » du lien enfant↔parent = flag « rôle parent » sur le rôle** *(livré s36, révision
+  d'invariant — retour PO gate s35)* : **qu'est-ce qui rend un acteur liable comme parent** est **redéfini**.
+  L'ancienne règle s34 (« l'acteur porte un rôle dont le **libellé** vaut littéralement « Parent » ») est
+  **abandonnée** (piège du libellé, rejeté s35). L'**option A** un temps livrée puis **REJETÉE au gate**
+  (éligibilité = `TypeActeur.Parent`) est **écartée par construction** : le `TypeActeur` n'est **jamais saisi
+  via l'IHM** (`AjouterActeurHandler` ne passe aucun type, `TypeParDefaut = Parent`) → **tout acteur créé par
+  l'utilisateur devenait `Parent`** et donc liable à tort (Valérie/nounou, Mamie/grand-parent). Règle
+  **retenue (option B1+B2)** :
+  - **Flag « est rôle parent » sur `RoleFoyer` (B1)** — chaque rôle du référentiel (s21) porte un **attribut
+    booléen** « est un rôle parent », **pilotable** (coche/décoche) et **source de vérité unique** — jamais le
+    libellé. Porté par le port de lecture `IEnumerationRoles` (surfacé pour chaque rôle) + écriture
+    `IEditeurReferentielRoles.MarquerParent` ; **persisté durablement** sur les **deux adaptateurs** (InMemory
+    tests **+** Mongo runtime, round-trip survivant au rechargement ; un rôle antérieur sans flag stocké se
+    relit à **false** — défaut neutre, pas de crash). Commande/handler **`MarquerRoleParent`** (`roleId`,
+    `estParent`) : bascule le flag, **idempotente** (ré-émettre le même état = neutre, aucun doublon d'écriture),
+    **rôle inexistant refusé** sans écriture.
+  - **Amorçage au seed (B2)** — à la **création du foyer (seed initial UNIQUEMENT)**, les rôles de libellé
+    **Papa / Maman / Parent** démarrent **pré-cochés « rôle parent »** ; les autres (Nounou, Grand-parent…) non.
+    Un rôle **créé ensuite** via `CreerRole` démarre **non-parent** (flag à false) **même si son libellé est
+    Papa/Maman/Parent** — le pré-cochage ne vaut **que** pour le seed, il ne devient parent que par bascule
+    explicite (anti-reconnaissance de libellé à la volée, anti-piège s35). Le **seed démo** affecte désormais un
+    **rôle-parent** aux acteurs-parents (Alice→Papa, Bruno→Maman) et Nounou/Grand-parent aux autres, pour qu'ils
+    restent liables sous la nouvelle règle.
+  - **Règle d'éligibilité** — `LierEnfantParentHandler` accepte un acteur comme parent **ssi il porte un rôle
+    marqué « est rôle parent »**. Un acteur à **rôle non marqué** (Nounou, Grand-parent) **ou sans aucun rôle**
+    (`RoleId = null`) est **REFUSÉ** (motif restitué, **aucune écriture partielle**, liens existants intacts).
+    La **borne 0..2 parents** (s34) reste **inchangée**. Le prédicat `TypeActeur.Parent` **ne qualifie PLUS**
+    l'éligibilité (option A retirée) et reste **cantonné au seul gating d'impersonation R8/R9** (`SessionPlanning`,
+    droit d'écriture de l'identité effective) — **aucun droit d'écriture n'est gagné/perdu** par cette bascule.
+  - **IHM** : le **sélecteur des parents** de la modal Enfants (`ActeursParents()`) énumère **exactement** les
+    acteurs à rôle marqué parent (aligné sur la règle back, aucun critère divergent) ; un acteur à rôle non
+    marqué ou sans rôle **n'apparaît pas**. Une **case à cocher « rôle parent »** est ajoutée dans la **modal de
+    l'onglet Rôles** (patron crayon → modal s33) : reflète l'état courant, émet `MarquerRoleParent` via le canal
+    HTTP, **Échap = Annuler** sans mutation (port `IEcouteurEchapModal`), **Parent-gated** (non-Parent =
+    lecture seule), **convergence SignalR** temps réel (décocher « parent » retire l'acteur du sélecteur de
+    parents en direct, sans rechargement). **Hors scope s36** : champ **père/mère distinct** (distinction par le
+    NOM), familles recomposées **R2/R3** + graphe enfant-racine, **saisie/édition du `TypeActeur`** lui-même.
 
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de

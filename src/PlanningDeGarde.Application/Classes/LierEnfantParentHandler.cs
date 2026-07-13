@@ -18,8 +18,11 @@ public sealed record LierEnfantParentResultat(string EnfantId, string ActeurId);
 /// <summary>
 /// Use case : lier un enfant à un parent-acteur. Persiste le lien via le port d'écriture du référentiel,
 /// sous les règles du lien (S2) — TOUTES vérifiées AVANT toute écriture (aucune écriture partielle en
-/// cas de refus) : l'acteur doit exister, porter le rôle « Parent » (référentiel de rôles), lier un
-/// parent déjà lié est neutre (idempotent, pas de doublon), et borne « 2 parents max ». Familles
+/// cas de refus) : l'acteur doit exister, <b>porter un rôle marqué « est rôle parent »</b> (option B1,
+/// s36 — le <b>flag</b> du rôle est la source de vérité de l'éligibilité, jamais le libellé ni le
+/// <see cref="TypeActeur"/>), lier un parent déjà lié est neutre (idempotent, pas de doublon), et borne
+/// « 2 parents max ». Un acteur sans rôle, ou à rôle non marqué (Nounou/Grand-parent), n'est PAS liable.
+/// Le <see cref="TypeActeur"/> reste au seul service du gating d'écriture R8/R9 (inchangé). Familles
 /// recomposées / exactement-2-parents restent hors scope (spec R2/R3).
 /// </summary>
 public sealed class LierEnfantParentHandler
@@ -41,21 +44,20 @@ public sealed class LierEnfantParentHandler
         _referentiel = referentiel;
     }
 
-    private const string RoleParent = "Parent";
-
     public Result<LierEnfantParentResultat> Handle(LierEnfantParentCommand commande)
     {
         // Règle 1 — l'acteur désigné doit EXISTER dans le référentiel des acteurs (jamais un lien fantôme).
         if (!_acteurs.EnumererActeurs().Contains(commande.ActeurId))
             return Result<LierEnfantParentResultat>.Echec("acteur inexistant");
 
-        // Règle 2 — l'acteur doit porter le rôle « Parent » (référentiel de rôles, cadrage SM) : son id de
-        // rôle est résolu en libellé sur le référentiel — seul un « Parent » est liable comme parent.
+        // Règle 2 (option B1, s36) — l'acteur doit PORTER UN RÔLE MARQUÉ « est rôle parent ». Le FLAG du
+        // rôle (source de vérité unique, jamais le libellé — anti-piège s35 — ni le TypeActeur) qualifie
+        // l'éligibilité : un acteur sans rôle, ou à rôle non marqué (Nounou/Grand-parent), n'est pas liable.
         var roleId = _acteurs.RoleDe(commande.ActeurId);
-        var estParent = roleId is not null
-            && _roles.EnumererRoles().Any(r => r.Id == roleId && r.Libelle == RoleParent);
-        if (!estParent)
-            return Result<LierEnfantParentResultat>.Echec("acteur non parent");
+        var porteUnRoleParent = roleId is not null
+            && _roles.EnumererRoles().Any(r => r.Id == roleId && r.EstRoleParent);
+        if (!porteUnRoleParent)
+            return Result<LierEnfantParentResultat>.Echec("acteur sans rôle-parent");
 
         // État courant du lien (relu par la query) : sert la neutralité « déjà lié » et la borne « 2 max ».
         var parentsCourants = _enfants.EnumererEnfants()

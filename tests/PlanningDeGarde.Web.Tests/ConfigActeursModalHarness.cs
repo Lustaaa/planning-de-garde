@@ -52,6 +52,14 @@ internal static class ConfigActeursModalHarness
         config.WaitForElement("[data-testid='dialog-acteur']", TimeSpan.FromSeconds(10));
     }
 
+    /// <summary>Ferme la modal acteur ouverte (bouton « Annuler ») et attend sa disparition — sans émettre
+    /// aucune commande.</summary>
+    public static void Fermer(Bunit.TestContext ctx, IRenderedComponent<ConfigurationFoyer> config)
+    {
+        ctx.SurDispatcher(() => config.Find("[data-testid='dialog-acteur-annuler']").Click());
+        config.WaitForState(() => config.FindAll("[data-testid='dialog-acteur']").Count == 0, TimeSpan.FromSeconds(10));
+    }
+
     /// <summary>Ouvre la MÊME modal en mode CRÉATION (bouton « Ajouter un acteur » au bas du tableau).</summary>
     public static void OuvrirAjout(Bunit.TestContext ctx, IRenderedComponent<ConfigurationFoyer> config)
     {

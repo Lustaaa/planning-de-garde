@@ -8,7 +8,7 @@ namespace PlanningDeGarde.Tests;
 
 // Sprint 34 — S1 — Modèle enfant enrichi d'un lien parents + commande « lier » (@back)
 //   Étant donné un enfant déclaré dans le foyer (id stable + prénom, s30)
-//   Et un acteur du foyer portant le rôle « Parent »
+//   Et un acteur du foyer portant un rôle marqué « est rôle parent » (option B1, s36)
 //   Quand la commande « lier un enfant à un parent » est émise (enfantId, acteurId)
 //   Alors le lien enfant→parent est porté par le modèle ET persisté (relu par la query)
 //   Et la query relit l'enfant avec la LISTE de ses parents liés
@@ -22,15 +22,17 @@ public class Scenario34_S1_LierEnfantParent
     private const string LeaId = "enfant-lea";
     private const string TomId = "enfant-tom";
 
-    /// <summary>Amorce un référentiel de rôles + config acteur avec un acteur portant le rôle « Parent »,
-    /// et retourne son identifiant stable — précondition valide du lien (S2 : seul un Parent est liable).</summary>
+    /// <summary>Amorce une config acteur avec un acteur AJOUTÉ en session portant un rôle marqué « est rôle
+    /// parent » (option B1, s36 : parent liable = l'acteur porte un rôle marqué parent). Retourne la config,
+    /// le référentiel de rôles (source de vérité du flag) et l'id stable de l'acteur.</summary>
     private static (ConfigurationFoyerEnMemoire config, ReferentielRolesEnMemoire roles, string parentId) FoyerAvecUnParent(string prenom)
     {
         var roles = new ReferentielRolesEnMemoire();
-        var roleParent = new CreerRoleHandler(roles, roles).Handle(new CreerRoleCommand("Parent")).Valeur!.RoleId;
+        roles.Creer("role-papa", "Papa");
+        roles.MarquerParent("role-papa", true); // rôle marqué parent → éligibilité
         var config = new ConfigurationFoyerEnMemoire();
         var parentId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(prenom)).Valeur!.ActeurId;
-        new AffecterRoleActeurHandler(roles, config).Handle(new AffecterRoleActeurCommand(parentId, roleParent));
+        config.AffecterRole(parentId, "role-papa");
         return (config, roles, parentId);
     }
 

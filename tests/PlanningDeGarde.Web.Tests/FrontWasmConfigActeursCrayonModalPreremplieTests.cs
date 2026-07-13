@@ -21,10 +21,11 @@ public sealed class FrontWasmConfigActeursCrayonModalPreremplieTests : TestConte
     [Fact]
     public void Le_crayon_ouvre_une_modal_preremplie_avec_les_champs_courants_et_annuler_ne_change_rien()
     {
-        // Given — l'écran de configuration réellement câblé, identité Parent. On sème un rôle « Nounou »
-        // au référentiel réel : le sélecteur de rôle de la modal devra proposer exactement ce rôle + « sans rôle ».
+        // Given — l'écran de configuration réellement câblé, identité Parent. Le référentiel porte les rôles
+        // du seed B2 (s36) : le sélecteur de rôle de la modal doit proposer EXACTEMENT ces rôles + « sans rôle ».
         using var api = new ApiDistanteFactory();
-        api.Services.GetRequiredService<IEditeurReferentielRoles>().Creer("role-nounou", "Nounou");
+        var libellesSeed = api.Services.GetRequiredService<IEnumerationRoles>()
+            .EnumererRoles().Select(r => r.Libelle).ToList();
 
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
         Services.AddSingleton(new SessionPlanning());
@@ -36,14 +37,15 @@ public sealed class FrontWasmConfigActeursCrayonModalPreremplieTests : TestConte
         ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
 
         // Then (pré-remplie) — la modal porte le nom courant « Alice », un sélecteur de couleur et un
-        // sélecteur de rôle BORNÉ au référentiel (Nounou + « sans rôle », rien en dur).
+        // sélecteur de rôle BORNÉ au référentiel (les rôles du seed + « sans rôle », rien en dur).
         Assert.Equal("Alice", config.Find("[data-testid='champ-nom']").GetAttribute("value"));
         Assert.NotNull(config.Find("[data-testid='palette-couleur']")); // picker minimal (Sc.6)
         var optionsRole = config.Find("[data-testid='selecteur-role-acteur']")
             .QuerySelectorAll("option").Select(o => o.TextContent.Trim()).ToList();
-        Assert.Contains("Nounou", optionsRole);
+        foreach (var libelle in libellesSeed)
+            Assert.Contains(libelle, optionsRole); // exactement les rôles du référentiel, jamais en dur
         Assert.Contains("sans rôle", optionsRole);
-        Assert.Equal(2, optionsRole.Count);
+        Assert.Equal(libellesSeed.Count + 1, optionsRole.Count);
 
         // Then (id porté, non éditable) — l'identifiant stable de l'acteur est porté par la modal
         // (data-acteur-id = parent-a) sans champ de saisie qui le laisserait modifier.

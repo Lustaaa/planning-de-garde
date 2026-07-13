@@ -14,6 +14,9 @@ namespace PlanningDeGarde.Infrastructure;
 public sealed class ReferentielRolesEnMemoire : IEnumerationRoles, IEditeurReferentielRoles
 {
     private readonly Dictionary<string, string> _libelles = new();
+    // Flag « est un rôle parent » (s36, B1) porté sur une surface DISTINCTE du libellé : id → bool.
+    // Absent = false par défaut (défaut neutre, une donnée sans flag se relit non-parent).
+    private readonly Dictionary<string, bool> _parents = new();
 
     public void Creer(string roleId, string libelle)
         => _libelles[roleId] = libelle; // le rôle neuf existe désormais sur son id opaque
@@ -22,8 +25,15 @@ public sealed class ReferentielRolesEnMemoire : IEnumerationRoles, IEditeurRefer
         => _libelles[roleId] = nouveauLibelle; // même id (clé) → aucun doublon, dernière écriture gagne
 
     public void Supprimer(string roleId)
-        => _libelles.Remove(roleId); // cesse d'être énuméré ; tolérant à l'absence (idempotence)
+    {
+        _libelles.Remove(roleId); // cesse d'être énuméré ; tolérant à l'absence (idempotence)
+        _parents.Remove(roleId);  // ... et son flag parent (surface distincte) — aucun flag fantôme
+    }
+
+    public void MarquerParent(string roleId, bool estParent)
+        => _parents[roleId] = estParent; // pose/retire le flag ; surface distincte du libellé
 
     public IReadOnlyCollection<RoleFoyer> EnumererRoles()
-        => _libelles.Select(kv => new RoleFoyer(kv.Key, kv.Value)).ToList();
+        => _libelles.Select(kv => new RoleFoyer(
+            kv.Key, kv.Value, _parents.TryGetValue(kv.Key, out var p) && p)).ToList();
 }

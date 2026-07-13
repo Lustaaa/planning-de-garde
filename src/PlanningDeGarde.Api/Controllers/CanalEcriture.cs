@@ -134,6 +134,11 @@ public static class CanalEcriture
     /// acteurs porteurs (repli neutre) et est idempotente côté handler (id absent = no-op qui réussit).</summary>
     public sealed record SupprimerRoleRequete(string RoleId);
 
+    /// <summary>Corps de la requête de bascule du flag « est rôle parent » d'un rôle (s36, B1) émise via le
+    /// canal d'écriture : l'identifiant stable (clé) et l'état voulu du flag (coche/décoche). Le flag est la
+    /// source de vérité de l'éligibilité au lien enfant↔parent — jamais le libellé (anti-piège s35).</summary>
+    public sealed record MarquerRoleParentRequete(string RoleId, bool EstParent);
+
     /// <summary>Corps de la requête d'affectation d'un rôle du référentiel à un acteur (s21) émise via le
     /// canal d'écriture : l'identifiant stable de l'acteur et l'identifiant stable du <b>rôle du référentiel</b>
     /// (jamais un libellé en dur). Un id de rôle absent du référentiel = rejet côté handler (champ fermé
@@ -520,6 +525,22 @@ public static class CanalEcriture
             return resultat.EstSucces
                 ? Results.Ok()
                 : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/marquer-role-parent",
+            (MarquerRoleParentRequete requete, MarquerRoleParentHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new MarquerRoleParentCommand(requete.RoleId, requete.EstParent));
+
+            // Succès acquitté (le flag « est rôle parent » est posé/retiré, source de vérité de l'éligibilité)
+            // + diffusion temps réel (SignalR lecture seule) : les autres écrans reconvergent le sélecteur des
+            // parents et la case « rôle parent » sans rechargement (s36 Sc.6/Sc.7). Refus (rôle inexistant) avec
+            // motif. La diffusion suit une écriture aboutie, jamais l'inverse (règle 27).
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
         });
 
         routes.MapPost("/api/canal/affecter-role", (AffecterRoleRequete requete, AffecterRoleActeurHandler handler) =>

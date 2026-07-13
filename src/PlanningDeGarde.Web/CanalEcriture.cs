@@ -119,6 +119,10 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de suppression d'un rôle : l'identifiant stable (clé). Idempotente côté handler.</summary>
     public sealed record SupprimerRoleRequete(string RoleId);
 
+    /// <summary>Corps de la requête de bascule du flag « est rôle parent » d'un rôle (s36, B1) : l'id stable
+    /// (clé) et l'état voulu du flag (coche/décoche). Source de vérité de l'éligibilité — jamais le libellé.</summary>
+    public sealed record MarquerRoleParentRequete(string RoleId, bool EstParent);
+
     /// <summary>Corps de la requête d'affectation d'un rôle du référentiel à un acteur (s21) : l'id stable de
     /// l'acteur et l'id stable du rôle du référentiel (jamais un libellé en dur). Un id hors référentiel = rejet.</summary>
     public sealed record AffecterRoleRequete(string ActeurId, string RoleId);

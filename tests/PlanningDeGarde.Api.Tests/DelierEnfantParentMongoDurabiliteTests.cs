@@ -29,14 +29,16 @@ public sealed class DelierEnfantParentMongoDurabiliteTests : IDisposable
     [MongoRequisFact]
     public void Acceptation_Should_Relire_l_enfant_sans_le_parent_delie_mais_avec_l_autre_apres_redemarrage_When_on_delie_sur_le_store_Mongo_reel()
     {
-        // Foyer (adaptateurs InMemory réels) : deux Parents.
+        // Foyer (adaptateurs InMemory réels) : deux acteurs portant un rôle marqué « est rôle parent »
+        // (option B1, s36 : parent liable = l'acteur porte un rôle marqué parent).
         var roles = new ReferentielRolesEnMemoire();
-        var roleParent = new CreerRoleHandler(roles, roles).Handle(new CreerRoleCommand("Parent")).Valeur!.RoleId;
+        roles.Creer("role-papa", "Papa");
+        roles.MarquerParent("role-papa", true);
         var config = new ConfigurationFoyerEnMemoire();
         string Parent(string p)
         {
             var id = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(p)).Valeur!.ActeurId;
-            new AffecterRoleActeurHandler(roles, config).Handle(new AffecterRoleActeurCommand(id, roleParent));
+            config.AffecterRole(id, "role-papa");
             return id;
         }
         var papa = Parent("Papa");

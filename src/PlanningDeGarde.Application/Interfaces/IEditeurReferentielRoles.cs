@@ -22,4 +22,10 @@ public interface IEditeurReferentielRoles
     /// Tolérant à l'absence (un rôle déjà absent = no-op qui réussit — idempotence Sc.6). Le repli
     /// « sans rôle » des acteurs porteurs est orchestré en amont par le use case.</summary>
     void Supprimer(string roleId);
+
+    /// <summary>Pose ou retire le flag « est un rôle parent » sur le rôle identifié de façon stable
+    /// (s36, option B1) — surface DISTINCTE du libellé (le renommage ne réinitialise pas le flag, et
+    /// inversement). Écriture bas niveau du flag (source de vérité de l'éligibilité) ; le use case
+    /// idempotent avec vérification d'existence est <c>MarquerRoleParentHandler</c> (Sc.2).</summary>
+    void MarquerParent(string roleId, bool estParent);
 }

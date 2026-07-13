@@ -29,20 +29,22 @@ public sealed class ReglesLienEnfantParentMongoTests : IDisposable
     [MongoRequisFact]
     public void Acceptation_Should_Conserver_exactement_les_deux_liens_durables_apres_des_refus_When_on_tente_un_3e_parent_un_inexistant_et_un_non_parent()
     {
-        // Foyer (adaptateurs InMemory réels) : trois Parents + un acteur non-Parent.
+        // Foyer (adaptateurs InMemory réels) : trois acteurs portant un rôle marqué « est rôle parent »
+        // (option B1, s36) + un acteur EXISTANT sans rôle-parent (seed « grand-pere », aucun rôle → non liable).
         var roles = new ReferentielRolesEnMemoire();
-        var roleParent = new CreerRoleHandler(roles, roles).Handle(new CreerRoleCommand("Parent")).Valeur!.RoleId;
+        roles.Creer("role-papa", "Papa");
+        roles.MarquerParent("role-papa", true);
         var config = new ConfigurationFoyerEnMemoire();
         string Parent(string p)
         {
             var id = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand(p)).Valeur!.ActeurId;
-            new AffecterRoleActeurHandler(roles, config).Handle(new AffecterRoleActeurCommand(id, roleParent));
+            config.AffecterRole(id, "role-papa");
             return id;
         }
         var papa = Parent("Papa");
         var maman = Parent("Maman");
         var mamie = Parent("Mamie");
-        var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId; // non-Parent
+        const string bob = "grand-pere"; // acteur seed EXISTANT sans rôle-parent → non liable
 
         string leaId;
         {
@@ -54,10 +56,10 @@ public sealed class ReglesLienEnfantParentMongoTests : IDisposable
             Assert.True(lier.Handle(new LierEnfantParentCommand(leaId, papa)).EstSucces);
             Assert.True(lier.Handle(new LierEnfantParentCommand(leaId, maman)).EstSucces);
 
-            // Refus « 2 parents max » (3ᵉ parent valide), acteur inexistant, acteur non-Parent
+            // Refus « 2 parents max » (3ᵉ parent valide), acteur inexistant, acteur sans rôle-parent
             Assert.Equal("2 parents max", lier.Handle(new LierEnfantParentCommand(leaId, mamie)).Motif);
             Assert.Equal("acteur inexistant", lier.Handle(new LierEnfantParentCommand(leaId, "acteur-fantome")).Motif);
-            Assert.Equal("acteur non parent", lier.Handle(new LierEnfantParentCommand(leaId, bob)).Motif);
+            Assert.Equal("acteur sans rôle-parent", lier.Handle(new LierEnfantParentCommand(leaId, bob)).Motif);
         }
 
         // --- Redémarrage : le store durable conserve exactement les 2 liens d'origine (aucune corruption) ---
