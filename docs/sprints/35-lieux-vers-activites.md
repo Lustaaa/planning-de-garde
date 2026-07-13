@@ -32,7 +32,7 @@
 > - **Révision de la validation de pose** : ce sprint la **préserve iso**, ne la repense pas.
 > - **Familles recomposées R2/R3** (« exactement 2 parents », graphe enfant-racine) : autre incrément.
 
-## Avancement — 5/6
+## Avancement — 6/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -41,7 +41,7 @@
 | 3 | Lien **enfant↔activité N-M** : commandes lier/délier idempotentes + rejets sans écriture partielle | back | ✅ |
 | 4 | **SWAP** onglet « Lieux » inline → onglet **« Activités »** tableau lecture + crayon → modal (+ renommage HTTP/DTO/record Web, lot atomique) | 🖥️ IHM | ✅ |
 | 5 | Modal activité : **champ adresse** + **sélecteur des enfants** à lier / délier | 🖥️ IHM | ✅ |
-| 6 | Invariants Activités — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ⏳ |
+| 6 | Invariants Activités — refus→modal ouverte + **Parent-gated** + convergence **SignalR** | 🖥️ IHM | ✅ |
 
 > **⚠️ POINT DE VIGILANCE — le renommage Lieux→Activités est un REFACTOR TRANSVERSE, TRANCHÉ EN DEUX
 > SEAMS (décision SM).** Sc.1 est **@back-scoped** : renommage **Domaine + Application UNIQUEMENT**
@@ -168,7 +168,7 @@ Alors la commande « délier » (Sc.3) est émise, l'enfant disparaît des enfan
 Et HORS scope : liste de slots par activité, lien adresse acteur↔lieu (le sélecteur ne borne pas la cardinalité)
 ```
 
-### Sc.6 — Invariants Activités : refus→modal ouverte + gating + SignalR @ihm @pending
+### Sc.6 — Invariants Activités : refus→modal ouverte + gating + SignalR @ihm @vert
 ```gherkin
 Étant donné la modal activité (libellé + adresse + sélecteur d'enfants)
 Quand une valeur est refusée par le domaine (libellé vide/doublon, enfant/activité inconnu) ou API injoignable
