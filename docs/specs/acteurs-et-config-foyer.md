@@ -469,6 +469,38 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
     lecture seule) ; **graphe ÉTENDU** (grands-parents, parents liés entre eux via leurs enfants, lien enfant↔activité
     s35 dans le graphe) ; **vue planning centrée couple** (recomposé).
 
+- **Statut de complétude du couple R3 (badge en LECTURE) + onglet « Foyer »** *(livré s40, 7ᵉ incrément de la Refonte
+  Config foyer — payoff des liens s34/s36/s37 et du graphe s38)* : le foyer **SIGNALE** désormais, par enfant, la
+  complétude de son couple parental — **sans jamais l'imposer**.
+  - **Statut PUR par enfant, composé sur la lecture.** Un **enum `StatutCoupleR3`** {complet / incomplet / vide} est
+    **composé** par enfant à partir des données **déjà persistées** (liens enfant↔parent s34 + rôle-du-lien père/mère/
+    parent-libre s37) et **enrichit la projection `GrapheFoyerQuery` s38** — **aucune query parallèle, aucun store
+    neuf, aucune mutation, aucune persistance neuve** (borne anti-cliquet), sur les **deux adaptateurs** (InMemory
+    seedé + Mongo durable, même contrat). Le statut est **présentation seule** (n'intervient ni dans la résolution
+    grille/légende ni dans le gating, R10).
+  - **Règle R3.** **Complet** = l'enfant porte un lien **« père » ET** un lien **« mère »** résolus. **Incomplet** =
+    0 ou 1 parent, **OU** 2 parents sans le couple père+mère (ex. deux « parent-libre », père + parent-libre,
+    mère + parent-libre). **Vide** = **aucun parent lié** (racine isolée légitime s38, état neutre distinct
+    d'« incomplet », sans alarme). **Décompte fidèle, zéro fantôme** : un acteur **supprimé / orphelin** encore
+    référencé n'est **PAS compté** (miroir R5/R6, filtre `Resolvable()` s13 — un enfant dont le seul lien pointe un
+    orphelin est **incomplet**, pas faussement complet) ; un lien s34 **sans rôle-du-lien explicite** compte comme
+    **« parent-libre »** (défaut neutre s37, ne satisfait pas seul « père ET mère »).
+  - **R3 SIGNALÉE, JAMAIS IMPOSÉE.** Le calcul est un **chemin de LECTURE greffé sur la projection** : il **ne touche
+    à aucun handler d'écriture**. `LierEnfantParent` / délier / la modal Enfants continuent d'**accepter 0, 1 ou 2
+    parents** et tout jeu de rôles-du-lien valide s37 **sans nouveau refus** — **aucun invariant « exactement 2 »
+    n'est ajouté à la pose ni à l'enregistrement** (un enfant « incomplet » s'enregistre. La **contrainte** R3 reste
+    délibérément **non imposée** — choix produit).
+  - **IHM — badge en LECTURE + onglet « Foyer ».** Un **badge de complétude** (« couple complet » / « couple
+    incomplet » / « aucun parent ») est rendu par enfant sur la vue graphe s38, **STRICTEMENT en lecture** (aucun
+    contrôle d'édition, aucune commande émise depuis le badge). **Parent-gated lecture** : l'Invité **voit** le badge.
+    **Convergence SignalR par REPROJECTION CLIENT** : lier / délier / changer un rôle-du-lien depuis la modal Enfants
+    fait **converger le badge d'un 2ᵉ écran sans rechargement** (0 GET sur push, diffusion lecture seule s20, garde
+    conception s38). **Relocalisation (rework gate PO)** : la vue graphe s38 + ses badges est déplacée de la tête de
+    page (« prend trop de place ») vers un **onglet « Foyer » placé EN PREMIER** dans la barre d'onglets de la Config
+    foyer, **actif par défaut** à l'arrivée — pure présentation (aucun handler / commande / invariant / query neuf),
+    comportement strictement préservé. **Hors scope s40** : contrainte R3 « exactement 2 » **imposée à l'écriture**
+    (non traitée, choix produit), **édition depuis le graphe**, graphe étendu.
+
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
   rôles), doté d'un **id stable opaque** + **email** + **statut** (`Actif`/`Inactif`, défaut **Inactif** —
@@ -515,9 +547,15 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   s38 EN LECTURE** : query PURE `GrapheFoyerQuery` (par enfant → parents liés + rôle-du-lien, deux adaptateurs) +
   **vue lecture seule** (enfant en racine « nom (rôle) », **familles recomposées R2 VISIBLES**, store vide =
   message neutre, Parent-gated, convergence SignalR par **reprojection client**) → **R1 multi-enfants/graphe
-  exercé en LECTURE, R2 matérialisée**. **R3 reste ouvert** : le graphe restitue 0/1/2 parents tels quels,
-  **n'impose pas « exactement 2 »** ni la complétude du couple ; le **graphe ÉTENDU** (grands-parents, parents
-  liés entre eux via leurs enfants) et l'**édition depuis le graphe** ne sont pas traités.
+  exercé en LECTURE, R2 matérialisée**. **Statut de complétude R3 SIGNALÉ en LECTURE livré s40** : enum
+  `StatutCoupleR3` {complet = père ET mère résolus / incomplet = 0-1 parent OU 2 sans le couple père+mère / vide =
+  racine sans parent} composé **PUR** en enrichissant `GrapheFoyerQuery` (orphelin **exclu du décompte**, miroir
+  `Resolvable()` s13 ; lien sans rôle-du-lien = « parent-libre »), rendu en **badge lecture seule** sur le graphe
+  (Parent-gated, convergence SignalR par reprojection client, 0 GET), désormais dans un **onglet « Foyer » (1ᵉʳ, actif
+  par défaut)**. **R3 SIGNALÉE, JAMAIS IMPOSÉE** : aucun blocage d'écriture ajouté — `LierEnfantParent` accepte
+  toujours 0/1/2 parents (la **contrainte « exactement 2 » reste NON imposée**, choix produit). **Reste ouvert** :
+  contrainte R3 imposée à l'écriture (non traitée), **graphe ÉTENDU** (grands-parents, parents liés entre eux via
+  leurs enfants) et **édition depuis le graphe**.
 - **R4 — Acteurs « autres » ajoutables, éditables et supprimables.**
 - **R5 — Édition des acteurs (noms + couleurs)** : grille relue immédiatement, store vivant partout,
   type surfacé lecture seule. Distincte de la durabilité (R30). **Précisé s19** : sélecteurs des
