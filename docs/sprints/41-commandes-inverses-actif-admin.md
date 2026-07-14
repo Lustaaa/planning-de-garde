@@ -32,14 +32,14 @@
 >   d'écriture dérivés du `TypeActeur` (cantonné R8/R9 depuis s36).
 > - **Édition inline au clic** (tension s32, à trancher en G2) : hors goal.
 
-## Avancement — 3/6
+## Avancement — 4/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | **Dé-désigner un admin** — commande/handler Domain pur (`AdministrationFoyer` s22) : retire la désignation ; **no-op idempotent** si déjà non-admin ; **acteur inconnu refusé** sans mutation ; deux adaptateurs | back | ✅ |
 | 2 | **Borne « dernier admin » (limite, tranchée)** — dé-désigner le **DERNIER** admin du foyer est **REFUSÉ AVANT écriture** (motif clair, store intact) : le foyer ne se retrouve **jamais sans admin** (cohérent invariant admin=Parent s22) | back | ✅ |
 | 3 | **Désactiver un compte** — commande/handler `Actif → Inactif` réutilisant `IEditeurComptes` (aucun store neuf) : **no-op idempotent** si déjà Inactif ; **compte inconnu refusé** sans mutation ; persisté deux adaptateurs (InMemory + Mongo durable) | back | ✅ |
-| 4 | **Toggle OFF bi-directionnel** — le OFF du toggle admin / actif de la modal Acteurs émet la **vraie commande inverse** (dé-désigner admin / désactiver compte) via le canal HTTP ; **fin du verrou ON s33** ; **PAS de no-op silencieux** (anti-vert-qui-ment) | 🖥️ IHM | ⏳ |
+| 4 | **Toggle OFF bi-directionnel** — le OFF du toggle admin / actif de la modal Acteurs émet la **vraie commande inverse** (dé-désigner admin / désactiver compte) via le canal HTTP ; **fin du verrou ON s33** ; **PAS de no-op silencieux** (anti-vert-qui-ment) | 🖥️ IHM | ✅ |
 | 5 | **Contrat d'erreur du OFF** — refus (dernier admin, compte inconnu, API injoignable) → **modal RESTE OUVERTE + motif dedans + saisie/toggles CONSERVÉS**, aucune écriture partielle ; **Échap = Annuler** sans mutation (port `IEcouteurEchapModal` s33) | 🖥️ IHM | ⏳ |
 | 6 | **Parent-gated + convergence SignalR** — le OFF est gaté sur l'identité effective (Invité = pas de toggle actionnable) ; un 2ᵉ écran reflète le nouvel état actif/admin **sans rechargement** (diffusion lecture seule s20) | 🖥️ IHM | ⏳ |
 
@@ -107,7 +107,7 @@ Et le nouveau statut Inactif est PERSISTÉ durablement (round-trip survivant au 
 Et un compte redevenu Inactif refuse la connexion (garde s23 « compte non activé »), non-régression du sens ON (activer, s24) préservée
 ```
 
-### Sc.4 — Toggle OFF bi-directionnel émet la vraie commande inverse (fin du verrou s33) @ihm @pending
+### Sc.4 — Toggle OFF bi-directionnel émet la vraie commande inverse (fin du verrou s33) @ihm @vert
 ```gherkin
 Étant donné la modal d'édition d'un acteur (patron crayon → modal s32/s33), ouverte en tant que Parent
 Et un acteur actuellement désigné admin, dont le toggle « admin » était VERROUILLÉ en ON (s33)

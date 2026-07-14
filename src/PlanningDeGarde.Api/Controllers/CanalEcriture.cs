@@ -161,10 +161,22 @@ public static class CanalEcriture
     /// l'agrégat) ; refus métier (compte introuvable) renvoyé avec son motif, idempotence (déjà Actif) assumée.</summary>
     public sealed record ActiverCompteRequete(string CompteId);
 
+    /// <summary>Corps de la requête de désactivation d'un compte utilisateur (s41, sens OFF) émise via le canal
+    /// d'écriture : l'identifiant stable opaque du compte. Le statut passe Actif→Inactif côté handler (mutation
+    /// portée par l'agrégat) ; refus métier (compte introuvable) renvoyé avec son motif, idempotence (déjà
+    /// Inactif) assumée.</summary>
+    public sealed record DesactiverCompteRequete(string CompteId);
+
     /// <summary>Corps de la requête de désignation d'un acteur comme admin du foyer (s22) émise via le canal
     /// d'écriture : l'identifiant stable de l'acteur. L'invariant admin=parent est porté par l'agrégat Domain
     /// (un acteur non-Parent est rejeté sans écriture, Sc.4) ; le motif de refus est renvoyé au front.</summary>
     public sealed record DesignerAdminRequete(string ActeurId);
+
+    /// <summary>Corps de la requête de dé-désignation d'un admin du foyer (s41, sens OFF) émise via le canal
+    /// d'écriture : l'identifiant stable de l'acteur. La borne « dernier admin » (le foyer garde ≥1 admin) et
+    /// le refus d'un acteur inconnu sont portés par l'agrégat Domain / le handler ; le motif de refus est
+    /// renvoyé au front.</summary>
+    public sealed record DeDesignerAdminRequete(string ActeurId);
 
     /// <summary>Corps de la requête de connexion locale par email (s23) émise via le canal requête/réponse :
     /// l'email d'un compte du référentiel. La connexion réussit ssi un compte de cet email existe ET est
@@ -604,6 +616,36 @@ public static class CanalEcriture
             // foyer, Sc.4), refus métier renvoyé avec son motif (l'admin doit être un parent, Sc.4). Sur
             // succès, l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres
             // écrans re-projettent l'admin sans rechargement (Sc.9). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/de-designer-admin", (DeDesignerAdminRequete requete, DeDesignerAdminHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new DeDesignerAdminCommand(requete.ActeurId));
+
+            // Sens OFF (s41, débloque le verrou ON s33) : succès acquitté (l'acteur n'est plus admin), refus
+            // métier renvoyé avec son motif (borne « dernier admin », acteur inconnu — Sc.2/Sc.1). Sur succès,
+            // l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres écrans
+            // re-projettent l'état admin sans rechargement (Sc.6). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/desactiver-compte", (DesactiverCompteRequete requete, DesactiverCompteHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new DesactiverCompteCommand(requete.CompteId));
+
+            // Sens OFF (s41) : succès acquitté (le compte est désormais Inactif, relu du store), refus métier
+            // renvoyé avec son motif (compte introuvable — Sc.3). Sur succès, l'adaptateur de gauche déclenche
+            // la DIFFUSION temps réel (lecture seule) : les autres écrans ré-énumèrent les comptes sans
+            // rechargement (Sc.6). Jamais d'écriture par le canal de diffusion.
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 

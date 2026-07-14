@@ -341,20 +341,14 @@
                                                     @compte.Email — <span class="acteur-compte-statut">@compte.Statut</span>
                                                 </span>
                                             </div>
-                                            @* Toggle ACTIF (Sc.4) — sens ON : actionnable seulement si le compte est INACTIF ;
-                                               verrouillé (disabled) si déjà actif (désactivation absente du domaine ce sprint).
-                                               Appliqué à l'« Enregistrer » via la commande existante activer-compte. *@
+                                            @* Toggle ACTIF (Sc.4 s41) — BI-DIRECTIONNEL : actionnable dans les deux sens dès qu'un
+                                               compte existe. OFF→ON émet activer-compte (s24), ON→OFF émet desactiver-compte (s41,
+                                               verrou ON s33 LEVÉ). Appliqué à l'« Enregistrer » via le canal HTTP. *@
                                             <div class="form-check form-switch mt-2">
                                                 <input type="checkbox" class="form-check-input acteur-toggle-actif" role="switch"
-                                                       id="toggle-actif-@a.Id" data-testid="toggle-actif" @bind="_form.Actif"
-                                                       disabled="@(!EstInactif(compte))" />
+                                                       id="toggle-actif-@a.Id" data-testid="toggle-actif" @bind="_form.Actif" />
                                                 <label class="form-check-label" for="toggle-actif-@a.Id">Compte actif</label>
                                             </div>
-                                            @if (!EstInactif(compte))
-                                            {
-                                                <div class="text-muted small mt-1" data-testid="toggle-actif-motif">
-                                                    Compte déjà actif (le retrait de l'activation arrivera dans un prochain incrément).</div>
-                                            }
                                         }
                                         else
                                         {
@@ -383,22 +377,17 @@
                                         }
                                     </div>
 
-                                    @* État ADMIN (Sc.4) — toggle sens ON : verrouillé (disabled) si l'acteur est DÉJÀ admin
-                                       (la dé-désignation est absente du domaine ce sprint, reportée backlog). Appliqué à
-                                       l'« Enregistrer » via la commande existante designer-admin. *@
+                                    @* État ADMIN (Sc.4 s41) — toggle BI-DIRECTIONNEL : OFF→ON émet designer-admin (s22,
+                                       invariant admin=parent), ON→OFF émet de-designer-admin (s41, verrou ON s33 LEVÉ). Le
+                                       refus « dernier admin » (Sc.2) revient DANS la modal restée ouverte. Appliqué à
+                                       l'« Enregistrer » via le canal HTTP. *@
                                     <div class="mb-3">
                                         <label class="form-label">Admin</label>
                                         <div class="form-check form-switch">
                                             <input type="checkbox" class="form-check-input acteur-toggle-admin" role="switch"
-                                                   id="toggle-admin-@a.Id" data-testid="toggle-admin" @bind="_form.Admin"
-                                                   disabled="@EstAdmin(a.Id)" />
+                                                   id="toggle-admin-@a.Id" data-testid="toggle-admin" @bind="_form.Admin" />
                                             <label class="form-check-label" for="toggle-admin-@a.Id">Administrateur du foyer</label>
                                         </div>
-                                        @if (EstAdmin(a.Id))
-                                        {
-                                            <div class="text-muted small mt-1" data-testid="toggle-admin-motif">
-                                                Déjà administrateur (le retrait arrivera dans un prochain incrément).</div>
-                                        }
                                     </div>
 
                                     <hr />
