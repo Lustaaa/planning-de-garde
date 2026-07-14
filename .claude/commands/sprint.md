@@ -50,12 +50,14 @@ Quand la `dev-team` renvoie `{ "type":"question", … }` :
 
 5. **Gate visuel — porte G3 (IMPÉRATIVE, direct PO).**
    1. **Prouve back + IHM up** : `pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1 -Serial`
-      (suite COMPLÈTE, **assemblies sérialisées = mode gate anti-flake par défaut**, s36) puis **lance
-      l'app** en tâche de fond via `pwsh .claude/skills/run/scripts/run.ps1`. **Pourquoi `-Serial` au gate
-      (rétro s37)** : le runner parallèle rougit couramment sur le flake P1 *TempsReel* (blast-radius I/O),
-      forçant un 2ᵉ/3ᵉ run manuel à CHAQUE gate ; en série la suite passe en **un run déterministe** (un
-      rouge déterministe reste rouge — aucune régression masquée, triage flake s21 inchangé). Le parallèle
-      reste réservé au **cycle TDD rapide** (dev-team). *(Récit : JOURNAL-METHODE s36/s37.)*
+      (suite COMPLÈTE, **assemblies sérialisées = mode gate par défaut**, s37) puis **lance l'app** en tâche
+      de fond via `pwsh .claude/skills/run/scripts/run.ps1`. **Pourquoi `-Serial` au gate** : le flake P1
+      *TempsReel* qui motivait ce mode est **soldé à la cause s39** (collection xUnit `SignalRTempsReelCollection`
+      sur les 55 `FrontWasm*TempsReel*` ; parallèle mesuré **0 % rouge sur 12 runs**). `-Serial` **reste** au gate
+      en **ceinture + bretelles** (coût quasi nul, supprime tout résidu de course cross-assembly sous machine
+      chargée) — **plus un contournement de flake**. La **concurrence réelle est éprouvée par la dev-team** au
+      **cycle TDD rapide en parallèle** (désormais fiable). Un rouge déterministe reste rouge en série — aucune
+      régression masquée, triage flake s21 inchangé. *(Récit : JOURNAL-METHODE s36/s37/s39.)*
    2. **Relaie** : routes à tester, fichier de retours préparé (section `# Retours produit (PO)`
       du fichier de sprint).
    3. **`AskUserQuestion`** — *« Revue de sprint NN — la livraison est-elle validée ? »* :

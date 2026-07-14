@@ -28,6 +28,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// type de l'incarné. Contrôle de non-vacuité intégré : le cas Parent (menu visible) garantit que le menu
 /// n'est pas cassé pour tous, en regard du cas Autre (menu masqué).</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmIncarnerRefleteRoleTempsReelTests : TestContext
 {
     private static readonly DateTime Lundi_29_06_2026 = GrilleRuntimeHarness.Lundi_29_06_2026;

@@ -22,6 +22,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// cassés pour tous). Test déterministe (aucun hub SignalR câblé) : le gating se lit sur l'identité
 /// effective, jamais un effet de temps réel.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigGatingInviteChaqueOngletTempsReelTests : TestContext
 {
     [Fact]

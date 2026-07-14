@@ -39,6 +39,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// store / hub propres au test. Anti « vert qui ment » : le baseline « grand-père » est asserté avant ; un
 /// bUnit à doublure ne prouverait ni le store partagé, ni le second client SignalR, ni la re-projection runtime.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmGrilleSuppressionTempsReelTests : TestContext
 {
     private static readonly DateTime Mardi_16_06_2026 = new(2026, 6, 16);

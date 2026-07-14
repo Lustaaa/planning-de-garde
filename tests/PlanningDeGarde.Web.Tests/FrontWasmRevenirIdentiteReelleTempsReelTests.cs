@@ -22,6 +22,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// restaure le menu. Contrôle de non-vacuité intégré : l'état incarné (bandeau présent + menu visible) est
 /// prouvé AVANT le retour, sinon l'absence de bandeau après serait un faux vert.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmRevenirIdentiteReelleTempsReelTests : TestContext
 {
     private static readonly DateTime Lundi_29_06_2026 = GrilleRuntimeHarness.Lundi_29_06_2026;

@@ -33,6 +33,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// diffuse). Sans la diffusion par l'endpoint, aucune re-projection n'atteint l'écran 2 → rouge. Anti
 /// « vert qui ment » : le baseline « Nina la nounou » est asserté avant.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmEditerPeriodeTempsReelTests : TestContext
 {
     private static readonly DateTime Mardi_16_06_2026 = new(2026, 6, 16);

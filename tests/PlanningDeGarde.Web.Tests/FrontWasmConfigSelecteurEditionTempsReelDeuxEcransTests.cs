@@ -29,6 +29,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// premier écran ignore « Carla » → rouge. Test multi-clients SignalR → catégorie du flake P2 catalogué
 /// (re-run ciblé en cas de rouge isolé sur la convergence, dette docs/BACKLOG.md).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigSelecteurEditionTempsReelDeuxEcransTests : TestContext
 {
     /// <summary>Câble un écran de configuration (contexte bUnit) sur l'API distante réelle : client HTTP

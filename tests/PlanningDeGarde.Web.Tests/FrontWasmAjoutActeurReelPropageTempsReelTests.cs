@@ -30,6 +30,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// neuf attendu (GREEN minimal de cohérence). Test multi-clients SignalR → catégorie du flake P2
 /// catalogué (re-run ciblé en cas de rouge isolé sur la convergence, dette docs/BACKLOG.md).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmAjoutActeurReelPropageTempsReelTests : TestContext
 {
     private sealed record ActeurVue(string Id, string Nom, string Couleur);

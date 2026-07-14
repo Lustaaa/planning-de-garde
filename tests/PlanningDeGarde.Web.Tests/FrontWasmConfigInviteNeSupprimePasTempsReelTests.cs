@@ -23,6 +23,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// des acteurs est inchangée. Sans le contrôle positif, l'absence de bouton serait un faux vert. Un
 /// bUnit à doublure forçant l'interactivité ne prouverait pas le garde de rôle réel.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigInviteNeSupprimePasTempsReelTests : TestContext
 {
     [Fact]

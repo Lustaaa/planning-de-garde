@@ -25,6 +25,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// (la légende contient parent-a, pas parent-c). Pas un bUnit à doublure (il ne prouve ni la confirmation
 /// réelle à l'écran, ni le rendu réel de la légende, ni la chaîne d'édition réelle).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigHorsFenetrePasDeFantomeTempsReelTests : TestContext
 {
     [Fact]

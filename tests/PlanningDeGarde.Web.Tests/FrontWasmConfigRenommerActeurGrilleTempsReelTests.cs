@@ -31,6 +31,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// l'endpoint d'écriture / la diffusion manquaient, les cases resteraient « Alice » → rouge. Un bUnit à
 /// doublure ne prouverait ni la DI réelle, ni le chemin HTTP d'écriture, ni la diffusion temps réel.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigRenommerActeurGrilleTempsReelTests : TestContext
 {
     private static readonly string[] JoursDu1erAu5Juin = { "01/06", "02/06", "03/06", "04/06", "05/06" };

@@ -101,6 +101,19 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   depuis la diffusion, jamais un GET sur push** ; **mesurer le parallèle avant/après** l'ajout d'un client SignalR
   (aggravation = signal de conception, pas flake à cataloguer). Le rétrofit à la cause (collections xUnit non
   parallèles pour l'I/O) reste la dette de fond au backlog (candidat de tête).
+- 2026-07-14 — s39 : **dette flake P1 SignalR *TempsReel* SOLDÉE À LA CAUSE** (candidat de tête depuis s36,
+  5ᵉ+ montée chiffrée). Baseline mesuré **4/11 ≈ 36 % rouge** full-suite parallèle (victime UNIQUE
+  `FrontWasmConfigEnfantsTempsReelTests`, isolé 3/3 vert = course de charge, pas régression). Remède = collection
+  xUnit `SignalRTempsReelCollection` (`DisableParallelization=true`) **ciblée** sur les 55 `FrontWasm*TempsReel*`
+  (**pas un rideau** : ~213 autres Web.Tests parallèles, `Tests`/`Api.Tests` inchangés ; le blast-radius SMTP/Mongo
+  hypothétisé s29 n'a **jamais** rougi au baseline). La sérialisation a **démasqué 2 courses de convergence de TEST**
+  (vertes en isolation = PAS des régressions produit) neutralisées par gardes déterministes (**0 assertion, 0
+  `src/` produit touchés** ; course d'énumération s13 intacte). Résultat **36 % → 0 %** (12 runs) + `-Serial`
+  695/695. **Décision pipeline (rétro) : `-Serial` RESTE le défaut au gate `/sprint` en ceinture + bretelles**
+  (coût quasi nul, plus un contournement de flake), **la concurrence réelle étant désormais éprouvée par le cycle
+  TDD parallèle de la dev-team** (fiable). Fix : `sprint.md` 5.1 + `dotnet/SKILL.md` (`-Serial`) requalifiés
+  « flake soldé s39 » (fin du récit « parallèle rougit couramment »). Le triage durci s21 (re-run isolé x2-3,
+  `N/N rouge = régression`) a **discriminé** flake vs régression à chaque étape — il tient et reste la règle.
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake

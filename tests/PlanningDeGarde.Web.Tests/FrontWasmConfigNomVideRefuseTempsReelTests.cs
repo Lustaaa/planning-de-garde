@@ -21,6 +21,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// renvoyé par l'API (ou si le front avalait le nom vide en null → succès silencieux), le test serait
 /// rouge. Un bUnit à doublure ne prouverait ni le refus via le canal HTTP réel, ni le rendu du message.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigNomVideRefuseTempsReelTests : TestContext
 {
     [Fact]

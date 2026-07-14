@@ -27,6 +27,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// observable : si l'édition ne propageait pas, la case resterait « Marie » → rouge. Pas un bUnit à
 /// doublure (il ne prouve ni le rendu CSS de troncature, ni l'attribut natif, ni la chaîne d'édition réelle).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigNomLongEditeTempsReelTests : TestContext
 {
     private const string NomCourt = "Marie";

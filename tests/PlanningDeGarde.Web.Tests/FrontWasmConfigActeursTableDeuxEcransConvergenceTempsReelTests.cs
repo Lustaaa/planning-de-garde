@@ -29,6 +29,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// écritures ; un bUnit à doublure ne prouverait ni le store partagé, ni le second client SignalR, ni la
 /// re-projection runtime de la table.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigActeursTableDeuxEcransConvergenceTempsReelTests : TestContext
 {
     private static string? NomLigne(AngleSharp.Dom.IElement li)

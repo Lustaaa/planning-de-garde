@@ -27,6 +27,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// n'apparaîtrait jamais → rouge. Un bUnit à doublure ne prouverait ni la DI réelle, ni le chemin
 /// HTTP d'écriture, ni l'énumération depuis le store durable.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigAjouterActeurTempsReelTests : TestContext
 {
     [Fact]

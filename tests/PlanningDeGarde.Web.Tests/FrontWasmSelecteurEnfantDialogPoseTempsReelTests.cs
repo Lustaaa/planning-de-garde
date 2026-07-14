@@ -20,6 +20,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <c>Session.EnfantId</c>), le slot posé pour « Tom » porterait « Léa » (session) → rouge. On observe le
 /// store réel de l'API distante (rempart : le fantôme retiré est prouvé par l'id transmis, pas par le rendu).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmSelecteurEnfantDialogPoseTempsReelTests : TestContext
 {
     private static readonly DateTime Lundi_29_06_2026 = new(2026, 6, 29);

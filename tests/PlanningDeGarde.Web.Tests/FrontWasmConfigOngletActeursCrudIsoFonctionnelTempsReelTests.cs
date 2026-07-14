@@ -26,6 +26,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// SignalR). On ne redouble donc pas ici la voie temps réel (dette *TempsReel* P2), on borne le CRUD
 /// iso-fonctionnel accessible depuis l'onglet.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests : TestContext
 {
     private static string? NomLigne(AngleSharp.Dom.IElement li)

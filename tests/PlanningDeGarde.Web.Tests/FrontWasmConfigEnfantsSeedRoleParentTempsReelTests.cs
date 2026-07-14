@@ -22,6 +22,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// (2) Décocher « rôle parent » sur le rôle Papa depuis un AUTRE écran retire Alice du sélecteur en TEMPS
 /// RÉEL (SignalR) — le flag est la source de vérité vivante de l'éligibilité.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigEnfantsSeedRoleParentTempsReelTests : TestContext
 {
     private static string? Prenom(AngleSharp.Dom.IElement ligne)

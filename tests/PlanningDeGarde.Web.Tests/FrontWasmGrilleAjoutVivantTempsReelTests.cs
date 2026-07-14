@@ -24,6 +24,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// était mort, la case du 02/07 resterait sans nom → rouge. Un bUnit à doublure ne prouverait pas ce
 /// chemin temps réel réel (négociation + transport + re-projection HTTP).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmGrilleAjoutVivantTempsReelTests : TestContext
 {
     [Fact]

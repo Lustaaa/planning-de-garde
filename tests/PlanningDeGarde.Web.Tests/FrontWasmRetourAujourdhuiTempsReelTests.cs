@@ -34,6 +34,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// retour. Un bUnit à doublure de transport ne prouverait ni la re-requête réelle à l'ancre
 /// réinitialisée, ni l'absence d'écriture.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmRetourAujourdhuiTempsReelTests : TestContext
 {
     private static readonly DateTime Mercredi_10_06_2026 = new(2026, 6, 10);

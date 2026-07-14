@@ -29,6 +29,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// d'écriture (régression de la borne) → escalade.</b> Contrôle de non-vacuité : la pose réussit bien
 /// SOUS incarnation (menu visible), donc l'absence de fuite n'est pas due à une écriture empêchée.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmEcritureSousIdentiteReelleTempsReelTests : TestContext
 {
     // Mardi 16/06/2026 : la case posée. Référence « aujourd'hui » au 16/06 → fenêtre couvrant le 16/06.
