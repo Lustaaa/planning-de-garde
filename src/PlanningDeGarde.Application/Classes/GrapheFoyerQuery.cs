@@ -13,10 +13,11 @@ public sealed record GrapheParentVue(string ActeurId, string Nom, RoleDuLien Rol
 
 /// <summary>
 /// Un enfant restitué comme <b>racine</b> du graphe foyer (s38) : identifiant stable, prénom
-/// d'affichage et la liste de ses <b>parents liés</b> (branches). Un enfant sans aucun parent lié
-/// est une racine isolée légitime (0 parent accepté, s34) — <see cref="Parents"/> vide.
+/// d'affichage, la liste de ses <b>parents liés</b> (branches) et son <b>statut de complétude du
+/// couple</b> (R3, s40 — <see cref="StatutCouple"/>). Un enfant sans aucun parent lié est une racine
+/// isolée légitime (0 parent accepté, s34) — <see cref="Parents"/> vide, statut <c>Vide</c>.
 /// </summary>
-public sealed record GrapheEnfantVue(string EnfantId, string Prenom, IReadOnlyList<GrapheParentVue> Parents);
+public sealed record GrapheEnfantVue(string EnfantId, string Prenom, IReadOnlyList<GrapheParentVue> Parents, StatutCoupleR3 StatutCouple);
 
 /// <summary>
 /// Query de lecture <b>agrégée</b> du graphe foyer (s38) : restitue, PAR enfant en racine, ses parents
@@ -46,13 +47,14 @@ public sealed class GrapheFoyerQuery
         // un enfant qui n'a plus aucun parent résoluble reste une racine (isolée), jamais un nœud fantôme.
         var existants = _acteurs.EnumererActeurs();
         return _enfants.EnumererEnfants()
-            .Select(e => new GrapheEnfantVue(
-                e.Id,
-                e.Prenom,
-                e.ParentsLies
+            .Select(e =>
+            {
+                var parents = e.ParentsLies
                     .Where(p => existants.Contains(p.ActeurId))
                     .Select(p => new GrapheParentVue(p.ActeurId, _noms.NomDe(p.ActeurId), p.Role))
-                    .ToList()))
+                    .ToList();
+                return new GrapheEnfantVue(e.Id, e.Prenom, parents, StatutCoupleR3.Complet);
+            })
             .ToList();
     }
 }
