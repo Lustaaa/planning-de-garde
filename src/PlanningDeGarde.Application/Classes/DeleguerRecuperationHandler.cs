@@ -37,6 +37,12 @@ public sealed class DeleguerRecuperationHandler
 
     public Result<PeriodeSnapshot> Handle(DeleguerRecuperationCommand commande)
     {
+        // Refus AVANT toute écriture d'un délégataire INCONNU / ORPHELIN (id stable absent du store) :
+        // jamais de surcharge pointant un acteur qui n'existe pas (repli neutre / vert-qui-ment évités).
+        if (!_acteurs.EnumererActeurs().Contains(commande.VersActeurId))
+            return Result<PeriodeSnapshot>.Echec(
+                "Délégataire inconnu : cet acteur n'existe pas (ou plus) dans le foyer.");
+
         // Refus de la délégation à soi-même : le délégataire est DÉJÀ le responsable RÉSOLU du jour
         // (surcharge > fond), la délégation n'apporterait aucun changement utile — aucune écriture.
         var resolu = _grille.Projeter(commande.Jour, VuePlanning.Semaine)

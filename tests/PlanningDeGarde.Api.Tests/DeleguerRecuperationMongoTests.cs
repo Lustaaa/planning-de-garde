@@ -75,6 +75,26 @@ public sealed class DeleguerRecuperationMongoTests : IDisposable
         Assert.Equal("Bruno", carte.Transfert.RecevantNom);
     }
 
+    [MongoRequisFact]
+    public void Acceptation_Should_Refuser_un_delegataire_inconnu_avant_ecriture_store_intact()
+    {
+        // --- Given : un seul acteur durable (Alice), un cycle N=1 ---
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var parentA = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+        new CycleDeFondMongo(ConnectionString, _baseDeTest)
+            .DefinirCycle(new CycleDeFond(1, new Dictionary<int, string> { [0] = parentA }));
+
+        // --- When : déléguer vers un id ABSENT du store (inconnu / supprimé) ---
+        var orphelinId = "acteur-absent-" + Guid.NewGuid().ToString("N");
+        var periodesEcriture = new MongoPeriodeRepository(ConnectionString, _baseDeTest);
+        var resultat = new DeleguerRecuperationHandler(GrilleNeuve(), periodesEcriture, new ConfigurationFoyerMongo(ConnectionString, _baseDeTest))
+            .Handle(new DeleguerRecuperationCommand(Mercredi_08_07_2026, "enfant-lea", orphelinId));
+
+        // --- Then : refus AVANT écriture, store Mongo des périodes INTACT ---
+        Assert.False(resultat.EstSucces);
+        Assert.Empty(new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots());
+    }
+
     public void Dispose()
     {
         try
