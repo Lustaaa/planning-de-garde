@@ -42,6 +42,15 @@ public sealed class AdminsFoyerMongo : IEnumerationAdminsFoyer, IEditeurAdminsFo
             new ReplaceOptions { IsUpsert = true });
     }
 
+    public void DeDesignerAdmin(string acteurId)
+    {
+        // Retrait write-through (sens OFF, s41) : cache de session ET store durable (l'acteur reste
+        // non-admin au redémarrage). Idempotent : retirer un id absent est un no-op. La borne « dernier
+        // admin » est validée par l'agrégat AVANT cet appel (le store ne persiste qu'une décision tenue).
+        _cache.Remove(acteurId);
+        _admins.DeleteOne(Builders<AdminDocument>.Filter.Eq(d => d.Id, acteurId));
+    }
+
     public IReadOnlyCollection<string> EnumererAdmins() => _cache.ToList();
 
     /// <summary>Document persisté d'un admin du foyer : id stable de l'acteur (clé).</summary>

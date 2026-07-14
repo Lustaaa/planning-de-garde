@@ -16,5 +16,7 @@ public sealed class FakeAdminsFoyer : IEnumerationAdminsFoyer, IEditeurAdminsFoy
 
     public void DesignerAdmin(string acteurId) => _admins.Add(acteurId);
 
+    public void DeDesignerAdmin(string acteurId) => _admins.Remove(acteurId);
+
     public IReadOnlyCollection<string> EnumererAdmins() => _admins.ToList();
 }

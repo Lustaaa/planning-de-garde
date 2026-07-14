@@ -39,4 +39,16 @@ public sealed class AdministrationFoyer
         _admins.Add(acteurId);
         return Result<string>.Succes(acteurId);
     }
+
+    /// <summary>
+    /// Retire la désignation d'admin de l'acteur (sens OFF, s41). <b>Idempotent</b> : dé-désigner un
+    /// acteur déjà non-admin est un no-op qui réussit (aucune mutation). Sinon l'acteur quitte
+    /// l'ensemble des admins.
+    /// </summary>
+    public Result<string> DeDesignerAdmin(string acteurId)
+    {
+        // Idempotent : retirer un acteur absent de l'ensemble est un no-op qui réussit (un HashSet).
+        _admins.Remove(acteurId);
+        return Result<string>.Succes(acteurId);
+    }
 }

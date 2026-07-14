@@ -242,6 +242,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<CreerCompteLibreServiceHandler>();
         services.AddScoped<ActiverCompteHandler>();
         services.AddScoped<DesignerAdminHandler>();
+        services.AddScoped<DeDesignerAdminHandler>();
         services.AddScoped<SeConnecterHandler>();
         services.AddScoped<DemanderRecuperationMotDePasseHandler>();
         services.AddScoped<RedefinirMotDePasseHandler>();
