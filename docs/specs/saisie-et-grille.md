@@ -48,6 +48,28 @@ Texte complet : [`sequence-de-livraison.md` § paliers 2-3](sequence-de-livraiso
   dérivation **n'écrit rien**, et la **résolution de responsabilité de la case** (surcharge > fond > neutre)
   n'est **pas** affectée.
 
+- **Carte du jour « Qui récupère ce soir » en tête du planning** *(livré s42 — LECTURE seule ; 1ᵉʳ incrément
+  du noyau produit)* : le planning affiche **en tête** une carte **« Aujourd'hui »** résumant, pour le **jour
+  courant** et l'**enfant sélectionné**, **QUI** récupère l'enfant ce soir (responsable **résolu** surcharge >
+  fond > neutre, R19), **OÙ** (le(s) **slot(s) de localisation** du jour, s29) et le **transfert éventuel**
+  cédant → recevant (**saisi OU dérivé**, s31, priorité SAISI > DÉRIVÉ). Côté back, c'est une **query PURE
+  `CarteDuJourQuery` qui COMPOSE** `GrilleAgendaQuery` — elle **ne réimplémente pas** la résolution, la
+  dérivation de transfert ni la projection des slots (source unique = le domaine existant, sous peine de deux
+  vérités divergentes) ; **aucun store neuf, aucune mutation, aucune persistance neuve** ; **identique sur les
+  deux adaptateurs** (InMemory + Mongo durable). Le rendu **réutilise couleurs/repli de la grille** (aucune
+  teinte réinventée) : transfert = **rendu bicolore réutilisé**, jour sans transfert = **unicolore**. **Repli
+  fidèle** : aucun responsable résolu = **« personne assignée »** (neutre, sans nom fantôme) ; responsable
+  **orphelin** (id stable absent du store) = **repli neutre sans nom ni couleur fantôme** (filtre `Resolvable()`
+  s13, miroir R5/R6) ; jour **sans slot** = **sans lieu**, sans erreur. La carte est **STRICTEMENT en lecture**
+  (aucun contrôle d'édition, aucune commande émise — l'écriture reste dans les dialogs de pose / la Config) ;
+  l'**Invité VOIT** la carte (lecture non gatée). Sa convergence temps réel passe **exclusivement** par la
+  **diffusion SignalR de lecture** (s20), **sans rechargement**, par **reprojection client** depuis la fenêtre
+  de grille déjà chargée (aucun GET dédié sur push — choix anti-amplification de flake).
+  - **Limitation assumée (s42, routée au backlog)** : la carte se **reprojette depuis la fenêtre de grille
+    chargée**. Si l'utilisateur **navigue vers une semaine ne contenant pas le jour courant**, la carte
+    **disparaît** (elle n'a plus de source dans la fenêtre). Rendre la carte **persistante hors de la vue du jour
+    courant** supposerait un GET dédié (arbitrage persistance vs coût/flake) — non tranché.
+
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 
 ## Règles de gestion (catalogue : `regles-de-gestion.md`)

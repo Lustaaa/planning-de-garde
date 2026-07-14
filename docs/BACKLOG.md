@@ -11,7 +11,27 @@
 
 ## En cours
 
-*(Aucun sprint en cours.)* Dernier livré = **s41 `commandes-inverses-actif-admin`** : **débloque le sens OFF du
+*(Aucun sprint en cours.)* Dernier livré = **s42 `qui-recupere-ce-soir-carte-du-jour`** — **PIVOT assumé hors
+Config foyer vers le NOYAU PRODUIT** (après 9 incréments consécutifs Config foyer s32→s41) : **1ᵉʳ incrément du
+noyau produit** = la carte **« Qui récupère ce soir »** (jour courant, **STRICTEMENT LECTURE**), payoff de tout
+le foyer configuré. **@back** : query `CarteDuJourQuery` **PURE composant** `GrilleAgendaQuery` (responsable
+résolu **surcharge>fond>neutre**, slots de localisation du jour s29, transfert cédant→recevant **saisi OU dérivé
+s31**) — **SANS réimplémenter la résolution, AUCUN store neuf, AUCUNE mutation**, deux adaptateurs, durable Mongo ;
+repli fidèle (aucun responsable = « personne assignée » sans fantôme ; orphelin = repli neutre sans nom, `Resolvable`
+s13 ; jour sans transfert = unicolore ; sans slot = sans lieu). **@ihm** : carte « Aujourd'hui » en tête du planning
+(**reprojection client** depuis la grille chargée), strictement lecture ; **Invité VOIT** la carte ; convergence
+**SignalR par reprojection client** (0 GET sur push, anti-amplification flake). **LIMITATION assumée routée au
+backlog** : la carte se reprojette depuis la **fenêtre de grille chargée** — si l'utilisateur navigue vers une
+semaine ne contenant PAS le jour courant, la carte **disparaît** (choix guidé par l'anti-amplification flake, aucun
+GET dédié sur push ; à arbitrer si le PO veut la carte PERSISTANTE hors de la vue du jour courant). 5/5 ✅, suite
+**752/752**, gate G3 validé PO (validation directe, aucun rework ni retour produit nouveau). **Candidats de tête au
+prochain `/planning`** (suite du NOYAU PRODUIT) : **panneau cloche multi-événements / à-venir** (Palier 11, incrément
+suivant annoncé hors scope s42), **carte du jour persistante hors semaine courante** (limitation s42, persistance vs
+coût GET/flake), **imprévu & échange de dernière minute** (Palier 12) ; reste Config foyer : **édition depuis le
+graphe**, **graphe étendu**, **arbitrage inline vs modal** (tension s32), **liste de slots par activité**, **lien
+adresse acteur↔lieu**, **suppression slot récurrent IHM**, **suppression d'un enfant** ; **P0 auth** (Google OAuth
+réel + écran définir-mot-de-passe), **R3 « exactement 2 » à l'écriture** (non imposée, choix produit). Précédent =
+**s41 `commandes-inverses-actif-admin`** : **débloque le sens OFF du
 toggle actif/admin** (dette s33 SOLDÉE). **@back** : commande `DeDesignerAdmin` (agrégat `AdministrationFoyer`,
 idempotent, acteur inconnu refusé sans mutation) + **borne « dernier admin »** (dé-désigner le seul admin refusé
 AVANT écriture, foyer jamais sans admin) + commande `DesactiverCompte` (`Actif→Inactif` via
@@ -291,10 +311,11 @@ validé PO. Prochain = `/planning`.
 
 | Besoin | Statut | Palier | Origine |
 |--------|:------:|--------|---------|
-| Panneau cloche listant les événements à venir | ⬜ | Palier 11 | spec règles 20/120 · retours s02/s03 |
+| **Panneau cloche listant les événements à venir** — **PROCHAIN incrément du NOYAU PRODUIT** (candidat de tête /planning s43 ; multi-événements : transferts futurs, changements de planning, notifications ; annoncé **hors scope s42** qui n'a livré que le « ce soir » immédiat, pas une timeline) | ⬜ | Palier 11 | spec règles 20/120 · retours s02/s03 · **annoncé hors scope s42** |
 | Transferts listés comme événements (date, acteurs, lieu, heure) | ⬜ | Palier 11 | spec règle 20 |
 | Changements de planning exposés comme événements | ⬜ | Palier 11 | spec règle 20 |
-| « Qui récupère ce soir » — immédiat (qui-quand-où du jour) | ⬜ | Palier 11 | spec p4 · spec v03 incrément 2 |
+| ~~« Qui récupère ce soir » — immédiat (qui-quand-où du jour)~~ **livré s42 EN LECTURE** : carte « Aujourd'hui » (jour courant + enfant sélectionné) restituant **qui / où / transfert du jour**, via query `CarteDuJourQuery` **PURE composant** `GrilleAgendaQuery` (résolution surcharge>fond>neutre + slots s29 + transfert saisi/dérivé s31, **aucun store neuf, aucune mutation**, deux adaptateurs, Mongo durable) ; carte en tête du planning par **reprojection client**, **STRICTEMENT lecture**, **Invité VOIT**, convergence **SignalR par reprojection client** (0 GET sur push). **1ᵉʳ incrément du noyau produit** après l'épic Config foyer. | ✅ | s42 | spec p4 · spec v03 incrément 2 |
+| **Carte du jour PERSISTANTE hors de la semaine courante** (limitation s42) : la carte se reprojette depuis la **fenêtre de grille chargée**, donc **disparaît** si l'utilisateur navigue vers une semaine ne contenant pas le jour courant. Choix guidé par l'**anti-amplification flake** (aucun GET dédié sur push). **À arbitrer** : persistance de la carte hors vue du jour courant **vs** coût d'un GET sur push (risque flake). | ⬜ | Palier 11 (arbitrage) | **limitation s42** |
 
 ### Épic 10 — Authentification & accès utilisateurs
 

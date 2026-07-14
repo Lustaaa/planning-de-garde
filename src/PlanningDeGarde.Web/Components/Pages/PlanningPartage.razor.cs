@@ -48,6 +48,10 @@ public partial class PlanningPartage
     // édité en config suit sans rechargement (S9/S10).
     private List<EnfantFoyer> _enfantsFoyer = new();
 
+    // Enfant sélectionné (s42) dont la carte « Aujourd'hui » restitue le « où » (slots). Défaut = 1er enfant
+    // du référentiel ; vue seule (aucune écriture). null tant qu'aucun enfant n'est chargé.
+    private string? _enfantSelectionne;
+
     private HubConnection? _hub;
 
     // Écriture en contexte (palier 7) — la grille reste en LECTURE SEULE (règle 14) : la case ouvre un
@@ -154,7 +158,13 @@ public partial class PlanningPartage
         {
             var enfants = await Canal.GetFromJsonAsync<List<EnfantFoyer>>("api/foyer/enfants");
             if (enfants is not null)
+            {
                 _enfantsFoyer = enfants;
+                // Défaut = 1er enfant ; on conserve une sélection encore présente (l'enfant courant survit à
+                // une diffusion), sinon on retombe sur le premier disponible (jamais une sélection fantôme).
+                if (_enfantSelectionne is null || _enfantsFoyer.All(e => e.Id != _enfantSelectionne))
+                    _enfantSelectionne = _enfantsFoyer.FirstOrDefault()?.Id;
+            }
         }
         catch (HttpRequestException)
         {
@@ -581,6 +591,22 @@ public partial class PlanningPartage
     /// <summary>Vrai si la case correspond à la date du jour (port d'horloge injecté) — sert au marquage
     /// visuel « aujourd'hui » (Sc.4). Pur affichage : aucune règle métier, aucun observable de domaine.</summary>
     private bool EstAujourdhui(DateOnly date) => date == Horloge.Aujourdhui;
+
+    /// <summary>
+    /// Carte « Aujourd'hui : qui récupère ce soir » (s42) — REPROJETÉE CLIENT depuis la grille déjà chargée
+    /// (JourCase du jour courant), jamais un GET dédié sur push (anti-amplification flake TempsReel) : le
+    /// « qui » résolu (surcharge&gt;fond&gt;neutre), le transfert saisi/dérivé (s31) et les slots y sont déjà
+    /// portés par la projection de lecture. <c>null</c> tant que le jour courant n'est pas dans la fenêtre
+    /// chargée (aucune carte fantôme). Lecture seule.
+    /// </summary>
+    private JourCase? CarteDuJour => _grille.Jours.FirstOrDefault(j => j.Date == Horloge.Aujourdhui);
+
+    /// <summary>Le « où » de la carte : les slots du jour courant de l'ENFANT SÉLECTIONNÉ (les autres enfants
+    /// exclus). Vide (pas de lieu) si aucun enfant sélectionné ou aucun slot — jamais une erreur.</summary>
+    private IReadOnlyList<SlotCase> SlotsCarte
+        => CarteDuJour is { } carte && _enfantSelectionne is { } enfant
+            ? carte.Slots.Where(s => s.EnfantId == enfant).ToList()
+            : Array.Empty<SlotCase>();
 
     /// <summary>Couleur PLEINE d'un acteur (responsable de case en pastille, ou créneau) via le thème
     /// couleur partagé. La pastille de responsable et le slot portent la couleur de la personne (donnée,
