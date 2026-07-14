@@ -47,7 +47,16 @@ public sealed class AdministrationFoyer
     /// </summary>
     public Result<string> DeDesignerAdmin(string acteurId)
     {
-        // Idempotent : retirer un acteur absent de l'ensemble est un no-op qui réussit (un HashSet).
+        // Idempotent : retirer un acteur absent de l'ensemble est un no-op qui réussit — et NE déclenche
+        // PAS la borne « dernier admin » (aucun retrait effectif).
+        if (!_admins.Contains(acteurId))
+            return Result<string>.Succes(acteurId);
+
+        // Borne défensive « dernier admin » (Sc.2) : refuser AVANT écriture de retirer le seul admin
+        // restant — le foyer ne se retrouve JAMAIS sans admin (cohérent avec l'invariant admin=Parent).
+        if (_admins.Count == 1)
+            return Result<string>.Echec("le foyer doit garder au moins un admin");
+
         _admins.Remove(acteurId);
         return Result<string>.Succes(acteurId);
     }
