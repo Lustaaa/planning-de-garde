@@ -34,7 +34,7 @@
 > - **Réimplémentation de la résolution** : on **compose** la résolution existante (surcharge > fond,
 >   transferts s31), on **ne la réécrit pas** (cf. point de vigilance).
 
-## Avancement — 4/5
+## Avancement — 5/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -42,7 +42,7 @@
 | 2 | **Composer le « où » + le transfert du jour** : le(s) **slot(s) de localisation** du jour (s29) et le **transfert éventuel** cédant→recevant (**saisi OU dérivé s31**, priorité SAISI > DÉRIVÉ) sont restitués dans le même payload ; jour **sans transfert** = unicolore ; jour **sans slot** = pas de lieu | back | ✅ |
 | 3 | **Cas limites / repli fidèle (erreur + neutre)** : aucun responsable résolu = **« personne assignée »** (neutre) ; acteur **orphelin** → **repli neutre SANS nom fantôme** (filtre `Resolvable()` s13) ; **bord de fenêtre** (jour non chargé) ; **store vide** = carte neutre sans crash ; identique sur les deux adaptateurs | back | ✅ |
 | 4 | **Carte « Aujourd'hui » en tête du planning** : rend **qui / où / transfert** pour le **jour courant** + l'**enfant sélectionné**, en **réutilisant couleurs/repli de la grille** (aucune teinte réinventée) ; transfert = rendu bicolore réutilisé (présentation s29) ; **STRICTEMENT lecture** (aucun contrôle d'édition) | 🖥️ IHM | ✅ |
-| 5 | **Parent-gated LECTURE + convergence SignalR** : l'**Invité VOIT** la carte (lecture seule, aucune action) ; un changement pertinent (période/transfert/slot) fait **CONVERGER** la carte d'un 2ᵉ écran **sans rechargement**, via le canal SignalR de **lecture seule** (aucune écriture par la diffusion, s20 préservé) | 🖥️ IHM | ⏳ |
+| 5 | **Parent-gated LECTURE + convergence SignalR** : l'**Invité VOIT** la carte (lecture seule, aucune action) ; un changement pertinent (période/transfert/slot) fait **CONVERGER** la carte d'un 2ᵉ écran **sans rechargement**, via le canal SignalR de **lecture seule** (aucune écriture par la diffusion, s20 préservé) | 🖥️ IHM | ✅ |
 
 > **⚠️ Point de vigilance — COMPOSER, ne PAS réimplémenter la résolution (Sc.1-3, décision SM).** Le
 > « qui » du jour est **déjà** résolu ailleurs (résolution **surcharge > fond > neutre** du palier 6,
@@ -124,7 +124,7 @@ Et un jour neutre affiche « personne assignée » (repli Sc.3), sans nom fantô
 Et la carte est STRICTEMENT en LECTURE : aucun contrôle d'édition, aucune commande émise depuis la carte
 ```
 
-### Sc.5 — Parent-gated LECTURE + convergence SignalR @ihm @pending
+### Sc.5 — Parent-gated LECTURE + convergence SignalR @ihm @vert
 ```gherkin
 Étant donné une identité EFFECTIVE non-Parent (Invité)
 Quand j'ouvre le planning
