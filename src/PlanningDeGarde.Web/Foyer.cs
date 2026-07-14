@@ -112,4 +112,9 @@ public sealed record GrapheParent(string ActeurId, string Nom, RoleDuLien Role);
 public sealed record GrapheEnfant(string EnfantId, string Prenom)
 {
     public IReadOnlyList<GrapheParent> Parents { get; init; } = System.Array.Empty<GrapheParent>();
+
+    /// <summary>Statut de complétude du couple R3 (s40) déjà calculé côté API (GET /api/foyer/graphe) et
+    /// peuplé depuis le JSON. Alimente le badge de complétude en LECTURE SEULE (Sc.4). Défaut
+    /// <see cref="StatutCoupleR3.Vide"/> (racine isolée) tant que le champ n'est pas renseigné.</summary>
+    public StatutCoupleR3 StatutCouple { get; init; } = StatutCoupleR3.Vide;
 }

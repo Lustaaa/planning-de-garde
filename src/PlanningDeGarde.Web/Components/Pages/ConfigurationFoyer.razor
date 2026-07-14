@@ -50,6 +50,13 @@
                 {
                     <li class="config-graphe-racine" data-testid="graphe-enfant-racine" data-enfant-id="@enfant.EnfantId">
                         <span class="config-graphe-enfant" data-testid="graphe-enfant-nom">@enfant.Prenom</span>
+                        @* Badge de complétude du couple R3 (s40) — STRICTEMENT en lecture (span, aucun contrôle
+                           d'édition, aucune commande émise). Le statut est déjà calculé côté API (Sc.1/Sc.2) ;
+                           l'UI ne fait que le libeller (aucune règle métier ici). *@
+                        <span class="config-graphe-badge config-graphe-badge-@BadgeCoupleClasse(enfant.StatutCouple)"
+                              data-testid="graphe-enfant-badge" data-statut="@enfant.StatutCouple">
+                            @LibelleBadgeCouple(enfant.StatutCouple)
+                        </span>
                         @if (enfant.Parents.Count > 0)
                         {
                             <ul class="config-graphe-branches">
@@ -905,6 +912,13 @@
     .config-graphe-titre { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
         color: var(--pdg-muted); margin: 0 0 .9rem; }
     .config-graphe-vide { color: var(--pdg-muted); font-size: .92rem; margin: 0; }
+    /* Badge de complétude du couple R3 (s40) — présentation seule, lecture stricte : complet (vert),
+       incomplet (ambre, signal non bloquant), vide/aucun parent (neutre gris). */
+    .config-graphe-badge { display: inline-block; margin-left: .5rem; padding: .08rem .5rem; border-radius: 999px;
+        font-size: .72rem; font-weight: 700; vertical-align: middle; }
+    .config-graphe-badge-complet { background: #dcfce7; color: #166534; }
+    .config-graphe-badge-incomplet { background: #fef3c7; color: #92400e; }
+    .config-graphe-badge-vide { background: var(--pdg-surface-2); color: var(--pdg-muted); }
     .config-graphe-racines { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 1rem; }
     .config-graphe-racine { list-style: none; background: var(--pdg-surface-2); border: 1px solid var(--pdg-border);
         border-radius: 12px; padding: .8rem .95rem; min-width: 170px; display: flex; flex-direction: column;

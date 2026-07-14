@@ -470,6 +470,25 @@ public partial class ConfigurationFoyer
     private static string LibelleBrancheParent(GrapheParent parent)
         => $"{parent.Nom} ({LibelleRoleDuLien(parent.Role)})";
 
+    /// <summary>Libellé du badge de complétude du couple R3 (s40, Sc.4) — présentation seule : « couple complet »
+    /// / « couple incomplet » / « aucun parent » (état neutre pour une racine isolée, distinct d'une anomalie).
+    /// Le statut est déjà calculé côté API (GrapheFoyerQuery), l'UI ne fait que le libeller (aucune règle métier).</summary>
+    private static string LibelleBadgeCouple(StatutCoupleR3 statut) => statut switch
+    {
+        StatutCoupleR3.Complet => "couple complet",
+        StatutCoupleR3.Incomplet => "couple incomplet",
+        _ => "aucun parent",
+    };
+
+    /// <summary>Suffixe de classe CSS du badge de complétude (s40) : « complet » / « incomplet » / « vide »
+    /// — pilote uniquement l'apparence (couleur/ton), jamais une règle métier.</summary>
+    private static string BadgeCoupleClasse(StatutCoupleR3 statut) => statut switch
+    {
+        StatutCoupleR3.Complet => "complet",
+        StatutCoupleR3.Incomplet => "incomplet",
+        _ => "vide",
+    };
+
     /// <summary>Activités du référentiel du foyer énumérées <b>depuis le store vivant</b> (GET /api/foyer/activites,
     /// s35), jamais une activité en dur : alimente le tableau de l'onglet Activités (ajoutées / éditées / supprimées
     /// suivent sans rechargement, S6) — même source que les sélecteurs de lieu des dialogs.</summary>
