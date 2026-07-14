@@ -106,6 +106,68 @@
     </section>
 }
 
+@* Panneau « À venir » (s43) — SOUS la carte « Aujourd'hui », STRICTEMENT en LECTURE. Reprojeté CLIENT
+   depuis la grille déjà chargée (jours postérieurs à aujourd'hui, résolution surcharge>fond>neutre +
+   transfert saisi/dérivé s31 + slots), filtré sur l'enfant sélectionné. Aucun contrôle d'édition, aucune
+   commande émise. Réutilise couleurs/repli de la grille (aucune teinte réinventée) ; sa convergence temps
+   réel passe par la reprojection SignalR de la grille (canal de lecture seule s20, 0 GET sur push). *@
+<section class="panneau-a-venir" data-testid="panneau-a-venir" aria-label="À venir : qui récupère les prochains jours">
+    <h2 class="panneau-a-venir-titre">À venir</h2>
+
+    @if (AVenir.Count == 0)
+    {
+        <p class="a-venir-vide" data-testid="a-venir-vide">Aucun événement à venir</p>
+    }
+    else
+    {
+        <ul class="a-venir-liste">
+            @foreach (var jour in AVenir)
+            {
+                <li class="a-venir-jour" data-testid="a-venir-jour" data-date="@jour.Date.ToString("yyyy-MM-dd")">
+                    <span class="a-venir-date">@jour.Date.ToString("ddd dd/MM")</span>
+
+                    @* Le « qui » : transfert bicolore (parité s29), sinon responsable résolu, sinon neutre. *@
+                    @if (jour.Transfert is { } transfert)
+                    {
+                        <span class="a-venir-qui a-venir-qui-transfert" data-testid="a-venir-transfert-bicolore"
+                              data-couleur-depart="@transfert.CouleurDepart" data-couleur-arrivee="@transfert.CouleurArrivee"
+                              style="background: linear-gradient(135deg, @Couleur(transfert.CouleurDepart) 0 46%, @Couleur(transfert.CouleurArrivee) 54% 100%);">
+                            <span data-testid="a-venir-transfert-cedant">@transfert.NomDepart</span>
+                            <span class="a-venir-transfert-fleche" aria-hidden="true">→</span>
+                            <span data-testid="a-venir-transfert-recevant">@transfert.NomArrivee</span>
+                        </span>
+                    }
+                    else if (!string.IsNullOrEmpty(jour.NomResponsable))
+                    {
+                        <span class="a-venir-qui" data-testid="a-venir-responsable"
+                              data-couleur="@jour.CouleurResponsable"
+                              style="background-color:@Couleur(jour.CouleurResponsable);">@jour.NomResponsable</span>
+                    }
+                    else
+                    {
+                        <span class="a-venir-qui a-venir-qui-neutre" data-testid="a-venir-qui-neutre">Personne assignée</span>
+                    }
+
+                    @* Le « où » : slots de l'ENFANT SÉLECTIONNÉ pour ce jour (absent = pas de lieu). *@
+                    @{ var slots = SlotsAVenirPour(jour); }
+                    @if (slots.Count > 0)
+                    {
+                        <span class="a-venir-ou">
+                            @foreach (var slot in slots)
+                            {
+                                <span class="a-venir-slot" data-testid="a-venir-slot">
+                                    <span class="a-venir-slot-lieu" style="background-color:@Couleur(slot.CouleurActeur);">@slot.Libelle</span>
+                                    <span class="a-venir-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
+                                </span>
+                            }
+                        </span>
+                    }
+                </li>
+            }
+        </ul>
+    }
+</section>
+
 @* Bandeau de connexion inline RETIRÉ (s24, Sc.10) : un seul chemin d'entrée = la page de connexion
    dédiée (/connexion, Sc.8). La connexion/déconnexion ne se fait plus depuis le planning. *@
 
@@ -517,6 +579,31 @@ else
     .carte-slot-lieu { color: #fff; font-weight: 700; padding: 2px 8px; border-radius: 8px;
                        box-shadow: 0 1px 2px rgba(16,24,40,.14); }
     .carte-slot-horaire { color: var(--pdg-muted); font-variant-numeric: tabular-nums; }
+
+    /* ════════ Panneau « À venir » (s43) ════════
+       Liste tokenisée SOUS la carte du jour, LECTURE SEULE. Réutilise les couleurs de responsabilité
+       (inline, données) et le motif bicolore du transfert (parité grille s29) — aucune teinte réinventée. */
+    .panneau-a-venir { background: var(--pdg-card); border: 1px solid var(--pdg-border); border-radius: 16px;
+                       padding: 12px 18px; margin-bottom: 16px; box-shadow: var(--pdg-ombre-sm, 0 1px 2px rgba(16,24,40,.05)); }
+    .panneau-a-venir-titre { font-family: var(--pdg-font-titre); font-size: .82rem; text-transform: uppercase;
+                             letter-spacing: .06em; font-weight: 800; color: var(--pdg-muted); margin: 0 0 10px; }
+    .a-venir-vide { color: var(--pdg-muted); font-size: .86rem; margin: 0; }
+    .a-venir-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .a-venir-jour { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+                    padding: 4px 0; border-top: 1px solid color-mix(in srgb, var(--pdg-border) 55%, transparent); }
+    .a-venir-jour:first-child { border-top: none; }
+    .a-venir-date { min-width: 92px; font-size: .78rem; font-weight: 600; color: var(--pdg-muted);
+                    text-transform: capitalize; font-variant-numeric: tabular-nums; }
+    .a-venir-qui { display: inline-flex; align-items: center; gap: 6px; color: #fff; font-weight: 700;
+                   padding: 3px 12px; border-radius: 999px; box-shadow: 0 1px 2px rgba(16,24,40,.16); font-size: .82rem; }
+    .a-venir-qui-neutre { background: var(--pdg-surface, #eef); color: var(--pdg-muted); box-shadow: none; }
+    .a-venir-qui-transfert { text-shadow: 0 1px 2px rgba(16,24,40,.55); }
+    .a-venir-transfert-fleche { opacity: .9; }
+    .a-venir-ou { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .a-venir-slot { display: inline-flex; align-items: center; gap: 6px; font-size: .76rem; }
+    .a-venir-slot-lieu { color: #fff; font-weight: 700; padding: 2px 8px; border-radius: 8px;
+                         box-shadow: 0 1px 2px rgba(16,24,40,.14); }
+    .a-venir-slot-horaire { color: var(--pdg-muted); font-variant-numeric: tabular-nums; }
 
     /* ════════ Vues MOIS / 4 SEMAINES : cartes-jour ════════ */
     .grille-agenda { display: flex; flex-direction: column; gap: 8px; }

@@ -608,6 +608,27 @@ public partial class PlanningPartage
             ? carte.Slots.Where(s => s.EnfantId == enfant).ToList()
             : Array.Empty<SlotCase>();
 
+    /// <summary>
+    /// Liste « À venir » (s43) — REPROJETÉE CLIENT depuis la grille déjà chargée (jamais un GET dédié sur push,
+    /// anti-amplification flake TempsReel) : les JOURS À VENIR de la fenêtre en main (strictement après
+    /// aujourd'hui), ordonnés par date croissante. Chaque <c>JourCase</c> porte déjà le « qui » résolu
+    /// (surcharge&gt;fond&gt;neutre), le transfert saisi/dérivé (s31) et les slots — miroir de
+    /// <see cref="AVenirQuery"/> côté serveur. Vide (message « aucun événement à venir ») quand aucun jour de la
+    /// fenêtre n'est postérieur à aujourd'hui. Lecture seule.
+    /// </summary>
+    private IReadOnlyList<JourCase> AVenir
+        => _grille.Jours
+            .Where(jour => jour.Date > Horloge.Aujourdhui)
+            .OrderBy(jour => jour.Date)
+            .ToList();
+
+    /// <summary>Le « où » d'un jour à venir : les slots de ce jour de l'ENFANT SÉLECTIONNÉ (les autres enfants
+    /// exclus). Vide (pas de lieu) si aucun enfant sélectionné ou aucun slot — jamais une erreur.</summary>
+    private IReadOnlyList<SlotCase> SlotsAVenirPour(JourCase jour)
+        => _enfantSelectionne is { } enfant
+            ? jour.Slots.Where(s => s.EnfantId == enfant).ToList()
+            : Array.Empty<SlotCase>();
+
     /// <summary>Couleur PLEINE d'un acteur (responsable de case en pastille, ou créneau) via le thème
     /// couleur partagé. La pastille de responsable et le slot portent la couleur de la personne (donnée,
     /// inline) ; la case elle-même reste neutre (surface tokenisée) — rendu correct clair ET sombre.</summary>
