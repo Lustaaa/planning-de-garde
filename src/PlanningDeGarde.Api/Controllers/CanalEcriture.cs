@@ -75,9 +75,10 @@ public static class CanalEcriture
     public sealed record EditerEnfantRequete(string EnfantId, string NouveauPrenom);
 
     /// <summary>Corps de la requête de liaison d'un enfant à un parent-acteur (s34) émise via le canal
-    /// d'écriture : l'identifiant stable de l'enfant + l'identifiant stable de l'acteur. Refus métier (acteur
-    /// inexistant / non-parent / borne 2 parents max) renvoyé avec son motif ; déjà lié = neutre.</summary>
-    public sealed record LierEnfantParentRequete(string EnfantId, string ActeurId);
+    /// d'écriture : l'identifiant stable de l'enfant + l'identifiant stable de l'acteur + le <b>rôle-du-lien</b>
+    /// (père / mère / parent-libre, s37 — défaut « parent-libre » si absent). Refus métier (acteur inexistant /
+    /// non-parent / borne 2 parents max / deux même rôle exclusif) renvoyé avec son motif ; déjà lié = maj du rôle.</summary>
+    public sealed record LierEnfantParentRequete(string EnfantId, string ActeurId, RoleDuLien Role = RoleDuLien.ParentLibre);
 
     /// <summary>Corps de la requête de retrait du lien d'un enfant vers un parent-acteur (s34) émise via le
     /// canal d'écriture : l'identifiant stable de l'enfant + l'identifiant stable de l'acteur. Idempotent côté
@@ -363,7 +364,7 @@ public static class CanalEcriture
         routes.MapPost("/api/canal/lier-enfant-parent",
             (LierEnfantParentRequete requete, LierEnfantParentHandler handler, INotificateurPlanning notificateur) =>
         {
-            var resultat = handler.Handle(new LierEnfantParentCommand(requete.EnfantId, requete.ActeurId));
+            var resultat = handler.Handle(new LierEnfantParentCommand(requete.EnfantId, requete.ActeurId, requete.Role));
 
             // Même convention que les autres écritures : succès acquitté (le parent lié est relu dans la colonne
             // « Parents liés » sans rechargement, s34 Sc.5), refus métier renvoyé avec son motif (acteur

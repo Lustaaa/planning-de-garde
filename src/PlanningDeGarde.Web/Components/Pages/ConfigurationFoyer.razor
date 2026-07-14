@@ -819,13 +819,26 @@
                                     @foreach (var p in ActeursParents())
                                     {
                                         var acteur = p;
-                                        var lie = _selectionParents.Contains(acteur.Id);
-                                        <div class="form-check form-switch">
+                                        var lie = _selectionParents.ContainsKey(acteur.Id);
+                                        var role = RoleDeParent(acteur.Id);
+                                        <div class="form-check form-switch d-flex align-items-center gap-2">
                                             <input type="checkbox" class="form-check-input enfant-checkbox-parent" role="switch"
                                                    id="parent-@acteur.Id" data-testid="checkbox-parent" data-acteur-id="@acteur.Id"
                                                    checked="@lie" disabled="@(!lie && _selectionParents.Count >= 2)"
                                                    @onchange="e => BasculerParent(acteur.Id, (bool)e.Value!)" />
                                             <label class="form-check-label" for="parent-@acteur.Id">@acteur.Nom</label>
+                                            @* Sélecteur rôle-du-lien (s37) : visible pour un parent SÉLECTIONNÉ, pré-réglé
+                                               sur son rôle courant. À l'« Enregistrer », le rôle voyage avec « lier ». *@
+                                            @if (lie)
+                                            {
+                                                <select class="form-select form-select-sm enfant-role-parent" data-testid="role-parent-select"
+                                                        data-acteur-id="@acteur.Id"
+                                                        @onchange="e => ChoisirRoleParent(acteur.Id, Enum.Parse<RoleDuLien>((string)e.Value!))">
+                                                    <option value="ParentLibre" selected="@(role == RoleDuLien.ParentLibre)">parent</option>
+                                                    <option value="Pere" selected="@(role == RoleDuLien.Pere)">père</option>
+                                                    <option value="Mere" selected="@(role == RoleDuLien.Mere)">mère</option>
+                                                </select>
+                                            }
                                         </div>
                                     }
                                 </div>

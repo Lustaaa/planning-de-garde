@@ -34,8 +34,8 @@ public class Scenario34_S3_DelierEnfantParent
         Assert.True(resultat.EstSucces);
         var lea = referentiel.EnumererEnfants().Single(e => e.Id == LeaId);
         Assert.Equal("Léa", lea.Prenom);            // id/prénom inchangés
-        Assert.DoesNotContain(Papa, lea.ParentsLies); // le parent délié a disparu
-        Assert.Contains(Maman, lea.ParentsLies);      // les autres liens restent
+        Assert.DoesNotContain(lea.ParentsLies, p => p.ActeurId == Papa); // le parent délié a disparu
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == Maman);      // les autres liens restent
     }
 
     // ---------- Driver — délier un parent déjà non lié est idempotent (neutre, sans écriture) ----------
@@ -51,6 +51,6 @@ public class Scenario34_S3_DelierEnfantParent
         Assert.True(resultat.EstSucces); // neutre, sans erreur
         var lea = referentiel.EnumererEnfants().Single(e => e.Id == LeaId);
         Assert.Single(lea.ParentsLies);      // aucune écriture partielle
-        Assert.Contains(Papa, lea.ParentsLies); // l'unique lien existant intact
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == Papa); // l'unique lien existant intact
     }
 }

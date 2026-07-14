@@ -5,16 +5,15 @@ using PlanningDeGarde.Infrastructure;
 namespace PlanningDeGarde.Api.Tests;
 
 /// <summary>
-/// Sprint 34 — S3 — Acceptation d'<b>intégration sur Mongo RÉEL</b> (jamais une doublure) du retrait de
-/// lien enfant↔parent, prouvé <b>durable</b>. Un enfant lié à deux parents sur le store durable
-/// <see cref="ReferentielEnfantsMongo"/> est délié d'un parent ; après un <b>redémarrage</b> (nouvelle
-/// instance de store sur la même base persistée) l'enfant relu ne porte plus ce parent mais conserve
-/// l'autre — preuve que le retrait a atteint le store durable (write-through). Délier un parent déjà
-/// non lié est idempotent : aucune écriture, l'état durable reste identique.
+/// Sprint 37 — Sc.2 — Acceptation d'<b>intégration sur Mongo RÉEL</b> (jamais une doublure) du rejet
+/// « pas deux liens de même rôle exclusif » (père/mère), prouvé <b>sans écriture partielle DURABLE</b>.
+/// Un enfant lié à un « père » sur le store durable <see cref="ReferentielEnfantsMongo"/> refuse un
+/// SECOND « père » ; après un <b>redémarrage</b> (nouvelle instance de store sur la même base persistée),
+/// l'enfant relu porte TOUJOURS son unique lien « père » d'origine — le refus n'a pas corrompu le store.
 ///
 /// <b>Skip propre</b> (<see cref="MongoRequisFactAttribute"/>) si Docker / Mongo est indisponible.
 /// </summary>
-public sealed class DelierEnfantParentMongoDurabiliteTests : IDisposable
+public sealed class RejetsRoleDuLienMongoTests : IDisposable
 {
     private const string ConnectionString = "mongodb://localhost:27017";
     private readonly string _baseDeTest = $"planning_test_{Guid.NewGuid():N}";
@@ -27,10 +26,8 @@ public sealed class DelierEnfantParentMongoDurabiliteTests : IDisposable
     }
 
     [MongoRequisFact]
-    public void Acceptation_Should_Relire_l_enfant_sans_le_parent_delie_mais_avec_l_autre_apres_redemarrage_When_on_delie_sur_le_store_Mongo_reel()
+    public void Acceptation_Should_Conserver_l_unique_lien_pere_durable_apres_le_refus_d_un_second_pere_When_on_lie_sur_le_store_Mongo_reel()
     {
-        // Foyer (adaptateurs InMemory réels) : deux acteurs portant un rôle marqué « est rôle parent »
-        // (option B1, s36 : parent liable = l'acteur porte un rôle marqué parent).
         var roles = new ReferentielRolesEnMemoire();
         roles.Creer("role-papa", "Papa");
         roles.MarquerParent("role-papa", true);
@@ -42,8 +39,7 @@ public sealed class DelierEnfantParentMongoDurabiliteTests : IDisposable
             return id;
         }
         var papa = Parent("Papa");
-        var maman = Parent("Maman");
-        var mamie = Parent("Mamie"); // jamais liée — cible du délier idempotent
+        var autre = Parent("Autre");
 
         string leaId;
         {
@@ -51,20 +47,19 @@ public sealed class DelierEnfantParentMongoDurabiliteTests : IDisposable
             leaId = new AjouterEnfantHandler(store1, store1, new NotificateurMuet())
                 .Handle(new AjouterEnfantCommand("Léa")).Valeur!.EnfantId;
             var lier = new LierEnfantParentHandler(store1, config, roles, store1);
-            lier.Handle(new LierEnfantParentCommand(leaId, papa));
-            lier.Handle(new LierEnfantParentCommand(leaId, maman));
+            Assert.True(lier.Handle(new LierEnfantParentCommand(leaId, papa, RoleDuLien.Pere)).EstSucces);
 
-            var delier = new DelierEnfantParentHandler(store1);
-            Assert.True(delier.Handle(new DelierEnfantParentCommand(leaId, papa)).EstSucces);      // retrait
-            Assert.True(delier.Handle(new DelierEnfantParentCommand(leaId, mamie)).EstSucces);     // idempotent (non liée)
+            // Refus « un père est déjà lié à cet enfant » (second père) — aucune écriture durable.
+            Assert.Equal("un père est déjà lié à cet enfant",
+                lier.Handle(new LierEnfantParentCommand(leaId, autre, RoleDuLien.Pere)).Motif);
         }
 
-        // --- Redémarrage : le retrait est durable, l'autre lien conservé ---
+        // --- Redémarrage : le store durable conserve exactement l'unique lien « père » d'origine ---
         var store2 = NouveauStore();
         var lea = store2.EnumererEnfants().Single(e => e.Id == leaId);
-        Assert.DoesNotContain(lea.ParentsLies, p => p.ActeurId == papa); // parent délié absent durablement
         Assert.Single(lea.ParentsLies);
-        Assert.Contains(lea.ParentsLies, p => p.ActeurId == maman);      // l'autre lien intact
+        Assert.Equal(RoleDuLien.Pere, lea.ParentsLies.Single(p => p.ActeurId == papa).Role);
+        Assert.DoesNotContain(lea.ParentsLies, p => p.ActeurId == autre);
     }
 
     public void Dispose()

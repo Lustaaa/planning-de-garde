@@ -128,7 +128,7 @@ public sealed class FrontWasmConfigEnfantsInvariantsModalTests : TestContext
         // Then — la table reste VISIBLE en LECTURE (« Léa » + sa colonne « Parents liés » résout « Alice »),
         // mais aucune surface d'écriture : ni crayon, ni bouton « Ajouter », ni modal atteignable.
         Assert.NotEmpty(config.FindAll("[data-testid='liste-enfants']"));
-        Assert.Equal("Alice", ParentsLies(config, "Léa"));
+        Assert.Equal("Alice (parent)", ParentsLies(config, "Léa"));
         Assert.Empty(config.FindAll("[data-testid='crayon-enfant']"));
         Assert.Empty(config.FindAll("[data-testid='bouton-ajouter-enfant']"));
         Assert.Empty(config.FindAll("[data-testid='dialog-enfant']"));
@@ -186,7 +186,7 @@ public sealed class FrontWasmConfigEnfantsInvariantsModalTests : TestContext
                 () =>
                 {
                     Assert.Contains(config1.FindAll("[data-testid='enfant-foyer']"), li => Prenom(li) == "Léana");
-                    Assert.Equal("Alice", ParentsLies(config1, "Léana"));
+                    Assert.Equal("Alice (parent)", ParentsLies(config1, "Léana"));
                 },
                 TimeSpan.FromSeconds(15));
         }

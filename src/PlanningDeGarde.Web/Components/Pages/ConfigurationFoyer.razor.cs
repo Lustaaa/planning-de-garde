@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.Extensions.DependencyInjection;
+using PlanningDeGarde.Application;
 using static PlanningDeGarde.Web.CanalEcriture;
 
 namespace PlanningDeGarde.Web.Components.Pages;
@@ -355,14 +356,16 @@ public partial class ConfigurationFoyer
     // Modal ouverte en mode CRÉATION (bouton « Ajouter un enfant ») : champ vide, aucun enfant porté.
     private bool _modalEnfantAjout;
 
-    /// <summary>Sélection des parents-acteurs à lier dans la modal (Sc.5) : initialisée aux parents COURANTS de
-    /// l'enfant à l'ouverture (pré-cochés). À l'« Enregistrer », les diffs vis-à-vis des parents courants
-    /// émettent lier / délier. Bornée à 2 (l'UI désactive une case non cochée quand 2 sont sélectionnés).</summary>
-    private readonly HashSet<string> _selectionParents = new();
+    /// <summary>Sélection des parents-acteurs à lier dans la modal (Sc.5), chacun avec son <b>rôle-du-lien</b>
+    /// choisi (père / mère / parent-libre, s37) : initialisée aux parents COURANTS de l'enfant à l'ouverture
+    /// (pré-cochés, rôle pré-réglé sur le rôle courant). À l'« Enregistrer », les diffs vis-à-vis des parents
+    /// courants (présence OU rôle) émettent lier (rôle inclus) / délier. Bornée à 2 (l'UI désactive une case
+    /// non cochée quand 2 sont sélectionnés).</summary>
+    private readonly Dictionary<string, RoleDuLien> _selectionParents = new();
 
     /// <summary>Ouvre la modal d'ÉDITION sur un enfant (clic crayon) : porte son id stable, pré-remplit son
-    /// prénom courant et la sélection de parents sur les parents liés COURANTS (pré-cochés, Sc.5), efface le
-    /// motif d'échec précédent.</summary>
+    /// prénom courant et la sélection de parents sur les parents liés COURANTS (pré-cochés, rôle-du-lien
+    /// pré-réglé, Sc.5/s37), efface le motif d'échec précédent.</summary>
     private void OuvrirEditionEnfant(string enfantId)
     {
         _modalEnfantAjout = false;
@@ -370,8 +373,8 @@ public partial class ConfigurationFoyer
         var enfant = _enfants.FirstOrDefault(e => e.Id == enfantId);
         _enfant.Prenom = enfant?.Prenom ?? "";
         _selectionParents.Clear();
-        foreach (var parentId in enfant?.ParentsLies ?? Array.Empty<string>())
-            _selectionParents.Add(parentId);
+        foreach (var parent in enfant?.ParentsLies ?? Array.Empty<ParentLie>())
+            _selectionParents[parent.ActeurId] = parent.Role;
         _motifEchecEnfant = null;
     }
 
@@ -404,13 +407,14 @@ public partial class ConfigurationFoyer
             && _roles.FirstOrDefault(r => r.Id == roleId)?.EstRoleParent == true);
 
     /// <summary>Bascule la sélection d'un parent dans la modal (Sc.5). Borne « 2 parents max » reflétée à
-    /// l'écran : on n'ajoute pas au-delà de 2 (les cases non cochées sont d'ailleurs désactivées).</summary>
+    /// l'écran : on n'ajoute pas au-delà de 2 (les cases non cochées sont d'ailleurs désactivées). Un parent
+    /// nouvellement coché démarre au rôle-du-lien neutre « parent-libre » (s37), ajustable ensuite.</summary>
     private void BasculerParent(string acteurId, bool lie)
     {
         if (lie)
         {
             if (_selectionParents.Count < 2)
-                _selectionParents.Add(acteurId);
+                _selectionParents[acteurId] = RoleDuLien.ParentLibre;
         }
         else
         {
@@ -418,14 +422,36 @@ public partial class ConfigurationFoyer
         }
     }
 
-    /// <summary>Libellé de lecture des parents liés d'un enfant (Sc.4) : les identifiants stables des parents
-    /// résolus en noms d'acteurs (jamais un libellé en dur), séparés par « , » ; « — » si aucun parent lié.</summary>
+    /// <summary>Choisit le rôle-du-lien (père / mère / parent-libre, s37) d'un parent SÉLECTIONNÉ dans la modal :
+    /// mémorisé dans la sélection, émis à l'« Enregistrer » via la commande « lier » (rôle inclus).</summary>
+    private void ChoisirRoleParent(string acteurId, RoleDuLien role)
+    {
+        if (_selectionParents.ContainsKey(acteurId))
+            _selectionParents[acteurId] = role;
+    }
+
+    /// <summary>Rôle-du-lien courant choisi pour un parent sélectionné (pré-réglé sur son rôle courant à
+    /// l'ouverture, s37), défaut « parent-libre » si non sélectionné — pour pré-régler le sélecteur.</summary>
+    private RoleDuLien RoleDeParent(string acteurId)
+        => _selectionParents.TryGetValue(acteurId, out var role) ? role : RoleDuLien.ParentLibre;
+
+    /// <summary>Libellé d'affichage d'un rôle-du-lien (s37) : « père » / « mère » / « parent » (parent-libre).</summary>
+    private static string LibelleRoleDuLien(RoleDuLien role) => role switch
+    {
+        RoleDuLien.Pere => "père",
+        RoleDuLien.Mere => "mère",
+        _ => "parent",
+    };
+
+    /// <summary>Libellé de lecture des parents liés d'un enfant (Sc.4/Sc.5) : chaque parent résolu en NOM
+    /// d'acteur (jamais un libellé en dur) suivi de son <b>rôle-du-lien</b> entre parenthèses
+    /// (« Alice (père) », s37), séparés par « , » ; « — » si aucun parent lié.</summary>
     private string LibelleParentsLies(EnfantFoyer enfant)
     {
-        var noms = enfant.ParentsLies
-            .Select(id => _acteurs.FirstOrDefault(a => a.Id == id)?.Nom ?? id)
+        var libelles = enfant.ParentsLies
+            .Select(p => $"{_acteurs.FirstOrDefault(a => a.Id == p.ActeurId)?.Nom ?? p.ActeurId} ({LibelleRoleDuLien(p.Role)})")
             .ToList();
-        return noms.Count == 0 ? "—" : string.Join(", ", noms);
+        return libelles.Count == 0 ? "—" : string.Join(", ", libelles);
     }
 
     /// <summary>Enfants du référentiel du foyer énumérés <b>depuis le store vivant</b> (GET /api/foyer/enfants),
@@ -1075,14 +1101,18 @@ public partial class ConfigurationFoyer
             if (!await PosterEnfant("api/canal/editer-enfant", new EditerEnfantRequete(_modalEnfantId!, _enfant.Prenom)))
                 return;
 
-            var courant = _enfants.FirstOrDefault(e => e.Id == _modalEnfantId)?.ParentsLies
-                ?? (IReadOnlyCollection<string>)Array.Empty<string>();
+            var courant = (_enfants.FirstOrDefault(e => e.Id == _modalEnfantId)?.ParentsLies
+                ?? (IReadOnlyCollection<ParentLie>)Array.Empty<ParentLie>())
+                .ToDictionary(p => p.ActeurId, p => p.Role);
 
-            foreach (var acteurId in _selectionParents.Where(id => !courant.Contains(id)).ToList())
-                if (!await PosterEnfant("api/canal/lier-enfant-parent", new LierEnfantParentRequete(_modalEnfantId!, acteurId)))
+            // Lier (rôle inclus) tout parent sélectionné NOUVEAU ou dont le rôle-du-lien a CHANGÉ (s37) : le
+            // handler réécrit le rôle sans dupliquer le lien. Sur le PREMIER refus, on s'arrête (modal ouverte).
+            foreach (var (acteurId, role) in _selectionParents
+                         .Where(kv => !courant.TryGetValue(kv.Key, out var r) || r != kv.Value).ToList())
+                if (!await PosterEnfant("api/canal/lier-enfant-parent", new LierEnfantParentRequete(_modalEnfantId!, acteurId, role)))
                     return;
 
-            foreach (var acteurId in courant.Where(id => !_selectionParents.Contains(id)).ToList())
+            foreach (var acteurId in courant.Keys.Where(id => !_selectionParents.ContainsKey(id)).ToList())
                 if (!await PosterEnfant("api/canal/delier-enfant-parent", new DelierEnfantParentRequete(_modalEnfantId!, acteurId)))
                     return;
         }

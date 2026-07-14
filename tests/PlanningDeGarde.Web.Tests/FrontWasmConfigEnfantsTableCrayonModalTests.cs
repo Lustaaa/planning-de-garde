@@ -49,7 +49,7 @@ public sealed class FrontWasmConfigEnfantsTableCrayonModalTests : TestContext
         // Then — la ligne de « Léa » est en LECTURE, sa colonne « Parents liés » résout « Alice », un crayon
         // et un bouton « Ajouter un enfant » sont présents.
         var ligne = LigneParPrenom(config, "Léa");
-        Assert.Equal("Alice", ligne.QuerySelector("[data-testid='enfant-parents-lies']")!.TextContent.Trim());
+        Assert.Equal("Alice (parent)", ligne.QuerySelector("[data-testid='enfant-parents-lies']")!.TextContent.Trim());
         Assert.NotNull(ligne.QuerySelector("[data-testid='crayon-enfant']"));
         Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-enfant']"));
 
@@ -72,7 +72,7 @@ public sealed class FrontWasmConfigEnfantsTableCrayonModalTests : TestContext
         this.SurDispatcher(() => LigneParPrenom(config, "Léa").QuerySelector("[data-testid='crayon-enfant']")!.Click());
         config.WaitForElement("[data-testid='dialog-enfant']", TimeSpan.FromSeconds(10));
         Assert.Equal("Léa", config.Find("[data-testid='champ-prenom-enfant']").GetAttribute("value"));
-        Assert.Equal("Alice", config.Find("[data-testid='enfant-parents-lies-modal']").TextContent.Trim());
+        Assert.Equal("Alice (parent)", config.Find("[data-testid='enfant-parents-lies-modal']").TextContent.Trim());
 
         // … je renomme puis j'enregistre (POST réel /api/canal/editer-enfant) : modal fermée, table relue, même id.
         this.SurDispatcher(() => config.Find("[data-testid='champ-prenom-enfant']").Change("Léana"));

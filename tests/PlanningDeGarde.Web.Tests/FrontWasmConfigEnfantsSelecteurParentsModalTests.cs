@@ -79,13 +79,14 @@ public sealed class FrontWasmConfigEnfantsSelecteurParentsModalTests : TestConte
             () =>
             {
                 Assert.Empty(config.FindAll("[data-testid='dialog-enfant']"));
-                Assert.Equal("Alice", ParentsLies(config));
+                Assert.Equal("Alice (parent)", ParentsLies(config));
             },
             TimeSpan.FromSeconds(10));
 
         // Preuve store réel : le lien est bien persisté côté domaine (pas seulement à l'écran).
-        Assert.Contains("parent-a",
-            api.Services.GetRequiredService<IEnumerationEnfants>().EnumererEnfants().Single(e => e.Id == "Léa").ParentsLies);
+        Assert.Contains(
+            api.Services.GetRequiredService<IEnumerationEnfants>().EnumererEnfants().Single(e => e.Id == "Léa").ParentsLies,
+            p => p.ActeurId == "parent-a");
 
         // When — je rouvre, Alice est PRÉ-COCHÉE ; je la décoche puis « Enregistrer » → POST réel delier-enfant-parent.
         this.SurDispatcher(() => config.FindAll("[data-testid='crayon-enfant']")

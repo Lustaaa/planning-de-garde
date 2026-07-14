@@ -67,7 +67,7 @@ public sealed class LierEnfantParentMongoDurabiliteTests : IDisposable
         // Léa relue porte le parent lié, id stable inchangé (enrichissement durable)
         var lea = enfants.Single(e => e.Id == leaId);
         Assert.Equal("Léa", lea.Prenom);
-        Assert.Contains(papaId, lea.ParentsLies);
+        Assert.Contains(lea.ParentsLies, p => p.ActeurId == papaId);
 
         // Tom non lié reste valide : liste de parents vide (lien optionnel, 0 parent accepté)
         var tom = enfants.Single(e => e.Id == tomId);
