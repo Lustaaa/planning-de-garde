@@ -31,6 +31,23 @@
                 }
             </select>
         </label>
+        @* Sélecteur d'enfant (s42) : l'enfant dont la carte « Aujourd'hui » restitue le « où » (slots). Vue
+           seule (aucune écriture) ; source = référentiel enfants du store vivant. *@
+        @if (_enfantsFoyer.Count > 0)
+        {
+            <label class="pdg-controle">
+                <span class="pdg-controle-label">Enfant</span>
+                @* Classe propre (PAS form-select) pour rester distinct du sélecteur de rôle/vue : le
+                   gating runtime cible « select.form-select » (le rôle) — même précaution que l'incarnation. *@
+                <select class="selecteur-enfant-carte form-select-sm w-auto" data-testid="selecteur-enfant-carte"
+                        @bind="_enfantSelectionne" @bind:after="StateHasChanged">
+                    @foreach (var enfant in _enfantsFoyer)
+                    {
+                        <option value="@enfant.Id">@enfant.Prenom</option>
+                    }
+                </select>
+            </label>
+        }
         <label class="pdg-controle">
             <span class="pdg-controle-label">Rôle</span>
             <select class="form-select form-select-sm w-auto" @bind="RoleSelectionne">
@@ -40,6 +57,54 @@
         </label>
     </div>
 </div>
+
+@* Carte « Aujourd'hui : qui récupère ce soir » (s42) — EN TÊTE, STRICTEMENT en LECTURE. Reprojetée
+   CLIENT depuis la grille déjà chargée (JourCase du jour courant, résolution surcharge>fond>neutre +
+   transfert saisi/dérivé s31 + slots), filtrée sur l'enfant sélectionné. Aucun contrôle d'édition,
+   aucune commande émise. Réutilise couleurs/repli de la grille (aucune teinte réinventée) ; sa
+   convergence temps réel passe par la relecture SignalR de la grille (canal de lecture seule s20). *@
+@if (CarteDuJour is { } carte)
+{
+    <section class="carte-aujourdhui" data-testid="carte-aujourdhui" aria-label="Qui récupère aujourd'hui">
+        <h2 class="carte-aujourdhui-titre">Aujourd'hui</h2>
+
+        @* Le « qui » : responsable RÉSOLU (nom + couleur de la grille) ; neutre → « Personne assignée ». *@
+        @if (carte.Transfert is { } transfert)
+        {
+            <div class="carte-qui carte-qui-transfert" data-testid="carte-transfert-bicolore"
+                 data-couleur-depart="@transfert.CouleurDepart" data-couleur-arrivee="@transfert.CouleurArrivee"
+                 style="background: linear-gradient(135deg, @Couleur(transfert.CouleurDepart) 0 46%, @Couleur(transfert.CouleurArrivee) 54% 100%);">
+                <span data-testid="carte-transfert-cedant">@transfert.NomDepart</span>
+                <span class="carte-transfert-fleche" aria-hidden="true">→</span>
+                <span data-testid="carte-transfert-recevant">@transfert.NomArrivee</span>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(carte.NomResponsable))
+        {
+            <div class="carte-qui" data-testid="carte-qui"
+                 data-couleur="@carte.CouleurResponsable"
+                 style="background-color:@Couleur(carte.CouleurResponsable);">@carte.NomResponsable</div>
+        }
+        else
+        {
+            <div class="carte-qui carte-qui-neutre" data-testid="carte-qui">Personne assignée</div>
+        }
+
+        @* Le « où » : slots de localisation du jour de l'ENFANT SÉLECTIONNÉ (absent = pas de lieu). *@
+        @if (SlotsCarte.Count > 0)
+        {
+            <ul class="carte-ou">
+                @foreach (var slot in SlotsCarte)
+                {
+                    <li class="carte-slot" data-testid="carte-slot">
+                        <span class="carte-slot-lieu" style="background-color:@Couleur(slot.CouleurActeur);">@slot.Libelle</span>
+                        <span class="carte-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+}
 
 @* Bandeau de connexion inline RETIRÉ (s24, Sc.10) : un seul chemin d'entrée = la page de connexion
    dédiée (/connexion, Sc.8). La connexion/déconnexion ne se fait plus depuis le planning. *@
@@ -431,6 +496,27 @@ else
     .pdg-controle { display: inline-flex; align-items: center; gap: .4rem; margin: 0; }
     .pdg-controle-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em;
                           font-weight: 600; color: var(--pdg-muted); white-space: nowrap; }
+
+    /* ════════ Carte « Aujourd'hui : qui récupère ce soir » (s42) ════════
+       Mini-carte tokenisée en tête du planning, LECTURE SEULE. Réutilise les couleurs de responsabilité
+       (inline, données) et le motif bicolore du transfert (diagonale, parité grille s29). */
+    .carte-aujourdhui { background: var(--pdg-card); border: 1px solid var(--pdg-border); border-radius: 16px;
+                        padding: 14px 18px; margin-bottom: 16px; box-shadow: var(--pdg-ombre-sm, 0 1px 2px rgba(16,24,40,.05));
+                        display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+    .carte-aujourdhui-titre { font-family: var(--pdg-font-titre); font-size: .82rem; text-transform: uppercase;
+                              letter-spacing: .06em; font-weight: 800; color: var(--pdg-muted); margin: 0; }
+    /* Le « qui » : pastille pleine de la couleur du responsable (fond inline) ; neutre = surface discrète. */
+    .carte-qui { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-weight: 700;
+                 padding: 6px 14px; border-radius: 999px; box-shadow: 0 1px 2px rgba(16,24,40,.16); }
+    .carte-qui-neutre { background: var(--pdg-surface, #eef); color: var(--pdg-muted); box-shadow: none; }
+    .carte-qui-transfert { text-shadow: 0 1px 2px rgba(16,24,40,.55); }
+    .carte-transfert-fleche { opacity: .9; }
+    /* Le « où » : puces de slots (couleur du lieu/acteur, fond inline). */
+    .carte-ou { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; }
+    .carte-slot { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; }
+    .carte-slot-lieu { color: #fff; font-weight: 700; padding: 2px 8px; border-radius: 8px;
+                       box-shadow: 0 1px 2px rgba(16,24,40,.14); }
+    .carte-slot-horaire { color: var(--pdg-muted); font-variant-numeric: tabular-nums; }
 
     /* ════════ Vues MOIS / 4 SEMAINES : cartes-jour ════════ */
     .grille-agenda { display: flex; flex-direction: column; gap: 8px; }
