@@ -34,13 +34,13 @@
 > - **Réimplémentation de la résolution** : on **compose** la résolution existante (surcharge > fond,
 >   transferts s31), on **ne la réécrit pas** (cf. point de vigilance).
 
-## Avancement — 2/5
+## Avancement — 3/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | **Query PURE — composer le « qui »** : pour une DATE + l'enfant sélectionné, restitue le **responsable RÉSOLU** (surcharge > fond > neutre) + son nom/couleur, en **composant** la résolution existante ; **aucun store neuf, aucune mutation** ; contrat **miroir `GrapheFoyerQuery` s38** ; identique sur les **deux adaptateurs** (InMemory + Mongo durable) | back | ✅ |
 | 2 | **Composer le « où » + le transfert du jour** : le(s) **slot(s) de localisation** du jour (s29) et le **transfert éventuel** cédant→recevant (**saisi OU dérivé s31**, priorité SAISI > DÉRIVÉ) sont restitués dans le même payload ; jour **sans transfert** = unicolore ; jour **sans slot** = pas de lieu | back | ✅ |
-| 3 | **Cas limites / repli fidèle (erreur + neutre)** : aucun responsable résolu = **« personne assignée »** (neutre) ; acteur **orphelin** → **repli neutre SANS nom fantôme** (filtre `Resolvable()` s13) ; **bord de fenêtre** (jour non chargé) ; **store vide** = carte neutre sans crash ; identique sur les deux adaptateurs | back | ⏳ |
+| 3 | **Cas limites / repli fidèle (erreur + neutre)** : aucun responsable résolu = **« personne assignée »** (neutre) ; acteur **orphelin** → **repli neutre SANS nom fantôme** (filtre `Resolvable()` s13) ; **bord de fenêtre** (jour non chargé) ; **store vide** = carte neutre sans crash ; identique sur les deux adaptateurs | back | ✅ |
 | 4 | **Carte « Aujourd'hui » en tête du planning** : rend **qui / où / transfert** pour le **jour courant** + l'**enfant sélectionné**, en **réutilisant couleurs/repli de la grille** (aucune teinte réinventée) ; transfert = rendu bicolore réutilisé (présentation s29) ; **STRICTEMENT lecture** (aucun contrôle d'édition) | 🖥️ IHM | ⏳ |
 | 5 | **Parent-gated LECTURE + convergence SignalR** : l'**Invité VOIT** la carte (lecture seule, aucune action) ; un changement pertinent (période/transfert/slot) fait **CONVERGER** la carte d'un 2ᵉ écran **sans rechargement**, via le canal SignalR de **lecture seule** (aucune écriture par la diffusion, s20 préservé) | 🖥️ IHM | ⏳ |
 
@@ -98,7 +98,7 @@ Et un jour SANS slot est restitué SANS lieu (le « où » est simplement absent
 Et le transfert est LU sans être modifié (composition de la dérivation s31 existante, non réimplémentée)
 ```
 
-### Sc.3 — Cas limites / repli fidèle : neutre, orphelin, bord de fenêtre @back @pending
+### Sc.3 — Cas limites / repli fidèle : neutre, orphelin, bord de fenêtre @back @vert
 ```gherkin
 Étant donné la query de lecture du jour (Sc.1)
 Quand la date cible n'a AUCUN responsable résolu (ni surcharge, ni fond)
