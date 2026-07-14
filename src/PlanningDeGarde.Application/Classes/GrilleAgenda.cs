@@ -45,14 +45,16 @@ public sealed record JourCase(
 /// récupérant), résolues sur le référentiel acteurs par identifiant stable. Un acteur supprimé
 /// (orphelin) retombe sur la couleur neutre (pas de couleur fantôme).
 /// </summary>
-public sealed record InfoTransfert(string CouleurDepart, string CouleurArrivee);
+public sealed record InfoTransfert(
+    string CouleurDepart, string CouleurArrivee, string NomDepart = "", string NomArrivee = "");
 
 /// <summary>
 /// Un slot positionné dans sa case-jour : libellé (lieu/acteur), bornes horaires de la journée
 /// et couleur propre de son acteur (deuxième niveau de couleur, distinct de la couleur de la
 /// case-jour : la case porte la responsabilité, le créneau porte l'acteur).
 /// </summary>
-public sealed record SlotCase(string Libelle, TimeOnly Debut, TimeOnly Fin, string CouleurActeur);
+public sealed record SlotCase(
+    string Libelle, TimeOnly Debut, TimeOnly Fin, string CouleurActeur, string EnfantId = "");
 
 /// <summary>Une ligne-semaine : 7 cases-jour consécutives, du lundi au dimanche.</summary>
 public sealed record SemaineLigne(IReadOnlyList<JourCase> Jours);

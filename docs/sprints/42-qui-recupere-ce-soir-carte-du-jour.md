@@ -34,12 +34,12 @@
 > - **Réimplémentation de la résolution** : on **compose** la résolution existante (surcharge > fond,
 >   transferts s31), on **ne la réécrit pas** (cf. point de vigilance).
 
-## Avancement — 1/5
+## Avancement — 2/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | **Query PURE — composer le « qui »** : pour une DATE + l'enfant sélectionné, restitue le **responsable RÉSOLU** (surcharge > fond > neutre) + son nom/couleur, en **composant** la résolution existante ; **aucun store neuf, aucune mutation** ; contrat **miroir `GrapheFoyerQuery` s38** ; identique sur les **deux adaptateurs** (InMemory + Mongo durable) | back | ✅ |
-| 2 | **Composer le « où » + le transfert du jour** : le(s) **slot(s) de localisation** du jour (s29) et le **transfert éventuel** cédant→recevant (**saisi OU dérivé s31**, priorité SAISI > DÉRIVÉ) sont restitués dans le même payload ; jour **sans transfert** = unicolore ; jour **sans slot** = pas de lieu | back | ⏳ |
+| 2 | **Composer le « où » + le transfert du jour** : le(s) **slot(s) de localisation** du jour (s29) et le **transfert éventuel** cédant→recevant (**saisi OU dérivé s31**, priorité SAISI > DÉRIVÉ) sont restitués dans le même payload ; jour **sans transfert** = unicolore ; jour **sans slot** = pas de lieu | back | ✅ |
 | 3 | **Cas limites / repli fidèle (erreur + neutre)** : aucun responsable résolu = **« personne assignée »** (neutre) ; acteur **orphelin** → **repli neutre SANS nom fantôme** (filtre `Resolvable()` s13) ; **bord de fenêtre** (jour non chargé) ; **store vide** = carte neutre sans crash ; identique sur les deux adaptateurs | back | ⏳ |
 | 4 | **Carte « Aujourd'hui » en tête du planning** : rend **qui / où / transfert** pour le **jour courant** + l'**enfant sélectionné**, en **réutilisant couleurs/repli de la grille** (aucune teinte réinventée) ; transfert = rendu bicolore réutilisé (présentation s29) ; **STRICTEMENT lecture** (aucun contrôle d'édition) | 🖥️ IHM | ⏳ |
 | 5 | **Parent-gated LECTURE + convergence SignalR** : l'**Invité VOIT** la carte (lecture seule, aucune action) ; un changement pertinent (période/transfert/slot) fait **CONVERGER** la carte d'un 2ᵉ écran **sans rechargement**, via le canal SignalR de **lecture seule** (aucune écriture par la diffusion, s20 préservé) | 🖥️ IHM | ⏳ |
@@ -86,7 +86,7 @@ Et la query est PURE : aucune mutation, aucun store neuf, aucune persistance neu
 Et le résultat est IDENTIQUE sur les DEUX adaptateurs (InMemory seedé ET Mongo durable, même contrat)
 ```
 
-### Sc.2 — Composer le « où » (slots) + le transfert du jour @back @pending
+### Sc.2 — Composer le « où » (slots) + le transfert du jour @back @vert
 ```gherkin
 Étant donné la query de lecture du jour (Sc.1) pour une date + l'enfant sélectionné
 Et cette date porte un ou plusieurs SLOTS de localisation (s29) et un TRANSFERT de responsabilité

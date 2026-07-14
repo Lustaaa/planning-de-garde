@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace PlanningDeGarde.Application;
@@ -36,12 +37,32 @@ public sealed class CarteDuJourQuery
         var jour = _grille.Projeter(date, VuePlanning.Semaine).Jours.Single(j => j.Date == date);
         var responsable = new ResponsableDuJour(
             jour.ResponsableId, jour.NomResponsable, jour.CouleurResponsable, jour.ResponsableId is not null);
-        return new CarteDuJour(responsable);
+
+        // Le « où » = les slots du jour de l'ENFANT SÉLECTIONNÉ (les autres enfants sont exclus). Composés
+        // de la case déjà projetée (récurrents / conditionnés inclus), jamais relus séparément.
+        var slots = jour.Slots.Where(s => s.EnfantId == enfantId).ToList();
+
+        // Le transfert du jour (saisi OU dérivé s31, priorité SAISI > DÉRIVÉ déjà arbitrée par la grille) :
+        // LU sans être modifié, noms + couleurs résolus par la grille (orphelin → repli neutre sans fantôme).
+        var transfert = jour.Transfert is { } t
+            ? new TransfertDuJour(t.NomDepart, t.CouleurDepart, t.NomArrivee, t.CouleurArrivee)
+            : null;
+
+        return new CarteDuJour(responsable, slots, transfert);
     }
 }
 
 /// <summary>
-/// Payload de la carte « Aujourd'hui : qui récupère ce soir » (s42), pour une date + l'enfant sélectionné.
-/// Lecture seule, composée de la résolution existante.
+/// Le transfert cédant → recevant d'un jour restitué par la carte (s42) : nom + couleur du <b>cédant</b>
+/// (déposant) et du <b>recevant</b> (récupérant), résolus par la grille composée (saisi ou dérivé s31, un
+/// acteur orphelin retombe sur le repli neutre sans nom fantôme). Absent (<c>null</c>) = jour unicolore.
 /// </summary>
-public sealed record CarteDuJour(ResponsableDuJour Responsable);
+public sealed record TransfertDuJour(string CedantNom, string CedantCouleur, string RecevantNom, string RecevantCouleur);
+
+/// <summary>
+/// Payload de la carte « Aujourd'hui : qui récupère ce soir » (s42), pour une date + l'enfant sélectionné :
+/// le <see cref="Responsable"/> résolu, le(s) <see cref="Slots"/> du jour (le « où » de l'enfant) et le
+/// <see cref="Transfert"/> éventuel (null = jour unicolore). Lecture seule, composée de l'existant.
+/// </summary>
+public sealed record CarteDuJour(
+    ResponsableDuJour Responsable, IReadOnlyList<SlotCase> Slots, TransfertDuJour? Transfert);

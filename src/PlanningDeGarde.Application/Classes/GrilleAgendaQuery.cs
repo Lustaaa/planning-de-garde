@@ -128,7 +128,9 @@ public sealed class GrilleAgendaQuery
         // Priorité SAISI > DÉRIVÉ : un transfert saisi ce jour-là prime et est seul retenu (Sc.6).
         var transfert = transferts.FirstOrDefault(t => DateOnly.FromDateTime(t.Date) == date);
         if (transfert is not null)
-            return new InfoTransfert(CouleurActeurResolue(transfert.DeposeParId), CouleurActeurResolue(transfert.RecupereParId));
+            return new InfoTransfert(
+                CouleurActeurResolue(transfert.DeposeParId), CouleurActeurResolue(transfert.RecupereParId),
+                NomActeurResolu(transfert.DeposeParId), NomActeurResolu(transfert.RecupereParId));
 
         // À défaut de saisie, DEUX chemins de dérivation SÉPARÉS, dans l'ordre (pas de doublon si les deux
         // pointent le même jour : le premier non nul gagne — décision PO option A, rework G3) :
@@ -157,7 +159,9 @@ public sealed class GrilleAgendaQuery
         if (recevant is null || cedant is null || cedant == recevant)
             return null; // pas de bascule (un côté neutre, ou même responsable qu'la veille)
 
-        return new InfoTransfert(_palette.CouleurDe(cedant), _palette.CouleurDe(recevant));
+        return new InfoTransfert(
+            _palette.CouleurDe(cedant), _palette.CouleurDe(recevant),
+            _referentiel.NomDe(cedant), _referentiel.NomDe(recevant));
     }
 
     /// <summary>
@@ -180,12 +184,19 @@ public sealed class GrilleAgendaQuery
             return null; // aucune période ne se termine la veille → pas de bascule dérivée
 
         return new InfoTransfert(
-            CouleurActeurResolue(finissant.ResponsableId), CouleurActeurResolue(debutant.ResponsableId));
+            CouleurActeurResolue(finissant.ResponsableId), CouleurActeurResolue(debutant.ResponsableId),
+            NomActeurResolu(finissant.ResponsableId), NomActeurResolu(debutant.ResponsableId));
     }
 
     /// <summary>Couleur d'un acteur existant, ou la couleur neutre s'il est orphelin (supprimé).</summary>
     private string CouleurActeurResolue(string acteurId)
         => Resolvable(acteurId) is null ? _palette.CouleurNeutre : _palette.CouleurDe(acteurId);
+
+    /// <summary>Nom d'un acteur existant, ou chaîne vide s'il est orphelin (supprimé) — repli sans nom
+    /// fantôme (filtre <see cref="Resolvable"/>, miroir R5/R6). Surfacé pour la composition en lecture de
+    /// la carte du jour (s42) : un transfert cédant/recevant y est restitué avec ses noms résolus.</summary>
+    private string NomActeurResolu(string acteurId)
+        => Resolvable(acteurId) is null ? "" : _referentiel.NomDe(acteurId);
 
     /// <summary>
     /// Occurrences d'un slot récurrent tombant sur la <paramref name="date"/> donnée : un slot virtuel
@@ -305,7 +316,8 @@ public sealed class GrilleAgendaQuery
                 s.LieuId,
                 TimeOnly.FromDateTime(s.Debut),
                 TimeOnly.FromDateTime(s.Fin),
-                _palette.CouleurDe(s.LieuId)))
+                _palette.CouleurDe(s.LieuId),
+                s.EnfantId)) // EnfantId surfacé pour la composition « où de l'enfant sélectionné » (carte s42)
             .ToList();
 
     private static DateOnly LundiDeLaSemaineDe(DateOnly date)

@@ -66,6 +66,45 @@ public sealed class CarteDuJourMongoTests : IDisposable
         Assert.Equal("Alice", fond.Nom);
     }
 
+    [MongoRequisFact]
+    public void Acceptation_Should_Restituer_le_ou_de_lenfant_et_le_transfert_saisi_sur_Mongo_reel()
+    {
+        // --- Given : Papa + Maman durables, un transfert saisi le 08/07, des slots Léa/Tom le 08/07 ---
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var papa = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Papa")).Valeur!.ActeurId;
+        var maman = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Maman")).Valeur!.ActeurId;
+
+        var transferts = new MongoTransfertRepository(ConnectionString, _baseDeTest);
+        transferts.Enregistrer(Transfert.Definir(papa, maman, "ecole",
+            TimeSpan.FromHours(8.5), Mercredi_08_07_2026.ToDateTime(TimeOnly.MinValue)).Valeur!);
+
+        var slots = new MongoSlotRepository(ConnectionString, _baseDeTest);
+        slots.Enregistrer(SlotDeLocalisation.Poser("enfant-lea", "ecole",
+            new DateTime(2026, 7, 8, 8, 30, 0), new DateTime(2026, 7, 8, 16, 30, 0)).Valeur!);
+        slots.Enregistrer(SlotDeLocalisation.Poser("enfant-tom", "ecole",
+            new DateTime(2026, 7, 8, 9, 0, 0), new DateTime(2026, 7, 8, 17, 0, 0)).Valeur!);
+
+        // --- Redémarrage : NOUVELLES instances de stores sur la MÊME base persistée ---
+        var configApres = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var grille = new GrilleAgendaQuery(
+            new MongoSlotRepository(ConnectionString, _baseDeTest),
+            new MongoPeriodeRepository(ConnectionString, _baseDeTest),
+            configApres, configApres,
+            new CycleDeFondMongo(ConnectionString, _baseDeTest),
+            configApres,
+            new MongoSlotRecurrentRepository(ConnectionString, _baseDeTest),
+            new MongoTransfertRepository(ConnectionString, _baseDeTest));
+
+        var carte = new CarteDuJourQuery(grille).Lire(Mercredi_08_07_2026, "enfant-lea");
+
+        // --- Then : le « où » de Léa seul (Tom exclu) + transfert Papa → Maman résolu ---
+        var slot = Assert.Single(carte.Slots);
+        Assert.Equal("ecole", slot.Libelle);
+        Assert.NotNull(carte.Transfert);
+        Assert.Equal("Papa", carte.Transfert!.CedantNom);
+        Assert.Equal("Maman", carte.Transfert.RecevantNom);
+    }
+
     public void Dispose()
     {
         try
