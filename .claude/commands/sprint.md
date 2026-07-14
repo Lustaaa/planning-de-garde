@@ -49,9 +49,13 @@ Quand la `dev-team` renvoie `{ "type":"question", … }` :
    (build + suite verts, commit) + commande de lancement.
 
 5. **Gate visuel — porte G3 (IMPÉRATIVE, direct PO).**
-   1. **Prouve back + IHM up** : `pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1`
-      (suite verte) puis **lance l'app** en tâche de fond via
-      `pwsh .claude/skills/run/scripts/run.ps1`.
+   1. **Prouve back + IHM up** : `pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1 -Serial`
+      (suite COMPLÈTE, **assemblies sérialisées = mode gate anti-flake par défaut**, s36) puis **lance
+      l'app** en tâche de fond via `pwsh .claude/skills/run/scripts/run.ps1`. **Pourquoi `-Serial` au gate
+      (rétro s37)** : le runner parallèle rougit couramment sur le flake P1 *TempsReel* (blast-radius I/O),
+      forçant un 2ᵉ/3ᵉ run manuel à CHAQUE gate ; en série la suite passe en **un run déterministe** (un
+      rouge déterministe reste rouge — aucune régression masquée, triage flake s21 inchangé). Le parallèle
+      reste réservé au **cycle TDD rapide** (dev-team). *(Récit : JOURNAL-METHODE s36/s37.)*
    2. **Relaie** : routes à tester, fichier de retours préparé (section `# Retours produit (PO)`
       du fichier de sprint).
    3. **`AskUserQuestion`** — *« Revue de sprint NN — la livraison est-elle validée ? »* :

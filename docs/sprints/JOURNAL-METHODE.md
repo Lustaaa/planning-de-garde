@@ -85,6 +85,14 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   parallèle) ; un rouge déterministe reste rouge en série, le triage flake s21 reste la règle. (2) Backlog :
   la dette « rétrofit *TempsReel* » (P1) est **remontée en TÊTE** avec la solution technique (collections
   xUnit non parallèles pour les tests I/O), à traiter avant tout nouveau client SignalR.
+- 2026-07-14 — s37 : le switch `-Serial` (s36) a **prouvé sa valeur au gate** (parallèle 681/682 rouge sur
+  le flake P1 *TempsReel*, `-Serial` 682/682 vert **déterministe en un run**, plus de rejeu manuel « en
+  espérant un vert ») — mais l'étape gate de `/sprint` (5.1) prescrivait **encore `test.ps1` nu (parallèle)**,
+  laissant l'opérateur du gate re-découvrir le flake puis basculer à la main à chaque sprint. Friction non
+  la dette *TempsReel* (déjà tracée, candidat de tête) mais l'**absence de prescription du bon runner AU gate**.
+  Fix : `/sprint` étape 5.1 exécute désormais **`test.ps1 -Serial` par défaut** au gate (mode déterministe
+  anti-flake, aucune régression masquée), parallèle réservé au cycle TDD rapide de la dev-team. Le rétrofit à
+  la cause (collections xUnit non parallèles pour l'I/O) reste la dette de fond au backlog.
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake

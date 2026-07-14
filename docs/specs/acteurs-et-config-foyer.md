@@ -401,6 +401,40 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
     parents en direct, sans rechargement). **Hors scope s36** : champ **père/mère distinct** (distinction par le
     NOM), familles recomposées **R2/R3** + graphe enfant-racine, **saisie/édition du `TypeActeur`** lui-même.
 
+- **Rôle-du-lien père / mère / parent-libre sur le lien enfant↔parent** *(livré s37, 5ᵉ incrément de la
+  Refonte Config foyer — suite du lien s34, éligibilité role-flag s36)* : le lien enfant↔parent, jusque-là
+  une **collection nue d'`ActeurId`** où les deux parents n'étaient distingués que par leur **NOM**, porte
+  désormais un **attribut « rôle-du-lien » ∈ {père, mère, parent-libre}**. Le lien passe d'`ActeurId` à un
+  **record `ParentLie`** (`ActeurId` + rôle-du-lien) ; la commande **`LierEnfantParent`** est enrichie d'un
+  paramètre **rôle-du-lien** (défaut **« parent-libre »** si absent) et l'enfant porte un **champ additif
+  `RolesDesLiens`**. Le rôle-du-lien vit **sur le lien**, jamais sur l'acteur (distinct du `TypeActeur` et du
+  flag « rôle parent » s36) ; il est **présentation + distinction**, il **n'intervient PAS** dans la résolution
+  grille/légende ni dans le gating (miroir de l'invariant R10 « le rôle est une caractéristique, pas une
+  responsabilité »).
+  - **Invariant d'exclusivité (Domain pur).** Un même enfant ne peut porter **deux liens « père »** ni **deux
+    liens « mère »** : la commande **REFUSE AVANT toute écriture** (motif restitué, store intact, liens
+    existants préservés). **« parent-libre » reste répétable** (compat + neutralité). Ce n'est **pas** la
+    contrainte R2/R3 « exactement 2 parents » (hors scope) : le seul invariant posé est « pas deux liens de
+    même rôle exclusif sur un enfant ». La **borne 0..2 parents** (s34) et l'**éligibilité « rôle parent »**
+    (role-flag s36) restent **inchangées** ; modifier le rôle-du-lien d'un parent déjà lié met à jour le lien
+    **sans le dupliquer** (id enfant + autres liens intacts). Lier/délier restent **idempotents**.
+  - **Compat non destructive + persistance.** Le lien est **persisté Mongo durable** (round-trip du rôle-du-lien
+    survivant au rechargement, id enfant inchangé — enrichissement additif). Un lien **déjà persisté par s34 sans
+    l'attribut** se relit à **« parent-libre »** (défaut neutre), **jamais** un crash de désérialisation,
+    **jamais** de migration destructive du store (comportement s34 strictement préservé : un lien sans rôle
+    explicite ≡ ancien lien nu).
+  - **IHM — modal Enfants + colonne.** Chaque parent lié porte un **sélecteur rôle-du-lien (père / mère /
+    parent)** dans la modal d'édition d'un enfant (patron crayon → modal s34), pré-réglé sur son rôle courant ;
+    « Enregistrer » émet `LierEnfantParent` (rôle inclus) via le canal HTTP, la modal se ferme, le tableau est
+    relu. **Contrat d'erreur** (deux « père »/« mère », acteur non éligible, API injoignable) : la **modal RESTE
+    OUVERTE**, le **motif est affiché dedans**, la **sélection (parents + rôles) est CONSERVÉE**, le tableau
+    reste inchangé (aucune écriture partielle) ; **Échap = Annuler** sans mutation (port `IEcouteurEchapModal`
+    s33). La colonne **« Parents liés »** du tableau affiche désormais, pour chaque parent, **« nom (rôle) »**.
+    **Parent-gated** (Invité = tableau lecture seule, rôles-du-lien visibles, ni crayon ni « Ajouter ») +
+    **temps réel SignalR** (2ᵉ écran converge sur nom + rôle-du-lien sans rechargement, diffusion lecture seule).
+    **Hors scope s37** : familles recomposées **R2/R3** (« exactement 1 père ET 1 mère » / complétude du couple
+    **non exigée**), graphe enfant-racine, **saisie/édition du `TypeActeur`** lui-même.
+
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
   rôles), doté d'un **id stable opaque** + **email** + **statut** (`Actif`/`Inactif`, défaut **Inactif** —
@@ -440,7 +474,11 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   délier** idempotentes, règle **« 2 parents max »**, rejets **acteur inexistant / non-parent / déjà lié
   sans écriture partielle**, persistance **Mongo durable**, id enfant inchangé ; **onglet Enfants** au patron
   **tableau lecture + crayon → modal** (swap inline→modal) avec **colonne « Parents liés »** + **sélecteur de
-  parents**. **R2/R3 restent ouverts** : le lien borne à 2 mais **n'impose pas « exactement 2 »**, et le
+  parents**. **Éligibilité role-flag livrée s36** (l'acteur liable = porte un rôle marqué « parent »). **Rôle-du-lien
+  père/mère/parent-libre livré s37** : le lien porte un attribut `{père, mère, parent-libre}` (record `ParentLie`),
+  **invariant d'exclusivité** (pas deux « père » ni deux « mère » sur un enfant), « parent-libre » répétable, compat
+  non destructive (lien s34 relu à « parent-libre »), colonne « nom (rôle) ». **R2/R3 restent ouverts** : le lien
+  borne à 2 et distingue père/mère mais **n'impose pas « exactement 2 »** ni la complétude du couple, et le
   **graphe foyer recomposé** (enfants de parents différents, vue enfant-racine) n'est pas exercé.
 - **R4 — Acteurs « autres » ajoutables, éditables et supprimables.**
 - **R5 — Édition des acteurs (noms + couleurs)** : grille relue immédiatement, store vivant partout,
