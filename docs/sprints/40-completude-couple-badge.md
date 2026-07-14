@@ -28,13 +28,13 @@
 > - **Graphe ÉTENDU** (grands-parents, parents liés entre eux, lien enfant↔activité s35) : hors
 >   scope, on s'arrête à la relation enfant → parents liés (déjà restituée s38).
 
-## Avancement — 2/5
+## Avancement — 3/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | **Statut de complétude PUR par enfant** composé des données déjà persistées (liens s34 + rôle-du-lien s37) — LECTURE PURE, deux adaptateurs (InMemory + Mongo), enrichit `GrapheFoyerQuery` s38 (pas de query neuve) | back | ✅ |
 | 2 | **Règle R3 explicite** : {complet = un père ET une mère} · {incomplet = 0/1 parent, OU 2 sans le couple père+mère (ex. deux « parent-libre »)} · {vide = racine sans parent} ; cas limites (orphelin exclu du décompte, miroir Resolvable s13) | back | ✅ |
-| 3 | **AUCUN blocage d'écriture** : lier/délier/enregistrer un enfant à 0/1/2 parents reste accepté (R3 signalée, pas imposée) — le calcul du statut ne modifie ni ne refuse aucune écriture ; même contrat sur les deux adaptateurs | back | ⏳ |
+| 3 | **AUCUN blocage d'écriture** : lier/délier/enregistrer un enfant à 0/1/2 parents reste accepté (R3 signalée, pas imposée) — le calcul du statut ne modifie ni ne refuse aucune écriture ; même contrat sur les deux adaptateurs | back | ✅ |
 | 4 | **Badge de complétude en LECTURE** par enfant sur la vue graphe s38 (et/ou colonne tableau Enfants) — « couple incomplet » / « complet » / « aucun parent » ; STRICTEMENT lecture, aucun contrôle d'édition, aucune commande émise | 🖥️ IHM | ⏳ |
 | 5 | **Parent-gated lecture** (Invité voit le badge) + convergence **SignalR par reprojection client** : lier/délier/changer un rôle-du-lien depuis la modal Enfants fait **CONVERGER le badge d'un 2ᵉ écran sans rechargement, 0 GET** (diffusion lecture seule, garde s38) | 🖥️ IHM | ⏳ |
 
@@ -105,7 +105,7 @@ Alors l'orphelin N'EST PAS compté (miroir R5/R6, filtre Resolvable s13) et l'en
 Et un lien s34 sans rôle-du-lien explicite compte comme « parent-libre » (défaut neutre s37, ne satisfait pas seul « père ET mère »)
 ```
 
-### Sc.3 — AUCUN blocage d'écriture : R3 signalée, jamais imposée @back @pending
+### Sc.3 — AUCUN blocage d'écriture : R3 signalée, jamais imposée @back @vert
 ```gherkin
 Étant donné un enfant sans parent, ou avec un seul parent, ou avec deux « parent-libre »
 Quand j'enregistre / lie / délie ce parent via le canal d'écriture existant (LierEnfantParent, délier, modal Enfants)
