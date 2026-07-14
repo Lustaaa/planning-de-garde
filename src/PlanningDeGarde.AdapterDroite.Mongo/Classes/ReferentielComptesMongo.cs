@@ -80,6 +80,22 @@ public sealed class ReferentielComptesMongo : IEnumerationComptes, IEditeurCompt
             new ReplaceOptions { IsUpsert = true });
     }
 
+    public void Desactiver(string compteId)
+    {
+        // Sens OFF s41 : mutation ciblée du statut write-through — cache de session ET store durable (le
+        // compte reste Inactif au redémarrage). La règle métier est portée par l'agrégat (Desactiver()).
+        // Tolérant à l'absence / à un compte déjà Inactif (no-op). Email et acteur associé inchangés.
+        if (!_cache.TryGetValue(compteId, out var doc))
+            return;
+        var compteInactif = new CompteUtilisateur(doc.Id, doc.Email, doc.Statut, doc.ActeurId, doc.MotDePasseHache).Desactiver();
+        doc.Statut = compteInactif.Statut;
+        _cache[compteId] = doc;
+        _comptes.ReplaceOne(
+            Builders<CompteDocument>.Filter.Eq(d => d.Id, compteId),
+            doc,
+            new ReplaceOptions { IsUpsert = true });
+    }
+
     public void RedefinirMotDePasse(string compteId, string motDePasseHache)
     {
         // Mutation ciblée du seul mot de passe write-through (récupération, s25) : cache de session ET
