@@ -31,11 +31,15 @@ pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1 -Serial
 ```
 - `-Filter` : cycle **RED ciblé uniquement**, **jamais** une preuve de non-régression.
 - `-Serial` : suite **COMPLÈTE** mais **assemblies sérialisées** (`RunConfiguration.MaxCpuCount=1`).
-  **Mode gate anti-flake** : quand le run parallèle par défaut montre un **rouge `*TempsReel*`
-  isolé-vert** (flake de charge SignalR/I/O, dette backlog), relancer en `-Serial` plutôt que
-  re-tourner toute la suite en parallèle en espérant un vert (coût récurrent 2e/3e run au gate,
-  s36). **Ne masque aucune régression** : un rouge déterministe reste rouge en série (le triage
-  flake — re-run isolé x2-3, `N/N rouge = régression` — reste la règle). Défaut = parallèle (rapide).
+  **Mode gate — ceinture + bretelles** (défaut au gate `/sprint`, s37). La dette flake de charge
+  SignalR/I/O (`*TempsReel*`) qui motivait ce mode est **soldée à la cause s39** : les 55 classes
+  `FrontWasm*TempsReel*` sont désormais **sérialisées entre elles** par la collection xUnit
+  `SignalRTempsReelCollection` (`DisableParallelization=true`), et le parallèle est **fiable (0 %
+  rouge sur 12 runs full-suite)**. `-Serial` reste au gate à coût quasi nul (supprime tout résidu
+  de course cross-assembly sous machine chargée), mais **le parallèle nu n'est plus rougi par le
+  flake** — la dev-team l'exerce au cycle TDD pour éprouver la concurrence réelle. **Ne masque aucune
+  régression** : un rouge déterministe reste rouge en série (triage flake — re-run isolé x2-3,
+  `N/N rouge = régression` — reste la règle). Défaut hors gate = parallèle (rapide).
 
 ### `build` — build solution, JSON compact
 Recompile TOUS les projets. Renvoie `{ green, errors, warnings, exitCode }` (+ `messages`
