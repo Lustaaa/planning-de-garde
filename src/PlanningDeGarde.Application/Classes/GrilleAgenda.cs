@@ -36,7 +36,8 @@ public sealed record EntreeLegende(string IdentifiantStable, string Nom, string 
 /// unicolore inchangée) — présentation seule, la résolution de responsabilité reste inchangée.
 /// </summary>
 public sealed record JourCase(
-    DateOnly Date, string CouleurResponsable, string NomResponsable, IReadOnlyList<SlotCase> Slots, InfoTransfert? Transfert = null);
+    DateOnly Date, string CouleurResponsable, string NomResponsable, IReadOnlyList<SlotCase> Slots, InfoTransfert? Transfert = null,
+    string? ResponsableId = null);
 
 /// <summary>
 /// Information bicolore d'une case portant un transfert : couleur de <see cref="CouleurDepart"/>

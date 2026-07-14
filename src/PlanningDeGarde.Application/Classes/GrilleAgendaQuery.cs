@@ -111,7 +111,9 @@ public sealed class GrilleAgendaQuery
         var responsableId = ResoudreResponsable(date, periodes);
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
-        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date));
+        // ResponsableId (id stable résolu, ou null si neutre) surfacé pour la COMPOSITION en lecture (carte
+        // « qui récupère ce soir », s42) : la carte compose la résolution ici même, sans la réimplémenter.
+        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date), responsableId);
     }
 
     /// <summary>
