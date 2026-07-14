@@ -70,6 +70,29 @@ Texte complet : [`sequence-de-livraison.md` § paliers 2-3](sequence-de-livraiso
     **disparaît** (elle n'a plus de source dans la fenêtre). Rendre la carte **persistante hors de la vue du jour
     courant** supposerait un GET dédié (arbitrage persistance vs coût/flake) — non tranché.
 
+- **Panneau « À venir » sous la carte du jour** *(livré s43 — LECTURE seule ; 2ᵉ incrément du noyau produit,
+  prolonge la carte du jour s42)* : sous la carte « Aujourd'hui », le planning affiche un **panneau « À venir »**
+  listant, pour les **N prochains jours de la fenêtre de grille déjà chargée** (jours strictement après aujourd'hui)
+  et l'**enfant sélectionné**, une **liste ordonnée par date croissante** portant, par jour : **QUI** récupère
+  (responsable **résolu** surcharge > fond > neutre, R19), **OÙ** (le(s) **slot(s) de localisation** du jour, s29) et
+  le **transfert éventuel** cédant → recevant (**saisi OU dérivé**, s31, priorité SAISI > DÉRIVÉ). Côté back, c'est
+  une **query PURE `AVenirQuery` qui COMPOSE `GrilleAgendaQuery`** — **miroir strict de `CarteDuJourQuery` s42**,
+  itérée sur les jours à venir : elle **ne réimplémente ni** la résolution, ni la dérivation de transfert, ni la
+  projection des slots (source unique = le domaine existant) ; **aucun store neuf, aucune mutation, aucune persistance
+  neuve** ; **identique sur les deux adaptateurs** (InMemory + Mongo durable). Le rendu **réutilise couleurs/repli de
+  la grille** (transfert = rendu bicolore réutilisé, jour sans transfert = unicolore). **Repli fidèle** (miroir carte
+  du jour) : jour sans responsable résolu = **« personne assignée »** (neutre, sans nom fantôme) ; responsable
+  **orphelin** (id absent du store) = **repli neutre sans nom ni couleur fantôme** (filtre `Resolvable()` s13) ; jour
+  **sans slot** = **sans lieu** ; **aucun événement à venir** dans la fenêtre = **liste vide / message neutre**
+  « aucun événement à venir » (sans crash ni racine fantôme). Le panneau est **STRICTEMENT en lecture** (aucun
+  contrôle d'édition, aucune commande émise) ; l'**Invité VOIT** le panneau (lecture non gatée). Sa convergence temps
+  réel passe **exclusivement** par la **diffusion SignalR de lecture** (s20), **sans rechargement**, par
+  **reprojection client** depuis la fenêtre de grille déjà chargée (0 GET dédié sur push — garde anti-amplification de
+  flake s42).
+  - **Limitation assumée (s43, même que s42, routée au backlog)** : le panneau se reprojette depuis la **fenêtre de
+    grille chargée** ; les à-venir **au-delà** de cette fenêtre ne sont **pas affichés** (arbitrage « liste
+    persistante » GET vs flake non tranché, comme la carte du jour).
+
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 
 ## Règles de gestion (catalogue : `regles-de-gestion.md`)

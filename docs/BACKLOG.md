@@ -11,7 +11,29 @@
 
 ## En cours
 
-*(Aucun sprint en cours.)* Dernier livré = **s42 `qui-recupere-ce-soir-carte-du-jour`** — **PIVOT assumé hors
+*(Aucun sprint en cours.)* Dernier livré = **s43 `liste-a-venir`** — **2ᵉ incrément du NOYAU PRODUIT** (prolonge la
+carte du jour s42) : un **panneau « À venir »** sous la carte « Aujourd'hui », **STRICTEMENT LECTURE**, qui restitue
+pour les **N prochains jours de la fenêtre de grille chargée** + l'enfant sélectionné : **QUI** récupère (résolu
+surcharge>fond>neutre), **OÙ** (slots s29), **transfert** éventuel (saisi OU dérivé s31). **@back** : query PURE
+`AVenirQuery` **COMPOSANT `GrilleAgendaQuery`** — **miroir strict de `CarteDuJourQuery` s42** itérée sur les jours à
+venir, **SANS réimplémenter la résolution/dérivation/projection, AUCUN store neuf, AUCUNE mutation**, deux adaptateurs
+(InMemory + Mongo durable) ; repli fidèle (aucun responsable = « personne assignée » sans fantôme ; orphelin = repli
+neutre sans nom, `Resolvable` s13 ; jour sans transfert = unicolore ; sans slot = sans lieu ; **fenêtre sans à-venir =
+liste vide / message neutre**). **@ihm** : panneau sous la carte du jour (date croissante, qui/où/transfert par jour),
+strictement lecture ; **Invité VOIT** ; **reprojection client** depuis la grille chargée ; convergence **SignalR par
+reprojection client** (0 GET sur push, anti-amplification flake s42). **LIMITATION assumée (même que s42, routée au
+backlog)** : au-delà de la fenêtre de grille chargée, les à-venir ne sont pas affichés (arbitrage liste persistante GET
+vs flake non tranché). 5/5 ✅, suite **768/768**, gate G3 validé PO (validation directe, aucun rework ni retour produit
+nouveau). **État épic NOYAU PRODUIT « qui récupère »** : carte du jour (s42) + à-venir prochains jours (s43) **LIVRÉS
+en LECTURE** ; **reste** = **notifications/alertes push** (cloche « changement », Palier 11), **carte/liste PERSISTANTE
+hors semaine chargée** (limitation s42/s43), **à-venir au-delà de la fenêtre chargée**. **Candidats de tête au prochain
+`/planning`** : **imprévu & échange de dernière minute / transferts temporaires** (Palier 12, noyau produit à forte
+valeur — **ÉCRITURE**), **panneau cloche notifications/alertes push** (Palier 11, incrément suivant annoncé hors scope
+s42/s43), **carte/liste du jour persistante hors semaine courante** (limitation s42/s43, persistance vs coût GET/flake) ;
+reste Config foyer : **édition depuis le graphe**, **graphe étendu**, **arbitrage inline vs modal** (tension s32), **liste
+de slots par activité**, **lien adresse acteur↔lieu**, **suppression slot récurrent IHM**, **suppression d'un enfant** ;
+**P0 auth** (Google OAuth réel + écran définir-mot-de-passe), **R3 « exactement 2 » à l'écriture** (non imposée, choix
+produit). Précédent = **s42 `qui-recupere-ce-soir-carte-du-jour`** — **PIVOT assumé hors
 Config foyer vers le NOYAU PRODUIT** (après 9 incréments consécutifs Config foyer s32→s41) : **1ᵉʳ incrément du
 noyau produit** = la carte **« Qui récupère ce soir »** (jour courant, **STRICTEMENT LECTURE**), payoff de tout
 le foyer configuré. **@back** : query `CarteDuJourQuery` **PURE composant** `GrilleAgendaQuery` (responsable
@@ -311,11 +333,12 @@ validé PO. Prochain = `/planning`.
 
 | Besoin | Statut | Palier | Origine |
 |--------|:------:|--------|---------|
-| **Panneau cloche listant les événements à venir** — **PROCHAIN incrément du NOYAU PRODUIT** (candidat de tête /planning s43 ; multi-événements : transferts futurs, changements de planning, notifications ; annoncé **hors scope s42** qui n'a livré que le « ce soir » immédiat, pas une timeline) | ⬜ | Palier 11 | spec règles 20/120 · retours s02/s03 · **annoncé hors scope s42** |
+| **Panneau cloche = NOTIFICATION de CHANGEMENT** (badge « non-lu », diff, signal qu'une chose a changé) — **AFFICHAGE de la liste des à-venir LIVRÉ s43 en lecture** (cf. ligne dédiée ci-dessous) ; **reste** le **mécanisme de notification de changement** (cloche qui signale un CHANGEMENT, badge non-lu) — **explicitement hors scope s42/s43** qui n'ont livré que l'affichage lecture, pas la notification | ⬜ | Palier 11 | spec règles 20/120 · retours s02/s03 · **hors scope s42/s43** |
 | Transferts listés comme événements (date, acteurs, lieu, heure) | ⬜ | Palier 11 | spec règle 20 |
 | Changements de planning exposés comme événements | ⬜ | Palier 11 | spec règle 20 |
 | ~~« Qui récupère ce soir » — immédiat (qui-quand-où du jour)~~ **livré s42 EN LECTURE** : carte « Aujourd'hui » (jour courant + enfant sélectionné) restituant **qui / où / transfert du jour**, via query `CarteDuJourQuery` **PURE composant** `GrilleAgendaQuery` (résolution surcharge>fond>neutre + slots s29 + transfert saisi/dérivé s31, **aucun store neuf, aucune mutation**, deux adaptateurs, Mongo durable) ; carte en tête du planning par **reprojection client**, **STRICTEMENT lecture**, **Invité VOIT**, convergence **SignalR par reprojection client** (0 GET sur push). **1ᵉʳ incrément du noyau produit** après l'épic Config foyer. | ✅ | s42 | spec p4 · spec v03 incrément 2 |
-| **Carte du jour PERSISTANTE hors de la semaine courante** (limitation s42) : la carte se reprojette depuis la **fenêtre de grille chargée**, donc **disparaît** si l'utilisateur navigue vers une semaine ne contenant pas le jour courant. Choix guidé par l'**anti-amplification flake** (aucun GET dédié sur push). **À arbitrer** : persistance de la carte hors vue du jour courant **vs** coût d'un GET sur push (risque flake). | ⬜ | Palier 11 (arbitrage) | **limitation s42** |
+| ~~**Liste « À venir » — prochains jours (qui/où/transfert)**~~ **livré s43 EN LECTURE** (**2ᵉ incrément du noyau produit**, prolonge la carte du jour s42) : **panneau « À venir »** sous la carte « Aujourd'hui » listant les **N prochains jours de la fenêtre de grille chargée** (date croissante) + l'enfant sélectionné avec **qui / où / transfert** par jour, via query `AVenirQuery` **PURE composant** `GrilleAgendaQuery` (**miroir strict de `CarteDuJourQuery` s42** itérée sur les jours à venir, **aucun store neuf, aucune mutation**, deux adaptateurs, Mongo durable) ; repli fidèle (personne assignée / orphelin neutre `Resolvable` s13 / sans slot sans lieu / **fenêtre sans à-venir = liste vide message neutre**) ; **STRICTEMENT lecture**, **Invité VOIT**, **reprojection client**, convergence **SignalR** (0 GET sur push). **Notifications/alertes push explicitement HORS scope** (cf. ligne cloche ci-dessus). | ✅ | s43 | spec p4/p7 · spec règle 20 · **suite carte du jour s42** |
+| **Carte du jour ET liste « À venir » PERSISTANTES hors de la semaine courante** (limitation s42 **+ s43**) : carte (s42) et panneau « À venir » (s43) se reprojettent depuis la **fenêtre de grille chargée**, donc **disparaissent / ne s'affichent pas au-delà** si l'utilisateur navigue hors du jour courant / de la fenêtre. Choix guidé par l'**anti-amplification flake** (aucun GET dédié sur push). **À arbitrer** : persistance hors vue **vs** coût d'un GET sur push (risque flake). | ⬜ | Palier 11 (arbitrage) | **limitation s42/s43** |
 
 ### Épic 10 — Authentification & accès utilisateurs
 
