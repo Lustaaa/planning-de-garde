@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application;
@@ -36,13 +37,29 @@ public sealed class DeleguerRecuperationHandler
 
     public Result<PeriodeSnapshot> Handle(DeleguerRecuperationCommand commande)
     {
+        // Refus de la délégation à soi-même : le délégataire est DÉJÀ le responsable RÉSOLU du jour
+        // (surcharge > fond), la délégation n'apporterait aucun changement utile — aucune écriture.
+        var resolu = _grille.Projeter(commande.Jour, VuePlanning.Semaine)
+            .Jours.Single(j => j.Date == commande.Jour).ResponsableId;
+        if (resolu == commande.VersActeurId)
+            return Result<PeriodeSnapshot>.Echec(
+                "Délégation à soi-même : cet acteur récupère déjà ce jour-là, aucun changement n'est nécessaire.");
+
         var debut = commande.Jour.ToDateTime(TimeOnly.MinValue);
         var affectation = PeriodeDeGarde.Affecter(commande.VersActeurId, debut, debut);
         if (!affectation.EstSucces)
             return Result<PeriodeSnapshot>.Echec(affectation.Motif!);
 
+        // Last-write-wins R11 : une surcharge existante couvrant le jour est RÉAFFECTÉE (retirée avant
+        // ré-écriture), jamais dupliquée — le jour n'est couvert que par la dernière écriture.
+        foreach (var existante in _periodes.AllSnapshots().Where(p => CouvreLeJour(p, commande.Jour)).ToList())
+            _periodes.Supprimer(existante.Id);
+
         var periode = affectation.Valeur!;
         _periodes.Enregistrer(periode);
         return Result<PeriodeSnapshot>.Succes(periode.ToSnapshot());
     }
+
+    private static bool CouvreLeJour(PeriodeSnapshot periode, DateOnly jour)
+        => jour >= DateOnly.FromDateTime(periode.Debut) && jour <= DateOnly.FromDateTime(periode.Fin);
 }
