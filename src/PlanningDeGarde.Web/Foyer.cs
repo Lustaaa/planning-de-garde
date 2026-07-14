@@ -98,3 +98,18 @@ public sealed record EnfantFoyer(string Id, string Prenom)
 /// id stable de l'acteur associé (ou <c>null</c> = désassocié). Alimente l'affichage du compte associé à
 /// un acteur et de son statut dans l'onglet Acteurs.</summary>
 public sealed record CompteFoyer(string Id, string Email, string Statut, string? ActeurId);
+
+/// <summary>Un parent lié restitué dans le <b>graphe foyer</b> (s38, GET /api/foyer/graphe) : identifiant
+/// stable du parent-acteur + son <b>nom d'affichage</b> déjà résolu côté API (jamais un libellé en dur) +
+/// son <b>rôle-du-lien</b> (père / mère / parent-libre, s37). Branche « nom (rôle-du-lien) » sous l'enfant
+/// racine. Présentation seule : le rôle-du-lien n'intervient ni dans la résolution ni dans le gating.</summary>
+public sealed record GrapheParent(string ActeurId, string Nom, RoleDuLien Role);
+
+/// <summary>Un enfant restitué comme <b>racine</b> du graphe foyer (s38, GET /api/foyer/graphe) : identifiant
+/// stable + prénom d'affichage + la liste de ses <b>parents liés</b> (branches, déjà filtrées des orphelins
+/// côté API — reflet fidèle, zéro fantôme). Un enfant sans parent lié est une racine isolée (liste vide,
+/// 0 parent accepté s34). Propriété <c>init</c> peuplée depuis le JSON quand présente, sinon liste vide.</summary>
+public sealed record GrapheEnfant(string EnfantId, string Prenom)
+{
+    public IReadOnlyList<GrapheParent> Parents { get; init; } = System.Array.Empty<GrapheParent>();
+}

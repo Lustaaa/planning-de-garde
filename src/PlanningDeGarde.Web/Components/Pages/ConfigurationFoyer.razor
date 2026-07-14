@@ -30,6 +30,44 @@
         </div>
     }
 
+    @* ══════════════ Vue LECTURE SEULE « graphe enfant-racine » (s38) ══════════════
+       Affichée À L'ARRIVÉE sur la Config foyer (briefing PO : « quand on arrive sur la configuration du
+       foyer, une vue en lecture seule affichée comme un graph avec comme racine l'enfant ») : chaque enfant
+       en RACINE, ses parents liés en branches « nom (rôle-du-lien) ». STRICTEMENT lecture — aucun contrôle
+       d'édition, aucune commande émise d'ici (l'écriture reste dans la modal Enfants). Reflet fidèle du store
+       (orphelins filtrés côté API, zéro fantôme) ; converge en temps réel via la diffusion SignalR lecture
+       seule. Surface NEUVE de lecture (pas un swap) — Invité la voit aussi (lecture non gatée). *@
+    <section class="config-graphe" data-testid="graphe-foyer" aria-label="Graphe du foyer (lecture seule)">
+        <h2 class="config-graphe-titre">Foyer</h2>
+        @if (_graphe.Count == 0)
+        {
+            <p class="config-graphe-vide" data-testid="graphe-vide">Aucun enfant, ajoutez-en.</p>
+        }
+        else
+        {
+            <ul class="config-graphe-racines">
+                @foreach (var enfant in _graphe)
+                {
+                    <li class="config-graphe-racine" data-testid="graphe-enfant-racine" data-enfant-id="@enfant.EnfantId">
+                        <span class="config-graphe-enfant" data-testid="graphe-enfant-nom">@enfant.Prenom</span>
+                        @if (enfant.Parents.Count > 0)
+                        {
+                            <ul class="config-graphe-branches">
+                                @foreach (var parent in enfant.Parents)
+                                {
+                                    <li class="config-graphe-branche" data-testid="graphe-parent-branche"
+                                        data-enfant-id="@enfant.EnfantId" data-acteur-id="@parent.ActeurId">
+                                        @LibelleBrancheParent(parent)
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </li>
+                }
+            </ul>
+        }
+    </section>
+
     <div class="config-layout">
         <nav class="config-nav" aria-label="Sections de configuration">
             <button type="button" class="config-nav-item @(_onglet == "acteurs" ? "actif" : null)"

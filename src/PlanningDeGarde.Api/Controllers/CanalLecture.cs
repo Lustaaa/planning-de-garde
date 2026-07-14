@@ -137,6 +137,13 @@ public static class CanalLecture
                 return Results.Ok(vues);
             });
 
+        // Graphe foyer « enfant-racine » (s38) : lecture AGRÉGÉE (GrapheFoyerQuery) restituant, PAR enfant
+        // en racine, ses parents liés (nom résolu + rôle-du-lien père/mère/parent-libre s37), reflet FIDÈLE
+        // des liens réels (parent supprimé orphelin filtré, contrat d'existence). La vue lecture seule de la
+        // Config foyer la consomme à l'arrivée. Lecture PURE — ne déclenche jamais la diffusion.
+        routes.MapGet("/api/foyer/graphe",
+            (GrapheFoyerQuery query) => Results.Ok(query.Lire()));
+
         // Énumération des comptes utilisateurs du foyer DEPUIS LE STORE (s22) : l'onglet Acteurs de
         // l'écran config la lit pour afficher le compte associé à chaque acteur et son statut. Lecture
         // seule — ne déclenche jamais la diffusion. Le statut est rendu en libellé minuscule stable.
