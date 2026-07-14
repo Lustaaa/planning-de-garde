@@ -28,7 +28,7 @@
 > - **Graphe ÉTENDU** (grands-parents, parents liés entre eux, lien enfant↔activité s35) : hors
 >   scope, on s'arrête à la relation enfant → parents liés (déjà restituée s38).
 
-## Avancement — 4/5
+## Avancement — 5/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -36,7 +36,7 @@
 | 2 | **Règle R3 explicite** : {complet = un père ET une mère} · {incomplet = 0/1 parent, OU 2 sans le couple père+mère (ex. deux « parent-libre »)} · {vide = racine sans parent} ; cas limites (orphelin exclu du décompte, miroir Resolvable s13) | back | ✅ |
 | 3 | **AUCUN blocage d'écriture** : lier/délier/enregistrer un enfant à 0/1/2 parents reste accepté (R3 signalée, pas imposée) — le calcul du statut ne modifie ni ne refuse aucune écriture ; même contrat sur les deux adaptateurs | back | ✅ |
 | 4 | **Badge de complétude en LECTURE** par enfant sur la vue graphe s38 (et/ou colonne tableau Enfants) — « couple incomplet » / « complet » / « aucun parent » ; STRICTEMENT lecture, aucun contrôle d'édition, aucune commande émise | 🖥️ IHM | ✅ |
-| 5 | **Parent-gated lecture** (Invité voit le badge) + convergence **SignalR par reprojection client** : lier/délier/changer un rôle-du-lien depuis la modal Enfants fait **CONVERGER le badge d'un 2ᵉ écran sans rechargement, 0 GET** (diffusion lecture seule, garde s38) | 🖥️ IHM | ⏳ |
+| 5 | **Parent-gated lecture** (Invité voit le badge) + convergence **SignalR par reprojection client** : lier/délier/changer un rôle-du-lien depuis la modal Enfants fait **CONVERGER le badge d'un 2ᵉ écran sans rechargement, 0 GET** (diffusion lecture seule, garde s38) | 🖥️ IHM | ✅ |
 
 > **⚠️ Point de vigilance — définition du statut « 2 parents mais pas père+mère » (décision SM,
 > tranchée).** L'invariant d'exclusivité s37 interdit **deux « père »** et **deux « mère »** sur un
@@ -128,7 +128,7 @@ Et le badge est STRICTEMENT en lecture : aucun contrôle d'édition, aucune comm
 Et le badge est rendu sur la vue graphe s38 (et/ou la colonne du tableau Enfants), sans dupliquer un chemin de lecture
 ```
 
-### Sc.5 — Parent-gated lecture + convergence SignalR par reprojection client @ihm @pending
+### Sc.5 — Parent-gated lecture + convergence SignalR par reprojection client @ihm @vert
 ```gherkin
 Étant donné une identité EFFECTIVE non-Parent (Invité)
 Quand j'arrive sur la Config du foyer

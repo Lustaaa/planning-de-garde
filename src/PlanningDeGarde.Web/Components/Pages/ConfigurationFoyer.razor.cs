@@ -532,14 +532,36 @@ public partial class ConfigurationFoyer
     /// canonique reste la query serveur consommée à l'arrivée. Lecture PURE, aucune écriture.</summary>
     private void ReprojeterGraphe()
         => _graphe = _enfants
-            .Select(e => new GrapheEnfant(e.Id, e.Prenom)
+            .Select(e =>
             {
-                Parents = e.ParentsLies
+                var parents = e.ParentsLies
                     .Where(p => _acteurs.Any(a => a.Id == p.ActeurId)) // filtre orphelin (zéro fantôme), miroir Resolvable
                     .Select(p => new GrapheParent(p.ActeurId, _acteurs.First(a => a.Id == p.ActeurId).Nom, p.Role))
-                    .ToList(),
+                    .ToList();
+                return new GrapheEnfant(e.Id, e.Prenom)
+                {
+                    Parents = parents,
+                    // Statut R3 (s40) reprojeté CLIENT depuis la diffusion : miroir EXACT de GrapheFoyerQuery
+                    // (Sc.1/Sc.2) — aucun GET sur push. Vide = aucun lien BRUT (racine isolée), distinct d'un
+                    // enfant dont le seul parent est orphelin (lien résiduel présent → Incomplet). Complet SSI
+                    // un « père » ET une « mère » RÉSOLUS ; tout autre cas → Incomplet.
+                    StatutCouple = StatutCoupleReprojete(e.ParentsLies.Count, parents),
+                };
             })
             .ToList();
+
+    /// <summary>Statut de complétude du couple R3 (s40) reprojeté côté client — MIROIR EXACT de la règle
+    /// serveur (<c>GrapheFoyerQuery</c>, Sc.1/Sc.2) : aucune sémantique divergente, la source canonique reste
+    /// la query serveur consommée à l'arrivée. Aucune règle métier neuve dans l'UI — pure recomposition
+    /// lecture seule à partir du payload déjà diffusé.</summary>
+    private static StatutCoupleR3 StatutCoupleReprojete(int nbLiensBruts, IReadOnlyList<GrapheParent> parents)
+    {
+        if (nbLiensBruts == 0)
+            return StatutCoupleR3.Vide;
+        var aPere = parents.Any(p => p.Role == RoleDuLien.Pere);
+        var aMere = parents.Any(p => p.Role == RoleDuLien.Mere);
+        return aPere && aMere ? StatutCoupleR3.Complet : StatutCoupleR3.Incomplet;
+    }
 
     /// <summary>Ré-énumère les affectations déclarées du cycle de fond depuis le store (GET /api/foyer/cycles,
     /// Sc.3) : alimente le tableau lecture seule de l'onglet Cycle (Sc.10). Quand la modal cycle n'est pas
