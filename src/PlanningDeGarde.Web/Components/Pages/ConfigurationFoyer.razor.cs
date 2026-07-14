@@ -496,12 +496,31 @@ public partial class ConfigurationFoyer
         await RechargerGraphe();
     }
 
-    /// <summary>Ré-énumère le graphe foyer « enfant-racine » depuis le store vivant (GET /api/foyer/graphe, s38) :
-    /// c'est cette relecture qui rend la vue lecture seule à l'arrivée, ET la fait CONVERGER en temps réel quand
-    /// un lien enfant↔parent est ajouté / supprimé ou un rôle-du-lien modifié depuis la modal Enfants (Sc.5).</summary>
+    /// <summary>Charge le graphe foyer « enfant-racine » À L'ARRIVÉE depuis le store vivant via la query
+    /// AGRÉGÉE serveur (GET /api/foyer/graphe → <c>GrapheFoyerQuery</c>, s38 Sc.1/Sc.2) : source CANONIQUE de
+    /// la vue lecture seule (orphelins filtrés côté serveur, contrat d'existence). C'est le chemin de lecture
+    /// consommé à l'arrivée sur la Config foyer (goal : « quand on arrive… »).</summary>
     private async Task RechargerGraphe()
         => _graphe = await Canal.GetFromJsonAsync<List<GrapheEnfant>>("api/foyer/graphe")
             ?? new List<GrapheEnfant>();
+
+    /// <summary>Reprojette le graphe EN TEMPS RÉEL (convergence Sc.5) à partir des données DÉJÀ rechargées sur la
+    /// diffusion (<see cref="_enfants"/> avec liens + rôles-du-lien, <see cref="_acteurs"/> pour existence + nom) —
+    /// SANS aller-retour HTTP supplémentaire par diffusion (le canal SignalR pousse à haute fréquence ; un GET de
+    /// plus par push alourdit inutilement le trafic de lecture). Miroir EXACT des règles de <c>GrapheFoyerQuery</c>
+    /// (Sc.1/Sc.2) : mêmes branches, même filtre d'orphelin (contrat d'existence = l'acteur figure dans
+    /// <see cref="_acteurs"/>), même nom résolu, même rôle-du-lien — aucune sémantique divergente, la source
+    /// canonique reste la query serveur consommée à l'arrivée. Lecture PURE, aucune écriture.</summary>
+    private void ReprojeterGraphe()
+        => _graphe = _enfants
+            .Select(e => new GrapheEnfant(e.Id, e.Prenom)
+            {
+                Parents = e.ParentsLies
+                    .Where(p => _acteurs.Any(a => a.Id == p.ActeurId)) // filtre orphelin (zéro fantôme), miroir Resolvable
+                    .Select(p => new GrapheParent(p.ActeurId, _acteurs.First(a => a.Id == p.ActeurId).Nom, p.Role))
+                    .ToList(),
+            })
+            .ToList();
 
     /// <summary>Ré-énumère les affectations déclarées du cycle de fond depuis le store (GET /api/foyer/cycles,
     /// Sc.3) : alimente le tableau lecture seule de l'onglet Cycle (Sc.10). Quand la modal cycle n'est pas
@@ -603,7 +622,10 @@ public partial class ConfigurationFoyer
                 await RechargerCycles();
                 // Un lien enfant↔parent ajouté / supprimé ou un rôle-du-lien modifié (modal Enfants) sur un autre
                 // écran fait CONVERGER le graphe foyer sans rechargement (s38 Sc.5) — diffusion LECTURE SEULE.
-                await RechargerGraphe();
+                // Reprojection LOCALE à partir des enfants + acteurs déjà rechargés ci-dessus (aucun GET de plus
+                // par diffusion) : miroir exact de GrapheFoyerQuery, la source canonique restant la query serveur
+                // consommée à l'arrivée (RechargerGraphe). Évite d'alourdir le trafic de lecture à chaque push.
+                ReprojeterGraphe();
                 await InvokeAsync(StateHasChanged);
             });
 
