@@ -95,6 +95,15 @@ lancement.
     sévérité** dans `notes` (priorisation du rétrofit par le `scrum-master`).
   - Jamais d'extension du passe-droit à un autre test, jamais d'étiquette « flake » sans le re-run
     isolé qui l'a démontrée. *(Récits : `docs/sprints/JOURNAL-METHODE.md` s18, s21.)*
+- **Nouveau client SignalR = REPROJECTION CLIENT depuis la diffusion, JAMAIS un GET sur push (anti-amplification
+  flake).** Quand un écran doit **converger en temps réel** sur une diffusion SignalR, fais-le **reprojeter côté
+  client** à partir du **payload diffusé** (canal lecture seule s20) — n'émets **PAS** un GET de rechargement
+  déclenché par le push. Un GET-sur-push est **doublement mauvais** : il rajoute un aller-retour sur le canal de
+  lecture ET **amplifie le flake P1 *TempsReel*** (mesuré s38 : baseline ~40-50% de rouge full-suite Web.Tests →
+  **~100%** avec un GET sur push, **ramené au baseline** par la reprojection client, 0 GET). **Protocole quand tu
+  ajoutes un client SignalR** : **mesure le parallèle (`test.ps1` nu) AVANT/APRÈS** ton ajout — si ton client
+  **aggrave** le taux de rouge, c'est un signal de **conception** (reprojette au lieu de GET), pas un flake à
+  cataloguer. *(Récit : JOURNAL-METHODE s38, convergence du graphe foyer enfant-racine.)*
 - **Interaction clavier / focus (Échap, raccourcis) : jamais prouvée par `@onkeydown` bUnit.** Un test bUnit
   qui **dispatche** le keydown **sur l'élément porteur** (`@onkeydown` sur un backdrop / div) passe **vert**
   alors qu'en **navigateur réel** l'événement part de **`document`** et **n'atteint jamais** un élément non

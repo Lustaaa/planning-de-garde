@@ -435,6 +435,40 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
     **Hors scope s37** : familles recomposées **R2/R3** (« exactement 1 père ET 1 mère » / complétude du couple
     **non exigée**), graphe enfant-racine, **saisie/édition du `TypeActeur`** lui-même.
 
+- **Vue foyer « graphe enfant-racine » (lecture seule) + query agrégée `GrapheFoyerQuery`** *(livré s38, 6ᵉ
+  incrément de la Refonte Config foyer — RESTITUTION visuelle du foyer câblé s34/s36/s37)* : à l'arrivée sur la
+  Config du foyer, une **vue en LECTURE SEULE** restitue le foyer comme un **graphe avec l'ENFANT en RACINE** et
+  ses parents liés en branches — payoff des liens posés au fil des sprints (lien enfant↔parent s34, éligibilité
+  role-flag s36, rôle-du-lien père/mère/parent-libre s37).
+  - **Query de lecture PURE `GrapheFoyerQuery`.** Une query agrégée restitue, **PAR enfant**, la liste de ses
+    **parents liés** avec, pour chacun, son **nom** et son **rôle-du-lien** {père, mère, parent-libre} (s37).
+    **Lecture PURE** : aucune mutation, **aucun store neuf**, aucune persistance neuve — elle **compose** les
+    données déjà persistées (référentiel enfants s30 + liens enfant↔parent s34/s37 + noms d'acteurs), sur les
+    **deux adaptateurs** (InMemory seedé + Mongo durable, même contrat). Un lien s34 sans rôle-du-lien explicite
+    est restitué à **« parent-libre »** (défaut neutre s37). Le rôle-du-lien reste **présentation seule** (n'intervient
+    ni dans la résolution grille/légende ni dans le gating, R10).
+  - **Reflet FIDÈLE, zéro fantôme.** Le graphe résout les branches **exclusivement** depuis le store vivant (id
+    stable) : un parent **non lié** est **absent** ; un acteur **supprimé / orphelin** ne laisse **aucun nom
+    fantôme** (miroir R5/R6, filtre `Resolvable()` s13) ; un enfant **sans parent** est une **racine isolée**
+    légitime (0 parent accepté s34) ; un **store vide** restitue un **graphe vide** (aucune racine, sans erreur).
+  - **IHM — surface NEUVE de lecture** (pas un swap, aucune garde lot-atomique : on **ajoute** une vue). Chaque
+    **enfant en RACINE**, ses parents en branches « **nom (rôle-du-lien)** » (père / mère / parent) ;
+    **STRICTEMENT lecture** (aucun contrôle d'édition, aucune commande émise depuis le graphe — l'écriture reste
+    dans la modal Enfants s34/s37) ; **store vide → message neutre** (« Aucun enfant, ajoutez-en. »), zéro nœud
+    fantôme. **Familles recomposées VISIBLES par construction** : deux enfants de parents distincts = **deux
+    racines** ; un parent partagé apparaît **sous chacun** des enfants qu'il a (reflet fidèle, **aucun nouvel
+    invariant** imposé — ni « exactement 2 parents » ni complétude du couple). **Parent-gated lecture** : l'Invité
+    **voit** la vue (lecture seule, sans contrôle d'édition). **Convergence SignalR par REPROJECTION CLIENT** :
+    lier / délier / changer un rôle-du-lien depuis la modal Enfants fait **converger le graphe d'un 2ᵉ écran sans
+    rechargement** — le client **reprojette depuis le payload diffusé** (diffusion lecture seule s20, **aucun GET
+    sur push**, canal d'écriture jamais confondu).
+  - **R1 exercé en LECTURE, R2 visible, R3 ouvert.** Le multi-enfants / graphe foyer (R1) est désormais **exercé
+    en LECTURE** (au-delà de l'agrégat s30) ; les **familles recomposées R2** sont **matérialisées visuellement**.
+    **Hors scope s38 (reste ouvert)** : **R3 « exactement 2 parents » / statut de complétude du couple** (le graphe
+    restitue 0/1/2 parents tels quels, **n'impose aucune complétude**) ; **édition depuis le graphe** (strictement
+    lecture seule) ; **graphe ÉTENDU** (grands-parents, parents liés entre eux via leurs enfants, lien enfant↔activité
+    s35 dans le graphe) ; **vue planning centrée couple** (recomposé).
+
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
   rôles), doté d'un **id stable opaque** + **email** + **statut** (`Actif`/`Inactif`, défaut **Inactif** —
@@ -477,9 +511,13 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   parents**. **Éligibilité role-flag livrée s36** (l'acteur liable = porte un rôle marqué « parent »). **Rôle-du-lien
   père/mère/parent-libre livré s37** : le lien porte un attribut `{père, mère, parent-libre}` (record `ParentLie`),
   **invariant d'exclusivité** (pas deux « père » ni deux « mère » sur un enfant), « parent-libre » répétable, compat
-  non destructive (lien s34 relu à « parent-libre »), colonne « nom (rôle) ». **R2/R3 restent ouverts** : le lien
-  borne à 2 et distingue père/mère mais **n'impose pas « exactement 2 »** ni la complétude du couple, et le
-  **graphe foyer recomposé** (enfants de parents différents, vue enfant-racine) n'est pas exercé.
+  non destructive (lien s34 relu à « parent-libre »), colonne « nom (rôle) ». **Graphe foyer enfant-racine livré
+  s38 EN LECTURE** : query PURE `GrapheFoyerQuery` (par enfant → parents liés + rôle-du-lien, deux adaptateurs) +
+  **vue lecture seule** (enfant en racine « nom (rôle) », **familles recomposées R2 VISIBLES**, store vide =
+  message neutre, Parent-gated, convergence SignalR par **reprojection client**) → **R1 multi-enfants/graphe
+  exercé en LECTURE, R2 matérialisée**. **R3 reste ouvert** : le graphe restitue 0/1/2 parents tels quels,
+  **n'impose pas « exactement 2 »** ni la complétude du couple ; le **graphe ÉTENDU** (grands-parents, parents
+  liés entre eux via leurs enfants) et l'**édition depuis le graphe** ne sont pas traités.
 - **R4 — Acteurs « autres » ajoutables, éditables et supprimables.**
 - **R5 — Édition des acteurs (noms + couleurs)** : grille relue immédiatement, store vivant partout,
   type surfacé lecture seule. Distincte de la durabilité (R30). **Précisé s19** : sélecteurs des
