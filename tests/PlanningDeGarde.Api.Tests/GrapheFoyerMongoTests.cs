@@ -46,7 +46,7 @@ public sealed class GrapheFoyerMongoTests : IDisposable
         var enfantsApresRedemarrage = new ReferentielEnfantsMongo(ConnectionString, _baseDeTest);
 
         // --- When : la query câblée sur les adaptateurs Mongo RÉELS ---
-        var graphe = new GrapheFoyerQuery(enfantsApresRedemarrage, configApresRedemarrage).Lire();
+        var graphe = new GrapheFoyerQuery(enfantsApresRedemarrage, configApresRedemarrage, configApresRedemarrage).Lire();
 
         // --- Then : Léa en racine, Alice (mère) + Bob (père) en branches, noms résolus depuis Mongo ---
         var lea = graphe.Single(e => e.EnfantId == leaId);
@@ -60,6 +60,36 @@ public sealed class GrapheFoyerMongoTests : IDisposable
         Assert.Equal(aliceId, parentDeTom.ActeurId);
         Assert.Equal("Alice", parentDeTom.Nom);
         Assert.Equal(RoleDuLien.ParentLibre, parentDeTom.Role);
+    }
+
+    [MongoRequisFact]
+    public void Acceptation_Should_Ne_produire_aucune_branche_fantome_pour_un_acteur_supprime_encore_reference_sur_Mongo_reel()
+    {
+        // --- Given : Alice + Bob durables, Léa liée aux deux, puis Bob SUPPRIMÉ (lien résiduel conservé) ---
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var aliceId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+        var bobId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
+
+        var storeEnfants = new ReferentielEnfantsMongo(ConnectionString, _baseDeTest);
+        var leaId = new AjouterEnfantHandler(storeEnfants, storeEnfants, new NotificateurMuet())
+            .Handle(new AjouterEnfantCommand("Léa")).Valeur!.EnfantId;
+        storeEnfants.LierParent(leaId, aliceId, RoleDuLien.Mere);
+        storeEnfants.LierParent(leaId, bobId, RoleDuLien.Pere);
+
+        // Bob supprimé du référentiel d'acteurs ; le lien Léa→Bob subsiste (non délié) — orphelin résiduel.
+        config.Supprimer(bobId);
+
+        // --- Redémarrage : NOUVELLES instances sur la MÊME base persistée ---
+        var configApresRedemarrage = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var enfantsApresRedemarrage = new ReferentielEnfantsMongo(ConnectionString, _baseDeTest);
+
+        var graphe = new GrapheFoyerQuery(enfantsApresRedemarrage, configApresRedemarrage, configApresRedemarrage).Lire();
+
+        // --- Then : Alice reste en branche, Bob orphelin est neutralisé (aucune branche fantôme) ---
+        var lea = graphe.Single(e => e.EnfantId == leaId);
+        var parent = Assert.Single(lea.Parents);
+        Assert.Equal(aliceId, parent.ActeurId);
+        Assert.DoesNotContain(lea.Parents, p => p.ActeurId == bobId);
     }
 
     public void Dispose()

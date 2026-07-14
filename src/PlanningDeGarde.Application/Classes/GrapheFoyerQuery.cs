@@ -29,20 +29,30 @@ public sealed class GrapheFoyerQuery
 {
     private readonly IEnumerationEnfants _enfants;
     private readonly IReferentielResponsables _noms;
+    private readonly IEnumerationActeursFoyer _acteurs;
 
-    public GrapheFoyerQuery(IEnumerationEnfants enfants, IReferentielResponsables noms)
+    public GrapheFoyerQuery(IEnumerationEnfants enfants, IReferentielResponsables noms, IEnumerationActeursFoyer acteurs)
     {
         _enfants = enfants;
         _noms = noms;
+        _acteurs = acteurs;
     }
 
     public IReadOnlyList<GrapheEnfantVue> Lire()
-        => _enfants.EnumererEnfants()
+    {
+        // Contrat d'existence (miroir Resolvable s13, R5/R6) : un parent-acteur SUPPRIMÉ du référentiel
+        // (orphelin) mais encore référencé par un lien résiduel ne produit AUCUNE branche fantôme, même si
+        // son nom stale reste résoluble. Seules les branches vers des acteurs existants sont restituées ;
+        // un enfant qui n'a plus aucun parent résoluble reste une racine (isolée), jamais un nœud fantôme.
+        var existants = _acteurs.EnumererActeurs();
+        return _enfants.EnumererEnfants()
             .Select(e => new GrapheEnfantVue(
                 e.Id,
                 e.Prenom,
                 e.ParentsLies
+                    .Where(p => existants.Contains(p.ActeurId))
                     .Select(p => new GrapheParentVue(p.ActeurId, _noms.NomDe(p.ActeurId), p.Role))
                     .ToList()))
             .ToList();
+    }
 }

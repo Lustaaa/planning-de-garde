@@ -42,9 +42,10 @@ public class Scenario38_S1_GrapheFoyerQuery
             [AliceId] = "Alice",
             [BobId] = "Bob",
         });
+        var acteurs = new FakeEnumerationActeursFoyer(AliceId, BobId);
 
         // When
-        var graphe = new GrapheFoyerQuery(enfants, noms).Lire();
+        var graphe = new GrapheFoyerQuery(enfants, noms, acteurs).Lire();
 
         // Then — chaque enfant en racine, avec ses parents liés (nom résolu + rôle-du-lien)
         var lea = graphe.Single(e => e.EnfantId == LeaId);
@@ -71,8 +72,8 @@ public class Scenario38_S1_GrapheFoyerQuery
         storeEnfants.Ajouter(LeaId, "Léa");
         storeEnfants.LierParent(LeaId, aliceId, RoleDuLien.Mere);
 
-        // When — la query câblée sur les adaptateurs RÉELS (jamais une doublure)
-        var graphe = new GrapheFoyerQuery(storeEnfants, config).Lire();
+        // When — la query câblée sur les adaptateurs RÉELS (jamais une doublure ; config réalise noms + acteurs)
+        var graphe = new GrapheFoyerQuery(storeEnfants, config, config).Lire();
 
         // Then — Léa en racine, Alice en branche (nom résolu depuis le store réel + rôle mère)
         var lea = graphe.Single(e => e.EnfantId == LeaId);

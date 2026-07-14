@@ -32,12 +32,12 @@
 > - **Vue planning centrée couple / vue recomposée du planning** (bonus brief 2ᵉ temps) : hors
 >   goal — ici c'est la vue **Config foyer**, pas le planning.
 
-## Avancement — 1/5
+## Avancement — 2/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | **Query de lecture agrégée** (ex. `GrapheFoyerQuery`) : PAR enfant, ses parents liés avec rôle-du-lien {père/mère/parent-libre} (s37) — lecture PURE, deux adaptateurs (InMemory + Mongo) | back | ✅ |
-| 2 | Le graphe **reflète les liens RÉELS** du store (s34/s36/s37) : parents non liés **absents** ; enfant sans parent = **racine isolée** (0 parent accepté s34) ; ordre/forme stables | back | ⏳ |
+| 2 | Le graphe **reflète les liens RÉELS** du store (s34/s36/s37) : parents non liés **absents** ; enfant sans parent = **racine isolée** (0 parent accepté s34) ; ordre/forme stables | back | ✅ |
 | 3 | **Vue lecture seule** à l'arrivée sur Config foyer : chaque **enfant en RACINE**, branches parents « **nom (rôle-du-lien)** » ; store vide → **message neutre, zéro fantôme** | 🖥️ IHM | ⏳ |
 | 4 | **Familles recomposées visibles** : deux enfants de parents distincts = **deux racines** ; un **parent partagé** apparaît sur les deux enfants (reflet des liens réels, aucun nouvel invariant) | 🖥️ IHM | ⏳ |
 | 5 | **Parent-gated lecture** (Invité voit la vue) + convergence **SignalR** : lier/délier/changer un rôle-du-lien depuis la modal Enfants fait **CONVERGER le graphe sans rechargement** (diffusion lecture seule) | 🖥️ IHM | ⏳ |
@@ -85,7 +85,7 @@ Et un lien s34 sans rôle-du-lien explicite est restitué à « parent-libre » 
 Et le rôle-du-lien restitué N'INTERVIENT PAS dans la résolution grille/légende ni le gating (présentation seule, R10)
 ```
 
-### Sc.2 — Le graphe reflète les liens RÉELS du store @back @pending
+### Sc.2 — Le graphe reflète les liens RÉELS du store @back @vert
 ```gherkin
 Étant donné un enfant lié à un seul parent-acteur et un autre enfant sans aucun parent lié
 Quand la query du graphe foyer est exécutée
