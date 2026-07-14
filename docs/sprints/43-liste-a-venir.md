@@ -41,13 +41,13 @@
 > - **Réimplémentation de la résolution** : on **compose** la résolution existante (surcharge > fond,
 >   transferts s31, slots s29), on **ne la réécrit pas** (cf. point de vigilance).
 
-## Avancement — 2/5
+## Avancement — 3/5
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | **Query PURE — liste ordonnée des « à venir »** : pour les **N prochains jours depuis aujourd'hui** (fenêtre de grille chargée) + l'enfant sélectionné, restitue une **liste ordonnée** de jours portant chacun le **responsable RÉSOLU** (surcharge > fond > neutre), en **composant** la résolution existante ; **aucun store neuf, aucune mutation** ; contrat **miroir `CarteDuJourQuery` s42** ; identique sur les **deux adaptateurs** (InMemory + Mongo durable) | back | ✅ |
 | 2 | **Composer le « où » + le transfert par jour** : chaque entrée de la liste porte **AUSSI** le(s) **slot(s) de localisation** du jour (s29) et le **transfert éventuel** cédant→recevant (**saisi OU dérivé s31**, priorité SAISI > DÉRIVÉ) ; jour **sans transfert** = unicolore ; jour **sans slot** = pas de lieu ; transfert **LU sans modification** | back | ✅ |
-| 3 | **Cas limites / repli fidèle (erreur + fenêtre vide)** : un jour sans responsable résolu = **« personne assignée »** (neutre) ; acteur **orphelin** → **repli neutre SANS nom fantôme** (filtre `Resolvable()` s13) ; **aucun événement à venir** dans la fenêtre = **liste vide / message neutre** (aucune racine fantôme, pas de crash) ; **store vide** neutre ; identique sur les deux adaptateurs | back | ⏳ |
+| 3 | **Cas limites / repli fidèle (erreur + fenêtre vide)** : un jour sans responsable résolu = **« personne assignée »** (neutre) ; acteur **orphelin** → **repli neutre SANS nom fantôme** (filtre `Resolvable()` s13) ; **aucun événement à venir** dans la fenêtre = **liste vide / message neutre** (aucune racine fantôme, pas de crash) ; **store vide** neutre ; identique sur les deux adaptateurs | back | ✅ |
 | 4 | **Panneau « À venir » sous la carte du jour** : rend une **liste ordonnée** des prochains jours (demain / reste de la semaine chargée) avec **qui / où / transfert** par jour, en **réutilisant couleurs/repli de la grille** (aucune teinte réinventée) ; transfert = rendu bicolore réutilisé (présentation s29) ; **STRICTEMENT lecture** (aucun contrôle d'édition) ; **Invité VOIT** | 🖥️ IHM | ⏳ |
 | 5 | **Reprojection client + convergence SignalR (0 GET)** : la liste se **reprojette** depuis la fenêtre de grille déjà chargée ; une écriture pertinente (période/transfert/slot) fait **CONVERGER** la liste d'un 2ᵉ écran **sans rechargement** et **sans GET dédié** (reprojection client, garde anti-amplification flake s42) ; **même limitation assumée** que s42 (au-delà de la fenêtre chargée, non affiché) | 🖥️ IHM | ⏳ |
 
@@ -112,7 +112,7 @@ Et un jour SANS slot est restitué SANS lieu (le « où » est simplement absent
 Et le transfert et les slots sont LUS sans être modifiés (composition de la dérivation s31 / projection s29 existantes, non réimplémentées)
 ```
 
-### Sc.3 — Cas limites / repli fidèle : neutre, orphelin, fenêtre sans à-venir @back @pending
+### Sc.3 — Cas limites / repli fidèle : neutre, orphelin, fenêtre sans à-venir @back @vert
 ```gherkin
 Étant donné la query « à venir » (Sc.1)
 Quand un jour à venir n'a AUCUN responsable résolu (ni surcharge, ni fond)

@@ -81,6 +81,28 @@ public sealed class AVenirMongoTests : IDisposable
         Assert.Equal("Bruno", jour.Transfert.RecevantNom);
     }
 
+    private static readonly DateOnly Dimanche_12_07_2026 = new(2026, 7, 12); // « aujourd'hui » en FIN de fenêtre
+
+    // Sc.3 — repli fidèle sur Mongo RÉEL : store vide + « aujourd'hui » en fin de fenêtre → LISTE VIDE
+    // (« aucun événement à venir »), sans crash ni racine fantôme, à l'identique de l'adaptateur InMemory.
+    [MongoRequisFact]
+    public void Acceptation_Should_Restituer_une_liste_vide_sur_Mongo_reel_store_vide_en_fin_de_fenetre()
+    {
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var grille = new GrilleAgendaQuery(
+            new MongoSlotRepository(ConnectionString, _baseDeTest),
+            new MongoPeriodeRepository(ConnectionString, _baseDeTest),
+            config, config,
+            new CycleDeFondMongo(ConnectionString, _baseDeTest),
+            config,
+            new MongoSlotRecurrentRepository(ConnectionString, _baseDeTest),
+            new MongoTransfertRepository(ConnectionString, _baseDeTest));
+
+        var aVenir = new AVenirQuery(grille).Lire(Dimanche_12_07_2026, "enfant-lea", VuePlanning.Semaine);
+
+        Assert.Empty(aVenir);
+    }
+
     public void Dispose()
     {
         try
