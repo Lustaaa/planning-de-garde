@@ -747,18 +747,33 @@ public partial class ConfigurationFoyer
             return;
         }
 
-        // Sc.4 (s33) : la modal porte désormais les toggles admin/actif appliqués au MÊME « Enregistrer ».
-        // SENS UNIQUE — n'émettre les commandes EXISTANTES que sur une bascule OFF→ON (un toggle déjà ON est
-        // verrouillé à l'écran, aucune bascule OFF no-op). Sur refus/injoignable, la modal reste ouverte avec
-        // le motif, sans écriture partielle relue (le tableau n'est relu qu'après le succès complet).
-        if (_form.Admin && !EstAdmin(_form.ActeurId) && !await AppliquerToggle("api/canal/designer-admin", new DesignerAdminRequete(_form.ActeurId)))
+        // Sc.4 (s33 + s41) : la modal porte les toggles admin/actif appliqués au MÊME « Enregistrer ».
+        // BI-DIRECTIONNEL (verrou ON s33 LEVÉ, s41) — on émet la VRAIE commande selon la bascule vis-à-vis de
+        // l'état COURANT : OFF→ON = designer-admin / activer-compte (sens ON, inchangé) ; ON→OFF =
+        // de-designer-admin / desactiver-compte (sens OFF neuf, PAS un no-op silencieux). Un toggle inchangé
+        // n'émet rien. Sur refus/injoignable (borne dernier admin, compte inconnu, transport), la modal reste
+        // ouverte avec le motif, sans écriture partielle relue (le tableau n'est relu qu'après le succès complet).
+        var estAdmin = EstAdmin(_form.ActeurId);
+        if (_form.Admin && !estAdmin && !await AppliquerToggle("api/canal/designer-admin", new DesignerAdminRequete(_form.ActeurId)))
+            return;
+        if (!_form.Admin && estAdmin && !await AppliquerToggle("api/canal/de-designer-admin", new DeDesignerAdminRequete(_form.ActeurId)))
             return;
 
-        if (_form.Actif && CompteDe(_form.ActeurId) is { } compteAActiver && EstInactif(compteAActiver))
+        if (CompteDe(_form.ActeurId) is { } compte)
         {
-            if (!await AppliquerToggle("api/canal/activer-compte", new ActiverCompteRequete(compteAActiver.Id)))
-                return;
-            _accuseActivation = "Compte activé.";
+            var estInactif = EstInactif(compte);
+            if (_form.Actif && estInactif)
+            {
+                if (!await AppliquerToggle("api/canal/activer-compte", new ActiverCompteRequete(compte.Id)))
+                    return;
+                _accuseActivation = "Compte activé.";
+            }
+            else if (!_form.Actif && !estInactif)
+            {
+                if (!await AppliquerToggle("api/canal/desactiver-compte", new DesactiverCompteRequete(compte.Id)))
+                    return;
+                _accuseActivation = "Compte désactivé.";
+            }
         }
 
         // Succès complet : le tableau est relu (acteurs + comptes + admins) et la modal se ferme — l'état

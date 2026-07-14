@@ -139,9 +139,19 @@ public static class CanalEcriture
     /// Le statut passe Inactif→Actif côté handler (mutation portée par l'agrégat) ; idempotence assumée.</summary>
     public sealed record ActiverCompteRequete(string CompteId);
 
+    /// <summary>Corps de la requête de désactivation d'un compte utilisateur (s41, sens OFF) : l'id stable
+    /// opaque du compte. Le statut passe Actif→Inactif côté handler (mutation portée par l'agrégat) ;
+    /// idempotence assumée (déjà Inactif = no-op), compte inconnu rejeté.</summary>
+    public sealed record DesactiverCompteRequete(string CompteId);
+
     /// <summary>Corps de la requête de désignation d'un acteur comme admin du foyer (s22) : l'id stable de
     /// l'acteur. L'invariant admin=parent est tranché côté Domain (non-Parent rejeté).</summary>
     public sealed record DesignerAdminRequete(string ActeurId);
+
+    /// <summary>Corps de la requête de dé-désignation d'un admin du foyer (s41, sens OFF) : l'id stable de
+    /// l'acteur. La borne « dernier admin » et le refus d'un acteur inconnu sont tranchés côté Domain /
+    /// handler (le foyer garde toujours ≥1 admin).</summary>
+    public sealed record DeDesignerAdminRequete(string ActeurId);
 
     /// <summary>Corps de la requête de connexion locale par email (s23) émise via le canal requête/réponse :
     /// l'email saisi dans le bandeau de connexion. Aucune règle métier côté front — l'admission (compte

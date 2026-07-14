@@ -70,11 +70,12 @@ public sealed class FrontWasmConfigActeursToggleAdminActifModalTests : TestConte
     }
 
     [Fact]
-    public void Le_toggle_admin_deja_ON_est_verrouille_et_le_toggle_actif_est_desactive_sans_compte()
+    public void Le_toggle_admin_deja_ON_est_actionnable_s41_et_le_toggle_actif_reste_desactive_sans_compte()
     {
         // Given — parent-a est DÉJÀ admin dans le store réel (désignation directe via le port), et ne porte
-        // aucun compte. La modal ouverte doit rendre le toggle admin VERROUILLÉ (ON, disabled) et le toggle
-        // actif DÉSACTIVÉ (pas de compte), avec un motif dedans — jamais de bascule OFF no-op.
+        // aucun compte. Depuis s41 (verrou ON s33 LEVÉ), la modal ouverte rend le toggle admin ON mais
+        // ACTIONNABLE (le sens OFF émet la vraie commande de dé-désignation). Le toggle actif reste DÉSACTIVÉ
+        // (pas de compte à activer/désactiver), avec un motif dedans.
         using var api = new ApiDistanteFactory();
         api.Services.GetRequiredService<IEditeurAdminsFoyer>().DesignerAdmin("parent-a");
         var config = RendreConfig(api);
@@ -82,8 +83,7 @@ public sealed class FrontWasmConfigActeursToggleAdminActifModalTests : TestConte
         ConfigActeursModalHarness.OuvrirEdition(this, config, "parent-a");
 
         var toggleAdmin = config.Find("[data-testid='toggle-admin']");
-        Assert.True(toggleAdmin.HasAttribute("disabled")); // verrouillé : pas de sens inverse ce sprint
-        Assert.NotNull(config.Find("[data-testid='toggle-admin-motif']"));
+        Assert.False(toggleAdmin.HasAttribute("disabled")); // s41 : le sens OFF est actionnable (verrou levé)
 
         var toggleActif = config.Find("[data-testid='toggle-actif']");
         Assert.True(toggleActif.HasAttribute("disabled")); // pas de compte → non actionnable

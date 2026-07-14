@@ -36,4 +36,9 @@ public sealed record CompteUtilisateur(string Id, string Email, StatutCompte Sta
     /// portée par l'agrégat, Tell-Don't-Ask). Seul le statut change ; email et acteur associé sont
     /// conservés (mutation immuable ciblée).</summary>
     public CompteUtilisateur Activer() => this with { Statut = StatutCompte.Actif };
+
+    /// <summary>Désactive le compte : le statut passe à <see cref="StatutCompte.Inactif"/> (règle métier
+    /// portée par l'agrégat, Tell-Don't-Ask — sens OFF s41). Seul le statut change ; email et acteur
+    /// associé sont conservés (mutation immuable ciblée).</summary>
+    public CompteUtilisateur Desactiver() => this with { Statut = StatutCompte.Inactif };
 }

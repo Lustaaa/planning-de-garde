@@ -29,6 +29,12 @@ public sealed class FakeReferentielComptes : IEditeurComptes, IEnumerationCompte
             _comptes[compteId] = compte.Activer(); // mutation ciblée du statut, portée par l'agrégat
     }
 
+    public void Desactiver(string compteId)
+    {
+        if (_comptes.TryGetValue(compteId, out var compte))
+            _comptes[compteId] = compte.Desactiver(); // sens OFF s41, mutation ciblée du statut
+    }
+
     public void RedefinirMotDePasse(string compteId, string motDePasseHache)
     {
         if (_comptes.TryGetValue(compteId, out var compte))

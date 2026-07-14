@@ -28,6 +28,12 @@ public interface IEditeurComptes
     /// acteur associé inchangés). Tolérant à l'absence (no-op).</summary>
     void Activer(string compteId);
 
+    /// <summary>Désactive le compte identifié (sens OFF du toggle actif, s41) : persiste son statut
+    /// « Inactif » (mutation portée par l'agrégat <see cref="CompteUtilisateur"/>, Domain pur). Ne touche
+    /// que le statut (email et acteur associé inchangés). Tolérant à l'absence / à un compte déjà Inactif
+    /// (no-op qui réussit — idempotence).</summary>
+    void Desactiver(string compteId);
+
     /// <summary>Redéfinit le mot de passe du compte identifié : persiste le nouveau condensat (facteur
     /// local, volet 5 s25 — récupération). Ne touche que le mot de passe (email, statut, acteur associé
     /// inchangés). Tolérant à l'absence (no-op).</summary>

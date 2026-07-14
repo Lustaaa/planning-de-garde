@@ -34,6 +34,14 @@ public sealed class ReferentielComptesEnMemoire : IEnumerationComptes, IEditeurC
             _comptes[compteId] = compte.Activer();
     }
 
+    public void Desactiver(string compteId)
+    {
+        // Sens OFF s41 : mutation ciblée du seul statut, portée par l'agrégat (Tell-Don't-Ask). Tolérant
+        // à l'absence / à un compte déjà Inactif (no-op idempotent).
+        if (_comptes.TryGetValue(compteId, out var compte))
+            _comptes[compteId] = compte.Desactiver();
+    }
+
     public void RedefinirMotDePasse(string compteId, string motDePasseHache)
     {
         // Mutation ciblée du seul mot de passe (récupération, s25). Tolérant à l'absence (no-op).

@@ -210,11 +210,11 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 - **Config foyer — Acteurs enrichis + Rôles & Cycle harmonisés** *(livré s33, 2ᵉ incrément de la Refonte
   Config foyer)* :
   - **Acteurs — modal enrichie.** L'état **actif/admin** passe de **pastille lecture** à **TOGGLE éditable
-    DANS la modal**, pré-réglé sur l'état courant. **Sens ON uniquement** ce sprint : « Enregistrer » émet
-    les **commandes existantes** de **désignation d'admin** / **d'activation de compte** ; un toggle **déjà
-    ON est rendu VERROUILLÉ** — le domaine n'offre **aucune commande inverse** (dé-désignation /
-    désactivation), un OFF « no-op silencieux » serait un vert-qui-ment (**proscrit**) → les commandes
-    inverses sont **portées au backlog**. Le toggle **« actif »** n'est actionnable que si l'acteur **porte
+    DANS la modal**, pré-réglé sur l'état courant. **Sens ON à s33** : « Enregistrer » émet les **commandes
+    existantes** de **désignation d'admin** / **d'activation de compte**. *(⚠️ **Sens OFF verrouillé à s33**
+    faute de commande inverse — un OFF « no-op silencieux » aurait été un vert-qui-ment ; ce **verrou est
+    SUPERSÉDÉ s41** : le toggle est désormais **bi-directionnel**, le OFF émet la vraie commande inverse
+    — voir le bloc s41 dédié ci-dessous.)* Le toggle **« actif »** n'est actionnable que si l'acteur **porte
     un compte** (sinon désactivé, motif dedans). Un **champ « adresse de résidence »** [**champ de modèle
     neuf**] est porté par l'agrégat acteur, **persisté Mongo durable**, relu par la query de config, éditable
     dans la modal et **rendu dans le tableau lecture** ; **adresse vide acceptée** (optionnel, sans écriture
@@ -501,6 +501,33 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
     comportement strictement préservé. **Hors scope s40** : contrainte R3 « exactement 2 » **imposée à l'écriture**
     (non traitée, choix produit), **édition depuis le graphe**, graphe étendu.
 
+- **Commandes inverses actif/admin — toggle bi-directionnel** *(livré s41, solde la dette « toggle verrouillé
+  ON s33 »)* : le sens **OFF** du toggle actif/admin de la modal Acteurs est **débloqué** — le domaine offre
+  désormais les **commandes montantes inverses** qui manquaient à s33.
+  - **Dé-désigner un admin (Domain pur).** Une commande/handler sur l'agrégat **`AdministrationFoyer`** (s22)
+    **retire** la désignation d'admin d'un acteur : **no-op idempotent** si l'acteur n'est **déjà pas** admin
+    (réussit sans mutation ni doublon), **acteur inconnu REFUSÉ sans mutation** (motif restitué, store intact),
+    comportement identique sur les **deux adaptateurs** (InMemory seedé + Mongo durable). **Borne « dernier
+    admin » (défensive neuve)** : dé-désigner le **SEUL** admin du foyer est **REFUSÉ AVANT écriture** (motif
+    « le foyer doit garder au moins un admin », store intact) — un foyer garde **toujours ≥1 admin** ; dé-désigner
+    un admin **quand il en reste d'autres** réussit. Cohérent avec l'invariant s22 « l'admin est un acteur de
+    type Parent » (le sens ON, `DesignerAdmin`, reste inchangé, cardinal non borné par le haut).
+  - **Désactiver un compte (`Actif → Inactif`).** Une commande/handler porté par l'agrégat
+    **`CompteUtilisateur.Desactiver()`** (Domain pur, **miroir de `Activer()` s24**) réutilise le port d'écriture
+    **`IEditeurComptes`** (s22, InMemory + Mongo) — **aucun agrégat neuf, aucun store neuf** : **no-op idempotent**
+    si déjà Inactif, **compte inconnu REFUSÉ sans mutation**, nouveau statut **persisté durablement** (round-trip
+    survivant au rechargement) sur les deux adaptateurs. Un compte redevenu **Inactif refuse la connexion** (garde
+    s23 « compte non activé » tenue) ; le sens ON (`ActiverCompte` s24) reste inchangé.
+  - **IHM — toggle bi-directionnel.** Le OFF du toggle admin / actif émet la **vraie commande inverse**
+    (dé-désigner admin / désactiver compte) via le canal HTTP, **PAS un no-op silencieux** (anti-vert-qui-ment) ;
+    l'effet **survit au rechargement** (round-trip Mongo durable). **Contrat d'erreur** (refus « dernier admin »,
+    compte inconnu, API injoignable) : la **modal RESTE OUVERTE**, le **motif est affiché dedans**, la **saisie
+    et l'état des toggles sont CONSERVÉS**, **aucune écriture partielle** ne touche le tableau ; **Échap = Annuler**
+    sans mutation (port `IEcouteurEchapModal` s33). **Parent-gated** (identité effective : Invité = pas de toggle
+    actionnable) + **convergence SignalR** de lecture (un 2ᵉ écran reflète le nouvel état actif/admin sans
+    rechargement, 0 GET ajouté). Le **gating impersonation R8/R9** (droit d'écriture dérivé du `TypeActeur`
+    cantonné, s36) est **préservé, non modifié** — dé-désigner / désactiver ne fait gagner ni perdre aucun droit.
+
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
   rôles), doté d'un **id stable opaque** + **email** + **statut** (`Actif`/`Inactif`, défaut **Inactif** —
@@ -752,10 +779,11 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   « Activités »** (iso-comportement Domaine + Application, validation de pose préservée, axe LOCALISATION
   `LieuId` distinct non renommé), l'enrichit d'un **champ adresse** + d'un **lien enfant↔activité N-M**, et
   harmonise l'**onglet Activités** au même patron (swap inline→modal, renommage HTTP au SWAP) — **Acteurs /
-  Rôles / Cycle / Enfants / Activités sont désormais TOUS harmonisés** (cf. Mécaniques). **Restent** :
+  Rôles / Cycle / Enfants / Activités sont désormais TOUS harmonisés** (cf. Mécaniques). **Commandes inverses
+  actif/admin livrées s41** (dé-désigner admin + désactiver compte + borne « dernier admin » → toggle
+  bi-directionnel, dette « verrou ON s33 » SOLDÉE ; cf. bloc s41 dans Mécaniques). **Restent** :
   **liste de slots par activité** (récurrents/non, hors scope s35), **lien adresse acteur↔lieu/domicile**,
-  **révision de la validation de pose** (préservée iso s35), **commandes inverses actif/admin**
-  (dé-désignation admin + désactivation de compte, pour débloquer le sens OFF du toggle), **familles
+  **révision de la validation de pose** (préservée iso s35), **familles
   recomposées R2/R3** (« exactement 2 parents » + graphe enfant-racine), **éligibilité « parent »** du lien
   enfant↔parent (retour PO gate s35, à trancher G2 s36). **Tension
   ouverte à arbitrer G2** : le PO veut **en plus** une **édition inline au clic de la valeur** — direction
