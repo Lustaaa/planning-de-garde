@@ -53,8 +53,26 @@ public sealed class GrapheFoyerQuery
                     .Where(p => existants.Contains(p.ActeurId))
                     .Select(p => new GrapheParentVue(p.ActeurId, _noms.NomDe(p.ActeurId), p.Role))
                     .ToList();
-                return new GrapheEnfantVue(e.Id, e.Prenom, parents, StatutCoupleR3.Complet);
+                return new GrapheEnfantVue(e.Id, e.Prenom, parents, StatutDe(e.ParentsLies.Count, parents));
             })
             .ToList();
+    }
+
+    /// <summary>Statut de complétude du couple R3 (s40). <paramref name="nbLiensBruts"/> = nombre de liens
+    /// s34 RÉELS de l'enfant (avant filtre) ; <paramref name="parents"/> = parents RÉSOLUS (orphelins exclus,
+    /// décompte fidèle au store vivant, miroir Resolvable s13). Règle : aucun lien brut → <c>Vide</c> (racine
+    /// isolée légitime s38, état neutre) — distinct d'un enfant qui A un lien mais dont le seul parent est
+    /// orphelin (lien résiduel présent → <c>Incomplet</c>, jamais « vide »). Un lien « père » ET un lien
+    /// « mère » RÉSOLUS → <c>Complet</c> ; tout autre cas (0/1 parent résolu, 2 parents sans le couple
+    /// père+mère, ex. deux « parent-libre ») → <c>Incomplet</c>. Un lien s34 nu ≡ « parent-libre » (défaut
+    /// neutre s37) et ne satisfait donc pas seul « père ET mère ». Présentation seule — SIGNALÉ, jamais
+    /// IMPOSÉ (aucun blocage d'écriture).</summary>
+    private static StatutCoupleR3 StatutDe(int nbLiensBruts, IReadOnlyList<GrapheParentVue> parents)
+    {
+        if (nbLiensBruts == 0)
+            return StatutCoupleR3.Vide;
+        var aPere = parents.Any(p => p.Role == RoleDuLien.Pere);
+        var aMere = parents.Any(p => p.Role == RoleDuLien.Mere);
+        return aPere && aMere ? StatutCoupleR3.Complet : StatutCoupleR3.Incomplet;
     }
 }

@@ -47,6 +47,32 @@ public sealed class Scenario40_S1_StatutCoupleMongoTests : IDisposable
         Assert.Equal(StatutCoupleR3.Complet, lea.StatutCouple);
     }
 
+    [MongoRequisFact]
+    public void Acceptation_Should_Rester_Incomplet_When_la_mere_est_orpheline_sur_Mongo_reel()
+    {
+        // --- Given : Bob (père) + Chloé (mère) durables ; Léa liée aux deux, puis Chloé SUPPRIMÉE ---
+        // Le couple père+mère semble complet sur les liens bruts, mais la mère orpheline ne compte pas
+        // (filtre Resolvable s13) → le décompte fidèle reste INCOMPLET, pas faussement complet (zéro fantôme).
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var bobId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
+        var chloeId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Chloé")).Valeur!.ActeurId;
+
+        var storeEnfants = new ReferentielEnfantsMongo(ConnectionString, _baseDeTest);
+        var leaId = new AjouterEnfantHandler(storeEnfants, storeEnfants, new NotificateurMuet())
+            .Handle(new AjouterEnfantCommand("Léa")).Valeur!.EnfantId;
+        storeEnfants.LierParent(leaId, bobId, RoleDuLien.Pere);
+        storeEnfants.LierParent(leaId, chloeId, RoleDuLien.Mere);
+        config.Supprimer(chloeId); // mère orpheline : lien résiduel conservé, acteur absent du contrat d'existence
+
+        var configApresRedemarrage = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var enfantsApresRedemarrage = new ReferentielEnfantsMongo(ConnectionString, _baseDeTest);
+
+        var graphe = new GrapheFoyerQuery(enfantsApresRedemarrage, configApresRedemarrage, configApresRedemarrage).Lire();
+
+        var lea = graphe.Single(e => e.EnfantId == leaId);
+        Assert.Equal(StatutCoupleR3.Incomplet, lea.StatutCouple);
+    }
+
     public void Dispose()
     {
         try
