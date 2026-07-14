@@ -65,6 +65,10 @@ public partial class PlanningPartage
     private DateOnly? _dateDialogSupprimerPeriode;
     private DateOnly? _dateDialogEditerPeriode;
     private DateOnly? _dateDialogSupprimerSlot;
+    // Délégation de la récupération d'UN jour (s44) : la carte « Aujourd'hui » (s42) et le panneau à-venir
+    // (s43) HÉBERGENT une action « déléguer ce jour » ouvrant un mini-dialog de choix du délégataire. Jour de
+    // contexte de la dialog (null = fermée). La grille reste LECTURE SEULE : la dialog porte l'écriture.
+    private DateOnly? _dateDialogDeleguer;
     // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
     // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
     // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
@@ -448,6 +452,20 @@ public partial class PlanningPartage
     /// <summary>Ferme le menu d'actions sans rien ouvrir (clic hors panneau).</summary>
     private void FermerMenu() => _dateMenu = null;
 
+    /// <summary>
+    /// Ouvre le mini-dialog « déléguer ce jour » (s44) sur la <paramref name="date"/> hébergée par la carte
+    /// « Aujourd'hui » (s42) ou un jour du panneau à-venir (s43). Gating Invité (règle 9) porté au rendu du
+    /// bouton (Parent-gated) : l'Invité ne voit aucune action, aucune commande de délégation n'est émissible.
+    /// La grille et les cartes restent en LECTURE SEULE : la dialog porte l'écriture (canal requête/réponse).
+    /// </summary>
+    private void OuvrirDeleguer(DateOnly date)
+    {
+        if (!Session.EstParent)
+            return;
+
+        _dateDialogDeleguer = date;
+    }
+
     /// <summary>Depuis le menu, ouvre la dialog « Poser un slot » pré-remplie sur la date de la case.</summary>
     private void OuvrirPoserSlot(DateOnly date)
     {
@@ -583,6 +601,7 @@ public partial class PlanningPartage
         _dateDialogSupprimerPeriode = null;
         _dateDialogEditerPeriode = null;
         _dateDialogSupprimerSlot = null;
+        _dateDialogDeleguer = null;
         // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
         _plageDebut = null;
         _plageFin = null;

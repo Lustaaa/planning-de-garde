@@ -52,7 +52,9 @@ public sealed class FrontWasmCarteAujourdhuiEnTeteRuntimeTests : TestContext
         var slot = carte.QuerySelector("[data-testid='carte-slot']")!;
         Assert.Contains("école", slot.TextContent);
 
-        // … STRICTEMENT en lecture : aucun contrôle d'édition (bouton) dans la carte.
-        Assert.Empty(carte.QuerySelectorAll("button"));
+        // … la carte reste une surface de LECTURE : son seul contrôle interactif est l'action « déléguer ce
+        //    jour » (s44, Parent-gated) qui OUVRE un mini-dialog — aucune écriture dans la carte elle-même,
+        //    aucun autre contrôle d'édition. (L'Invité, lui, ne voit AUCUN bouton — gating prouvé s42 Sc.5 / s44.)
+        Assert.Empty(carte.QuerySelectorAll("button:not([data-testid='carte-deleguer'])"));
     }
 }

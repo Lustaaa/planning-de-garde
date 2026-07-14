@@ -53,14 +53,14 @@
 >   surface.)*
 > - **Notifications / alertes** : aucune cloche « X a délégué » — c'est le Palier 11 (backlog).
 
-## Avancement — 3/6
+## Avancement — 4/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | **Déléguer un jour COMPOSE l'écriture surcharge ponctuelle (nominal)** : un jour résolu par le **fond** est délégué à un autre acteur → une **surcharge d'UN jour** est écrite via le **chemin s06 existant** (aucune commande de transfert neuve, aucun store neuf) ; la résolution **surcharge > fond** fait **primer** le délégataire pour ce jour ; le **transfert cédant→recevant** apparaît **AUTO-DÉRIVÉ s31** ; écriture **identique et durable** sur les **deux adaptateurs** (InMemory + Mongo) | back | ✅ |
 | 2 | **Cas LIMITE — last-write-wins + délégation à soi-même** : un jour **déjà couvert par une surcharge** → la délégation **réaffecte** le responsable (**last-write-wins R11**, **aucun doublon** de période) ; une **délégation à soi-même** (délégataire = responsable déjà résolu) → **refus explicite**, **aucune écriture** ; un **jour hors fenêtre chargée** reste **écrivable** sans crash | back | ✅ |
 | 3 | **Cas ERREUR — délégataire inconnu / orphelin** : déléguer vers un acteur dont l'**id stable est absent du store** (inconnu / supprimé) → **refus AVANT écriture**, store **intact**, **aucune écriture partielle** ; identique sur les deux adaptateurs | back | ✅ |
-| 4 | **Action « déléguer ce jour » + mini-dialog (Parent-gated)** : la **carte du jour s42** ET le **panneau à-venir s43** portent une **action « déléguer ce jour »** ouvrant un **mini-dialog** de choix de l'acteur recevant ; valider émet la commande via le **canal d'écriture** ; **Échap = Annuler** (aucune commande) ; l'**Invité ne voit AUCUN bouton** (Parent-gated, aucune commande émissible) | 🖥️ IHM | ⏳ |
+| 4 | **Action « déléguer ce jour » + mini-dialog (Parent-gated)** : la **carte du jour s42** ET le **panneau à-venir s43** portent une **action « déléguer ce jour »** ouvrant un **mini-dialog** de choix de l'acteur recevant ; valider émet la commande via le **canal d'écriture** ; **Échap = Annuler** (aucune commande) ; l'**Invité ne voit AUCUN bouton** (Parent-gated, aucune commande émissible) | 🖥️ IHM | ✅ |
 | 5 | **Refus domaine → dialog reste ouverte + motif + saisie conservée** : une délégation refusée (soi-même, délégataire inconnu) laisse le **mini-dialog OUVERT**, affiche le **motif**, **conserve la saisie** (acteur choisi) ; **store intact** ; fermeture uniquement sur Annuler/Échap ou succès | 🖥️ IHM | ⏳ |
 | 6 | **Temps réel — carte + panneau convergent, transfert dérivé visible (0 GET)** : après une délégation sur le 1ᵉʳ écran, la **carte du jour** ET le **panneau à-venir** d'un **2ᵉ écran CONVERGENT** (nouveau responsable + **transfert bicolore dérivé s31**) **sans rechargement** ; convergence par **reprojection client** via **SignalR lecture seule** (**0 GET** sur push, garde anti-flake s42/s43) | 🖥️ IHM | ⏳ |
 
@@ -140,7 +140,7 @@ Et le store des périodes reste INTACT (aucune surcharge écrite, aucune écritu
 Et le comportement est IDENTIQUE sur les deux adaptateurs (InMemory ET Mongo réel)
 ```
 
-### Sc.4 — Action « déléguer ce jour » + mini-dialog (Parent-gated) @ihm @pending
+### Sc.4 — Action « déléguer ce jour » + mini-dialog (Parent-gated) @ihm @vert
 ```gherkin
 Étant donné le planning ouvert avec la carte « Aujourd'hui » s42 et le panneau « À venir » s43, un enfant sélectionné, un utilisateur PARENT
 Quand j'affiche la carte du jour et le panneau à-venir

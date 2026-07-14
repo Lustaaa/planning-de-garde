@@ -103,6 +103,15 @@
                 }
             </ul>
         }
+
+        @* Action « déléguer ce jour » (s44) — HÉBERGÉE par la carte de lecture, Parent-gated (l'Invité ne la
+           voit pas, aucune commande émissible). Elle ouvre le mini-dialog de choix du délégataire ; l'écriture
+           transite par le canal requête/réponse (jamais la carte elle-même). *@
+        @if (Session.EstParent)
+        {
+            <button type="button" class="btn btn-sm btn-outline-primary carte-deleguer ms-auto" data-testid="carte-deleguer"
+                    @onclick="@(() => OuvrirDeleguer(carte.Date))">Déléguer ce jour</button>
+        }
     </section>
 }
 
@@ -161,6 +170,15 @@
                                 </span>
                             }
                         </span>
+                    }
+
+                    @* Action « déléguer ce jour » par jour à-venir (s44) — Parent-gated (l'Invité ne la voit
+                       pas). Ouvre le mini-dialog de choix du délégataire pour CE jour ; l'écriture transite par
+                       le canal requête/réponse (le panneau reste une surface de lecture). *@
+                    @if (Session.EstParent)
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-primary a-venir-deleguer ms-auto" data-testid="a-venir-deleguer"
+                                data-date="@jour.Date.ToString("yyyy-MM-dd")" @onclick="@(() => OuvrirDeleguer(jour.Date))">Déléguer</button>
                     }
                 </li>
             }
@@ -538,6 +556,16 @@ else
     <SupprimerSlotDialog DateContexte="dateSupprimerSlot"
                          OnValide="FermerSuppressionSlotEtAccuser"
                          OnAnnule="FermerDialog" />
+}
+
+@if (_dateDialogDeleguer is { } dateDeleguer && _enfantSelectionne is { } enfantDeleguer)
+{
+    <DeleguerRecuperationDialog DateContexte="dateDeleguer"
+                                EnfantId="enfantDeleguer"
+                                Acteurs="_acteursFoyer"
+                                ActeursCharges="_acteursFoyerCharges"
+                                OnValide="FermerDialogEtRecharger"
+                                OnAnnule="FermerDialog" />
 }
 }
 

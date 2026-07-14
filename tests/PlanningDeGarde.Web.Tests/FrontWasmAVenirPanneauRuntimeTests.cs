@@ -80,8 +80,10 @@ public sealed class FrontWasmAVenirPanneauRuntimeTests : TestContext
             .First(j => j.QuerySelector("[data-testid='a-venir-qui-neutre']") is not null);
         Assert.Contains("Personne assignée", jourNeutre.TextContent);
 
-        // … STRICTEMENT en lecture : aucun contrôle d'édition (bouton) dans le panneau.
-        Assert.Empty(panneau.QuerySelectorAll("button"));
+        // … le panneau reste une surface de LECTURE : ses seuls contrôles interactifs sont les actions
+        //    « déléguer » par jour (s44, Parent-gated) qui OUVRENT un mini-dialog — aucune écriture dans le
+        //    panneau, aucun autre contrôle d'édition. (L'Invité ne voit AUCUN bouton — gating prouvé ci-dessous.)
+        Assert.Empty(panneau.QuerySelectorAll("button:not([data-testid='a-venir-deleguer'])"));
     }
 
     [Fact]
