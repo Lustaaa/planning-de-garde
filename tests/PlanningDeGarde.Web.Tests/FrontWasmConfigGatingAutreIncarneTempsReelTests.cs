@@ -25,6 +25,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <para>NB : le bouton supprimer suit déjà l'identité effective (gaté `@if EstParent` depuis s13) →
 /// early-green partiel ; le driver réel est l'extension du garde à ajout / édition / cycle.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigGatingAutreIncarneTempsReelTests : TestContext
 {
     // Affordances d'écriture (proxys des surfaces gatées). Refonte s32 : l'écriture d'un acteur passe par la

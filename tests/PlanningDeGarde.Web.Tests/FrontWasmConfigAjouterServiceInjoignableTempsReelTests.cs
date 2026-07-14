@@ -25,6 +25,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// message n'apparaîtrait et l'exception ferait crasher le rendu → rouge. Un bUnit à pure doublure ne prouverait
 /// ni l'échec via le canal HTTP réel ni le rendu du message.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : TestContext
 {
     private const string MessageInjoignable =

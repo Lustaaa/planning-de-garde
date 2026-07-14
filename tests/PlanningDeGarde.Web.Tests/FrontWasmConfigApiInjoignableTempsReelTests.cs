@@ -33,6 +33,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// écriture n'a transité (store live non muté). Un bUnit à pure doublure ne prouverait ni l'échec via le canal
 /// HTTP réel, ni le rendu du message.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigApiInjoignableTempsReelTests : TestContext
 {
     private const string MessageInjoignable =

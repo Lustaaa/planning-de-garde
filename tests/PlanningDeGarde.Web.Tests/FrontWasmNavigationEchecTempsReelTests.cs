@@ -29,6 +29,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// « précédente » ramènerait au 08/06. La preuve runtime distingue donc une fenêtre figée à l'affichage
 /// d'un état de navigation divergent. Un bUnit à doublure de transport ne reproduit pas l'échec HTTP réel.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmNavigationEchecTempsReelTests : TestContext
 {
     private static readonly DateTime Mercredi_10_06_2026 = new(2026, 6, 10);

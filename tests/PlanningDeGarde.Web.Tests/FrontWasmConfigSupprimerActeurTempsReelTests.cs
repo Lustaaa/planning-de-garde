@@ -33,6 +33,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// d'existence, grand-père resterait listé / légendé → rouge. Un bUnit à doublure ne prouverait ni la DI
 /// réelle, ni le chemin HTTP d'écriture, ni la re-projection runtime de la légende.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigSupprimerActeurTempsReelTests : TestContext
 {
     [Fact]

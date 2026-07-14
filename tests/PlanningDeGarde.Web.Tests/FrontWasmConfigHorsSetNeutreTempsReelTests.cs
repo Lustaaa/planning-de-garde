@@ -24,6 +24,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// réellement observée et que la persistance du neutre soit prouvée (pas un faux-vert). Pas un bUnit à
 /// doublure (il ne prouve ni le rendu réel, ni la chaîne d'édition réelle, ni la diffusion temps réel).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigHorsSetNeutreTempsReelTests : TestContext
 {
     private const string NomInitial = "grand-père";

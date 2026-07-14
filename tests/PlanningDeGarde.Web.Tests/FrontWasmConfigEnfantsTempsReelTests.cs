@@ -22,6 +22,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// Tant que l'onglet Enfants n'existe pas (ou n'est pas câblé au store), la liste reste vide / l'ajout n'atteint
 /// pas le store → rouge.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigEnfantsTempsReelTests : TestContext
 {
     private static void ConfigurerEcranConfig(Bunit.TestContext ctx, ApiDistanteFactory api)
@@ -66,12 +67,22 @@ public sealed class FrontWasmConfigEnfantsTempsReelTests : TestContext
         config.SurDispatcher(() => config.Find("#form-enfant").Submit());
 
         // Then — « Tom » apparaît dans la table sans rechargement (relecture du store vivant), modal fermée.
+        // Garde déterministe anti-flake (rétrofit s39) : on attend que la modal d'ajout soit RÉELLEMENT
+        // fermée (la continuation async de la 1ʳᵉ soumission ferme la modal) AVANT de la rouvrir. Sans cette
+        // garde, l'assertion « Tom apparaît » peut être satisfaite par le push SignalR (RechargerEnfants) tandis
+        // que la fermeture de la 1ʳᵉ modal est encore en vol : celle-ci se résout alors APRÈS la 2ᵉ ouverture et
+        // ferme la modal fraîchement rouverte → « #form-enfant » disparaît entre Change et Submit (course exposée
+        // par la sérialisation ; en isolation le timing la masquait). Attente sur la frontière observable (DOM).
         config.WaitForAssertion(
             () => Assert.Contains("Tom", PrenomsListes(config)),
             TimeSpan.FromSeconds(10));
+        config.WaitForAssertion(
+            () => Assert.Empty(config.FindAll("[data-testid='dialog-enfant']")),
+            TimeSpan.FromSeconds(10));
 
-        // When — un prénom vide est soumis via la modal d'ajout.
+        // When — un prénom vide est soumis via la modal d'ajout (rouverte ; on attend son rendu avant de saisir).
         config.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-enfant']").Click());
+        config.WaitForElement("[data-testid='dialog-enfant']", TimeSpan.FromSeconds(10));
         config.SurDispatcher(() => config.Find("[data-testid='champ-prenom-enfant']").Change("   "));
         config.SurDispatcher(() => config.Find("#form-enfant").Submit());
 

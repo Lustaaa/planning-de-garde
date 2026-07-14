@@ -23,6 +23,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// lit encore la liste statique, « carla » manque de ses options → rouge. Un bUnit à doublure de
 /// transport ne prouverait ni la DI réelle, ni l'énumération depuis le store durable via le canal HTTP.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigSelecteurEditionStoreUnifieTempsReelTests : TestContext
 {
     [Fact]

@@ -29,6 +29,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// la suppression en config n'atteint jamais le sélecteur → rouge. Test multi-clients SignalR → catégorie du
 /// flake P1 catalogué (re-run isolé si rouge sur la convergence, dette docs/BACKLOG.md).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigSelecteurLieuDialogsTempsReelTests : TestContext
 {
     private static readonly DateTime Mardi_16_06_2026 = new(2026, 6, 16);

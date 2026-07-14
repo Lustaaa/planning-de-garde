@@ -31,6 +31,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// aucune période n'est créée sur l'intervalle → rouge. Un bUnit à doublure ne verrait ni le câblage distant
 /// ni la résolution réelle du foyer.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmAffecterPeriodePlageContigueTempsReelTests : TestContext
 {
     private static readonly DateTime Mercredi_10_06_2026 = new(2026, 6, 10);

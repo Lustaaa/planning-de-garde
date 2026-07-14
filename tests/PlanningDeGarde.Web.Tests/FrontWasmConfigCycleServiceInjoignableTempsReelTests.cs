@@ -26,6 +26,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <b>store réel</b> de l'API (<see cref="IReferentielCycleDeFond.CycleCourant"/> reste <c>null</c>), pas par une
 /// doublure. Sans le <c>catch (HttpRequestException)</c> côté écran, la validation planterait sans message → rouge.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigCycleServiceInjoignableTempsReelTests : TestContext
 {
     private const string MessageInjoignable =

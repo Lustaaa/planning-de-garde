@@ -28,6 +28,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// résoudrait pas le fond → rouge. Le cycle est écrit via le canal HTTP réel puis relu par la grille via le
 /// canal de lecture HTTP réel (aucune doublure) ; nom et couleur sont résolus sur l'identifiant stable.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigOngletPeriodeGardeCycleIsoFonctionnelTempsReelTests : TestContext
 {
     [Fact]

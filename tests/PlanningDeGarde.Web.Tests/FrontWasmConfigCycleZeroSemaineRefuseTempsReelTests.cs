@@ -34,6 +34,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// et afficher le refus. Un bUnit à doublure de transport ne prouverait ni la DI réelle, ni le chemin HTTP
 /// d'écriture refusé, ni l'absence d'effet de bord sur le store.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests : TestContext
 {
     private const string MessageZeroSemaine = "le cycle doit compter au moins une semaine";

@@ -31,6 +31,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// sur le <b>store réel</b> de l'API (énumération inchangée), pas par une doublure. Sans le catch, le clic
 /// planterait sans message ou la liste muterait à tort → rouge.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigSupprimerApiInjoignableTempsReelTests : TestContext
 {
     private const string MessageInjoignable =

@@ -20,6 +20,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// par défaut (sinon rouge) ; le sélecteur d'édition + la liste + le cycle doivent tous être présents.
 /// Un bUnit à doublure ne prouverait pas le rendu réellement câblé.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigOngletsParThemeTempsReelTests : TestContext
 {
     [Fact]

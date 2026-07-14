@@ -30,6 +30,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// sans période = gris neutre, nom vide), aucun fond n'apparaîtrait → rouge. Un bUnit à doublure de
 /// transport ne prouverait ni la DI réelle, ni le chemin HTTP d'écriture du cycle, ni la projection.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmGrilleCycleDeFondParPariteIsoTempsReelTests : TestContext
 {
     [Fact]

@@ -49,6 +49,16 @@ public sealed class FrontWasmImpersonationAuDessusDeLaConnexionRuntimeTests : Te
             },
             TimeSpan.FromSeconds(10));
 
+        // Garde déterministe anti-flake (rétrofit s39) : on attend que le catalogue incarnable réel soit
+        // CHARGÉ (OnInitializedAsync de Connexion, GET /api/foyer/acteurs async, y dépose nounou) AVANT
+        // d'incarner puis de surcharger manuellement ActeursIncarnables plus bas. Sans cette garde, ce GET
+        // peut se résoudre TARDIVEMENT sous charge parallèle et réécrire ActeursIncarnables APRÈS la surcharge
+        // manuelle (course exposée en parallèle, masquée en isolation où le GET est immédiat) : nounou
+        // réapparaîtrait dans le catalogue et le repli ne se déclencherait plus. Attente sur l'état observable.
+        connexion.WaitForAssertion(
+            () => Assert.Contains(session.ActeursIncarnables, a => a.Id == ActeurNounou),
+            TimeSpan.FromSeconds(10));
+
         // When (incarnation) — j'incarne un autre acteur déclaré (nounou, type Autre) — impersonation
         // bornée lecture s14. Le catalogue incarnable est celui du référentiel réel chargé par la page.
         session.Incarner(ActeurNounou);

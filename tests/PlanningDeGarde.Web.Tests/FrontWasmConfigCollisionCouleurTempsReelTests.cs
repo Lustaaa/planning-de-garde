@@ -25,6 +25,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// réellement observée (pas un faux-vert). Pas un bUnit à doublure (il ne prouve ni le rendu réel, ni la
 /// chaîne d'édition réelle, ni la diffusion temps réel).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigCollisionCouleurTempsReelTests : TestContext
 {
     [Fact]

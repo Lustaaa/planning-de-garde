@@ -24,6 +24,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// le push SignalR tombe forcément APRÈS l'établissement des connexions long polling. Baseline « inactif »
 /// assertée sur les deux écrans avant le changement (anti « vert qui ment »).</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigActiverCompteDeuxEcransConvergenceTempsReelTests : TestContext
 {
     private static AngleSharp.Dom.IElement LigneDe(IRenderedComponent<ConfigurationFoyer> config, string nom)

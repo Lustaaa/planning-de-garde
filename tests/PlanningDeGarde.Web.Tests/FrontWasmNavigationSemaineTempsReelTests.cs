@@ -32,6 +32,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// vérifie qu'<b>aucun POST d'écriture</b> (<c>/api/canal/…</c>) n'a transité pendant la navigation. Un
 /// bUnit à doublure de transport ne prouverait ni la re-requête réelle, ni l'absence d'écriture.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmNavigationSemaineTempsReelTests : TestContext
 {
     private static readonly DateTime Mercredi_10_06_2026 = new(2026, 6, 10);

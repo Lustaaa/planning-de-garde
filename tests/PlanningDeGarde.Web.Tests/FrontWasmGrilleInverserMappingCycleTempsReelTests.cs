@@ -36,6 +36,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// production neuf attendu (early-green de câblage ; non-vacuité prouvée par le baseline ET par
 /// neutralisation temporaire de l'abonnement au hub → rouge sur la bascule, cf. suivi Sc.3).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmGrilleInverserMappingCycleTempsReelTests : TestContext
 {
     [Fact]

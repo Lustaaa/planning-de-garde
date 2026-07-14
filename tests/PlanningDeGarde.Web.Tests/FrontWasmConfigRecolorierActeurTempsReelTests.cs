@@ -28,6 +28,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// encore le set statique, la case resterait orange → rouge. Un bUnit à doublure ne prouverait ni la DI
 /// réelle, ni le chemin HTTP d'écriture, ni la diffusion temps réel.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigRecolorierActeurTempsReelTests : TestContext
 {
     [Fact]

@@ -26,6 +26,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// déjà muté) pour que le push SignalR tombe forcément APRÈS l'établissement des connexions long polling,
 /// sans dépendre du timing. Anti « vert qui ment » : baseline asserté avant chaque changement.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigRolesDeuxEcransConvergenceTempsReelTests : TestContext
 {
     private static string? LibelleLigne(AngleSharp.Dom.IElement li)

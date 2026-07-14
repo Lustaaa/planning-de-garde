@@ -23,6 +23,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// l'API (cas actuel : <c>Ajouter</c> ne lit pas la réponse), aucun message n'apparaîtrait → rouge. Un bUnit à
 /// doublure ne prouverait ni le refus via le canal HTTP réel, ni le rendu du message.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigAjouterSansNomRefuseTempsReelTests : TestContext
 {
     [Fact]

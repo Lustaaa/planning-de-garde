@@ -43,6 +43,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// l'identifiant stable (jamais le libellé, règle 19) : « Alice » → « Marie-Hélène Grand-Dubois », signal de
 /// bascule non ambigu en case comme en légende.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmGrilleDeuxEcransCycleDerniereEcritureGagneTempsReelTests : TestContext
 {
     private const string NomAlice = "Alice";

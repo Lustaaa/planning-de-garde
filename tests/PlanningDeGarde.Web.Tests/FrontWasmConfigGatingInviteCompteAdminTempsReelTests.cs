@@ -22,6 +22,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// d'admin REDEVIENNENT proposées — sinon leur absence sous « Invité » serait un faux vert (surfaces cassées
 /// pour tous). Déterministe (aucun hub SignalR câblé) : le gating se lit sur l'identité effective.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigGatingInviteCompteAdminTempsReelTests : TestContext
 {
     [Fact]

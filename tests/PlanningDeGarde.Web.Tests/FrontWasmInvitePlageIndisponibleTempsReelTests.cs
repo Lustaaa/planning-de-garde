@@ -32,6 +32,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <c>/api/canal/</c>). Rendu sur la grille <b>réellement câblée</b> à l'API distante (DI réelle du rôle,
 /// transport HTTP réel) — un bUnit à doublure ne prouverait ni le câblage distant ni l'absence de POST.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmInvitePlageIndisponibleTempsReelTests : TestContext
 {
     private static readonly DateTime Mercredi_10_06_2026 = new(2026, 6, 10);

@@ -29,6 +29,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// n'atteint l'écran 2 → rouge. Anti « vert qui ment » : le baseline (slot École rendu) est asserté avant ;
 /// un bUnit à doublure ne prouverait ni le store partagé, ni le client SignalR, ni la re-projection runtime.
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmSupprimerSlotTempsReelTests : TestContext
 {
     private static readonly DateTime Mardi_16_06_2026 = new(2026, 6, 16);

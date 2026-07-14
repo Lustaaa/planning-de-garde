@@ -31,6 +31,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// qui ment » : le bandeau d'incarnation est asserté présent AVANT la suppression ; un bUnit à doublure ne
 /// prouverait ni le store partagé, ni le second client SignalR, ni le repli runtime sur diffusion réelle.</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmIncarnationSuppressionConcurrenteTempsReelTests : TestContext
 {
     private static readonly DateTime Mardi_16_06_2026 = new(2026, 6, 16);

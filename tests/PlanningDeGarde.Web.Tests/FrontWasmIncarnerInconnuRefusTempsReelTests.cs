@@ -25,6 +25,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// de bandeau n'est donc pas due à un référentiel vide ou à une incarnation globalement cassée (Sc.1 prouve
 /// par ailleurs qu'un id réel incarne bien).</para>
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmIncarnerInconnuRefusTempsReelTests : TestContext
 {
     private static readonly DateTime Lundi_29_06_2026 = GrilleRuntimeHarness.Lundi_29_06_2026;

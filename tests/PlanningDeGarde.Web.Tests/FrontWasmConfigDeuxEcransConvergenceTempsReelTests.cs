@@ -29,6 +29,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// d'écriture HTTP réel. Compose le chemin existant (renommage Sc.1 + store partagé) : aucun code de
 /// production neuf attendu (GREEN minimal).
 /// </summary>
+[Collection("SignalRTempsReel")]
 public sealed class FrontWasmConfigDeuxEcransConvergenceTempsReelTests : TestContext
 {
     [Fact]
