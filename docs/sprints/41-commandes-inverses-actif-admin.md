@@ -32,7 +32,7 @@
 >   d'écriture dérivés du `TypeActeur` (cantonné R8/R9 depuis s36).
 > - **Édition inline au clic** (tension s32, à trancher en G2) : hors goal.
 
-## Avancement — 5/6
+## Avancement — 6/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -41,7 +41,7 @@
 | 3 | **Désactiver un compte** — commande/handler `Actif → Inactif` réutilisant `IEditeurComptes` (aucun store neuf) : **no-op idempotent** si déjà Inactif ; **compte inconnu refusé** sans mutation ; persisté deux adaptateurs (InMemory + Mongo durable) | back | ✅ |
 | 4 | **Toggle OFF bi-directionnel** — le OFF du toggle admin / actif de la modal Acteurs émet la **vraie commande inverse** (dé-désigner admin / désactiver compte) via le canal HTTP ; **fin du verrou ON s33** ; **PAS de no-op silencieux** (anti-vert-qui-ment) | 🖥️ IHM | ✅ |
 | 5 | **Contrat d'erreur du OFF** — refus (dernier admin, compte inconnu, API injoignable) → **modal RESTE OUVERTE + motif dedans + saisie/toggles CONSERVÉS**, aucune écriture partielle ; **Échap = Annuler** sans mutation (port `IEcouteurEchapModal` s33) | 🖥️ IHM | ✅ |
-| 6 | **Parent-gated + convergence SignalR** — le OFF est gaté sur l'identité effective (Invité = pas de toggle actionnable) ; un 2ᵉ écran reflète le nouvel état actif/admin **sans rechargement** (diffusion lecture seule s20) | 🖥️ IHM | ⏳ |
+| 6 | **Parent-gated + convergence SignalR** — le OFF est gaté sur l'identité effective (Invité = pas de toggle actionnable) ; un 2ᵉ écran reflète le nouvel état actif/admin **sans rechargement** (diffusion lecture seule s20) | 🖥️ IHM | ✅ |
 
 > **⚠️ Point de vigilance — borne « dernier admin » TRANCHÉE (Sc.2, décision SM).** L'invariant s22
 > pose que **l'admin du foyer est obligatoirement un acteur de type Parent** (`AdministrationFoyer.
@@ -133,7 +133,7 @@ Et il en va de même si l'API est injoignable ou le compte inconnu (motif dedans
 Et « Échap » ferme la modal STRICTEMENT comme « Annuler » : aucune commande émise, aucune mutation (port IEcouteurEchapModal s33)
 ```
 
-### Sc.6 — Parent-gated + convergence SignalR du sens OFF @ihm @pending
+### Sc.6 — Parent-gated + convergence SignalR du sens OFF @ihm @vert
 ```gherkin
 Étant donné une identité EFFECTIVE non-Parent (Invité)
 Quand j'ouvre l'onglet Acteurs de la Config du foyer
