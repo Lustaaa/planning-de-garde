@@ -93,6 +93,14 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   Fix : `/sprint` étape 5.1 exécute désormais **`test.ps1 -Serial` par défaut** au gate (mode déterministe
   anti-flake, aucune régression masquée), parallèle réservé au cycle TDD rapide de la dev-team. Le rétrofit à
   la cause (collections xUnit non parallèles pour l'I/O) reste la dette de fond au backlog.
+- 2026-07-14 — s38 : **1er jet du graphe foyer temps-réel = GET `/api/foyer/graphe` sur push SignalR** →
+  **amplification du flake P1 *TempsReel*** de ~40-50% (baseline mesuré sur `main` pré-s38) à **~100%** de rouge
+  full-suite Web.Tests ; corrigé en **reprojetant côté client** depuis le payload diffusé (**0 GET**, ramené au
+  baseline, aucune aggravation). Le `-Serial` par défaut au gate (s37) MASQUE ce coût, mais chaque nouveau client
+  SignalR peut l'amplifier. Fix : garde-fou dans `dev-team` — **un nouveau client SignalR reprojette côté client
+  depuis la diffusion, jamais un GET sur push** ; **mesurer le parallèle avant/après** l'ajout d'un client SignalR
+  (aggravation = signal de conception, pas flake à cataloguer). Le rétrofit à la cause (collections xUnit non
+  parallèles pour l'I/O) reste la dette de fond au backlog (candidat de tête).
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake

@@ -251,6 +251,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();
         services.AddScoped<CyclesFoyerQuery>();
+        services.AddScoped<GrapheFoyerQuery>();
         services.AddScoped<PeriodesDuJourQuery>();
         services.AddScoped<SlotsDuJourQuery>();
 

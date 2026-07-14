@@ -459,6 +459,17 @@ public partial class ConfigurationFoyer
     /// rechargement, S9) — même source que le sélecteur d'enfant de la dialog de pose (S10).</summary>
     private IReadOnlyList<EnfantFoyer> _enfants = Array.Empty<EnfantFoyer>();
 
+    /// <summary>Graphe foyer « enfant-racine » lu <b>depuis le store vivant</b> (GET /api/foyer/graphe, s38) :
+    /// vue LECTURE SEULE affichée à l'arrivée sur la Config foyer — chaque enfant en racine, ses parents liés
+    /// (nom résolu + rôle-du-lien) en branches, déjà filtrés des orphelins côté API (reflet fidèle, zéro
+    /// fantôme). Ré-énuméré à la diffusion SignalR (un lien modifié dans la modal Enfants converge le graphe).</summary>
+    private IReadOnlyList<GrapheEnfant> _graphe = Array.Empty<GrapheEnfant>();
+
+    /// <summary>Libellé d'une branche parent du graphe (s38) : « nom (rôle-du-lien) » — le nom déjà résolu côté
+    /// API + le rôle-du-lien en clair (père / mère / parent), miroir de la colonne « Parents liés » (Sc.5 s37).</summary>
+    private static string LibelleBrancheParent(GrapheParent parent)
+        => $"{parent.Nom} ({LibelleRoleDuLien(parent.Role)})";
+
     /// <summary>Activités du référentiel du foyer énumérées <b>depuis le store vivant</b> (GET /api/foyer/activites,
     /// s35), jamais une activité en dur : alimente le tableau de l'onglet Activités (ajoutées / éditées / supprimées
     /// suivent sans rechargement, S6) — même source que les sélecteurs de lieu des dialogs.</summary>
@@ -482,7 +493,34 @@ public partial class ConfigurationFoyer
         await RechargerActivites();
         await RechargerEnfants();
         await RechargerCycles();
+        await RechargerGraphe();
     }
+
+    /// <summary>Charge le graphe foyer « enfant-racine » À L'ARRIVÉE depuis le store vivant via la query
+    /// AGRÉGÉE serveur (GET /api/foyer/graphe → <c>GrapheFoyerQuery</c>, s38 Sc.1/Sc.2) : source CANONIQUE de
+    /// la vue lecture seule (orphelins filtrés côté serveur, contrat d'existence). C'est le chemin de lecture
+    /// consommé à l'arrivée sur la Config foyer (goal : « quand on arrive… »).</summary>
+    private async Task RechargerGraphe()
+        => _graphe = await Canal.GetFromJsonAsync<List<GrapheEnfant>>("api/foyer/graphe")
+            ?? new List<GrapheEnfant>();
+
+    /// <summary>Reprojette le graphe EN TEMPS RÉEL (convergence Sc.5) à partir des données DÉJÀ rechargées sur la
+    /// diffusion (<see cref="_enfants"/> avec liens + rôles-du-lien, <see cref="_acteurs"/> pour existence + nom) —
+    /// SANS aller-retour HTTP supplémentaire par diffusion (le canal SignalR pousse à haute fréquence ; un GET de
+    /// plus par push alourdit inutilement le trafic de lecture). Miroir EXACT des règles de <c>GrapheFoyerQuery</c>
+    /// (Sc.1/Sc.2) : mêmes branches, même filtre d'orphelin (contrat d'existence = l'acteur figure dans
+    /// <see cref="_acteurs"/>), même nom résolu, même rôle-du-lien — aucune sémantique divergente, la source
+    /// canonique reste la query serveur consommée à l'arrivée. Lecture PURE, aucune écriture.</summary>
+    private void ReprojeterGraphe()
+        => _graphe = _enfants
+            .Select(e => new GrapheEnfant(e.Id, e.Prenom)
+            {
+                Parents = e.ParentsLies
+                    .Where(p => _acteurs.Any(a => a.Id == p.ActeurId)) // filtre orphelin (zéro fantôme), miroir Resolvable
+                    .Select(p => new GrapheParent(p.ActeurId, _acteurs.First(a => a.Id == p.ActeurId).Nom, p.Role))
+                    .ToList(),
+            })
+            .ToList();
 
     /// <summary>Ré-énumère les affectations déclarées du cycle de fond depuis le store (GET /api/foyer/cycles,
     /// Sc.3) : alimente le tableau lecture seule de l'onglet Cycle (Sc.10). Quand la modal cycle n'est pas
@@ -582,6 +620,12 @@ public partial class ConfigurationFoyer
                 // Une édition du cycle aboutie sur un autre écran fait converger le tableau des cycles déclarés
                 // sans rechargement (Sc.11) — diffusion en LECTURE SEULE (ré-énumération du store).
                 await RechargerCycles();
+                // Un lien enfant↔parent ajouté / supprimé ou un rôle-du-lien modifié (modal Enfants) sur un autre
+                // écran fait CONVERGER le graphe foyer sans rechargement (s38 Sc.5) — diffusion LECTURE SEULE.
+                // Reprojection LOCALE à partir des enfants + acteurs déjà rechargés ci-dessus (aucun GET de plus
+                // par diffusion) : miroir exact de GrapheFoyerQuery, la source canonique restant la query serveur
+                // consommée à l'arrivée (RechargerGraphe). Évite d'alourdir le trafic de lecture à chaque push.
+                ReprojeterGraphe();
                 await InvokeAsync(StateHasChanged);
             });
 
