@@ -53,7 +53,7 @@
 >   surface.)*
 > - **Notifications / alertes** : aucune cloche « X a délégué » — c'est le Palier 11 (backlog).
 
-## Avancement — 4/6
+## Avancement — 5/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -61,7 +61,7 @@
 | 2 | **Cas LIMITE — last-write-wins + délégation à soi-même** : un jour **déjà couvert par une surcharge** → la délégation **réaffecte** le responsable (**last-write-wins R11**, **aucun doublon** de période) ; une **délégation à soi-même** (délégataire = responsable déjà résolu) → **refus explicite**, **aucune écriture** ; un **jour hors fenêtre chargée** reste **écrivable** sans crash | back | ✅ |
 | 3 | **Cas ERREUR — délégataire inconnu / orphelin** : déléguer vers un acteur dont l'**id stable est absent du store** (inconnu / supprimé) → **refus AVANT écriture**, store **intact**, **aucune écriture partielle** ; identique sur les deux adaptateurs | back | ✅ |
 | 4 | **Action « déléguer ce jour » + mini-dialog (Parent-gated)** : la **carte du jour s42** ET le **panneau à-venir s43** portent une **action « déléguer ce jour »** ouvrant un **mini-dialog** de choix de l'acteur recevant ; valider émet la commande via le **canal d'écriture** ; **Échap = Annuler** (aucune commande) ; l'**Invité ne voit AUCUN bouton** (Parent-gated, aucune commande émissible) | 🖥️ IHM | ✅ |
-| 5 | **Refus domaine → dialog reste ouverte + motif + saisie conservée** : une délégation refusée (soi-même, délégataire inconnu) laisse le **mini-dialog OUVERT**, affiche le **motif**, **conserve la saisie** (acteur choisi) ; **store intact** ; fermeture uniquement sur Annuler/Échap ou succès | 🖥️ IHM | ⏳ |
+| 5 | **Refus domaine → dialog reste ouverte + motif + saisie conservée** : une délégation refusée (soi-même, délégataire inconnu) laisse le **mini-dialog OUVERT**, affiche le **motif**, **conserve la saisie** (acteur choisi) ; **store intact** ; fermeture uniquement sur Annuler/Échap ou succès | 🖥️ IHM | ✅ |
 | 6 | **Temps réel — carte + panneau convergent, transfert dérivé visible (0 GET)** : après une délégation sur le 1ᵉʳ écran, la **carte du jour** ET le **panneau à-venir** d'un **2ᵉ écran CONVERGENT** (nouveau responsable + **transfert bicolore dérivé s31**) **sans rechargement** ; convergence par **reprojection client** via **SignalR lecture seule** (**0 GET** sur push, garde anti-flake s42/s43) | 🖥️ IHM | ⏳ |
 
 > **⚠️ Point de vigilance — RÉUTILISER l'écriture s06 + la dérivation s31, ne RIEN inventer (Sc.1-3,
@@ -155,7 +155,7 @@ Quand il affiche la carte du jour et le panneau à-venir
 Alors AUCUNE action « déléguer ce jour » n'est rendue (Parent-gated) et AUCUNE commande de délégation n'est émissible
 ```
 
-### Sc.5 — Refus domaine → dialog reste ouverte + motif + saisie conservée @ihm @pending
+### Sc.5 — Refus domaine → dialog reste ouverte + motif + saisie conservée @ihm @vert
 ```gherkin
 Étant donné le mini-dialog « déléguer ce jour » ouvert avec un acteur choisi
 Quand je valide une délégation que le domaine REFUSE (délégation à soi-même, ou délégataire inconnu/orphelin — Sc.2/Sc.3)
