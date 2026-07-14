@@ -26,10 +26,11 @@ namespace PlanningDeGarde.Web.Components.Pages;
 public partial class ConfigurationFoyer
 {
     // Onglet actif de la page de configuration (présentation façon settings GitHub : barre latérale
-    // gauche + panneau). « acteurs » (défaut) / « roles » / « cycles ». Les trois panneaux restent
-    // TOUJOURS rendus (masqués par CSS quand inactifs) : aucune règle métier, aucun gating porté ici —
-    // le gating d'écriture reste sur l'identité effective, dans chaque panneau.
-    private string _onglet = "acteurs";
+    // gauche + panneau). « foyer » (défaut, s40 — héberge la vue graphe lecture seule s38 + badges de
+    // complétude, auparavant étalée à l'arrivée) / « acteurs » / « roles » / « cycles » / « activites » /
+    // « enfants ». TOUS les panneaux restent rendus (masqués par CSS quand inactifs) : aucune règle métier,
+    // aucun gating porté ici — le gating d'écriture reste sur l'identité effective, dans chaque panneau.
+    private string _onglet = "foyer";
 
     private void ChoisirOnglet(string onglet) => _onglet = onglet;
 

@@ -143,4 +143,17 @@ Et la diffusion reste le canal SignalR de LECTURE SEULE (aucune écriture par la
 
 ---
 
+## Note de finition (rework in-goal, présentation)
+
+- **Relocalisation PO validée au gate visuel** : la vue graphe s38 (+ badges de complétude s40) est
+  déplacée de la tête de page (« prend trop de place ») vers un **onglet « Foyer » placé EN PREMIER**
+  dans la barre d'onglets de la Config foyer. **Onglet « Foyer » actif par défaut** à l'arrivée (le
+  graphe ne s'étale plus). Aucun handler / commande / invariant / query neuf — pure présentation.
+- Comportement **strictement préservé** : graphe lecture seule, badges complet/incomplet/aucun parent
+  inchangés, Parent-gated lecture (Invité voit l'onglet + graphe), convergence SignalR par reprojection
+  client (0 GET). Test runtime `FrontWasmConfigOngletsParThemeTempsReelTests` migré (lot atomique) :
+  fige désormais « Foyer » 1ᵉʳ + actif par défaut et le graphe DANS l'onglet Foyer. Suite 715/715.
+
+---
+
 # Retours produit (PO)

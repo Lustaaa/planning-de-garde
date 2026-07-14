@@ -30,53 +30,14 @@
         </div>
     }
 
-    @* ══════════════ Vue LECTURE SEULE « graphe enfant-racine » (s38) ══════════════
-       Affichée À L'ARRIVÉE sur la Config foyer (briefing PO : « quand on arrive sur la configuration du
-       foyer, une vue en lecture seule affichée comme un graph avec comme racine l'enfant ») : chaque enfant
-       en RACINE, ses parents liés en branches « nom (rôle-du-lien) ». STRICTEMENT lecture — aucun contrôle
-       d'édition, aucune commande émise d'ici (l'écriture reste dans la modal Enfants). Reflet fidèle du store
-       (orphelins filtrés côté API, zéro fantôme) ; converge en temps réel via la diffusion SignalR lecture
-       seule. Surface NEUVE de lecture (pas un swap) — Invité la voit aussi (lecture non gatée). *@
-    <section class="config-graphe" data-testid="graphe-foyer" aria-label="Graphe du foyer (lecture seule)">
-        <h2 class="config-graphe-titre">Foyer</h2>
-        @if (_graphe.Count == 0)
-        {
-            <p class="config-graphe-vide" data-testid="graphe-vide">Aucun enfant, ajoutez-en.</p>
-        }
-        else
-        {
-            <ul class="config-graphe-racines">
-                @foreach (var enfant in _graphe)
-                {
-                    <li class="config-graphe-racine" data-testid="graphe-enfant-racine" data-enfant-id="@enfant.EnfantId">
-                        <span class="config-graphe-enfant" data-testid="graphe-enfant-nom">@enfant.Prenom</span>
-                        @* Badge de complétude du couple R3 (s40) — STRICTEMENT en lecture (span, aucun contrôle
-                           d'édition, aucune commande émise). Le statut est déjà calculé côté API (Sc.1/Sc.2) ;
-                           l'UI ne fait que le libeller (aucune règle métier ici). *@
-                        <span class="config-graphe-badge config-graphe-badge-@BadgeCoupleClasse(enfant.StatutCouple)"
-                              data-testid="graphe-enfant-badge" data-statut="@enfant.StatutCouple">
-                            @LibelleBadgeCouple(enfant.StatutCouple)
-                        </span>
-                        @if (enfant.Parents.Count > 0)
-                        {
-                            <ul class="config-graphe-branches">
-                                @foreach (var parent in enfant.Parents)
-                                {
-                                    <li class="config-graphe-branche" data-testid="graphe-parent-branche"
-                                        data-enfant-id="@enfant.EnfantId" data-acteur-id="@parent.ActeurId">
-                                        @LibelleBrancheParent(parent)
-                                    </li>
-                                }
-                            </ul>
-                        }
-                    </li>
-                }
-            </ul>
-        }
-    </section>
-
     <div class="config-layout">
         <nav class="config-nav" aria-label="Sections de configuration">
+            @* Onglet FOYER en PREMIER (relocalisation PO, rework in-goal s40) : héberge la vue graphe s38 +
+               badges de complétude s40, auparavant étalée à l'arrivée. Onglet actif PAR DÉFAUT. *@
+            <button type="button" class="config-nav-item @(_onglet == "foyer" ? "actif" : null)"
+                    data-testid="onglet-foyer" @onclick='() => ChoisirOnglet("foyer")'>
+                <span class="config-nav-ic" aria-hidden="true">🏠</span>Foyer
+            </button>
             <button type="button" class="config-nav-item @(_onglet == "acteurs" ? "actif" : null)"
                     data-testid="onglet-acteurs" @onclick='() => ChoisirOnglet("acteurs")'>
                 <span class="config-nav-ic" aria-hidden="true">👤</span>Acteurs
@@ -100,6 +61,55 @@
         </nav>
 
         <div class="config-panneaux">
+
+            @* ══════════════ Panneau FOYER (vue graphe lecture seule s38 + badges de complétude s40) ══════════════
+               Relocalisation PO (rework in-goal s40) : la vue graphe « enfant-racine » (s38), auparavant étalée À
+               L'ARRIVÉE en tête de page (« prend trop de place »), est DÉPLACÉE dans ce premier onglet dédié « Foyer »
+               (actif par défaut). Chaque enfant en RACINE, ses parents liés en branches « nom (rôle-du-lien) », un
+               BADGE de complétude du couple R3 par enfant. STRICTEMENT lecture — aucun contrôle d'édition, aucune
+               commande émise d'ici (l'écriture reste dans la modal Enfants). Reflet fidèle du store (orphelins filtrés
+               côté API, zéro fantôme) ; converge en temps réel via REPROJECTION CLIENT sur la diffusion SignalR lecture
+               seule (aucun GET sur push, garde s38). Lecture NON gatée — Invité voit l'onglet et le graphe. *@
+            <section class="config-panneau @(_onglet == "foyer" ? null : "cacher")"
+                     data-testid="panneau-foyer" aria-label="Foyer">
+                <section class="config-graphe" data-testid="graphe-foyer" aria-label="Graphe du foyer (lecture seule)">
+                    <h2 class="config-graphe-titre">Foyer</h2>
+                    @if (_graphe.Count == 0)
+                    {
+                        <p class="config-graphe-vide" data-testid="graphe-vide">Aucun enfant, ajoutez-en.</p>
+                    }
+                    else
+                    {
+                        <ul class="config-graphe-racines">
+                            @foreach (var enfant in _graphe)
+                            {
+                                <li class="config-graphe-racine" data-testid="graphe-enfant-racine" data-enfant-id="@enfant.EnfantId">
+                                    <span class="config-graphe-enfant" data-testid="graphe-enfant-nom">@enfant.Prenom</span>
+                                    @* Badge de complétude du couple R3 (s40) — STRICTEMENT en lecture (span, aucun contrôle
+                                       d'édition, aucune commande émise). Le statut est déjà calculé côté API (Sc.1/Sc.2) ;
+                                       l'UI ne fait que le libeller (aucune règle métier ici). *@
+                                    <span class="config-graphe-badge config-graphe-badge-@BadgeCoupleClasse(enfant.StatutCouple)"
+                                          data-testid="graphe-enfant-badge" data-statut="@enfant.StatutCouple">
+                                        @LibelleBadgeCouple(enfant.StatutCouple)
+                                    </span>
+                                    @if (enfant.Parents.Count > 0)
+                                    {
+                                        <ul class="config-graphe-branches">
+                                            @foreach (var parent in enfant.Parents)
+                                            {
+                                                <li class="config-graphe-branche" data-testid="graphe-parent-branche"
+                                                    data-enfant-id="@enfant.EnfantId" data-acteur-id="@parent.ActeurId">
+                                                    @LibelleBrancheParent(parent)
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+                </section>
+            </section>
 
             @* ══════════════ Panneau ACTEURS ══════════════ *@
             <section class="config-panneau @(_onglet == "acteurs" ? null : "cacher")"
@@ -906,9 +916,10 @@
     .config-sous { color: var(--pdg-muted); font-size: .92rem; margin: .2rem 0 0; }
 
     /* Vue LECTURE SEULE « graphe enfant-racine » (s38) : chaque enfant en carte-racine, ses parents liés
-       en pastilles-branches « nom (rôle-du-lien) » dessous. Purement présentation (aucune règle métier). */
+       en pastilles-branches « nom (rôle-du-lien) » dessous. Purement présentation (aucune règle métier).
+       Depuis s40, hébergée dans l'onglet « Foyer » (1ᵉʳ onglet) — plus étalée en tête de page. */
     .config-graphe { background: var(--pdg-card); border: 1px solid var(--pdg-border); border-radius: 16px;
-        padding: 1.1rem 1.35rem; box-shadow: 0 1px 2px rgba(16,24,40,.05); margin-bottom: 1.5rem; }
+        padding: 1.1rem 1.35rem; box-shadow: 0 1px 2px rgba(16,24,40,.05); }
     .config-graphe-titre { font-size: .82rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
         color: var(--pdg-muted); margin: 0 0 .9rem; }
     .config-graphe-vide { color: var(--pdg-muted); font-size: .92rem; margin: 0; }
