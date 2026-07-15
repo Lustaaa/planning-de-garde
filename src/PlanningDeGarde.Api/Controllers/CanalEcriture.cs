@@ -44,6 +44,12 @@ public static class CanalEcriture
     public sealed record DeleguerRecuperationRequete(
         DateOnly Jour, string EnfantId, string VersActeurId, DateOnly? JourFin = null);
 
+    /// <summary>Corps de la requête « reprendre ce jour » (s46) émise via le canal requête/réponse : le jour
+    /// REPRIS et l'enfant sélectionné. Granularité = UNE occurrence. Le use case COMPOSE la SUPPRESSION de
+    /// surcharge existante (s16) — la case retombe sur le fond, le transfert dérivé s31 disparaît. Jour sans
+    /// délégation active = no-op idempotent (succès).</summary>
+    public sealed record AnnulerDelegationRequete(DateOnly Jour, string EnfantId);
+
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
 
@@ -282,6 +288,22 @@ public static class CanalEcriture
             // Sur succès, l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : carte et
             // panneau à-venir des autres écrans reprojettent le nouveau responsable + transfert sans rechargement
             // (Sc.6). Jamais d'écriture par le canal de diffusion.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierMiseAJour();
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/annuler-delegation",
+            (AnnulerDelegationRequete requete, AnnulerDelegationHandler handler, INotificateurPlanning notificateur) =>
+        {
+            var resultat = handler.Handle(new AnnulerDelegationCommand(requete.Jour, requete.EnfantId));
+
+            // « Reprendre ce jour » COMPOSE la suppression de surcharge existante (s16) : la case retombe sur le
+            // fond, le transfert dérivé s31 disparaît. No-op idempotent (jour sans délégation active) = succès.
+            // Sur succès, l'adaptateur de gauche déclenche la DIFFUSION temps réel (lecture seule) : les autres
+            // écrans reprojettent la case au fond sans rechargement (Sc.6). Jamais d'écriture par la diffusion.
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 

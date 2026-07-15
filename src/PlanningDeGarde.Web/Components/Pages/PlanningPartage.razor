@@ -374,6 +374,12 @@ else
                    pour un Parent, OuvrirMenu). L'écriture transite par le canal requête/réponse. *@
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-deleguer"
                         @onclick="@(() => OuvrirDeleguer(dateMenu))">Déléguer ce jour</button>
+                @* Entrée CONDITIONNELLE « reprendre ce jour » (s46, ferme la boucle undo s44/s45) : affichée
+                   UNIQUEMENT quand la case cliquée porte une DÉLÉGATION ACTIVE (surcharge résolue), à côté de
+                   « déléguer ce jour ». Ouvre le mini-dialog de confirmation ; la reprise transite par le canal
+                   d'écriture (composition suppression s16). Parent-gated (le menu ne s'ouvre que pour un Parent). *@
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-reprendre"
+                        @onclick="@(() => OuvrirReprendre(dateMenu))">Reprendre ce jour</button>
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-editer-periode"
                         @onclick="@(() => OuvrirEditerPeriode(dateMenu))">Éditer une période</button>
             </div>
@@ -449,6 +455,14 @@ else
                                 ActeursCharges="_acteursFoyerCharges"
                                 OnValide="FermerDialogEtRecharger"
                                 OnAnnule="FermerDialog" />
+}
+
+@if (_dateDialogReprendre is { } dateReprendre)
+{
+    <ReprendreJourDialog DateContexte="dateReprendre"
+                         EnfantId="@(_enfantSelectionne ?? "")"
+                         OnValide="FermerDialogEtRecharger"
+                         OnAnnule="FermerDialog" />
 }
 }
 
