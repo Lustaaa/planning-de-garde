@@ -453,16 +453,19 @@ public partial class PlanningPartage
     private void FermerMenu() => _dateMenu = null;
 
     /// <summary>
-    /// Ouvre le mini-dialog « déléguer ce jour » (s44) sur la <paramref name="date"/> hébergée par la carte
-    /// « Aujourd'hui » (s42) ou un jour du panneau à-venir (s43). Gating Invité (règle 9) porté au rendu du
-    /// bouton (Parent-gated) : l'Invité ne voit aucune action, aucune commande de délégation n'est émissible.
-    /// La grille et les cartes restent en LECTURE SEULE : la dialog porte l'écriture (canal requête/réponse).
+    /// Ouvre le mini-dialog « déléguer ce jour » (s44) sur la <paramref name="date"/> de la case, depuis
+    /// l'entrée « déléguer ce jour » du <b>menu clic-case</b> (surface tranchée par le PO au gate G3 :
+    /// SEULE surface d'écriture de la délégation ; les cartes de lecture s42/s43 n'en portent plus).
+    /// Gating Invité (règle 9) mutualisé avec le menu (il ne s'ouvre que pour un Parent, OuvrirMenu) et
+    /// re-gardé ici par sécurité. La grille reste en LECTURE SEULE : la dialog porte l'écriture (canal
+    /// requête/réponse). Ferme le menu à l'ouverture de la dialog, comme les autres entrées.
     /// </summary>
     private void OuvrirDeleguer(DateOnly date)
     {
         if (!Session.EstParent)
             return;
 
+        _dateMenu = null;
         _dateDialogDeleguer = date;
     }
 

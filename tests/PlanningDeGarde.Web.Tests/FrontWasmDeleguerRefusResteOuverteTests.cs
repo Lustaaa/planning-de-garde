@@ -32,11 +32,14 @@ public sealed class FrontWasmDeleguerRefusResteOuverteTests : TestContext
             "Alice",
             grille.Find("[data-testid='carte-aujourdhui'] [data-testid='carte-qui']").TextContent.Trim());
 
-        // When — le Parent ouvre « déléguer ce jour » sur la carte, choisit Alice (parent-a = soi-même) et valide.
+        // When — le Parent ouvre « déléguer ce jour » via le MENU CLIC-CASE (surface tranchée au gate G3) :
+        // clic sur la case du jour (29/06) → menu → entrée « déléguer ce jour » → mini-dialog ; il choisit
+        // Alice (parent-a = soi-même) et valide.
         grille.WaitForAssertion(
             () =>
             {
-                this.SurDispatcher(() => grille.Find("[data-testid='carte-aujourdhui'] [data-testid='carte-deleguer']").Click());
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click());
+                this.SurDispatcher(() => grille.Find("[data-testid='menu-actions-case'] [data-testid='action-deleguer']").Click());
                 Assert.NotEmpty(grille.FindAll("[data-testid='dialog-deleguer']"));
             },
             TimeSpan.FromSeconds(10));

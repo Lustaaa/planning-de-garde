@@ -104,14 +104,9 @@
             </ul>
         }
 
-        @* Action « déléguer ce jour » (s44) — HÉBERGÉE par la carte de lecture, Parent-gated (l'Invité ne la
-           voit pas, aucune commande émissible). Elle ouvre le mini-dialog de choix du délégataire ; l'écriture
-           transite par le canal requête/réponse (jamais la carte elle-même). *@
-        @if (Session.EstParent)
-        {
-            <button type="button" class="btn btn-sm btn-outline-primary carte-deleguer ms-auto" data-testid="carte-deleguer"
-                    @onclick="@(() => OuvrirDeleguer(carte.Date))">Déléguer ce jour</button>
-        }
+        @* Carte « Aujourd'hui » STRICTEMENT en LECTURE (décision PO au gate G3, s44) : elle ne porte PLUS
+           aucun bouton de délégation. L'écriture « déléguer ce jour » s'ouvre exclusivement depuis l'entrée
+           du menu clic-case de la grille (invariant CLAUDE.md « les cartes de lecture n'hébergent pas d'écriture »). *@
     </section>
 }
 
@@ -172,14 +167,9 @@
                         </span>
                     }
 
-                    @* Action « déléguer ce jour » par jour à-venir (s44) — Parent-gated (l'Invité ne la voit
-                       pas). Ouvre le mini-dialog de choix du délégataire pour CE jour ; l'écriture transite par
-                       le canal requête/réponse (le panneau reste une surface de lecture). *@
-                    @if (Session.EstParent)
-                    {
-                        <button type="button" class="btn btn-sm btn-outline-primary a-venir-deleguer ms-auto" data-testid="a-venir-deleguer"
-                                data-date="@jour.Date.ToString("yyyy-MM-dd")" @onclick="@(() => OuvrirDeleguer(jour.Date))">Déléguer</button>
-                    }
+                    @* Panneau « À venir » STRICTEMENT en LECTURE (décision PO au gate G3, s44) : il ne porte
+                       PLUS aucun bouton de délégation par jour. « Déléguer ce jour » s'ouvre exclusivement
+                       depuis l'entrée du menu clic-case de la grille (cartes de lecture sans écriture). *@
                 </li>
             }
         </ul>
@@ -491,6 +481,12 @@ else
                         @onclick="@(() => OuvrirAffecterPeriode(dateMenu))">Affecter une période</button>
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-definir-transfert"
                         @onclick="@(() => OuvrirDefinirTransfert(dateMenu))">Définir un transfert</button>
+                @* Entrée « déléguer ce jour » (s44, surface tranchée par le PO au gate G3) : seule surface
+                   d'écriture de la délégation, aux côtés des actions Palier 7. Ouvre le mini-dialog de choix du
+                   délégataire sur la date de la case ; Parent-gated par construction (le menu ne s'ouvre que
+                   pour un Parent, OuvrirMenu). L'écriture transite par le canal requête/réponse. *@
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-deleguer"
+                        @onclick="@(() => OuvrirDeleguer(dateMenu))">Déléguer ce jour</button>
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-editer-periode"
                         @onclick="@(() => OuvrirEditerPeriode(dateMenu))">Éditer une période</button>
             </div>

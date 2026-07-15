@@ -55,14 +55,16 @@ public sealed class FrontWasmDeleguerConvergenceDeuxEcransTempsReelTests : TestC
             TimeSpan.FromSeconds(10));
         Assert.NotNull(Ligne(ecran2, "2026-06-30").QuerySelector("[data-testid='a-venir-responsable']"));
 
-        // When — sur l'ÉCRAN 1, un Parent délègue la récupération d'aujourd'hui à Nina (la nounou) via l'action
-        // « déléguer ce jour » de la carte (écriture par le canal requête/réponse), puis la diffusion SignalR
+        // When — sur l'ÉCRAN 1, un Parent délègue la récupération d'aujourd'hui à Nina (la nounou) via l'ENTRÉE
+        // DU MENU CLIC-CASE (surface tranchée au gate G3) : clic sur la case du jour (29/06) → menu → entrée
+        // « déléguer ce jour » → mini-dialog (écriture par le canal requête/réponse). Puis la diffusion SignalR
         // RÉELLE est repoussée en boucle de fond (idempotente : le store est déjà muté) pour qu'un push tombe
         // APRÈS l'établissement des connexions (anti-flake timing, pattern harnais s42/s43).
         ecran1.WaitForAssertion(
             () =>
             {
-                this.SurDispatcher(() => ecran1.Find("[data-testid='carte-aujourdhui'] [data-testid='carte-deleguer']").Click());
+                this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(ecran1, "29/06").Click());
+                this.SurDispatcher(() => ecran1.Find("[data-testid='menu-actions-case'] [data-testid='action-deleguer']").Click());
                 Assert.NotEmpty(ecran1.FindAll("[data-testid='dialog-deleguer']"));
             },
             TimeSpan.FromSeconds(10));
