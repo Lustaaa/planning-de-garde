@@ -25,8 +25,16 @@ public sealed record AnnulerDelegationResultat(bool AvaitDelegation);
 public sealed class AnnulerDelegationHandler
 {
     private readonly IPeriodeRepository _periodes;
+    private readonly IJournalChangements? _journal;
+    private readonly IDateTimeProvider? _horloge;
 
-    public AnnulerDelegationHandler(IPeriodeRepository periodes) => _periodes = periodes;
+    public AnnulerDelegationHandler(
+        IPeriodeRepository periodes, IJournalChangements? journal = null, IDateTimeProvider? horloge = null)
+    {
+        _periodes = periodes;
+        _journal = journal;
+        _horloge = horloge;
+    }
 
     public Result<AnnulerDelegationResultat> Handle(AnnulerDelegationCommand commande)
     {
@@ -35,6 +43,9 @@ public sealed class AnnulerDelegationHandler
 
         foreach (var surcharge in couvrantes)
         {
+            // Trace de LECTURE au journal (cloche s47) : une REPRISE consigne son événement AVANT de supprimer la
+            // surcharge — le journal ne dérive PAS de l'état courant (la suppression n'y laisserait aucune trace).
+            ConsignerAuJournal(TypeChangement.Reprise, jour, commande.EnfantId, surcharge.ResponsableId, "");
             // Granularité = UNE occurrence : la surcharge couvrant le jour est retirée via le chemin s16,
             // puis les segments RESTANTS (avant / après le jour repris) sont réécrits via le chemin période
             // EXISTANT (s06) — une plage [J1..J3] reprise en J2 laisse [J1..J2-1] et [J2+1..J3] intacts.
@@ -48,6 +59,14 @@ public sealed class AnnulerDelegationHandler
         }
 
         return Result<AnnulerDelegationResultat>.Succes(new AnnulerDelegationResultat(couvrantes.Count > 0));
+    }
+
+    private void ConsignerAuJournal(TypeChangement type, DateOnly jour, string enfantId, string cedantId, string recevantId)
+    {
+        if (_journal is null || _horloge is null)
+            return;
+        _journal.Consigner(new EvenementChangementSnapshot(
+            Guid.NewGuid().ToString("N"), type, jour, enfantId, cedantId, recevantId, _horloge.Maintenant));
     }
 
     private void ReecrireSegment(string responsableId, DateOnly debut, DateOnly fin)
