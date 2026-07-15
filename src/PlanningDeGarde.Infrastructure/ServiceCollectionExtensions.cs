@@ -224,6 +224,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<DeplacerSlotHandler>();
         services.AddScoped<SupprimerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();
+        services.AddScoped<DeleguerRecuperationHandler>();
         services.AddScoped<ModifierPeriodeHandler>();
         services.AddScoped<EditerPeriodeHandler>();
         services.AddScoped<SupprimerPeriodeHandler>();
@@ -252,7 +253,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<JourneeEnfantQuery>();
         services.AddScoped<ResponsabiliteQuery>();
         services.AddScoped<GrilleAgendaQuery>();
-        services.AddScoped<CarteDuJourQuery>();
         services.AddScoped<CyclesFoyerQuery>();
         services.AddScoped<GrapheFoyerQuery>();
         services.AddScoped<PeriodesDuJourQuery>();

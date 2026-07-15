@@ -19,7 +19,7 @@ Tu portes **trois chapeaux** selon ce qu'on te dispatche. Un seul à la fois.
 1. **Lis le backlog vivant** `docs/BACKLOG.md` (retours produit non traités = **prioritaires**)
    + l'index de spec `docs/specs/index.md` + les sujets concernés.
 2. **Propose 3-4 goals candidats**, chacun en **carte** : un titre + des **bullets de scope
-   concret** (« ce sprint : x · y · z »). Dimensionne chaque goal à **~1h d'exécution IA**
+   concret** (« ce sprint : x · y · z »). Dimensionne chaque goal à **~2h d'exécution IA**
    (tranche verticale ambitieuse mais tenable, résultat d'usage réel). Retours non traités en
    tête. → renvoie `{ "type":"goals", … }`, le thread principal pose **G2** au PO.
 3. Une fois le goal **tranché** (renvoyé par le thread principal), **écris le fichier de
@@ -57,6 +57,21 @@ Tu portes **trois chapeaux** selon ce qu'on te dispatche. Un seul à la fois.
      bascule ces lignes **✅ ensemble** ; laisse erreur/gating/temps-réel en **incréments propres** derrière.
      **Interdit** : prescrire une coexistence durable ancienne+neuve (code mort + étape de démolition qui
      contredirait le Gherkin du 1er scénario) *(récit : JOURNAL-METHODE s32)*.
+   - **GARDE de la PORTE DE CONCEPTION « surface » AVANT tout scénario @ihm (obligatoire).** Quand un goal
+     introduit une **NOUVELLE surface d'IHM** — une **surface d'action d'écriture** (où/comment l'utilisateur
+     déclenche : bouton sur une carte ? entrée de menu clic-case ? dialog ?) OU une **NOUVELLE surface de lecture**
+     (carte, panneau, encart posé sur une page) — le **choix de cette surface (emplacement + affordance + son
+     existence même)** est une **décision de CONCEPTION PO**, PAS un détail d'implémentation. La coder d'abord puis
+     la faire valider au **gate visuel G3** expose à un **rework en cascade** : le PO peut demander de **déplacer**
+     la surface (carte→menu) **puis** de **retirer** des surfaces entières — chaque retour re-défait des scénarios
+     @ihm déjà verts *(récit : s44, 3 retours G3 successifs = surface carte→menu clic-case, puis retrait panneau,
+     puis retrait carte)*. **AVANT d'écrire les scénarios @ihm**, si la surface est neuve ou déplacée, **remonte-la
+     comme point de conception explicite** dans le `resume`/la carte de goal (renvoi au thread principal pour
+     validation PO **en même temps que G2**, ou juste après le tranchage du goal) : décris l'**emplacement retenu**
+     et les **alternatives écartées** (« l'action X sera une entrée du menu clic-case — PAS un bouton sur une carte ;
+     aucune surface de lecture neuve n'est ajoutée »). Ne mène les scénarios @ihm en RED→GREEN **qu'une fois la
+     surface arbitrée**. Objectif : faire tomber les arbitrages de surface **au cadrage** (coût nul, un round-trip)
+     plutôt qu'au **gate visuel** (coût = @ihm refaits).
    - **Section `# Retours produit (PO)`** vide en bas (remplie après le gate G3).
    - **Pas de dossier de suivi, pas de fichier-par-scénario.** Un seul fichier.
    → renvoie `{ "type":"sprint", … }`.

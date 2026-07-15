@@ -31,8 +31,9 @@
                 }
             </select>
         </label>
-        @* Sélecteur d'enfant (s42) : l'enfant dont la carte « Aujourd'hui » restitue le « où » (slots). Vue
-           seule (aucune écriture) ; source = référentiel enfants du store vivant. *@
+        @* Sélecteur d'enfant : l'enfant dont on délègue la récupération d'un jour (s44 : passé en EnfantId au
+           mini-dialog « déléguer ce jour »). Source = référentiel enfants du store vivant ; la sélection ne
+           déclenche aucune écriture par elle-même. *@
         @if (_enfantsFoyer.Count > 0)
         {
             <label class="pdg-controle">
@@ -58,115 +59,9 @@
     </div>
 </div>
 
-@* Carte « Aujourd'hui : qui récupère ce soir » (s42) — EN TÊTE, STRICTEMENT en LECTURE. Reprojetée
-   CLIENT depuis la grille déjà chargée (JourCase du jour courant, résolution surcharge>fond>neutre +
-   transfert saisi/dérivé s31 + slots), filtrée sur l'enfant sélectionné. Aucun contrôle d'édition,
-   aucune commande émise. Réutilise couleurs/repli de la grille (aucune teinte réinventée) ; sa
-   convergence temps réel passe par la relecture SignalR de la grille (canal de lecture seule s20). *@
-@if (CarteDuJour is { } carte)
-{
-    <section class="carte-aujourdhui" data-testid="carte-aujourdhui" aria-label="Qui récupère aujourd'hui">
-        <h2 class="carte-aujourdhui-titre">Aujourd'hui</h2>
-
-        @* Le « qui » : responsable RÉSOLU (nom + couleur de la grille) ; neutre → « Personne assignée ». *@
-        @if (carte.Transfert is { } transfert)
-        {
-            <div class="carte-qui carte-qui-transfert" data-testid="carte-transfert-bicolore"
-                 data-couleur-depart="@transfert.CouleurDepart" data-couleur-arrivee="@transfert.CouleurArrivee"
-                 style="background: linear-gradient(135deg, @Couleur(transfert.CouleurDepart) 0 46%, @Couleur(transfert.CouleurArrivee) 54% 100%);">
-                <span data-testid="carte-transfert-cedant">@transfert.NomDepart</span>
-                <span class="carte-transfert-fleche" aria-hidden="true">→</span>
-                <span data-testid="carte-transfert-recevant">@transfert.NomArrivee</span>
-            </div>
-        }
-        else if (!string.IsNullOrEmpty(carte.NomResponsable))
-        {
-            <div class="carte-qui" data-testid="carte-qui"
-                 data-couleur="@carte.CouleurResponsable"
-                 style="background-color:@Couleur(carte.CouleurResponsable);">@carte.NomResponsable</div>
-        }
-        else
-        {
-            <div class="carte-qui carte-qui-neutre" data-testid="carte-qui">Personne assignée</div>
-        }
-
-        @* Le « où » : slots de localisation du jour de l'ENFANT SÉLECTIONNÉ (absent = pas de lieu). *@
-        @if (SlotsCarte.Count > 0)
-        {
-            <ul class="carte-ou">
-                @foreach (var slot in SlotsCarte)
-                {
-                    <li class="carte-slot" data-testid="carte-slot">
-                        <span class="carte-slot-lieu" style="background-color:@Couleur(slot.CouleurActeur);">@slot.Libelle</span>
-                        <span class="carte-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
-                    </li>
-                }
-            </ul>
-        }
-    </section>
-}
-
-@* Panneau « À venir » (s43) — SOUS la carte « Aujourd'hui », STRICTEMENT en LECTURE. Reprojeté CLIENT
-   depuis la grille déjà chargée (jours postérieurs à aujourd'hui, résolution surcharge>fond>neutre +
-   transfert saisi/dérivé s31 + slots), filtré sur l'enfant sélectionné. Aucun contrôle d'édition, aucune
-   commande émise. Réutilise couleurs/repli de la grille (aucune teinte réinventée) ; sa convergence temps
-   réel passe par la reprojection SignalR de la grille (canal de lecture seule s20, 0 GET sur push). *@
-<section class="panneau-a-venir" data-testid="panneau-a-venir" aria-label="À venir : qui récupère les prochains jours">
-    <h2 class="panneau-a-venir-titre">À venir</h2>
-
-    @if (AVenir.Count == 0)
-    {
-        <p class="a-venir-vide" data-testid="a-venir-vide">Aucun événement à venir</p>
-    }
-    else
-    {
-        <ul class="a-venir-liste">
-            @foreach (var jour in AVenir)
-            {
-                <li class="a-venir-jour" data-testid="a-venir-jour" data-date="@jour.Date.ToString("yyyy-MM-dd")">
-                    <span class="a-venir-date">@jour.Date.ToString("ddd dd/MM")</span>
-
-                    @* Le « qui » : transfert bicolore (parité s29), sinon responsable résolu, sinon neutre. *@
-                    @if (jour.Transfert is { } transfert)
-                    {
-                        <span class="a-venir-qui a-venir-qui-transfert" data-testid="a-venir-transfert-bicolore"
-                              data-couleur-depart="@transfert.CouleurDepart" data-couleur-arrivee="@transfert.CouleurArrivee"
-                              style="background: linear-gradient(135deg, @Couleur(transfert.CouleurDepart) 0 46%, @Couleur(transfert.CouleurArrivee) 54% 100%);">
-                            <span data-testid="a-venir-transfert-cedant">@transfert.NomDepart</span>
-                            <span class="a-venir-transfert-fleche" aria-hidden="true">→</span>
-                            <span data-testid="a-venir-transfert-recevant">@transfert.NomArrivee</span>
-                        </span>
-                    }
-                    else if (!string.IsNullOrEmpty(jour.NomResponsable))
-                    {
-                        <span class="a-venir-qui" data-testid="a-venir-responsable"
-                              data-couleur="@jour.CouleurResponsable"
-                              style="background-color:@Couleur(jour.CouleurResponsable);">@jour.NomResponsable</span>
-                    }
-                    else
-                    {
-                        <span class="a-venir-qui a-venir-qui-neutre" data-testid="a-venir-qui-neutre">Personne assignée</span>
-                    }
-
-                    @* Le « où » : slots de l'ENFANT SÉLECTIONNÉ pour ce jour (absent = pas de lieu). *@
-                    @{ var slots = SlotsAVenirPour(jour); }
-                    @if (slots.Count > 0)
-                    {
-                        <span class="a-venir-ou">
-                            @foreach (var slot in slots)
-                            {
-                                <span class="a-venir-slot" data-testid="a-venir-slot">
-                                    <span class="a-venir-slot-lieu" style="background-color:@Couleur(slot.CouleurActeur);">@slot.Libelle</span>
-                                    <span class="a-venir-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
-                                </span>
-                            }
-                        </span>
-                    }
-                </li>
-            }
-        </ul>
-    }
-</section>
+@* Surfaces de lecture « Aujourd'hui » (carte s42) et « À venir » (panneau s43) RETIRÉES ENTIÈREMENT
+   (décision PO au gate G3, s44) : la GRILLE AGENDA (plus bas) est désormais la SEULE surface de lecture
+   de la page. La délégation d'un jour s'ouvre depuis l'entrée « déléguer ce jour » du menu clic-case. *@
 
 @* Bandeau de connexion inline RETIRÉ (s24, Sc.10) : un seul chemin d'entrée = la page de connexion
    dédiée (/connexion, Sc.8). La connexion/déconnexion ne se fait plus depuis le planning. *@
@@ -473,6 +368,12 @@ else
                         @onclick="@(() => OuvrirAffecterPeriode(dateMenu))">Affecter une période</button>
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-definir-transfert"
                         @onclick="@(() => OuvrirDefinirTransfert(dateMenu))">Définir un transfert</button>
+                @* Entrée « déléguer ce jour » (s44, surface tranchée par le PO au gate G3) : seule surface
+                   d'écriture de la délégation, aux côtés des actions Palier 7. Ouvre le mini-dialog de choix du
+                   délégataire sur la date de la case ; Parent-gated par construction (le menu ne s'ouvre que
+                   pour un Parent, OuvrirMenu). L'écriture transite par le canal requête/réponse. *@
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-deleguer"
+                        @onclick="@(() => OuvrirDeleguer(dateMenu))">Déléguer ce jour</button>
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-editer-periode"
                         @onclick="@(() => OuvrirEditerPeriode(dateMenu))">Éditer une période</button>
             </div>
@@ -539,6 +440,16 @@ else
                          OnValide="FermerSuppressionSlotEtAccuser"
                          OnAnnule="FermerDialog" />
 }
+
+@if (_dateDialogDeleguer is { } dateDeleguer && _enfantSelectionne is { } enfantDeleguer)
+{
+    <DeleguerRecuperationDialog DateContexte="dateDeleguer"
+                                EnfantId="enfantDeleguer"
+                                Acteurs="_acteursFoyer"
+                                ActeursCharges="_acteursFoyerCharges"
+                                OnValide="FermerDialogEtRecharger"
+                                OnAnnule="FermerDialog" />
+}
 }
 
 <style>
@@ -558,52 +469,6 @@ else
     .pdg-controle { display: inline-flex; align-items: center; gap: .4rem; margin: 0; }
     .pdg-controle-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em;
                           font-weight: 600; color: var(--pdg-muted); white-space: nowrap; }
-
-    /* ════════ Carte « Aujourd'hui : qui récupère ce soir » (s42) ════════
-       Mini-carte tokenisée en tête du planning, LECTURE SEULE. Réutilise les couleurs de responsabilité
-       (inline, données) et le motif bicolore du transfert (diagonale, parité grille s29). */
-    .carte-aujourdhui { background: var(--pdg-card); border: 1px solid var(--pdg-border); border-radius: 16px;
-                        padding: 14px 18px; margin-bottom: 16px; box-shadow: var(--pdg-ombre-sm, 0 1px 2px rgba(16,24,40,.05));
-                        display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-    .carte-aujourdhui-titre { font-family: var(--pdg-font-titre); font-size: .82rem; text-transform: uppercase;
-                              letter-spacing: .06em; font-weight: 800; color: var(--pdg-muted); margin: 0; }
-    /* Le « qui » : pastille pleine de la couleur du responsable (fond inline) ; neutre = surface discrète. */
-    .carte-qui { display: inline-flex; align-items: center; gap: 8px; color: #fff; font-weight: 700;
-                 padding: 6px 14px; border-radius: 999px; box-shadow: 0 1px 2px rgba(16,24,40,.16); }
-    .carte-qui-neutre { background: var(--pdg-surface, #eef); color: var(--pdg-muted); box-shadow: none; }
-    .carte-qui-transfert { text-shadow: 0 1px 2px rgba(16,24,40,.55); }
-    .carte-transfert-fleche { opacity: .9; }
-    /* Le « où » : puces de slots (couleur du lieu/acteur, fond inline). */
-    .carte-ou { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; list-style: none; margin: 0; padding: 0; }
-    .carte-slot { display: inline-flex; align-items: center; gap: 6px; font-size: .78rem; }
-    .carte-slot-lieu { color: #fff; font-weight: 700; padding: 2px 8px; border-radius: 8px;
-                       box-shadow: 0 1px 2px rgba(16,24,40,.14); }
-    .carte-slot-horaire { color: var(--pdg-muted); font-variant-numeric: tabular-nums; }
-
-    /* ════════ Panneau « À venir » (s43) ════════
-       Liste tokenisée SOUS la carte du jour, LECTURE SEULE. Réutilise les couleurs de responsabilité
-       (inline, données) et le motif bicolore du transfert (parité grille s29) — aucune teinte réinventée. */
-    .panneau-a-venir { background: var(--pdg-card); border: 1px solid var(--pdg-border); border-radius: 16px;
-                       padding: 12px 18px; margin-bottom: 16px; box-shadow: var(--pdg-ombre-sm, 0 1px 2px rgba(16,24,40,.05)); }
-    .panneau-a-venir-titre { font-family: var(--pdg-font-titre); font-size: .82rem; text-transform: uppercase;
-                             letter-spacing: .06em; font-weight: 800; color: var(--pdg-muted); margin: 0 0 10px; }
-    .a-venir-vide { color: var(--pdg-muted); font-size: .86rem; margin: 0; }
-    .a-venir-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
-    .a-venir-jour { display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
-                    padding: 4px 0; border-top: 1px solid color-mix(in srgb, var(--pdg-border) 55%, transparent); }
-    .a-venir-jour:first-child { border-top: none; }
-    .a-venir-date { min-width: 92px; font-size: .78rem; font-weight: 600; color: var(--pdg-muted);
-                    text-transform: capitalize; font-variant-numeric: tabular-nums; }
-    .a-venir-qui { display: inline-flex; align-items: center; gap: 6px; color: #fff; font-weight: 700;
-                   padding: 3px 12px; border-radius: 999px; box-shadow: 0 1px 2px rgba(16,24,40,.16); font-size: .82rem; }
-    .a-venir-qui-neutre { background: var(--pdg-surface, #eef); color: var(--pdg-muted); box-shadow: none; }
-    .a-venir-qui-transfert { text-shadow: 0 1px 2px rgba(16,24,40,.55); }
-    .a-venir-transfert-fleche { opacity: .9; }
-    .a-venir-ou { display: inline-flex; align-items: center; gap: 8px; flex-wrap: wrap; }
-    .a-venir-slot { display: inline-flex; align-items: center; gap: 6px; font-size: .76rem; }
-    .a-venir-slot-lieu { color: #fff; font-weight: 700; padding: 2px 8px; border-radius: 8px;
-                         box-shadow: 0 1px 2px rgba(16,24,40,.14); }
-    .a-venir-slot-horaire { color: var(--pdg-muted); font-variant-numeric: tabular-nums; }
 
     /* ════════ Vues MOIS / 4 SEMAINES : cartes-jour ════════ */
     .grille-agenda { display: flex; flex-direction: column; gap: 8px; }

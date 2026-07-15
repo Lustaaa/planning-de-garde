@@ -48,8 +48,9 @@ public partial class PlanningPartage
     // édité en config suit sans rechargement (S9/S10).
     private List<EnfantFoyer> _enfantsFoyer = new();
 
-    // Enfant sélectionné (s42) dont la carte « Aujourd'hui » restitue le « où » (slots). Défaut = 1er enfant
-    // du référentiel ; vue seule (aucune écriture). null tant qu'aucun enfant n'est chargé.
+    // Enfant sélectionné dont on délègue la récupération d'un jour (s44) : passé en EnfantId au mini-dialog
+    // « déléguer ce jour ». Défaut = 1er enfant du référentiel ; la sélection n'écrit rien par elle-même.
+    // null tant qu'aucun enfant n'est chargé.
     private string? _enfantSelectionne;
 
     private HubConnection? _hub;
@@ -65,6 +66,10 @@ public partial class PlanningPartage
     private DateOnly? _dateDialogSupprimerPeriode;
     private DateOnly? _dateDialogEditerPeriode;
     private DateOnly? _dateDialogSupprimerSlot;
+    // Délégation de la récupération d'UN jour (s44) : la carte « Aujourd'hui » (s42) et le panneau à-venir
+    // (s43) HÉBERGENT une action « déléguer ce jour » ouvrant un mini-dialog de choix du délégataire. Jour de
+    // contexte de la dialog (null = fermée). La grille reste LECTURE SEULE : la dialog porte l'écriture.
+    private DateOnly? _dateDialogDeleguer;
     // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
     // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
     // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
@@ -448,6 +453,23 @@ public partial class PlanningPartage
     /// <summary>Ferme le menu d'actions sans rien ouvrir (clic hors panneau).</summary>
     private void FermerMenu() => _dateMenu = null;
 
+    /// <summary>
+    /// Ouvre le mini-dialog « déléguer ce jour » (s44) sur la <paramref name="date"/> de la case, depuis
+    /// l'entrée « déléguer ce jour » du <b>menu clic-case</b> (surface tranchée par le PO au gate G3 :
+    /// SEULE surface d'écriture de la délégation ; les cartes de lecture s42/s43 n'en portent plus).
+    /// Gating Invité (règle 9) mutualisé avec le menu (il ne s'ouvre que pour un Parent, OuvrirMenu) et
+    /// re-gardé ici par sécurité. La grille reste en LECTURE SEULE : la dialog porte l'écriture (canal
+    /// requête/réponse). Ferme le menu à l'ouverture de la dialog, comme les autres entrées.
+    /// </summary>
+    private void OuvrirDeleguer(DateOnly date)
+    {
+        if (!Session.EstParent)
+            return;
+
+        _dateMenu = null;
+        _dateDialogDeleguer = date;
+    }
+
     /// <summary>Depuis le menu, ouvre la dialog « Poser un slot » pré-remplie sur la date de la case.</summary>
     private void OuvrirPoserSlot(DateOnly date)
     {
@@ -583,6 +605,7 @@ public partial class PlanningPartage
         _dateDialogSupprimerPeriode = null;
         _dateDialogEditerPeriode = null;
         _dateDialogSupprimerSlot = null;
+        _dateDialogDeleguer = null;
         // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
         _plageDebut = null;
         _plageFin = null;
@@ -591,43 +614,6 @@ public partial class PlanningPartage
     /// <summary>Vrai si la case correspond à la date du jour (port d'horloge injecté) — sert au marquage
     /// visuel « aujourd'hui » (Sc.4). Pur affichage : aucune règle métier, aucun observable de domaine.</summary>
     private bool EstAujourdhui(DateOnly date) => date == Horloge.Aujourdhui;
-
-    /// <summary>
-    /// Carte « Aujourd'hui : qui récupère ce soir » (s42) — REPROJETÉE CLIENT depuis la grille déjà chargée
-    /// (JourCase du jour courant), jamais un GET dédié sur push (anti-amplification flake TempsReel) : le
-    /// « qui » résolu (surcharge&gt;fond&gt;neutre), le transfert saisi/dérivé (s31) et les slots y sont déjà
-    /// portés par la projection de lecture. <c>null</c> tant que le jour courant n'est pas dans la fenêtre
-    /// chargée (aucune carte fantôme). Lecture seule.
-    /// </summary>
-    private JourCase? CarteDuJour => _grille.Jours.FirstOrDefault(j => j.Date == Horloge.Aujourdhui);
-
-    /// <summary>Le « où » de la carte : les slots du jour courant de l'ENFANT SÉLECTIONNÉ (les autres enfants
-    /// exclus). Vide (pas de lieu) si aucun enfant sélectionné ou aucun slot — jamais une erreur.</summary>
-    private IReadOnlyList<SlotCase> SlotsCarte
-        => CarteDuJour is { } carte && _enfantSelectionne is { } enfant
-            ? carte.Slots.Where(s => s.EnfantId == enfant).ToList()
-            : Array.Empty<SlotCase>();
-
-    /// <summary>
-    /// Liste « À venir » (s43) — REPROJETÉE CLIENT depuis la grille déjà chargée (jamais un GET dédié sur push,
-    /// anti-amplification flake TempsReel) : les JOURS À VENIR de la fenêtre en main (strictement après
-    /// aujourd'hui), ordonnés par date croissante. Chaque <c>JourCase</c> porte déjà le « qui » résolu
-    /// (surcharge&gt;fond&gt;neutre), le transfert saisi/dérivé (s31) et les slots — miroir de
-    /// <see cref="AVenirQuery"/> côté serveur. Vide (message « aucun événement à venir ») quand aucun jour de la
-    /// fenêtre n'est postérieur à aujourd'hui. Lecture seule.
-    /// </summary>
-    private IReadOnlyList<JourCase> AVenir
-        => _grille.Jours
-            .Where(jour => jour.Date > Horloge.Aujourdhui)
-            .OrderBy(jour => jour.Date)
-            .ToList();
-
-    /// <summary>Le « où » d'un jour à venir : les slots de ce jour de l'ENFANT SÉLECTIONNÉ (les autres enfants
-    /// exclus). Vide (pas de lieu) si aucun enfant sélectionné ou aucun slot — jamais une erreur.</summary>
-    private IReadOnlyList<SlotCase> SlotsAVenirPour(JourCase jour)
-        => _enfantSelectionne is { } enfant
-            ? jour.Slots.Where(s => s.EnfantId == enfant).ToList()
-            : Array.Empty<SlotCase>();
 
     /// <summary>Couleur PLEINE d'un acteur (responsable de case en pastille, ou créneau) via le thème
     /// couleur partagé. La pastille de responsable et le slot portent la couleur de la personne (donnée,

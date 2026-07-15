@@ -1,0 +1,39 @@
+@inject HttpClient Canal
+
+@* Mini-dialog « Déléguer ce jour » (s44) ouverte depuis la carte « Aujourd'hui » (s42) ET le panneau
+   « À venir » (s43) : « je ne récupère pas ce jour-là, X le fera ». On choisit l'acteur RECEVANT parmi
+   les acteurs éligibles du foyer ; valider émet la commande via le CANAL D'ÉCRITURE
+   (POST /api/canal/deleguer-recuperation) — jamais la diffusion. Le use case COMPOSE l'écriture surcharge
+   ponctuelle existante (s06) ; le transfert bicolore sort dérivé de s31 (aucune règle métier ici).
+   La modal est portée par ModalConfig : Échap = « Annuler » (port IEcouteurEchapModal s33, capture document).
+   Issues : succès → OnValide (le parent ferme et relit la grille) ; refus domaine (délégataire inconnu, à
+   soi-même) / API injoignable → MOTIF dans la dialog, saisie CONSERVÉE, dialog restée OUVERTE (Sc.5). *@
+<ModalConfig TestId="dialog-deleguer" OnFermer="OnAnnule">
+    <h2 class="h4 mb-3">Déléguer ce jour</h2>
+    <p class="text-muted small mb-3">Récupération du @DateContexte.ToString("dd/MM/yyyy") — choisissez qui récupère à votre place.</p>
+    <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="deleguer-recuperation-dialog">
+        <div class="mb-3">
+            <label class="form-label">Récupéré par</label>
+            <InputSelect class="form-select" data-testid="champ-delegataire" @bind-Value="_form.VersActeurId">
+                <option value="">— choisir —</option>
+                @foreach (var a in Acteurs)
+                {
+                    <option value="@a.Id">@a.Nom</option>
+                }
+            </InputSelect>
+            @if (ActeursCharges && Acteurs.Count == 0)
+            {
+                <div class="form-text text-warning" data-testid="aucun-acteur-invite">Aucun acteur, ajoutez-en.</div>
+            }
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Déléguer</button>
+            <button type="button" class="btn btn-link" data-testid="dialog-deleguer-annuler" @onclick="Annuler">Annuler</button>
+        </div>
+    </EditForm>
+
+    @if (_motifEchec is not null)
+    {
+        <div class="alert alert-danger mt-3" data-testid="motif-echec-deleguer">@_motifEchec</div>
+    }
+</ModalConfig>

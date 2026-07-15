@@ -11,7 +11,40 @@
 
 ## En cours
 
-*(Aucun sprint en cours.)* Dernier livré = **s43 `liste-a-venir`** — **2ᵉ incrément du NOYAU PRODUIT** (prolonge la
+> **⚠️ DÉCISION PO gate G3 s44 — RETRAIT des surfaces de LECTURE s42 + s43 (rien ne se perd) — ACTÉ & LIVRÉ s44.**
+> Au gate visuel de s44, le PO a tranché (2 retours successifs) : **il ne veut QUE la grille agenda + l'action
+> sur la case**, plus aucune surface de lecture « carte du jour » / « à venir ». En conséquence, **s42
+> (carte « Aujourd'hui ») ET s43 (panneau « À venir ») sont RETIRÉS ENTIÈREMENT** — composants IHM **et**
+> read models backend `CarteDuJourQuery` (s42) / `AVenirQuery` (s43) + leurs tests (**pas de code mort**) —
+> **fait au Sc.7 ✅**. **Raison PO** : le noyau produit « qui récupère » se lit **directement sur la grille agenda**
+> (socle `GrilleAgendaQuery`, conservé) ; les deux briques de lecture dédiées faisaient doublon avec la grille et
+> n'étaient plus voulues. **Conséquence épic NOYAU PRODUIT** : les incréments « carte du jour » (s42) et « à venir »
+> (s43) précédemment marqués LIVRÉS **ne sont plus dans le produit** ; l'unique surface de lecture est la
+> grille agenda ; la 1ʳᵉ ÉCRITURE (délégation) est portée sur la grille. Les candidats « carte/liste
+> persistante hors semaine » et « à-venir au-delà de la fenêtre » (limitations s42/s43) **tombent** avec
+> le retrait de ces surfaces.
+
+**s44 `deleguer-recuperation-jour` MERGÉ — 1ʳᵉ ÉCRITURE du NOYAU PRODUIT « qui récupère »** : un parent qui ne peut
+pas récupérer un jour en **délègue la récupération à un autre acteur pour CE jour-là** (imprévu / échange de dernière
+minute, **UN jour ponctuel**). **@back** : use case `DeleguerRecuperation(jour, enfant, versActeur)` de **COMPOSITION**
+— expose l'**écriture surcharge ponctuelle EXISTANTE** (période d'UN jour, s06) avec le délégataire responsable, **aucun
+modèle/commande/store de transfert neuf** ; le **transfert cédant→recevant** est **AUTO-DÉRIVÉ s31** (R24, bascule
+fond→surcharge→fond, rendu bicolore réutilisé) ; deux adaptateurs InMemory + Mongo durable. Cas limite (**last-write-wins
+R11** sans doublon, **refus soi-même** sans écriture, jour hors fenêtre écrivable sans crash) ; cas erreur
+(**délégataire inconnu/orphelin → refus AVANT écriture**, store intact). **@ihm** : entrée **« déléguer ce jour » du
+menu clic-case** de la grille (à côté d'« Affecter une période » / « Définir un transfert ») → mini-dialog
+**Parent-gated** (Invité ne voit ni menu ni entrée), **Échap = Annuler** (port s33), refus domaine → dialog reste
+ouverte + motif + saisie conservée, émission par le **canal d'écriture** ; **convergence temps réel de la CASE** (nouveau
+responsable + transfert bicolore dérivé) sur 2ᵉ écran par **reprojection client SignalR, 0 GET**. **RETRAIT s42/s43
+acté au Sc.7** (voir ⚠️ ci-dessus). Sprint fortement pivoté au gate G3 (surface carte→menu clic-case, puis retrait
+panneau, puis retrait carte). **7/7 ✅**, gate G3 validé PO. **Hors scope (backlog)** : délégation **récurrente/série**
+(D2), **notifications** « X a délégué » (Palier 11). **Candidats de tête au prochain `/planning`** : **panneau cloche
+notifications/alertes push** (Palier 11), **délégation récurrente/série** (D2), reste Config foyer (édition depuis le
+graphe, graphe étendu, arbitrage inline vs modal, liste de slots par activité, lien adresse acteur↔lieu, suppression
+slot récurrent IHM, suppression d'un enfant) ; **P0 auth** (Google OAuth réel + écran définir-mot-de-passe), **R3
+« exactement 2 » à l'écriture** (non imposée, choix produit).
+
+Précédent = **s43 `liste-a-venir`** *(RETIRÉ du produit s44 — voir ⚠️ ci-dessus)* — **2ᵉ incrément du NOYAU PRODUIT** (prolonge la
 carte du jour s42) : un **panneau « À venir »** sous la carte « Aujourd'hui », **STRICTEMENT LECTURE**, qui restitue
 pour les **N prochains jours de la fenêtre de grille chargée** + l'enfant sélectionné : **QUI** récupère (résolu
 surcharge>fond>neutre), **OÙ** (slots s29), **transfert** éventuel (saisi OU dérivé s31). **@back** : query PURE
@@ -33,7 +66,7 @@ s42/s43), **carte/liste du jour persistante hors semaine courante** (limitation 
 reste Config foyer : **édition depuis le graphe**, **graphe étendu**, **arbitrage inline vs modal** (tension s32), **liste
 de slots par activité**, **lien adresse acteur↔lieu**, **suppression slot récurrent IHM**, **suppression d'un enfant** ;
 **P0 auth** (Google OAuth réel + écran définir-mot-de-passe), **R3 « exactement 2 » à l'écriture** (non imposée, choix
-produit). Précédent = **s42 `qui-recupere-ce-soir-carte-du-jour`** — **PIVOT assumé hors
+produit). Précédent = **s42 `qui-recupere-ce-soir-carte-du-jour`** *(RETIRÉ du produit s44 — voir ⚠️ ci-dessus)* — **PIVOT assumé hors
 Config foyer vers le NOYAU PRODUIT** (après 9 incréments consécutifs Config foyer s32→s41) : **1ᵉʳ incrément du
 noyau produit** = la carte **« Qui récupère ce soir »** (jour courant, **STRICTEMENT LECTURE**), payoff de tout
 le foyer configuré. **@back** : query `CarteDuJourQuery` **PURE composant** `GrilleAgendaQuery` (responsable
@@ -364,8 +397,8 @@ validé PO. Prochain = `/planning`.
 | Besoin | Statut | Palier | Origine |
 |--------|:------:|--------|---------|
 | Signalement d'imprévu (malade, retard…) + notification immédiate | ⬜ | Palier 12 | spec p7 |
-| Échange de dernière minute (proposition + accord requis) | ⬜ | Palier 12 | spec p7 |
-| Transferts temporaires (exception, non récurrents) | ⬜ | Palier 12 | spec règles 17-18 |
+| Échange de dernière minute *(proposition + accord requis)* — s44 a livré la **délégation directe** (un parent délègue, sans workflow de proposition/accord) ; le **flux proposition→accord** reste ⬜ | ⬜ | Palier 12 | spec p7 · partiel s44 |
+| ~~**Transferts temporaires** (exception, non récurrents)~~ **livré s44** : **délégation de la récupération d'UN jour** — use case `DeleguerRecuperation` composant l'écriture surcharge ponctuelle (s06), transfert **auto-dérivé s31**, entrée du menu clic-case Parent-gated, refus (soi-même / délégataire inconnu) sans écriture, convergence temps réel de la case (0 GET). **Reste ⬜** : délégation **récurrente/série** (D2). | ✅ | s44 | spec règles 17-18 · **s44** |
 
 ---
 

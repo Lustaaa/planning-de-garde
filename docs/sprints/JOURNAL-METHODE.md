@@ -114,6 +114,16 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   TDD parallèle de la dev-team** (fiable). Fix : `sprint.md` 5.1 + `dotnet/SKILL.md` (`-Serial`) requalifiés
   « flake soldé s39 » (fin du récit « parallèle rougit couramment »). Le triage durci s21 (re-run isolé x2-3,
   `N/N rouge = régression`) a **discriminé** flake vs régression à chaque étape — il tient et reste la règle.
+- 2026-07-15 — s44 : **3 retours PO successifs au gate G3 = rework @ihm en cascade** — la surface d'écriture
+  de la délégation (bouton sur la carte du jour), puis l'**existence même** des surfaces de lecture, ont été
+  arbitrées **après** implémentation : (1) surface carte→**menu clic-case**, (2) **retrait du panneau « À venir »**
+  (s43), (3) **retrait de la carte « Aujourd'hui »** (s42) — Sc.4-6 refaits + un Sc.7 de démolition ajouté en cours
+  de sprint. Le choix de surface (emplacement + affordance + son existence) est une **décision de CONCEPTION PO**
+  qui aurait dû tomber **au cadrage**, pas au gate visuel. Fix : garde de la **PORTE DE CONCEPTION « surface »**
+  dans le chapeau PLANNING du `scrum-master` — dès qu'un goal introduit une surface d'action d'écriture ou de
+  lecture **neuve/déplacée**, la remonter comme **point de conception explicite** (emplacement retenu + alternatives
+  écartées) pour validation PO **avec/juste après G2**, et ne mener les scénarios @ihm en RED→GREEN **qu'une fois la
+  surface arbitrée** (coût nul au cadrage vs @ihm refaits au gate).
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake
