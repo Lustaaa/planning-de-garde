@@ -111,9 +111,13 @@ public sealed class GrilleAgendaQuery
         var responsableId = ResoudreResponsable(date, periodes);
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
+        // PorteSurcharge : une surcharge (période saisie) RÉSOLVABLE couvre ce jour → délégation active
+        // reprenable (s46). Miroir EXACT du repli de ResoudreResponsable (surcharge > fond) : c'est cette
+        // même décision, surfacée pour l'IHM (entrée conditionnelle « reprendre ce jour »), pas un recalcul.
+        var porteSurcharge = periodes.Any(p => CouvreLeJour(p, date) && Resolvable(p.ResponsableId) is not null);
         // ResponsableId (id stable résolu, ou null si neutre) surfacé pour la COMPOSITION en lecture (carte
         // « qui récupère ce soir », s42) : la carte compose la résolution ici même, sans la réimplémenter.
-        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date), responsableId);
+        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date), responsableId, porteSurcharge);
     }
 
     /// <summary>

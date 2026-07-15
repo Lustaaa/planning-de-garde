@@ -5,7 +5,7 @@
 > la récupération d'un jour peut **reprendre ce jour** : la case retombe sur le **fond (cycle)** et
 > le **transfert bicolore dérivé s31 disparaît**. Usage réel : « finalement je peux récupérer ».
 
-## Avancement — 4/6
+## Avancement — 5/6
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -13,7 +13,7 @@
 | Sc.2 | Jour sans délégation active → **no-op idempotent**, store intact (ré-annulation idempotente) | @back | ✅ |
 | Sc.3 | Reprendre **UNE occurrence** (jour cliqué) d'une **plage s45** sans casser le reste de la plage | @back | ✅ |
 | Sc.4 | Entrée conditionnelle « reprendre ce jour » présente si délégation active → annule, case au fond (runtime) | @ihm | ✅ |
-| Sc.5 | Entrée **absente** si pas de délégation active · Invité ne voit ni menu ni entrée · Échap = Annuler | @ihm | 🔴 |
+| Sc.5 | Entrée **absente** si pas de délégation active · Invité ne voit ni menu ni entrée · Échap = Annuler | @ihm | ✅ |
 | Sc.6 | Convergence temps réel de la case sur 2ᵉ écran par reprojection client SignalR, **0 GET** | @ihm | 🔴 |
 
 ## Portes de conception (arbitrées AU CADRAGE — garde s44)
@@ -91,7 +91,7 @@ Scénario: Sc.4 — Entrée conditionnelle "reprendre ce jour" présente sur une
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: Sc.5 — Entrée absente hors délégation · gating Invité · Échap = Annuler
   Étant donné un Parent connecté, sur une case SANS délégation active (fond seul)
   Quand j'ouvre le menu clic-case de cette case

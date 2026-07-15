@@ -489,6 +489,12 @@ public partial class PlanningPartage
         _dateDialogReprendre = date;
     }
 
+    /// <summary>Vrai si la case de la <paramref name="date"/> porte une DÉLÉGATION ACTIVE (surcharge résolvable
+    /// couvrant ce jour, PorteSurcharge du read model) — condition d'affichage de l'entrée « reprendre ce jour »
+    /// (s46). Pur affichage : la décision de résolution vient de la projection distante, jamais recalculée ici.</summary>
+    private bool CasePorteDelegationActive(DateOnly date)
+        => _grille.Jours.FirstOrDefault(j => j.Date == date)?.PorteSurcharge == true;
+
     /// <summary>Depuis le menu, ouvre la dialog « Poser un slot » pré-remplie sur la date de la case.</summary>
     private void OuvrirPoserSlot(DateOnly date)
     {
