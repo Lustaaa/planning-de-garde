@@ -90,6 +90,26 @@ aucune persistance tirée en avant. Texte complet :
   ses jours de récurrence, la résolution **n'intervient pas** dans sa projection. **Hors scope s31** :
   multi-jours + config foyer (D2), édition d'un récurrent, **suppression d'un récurrent depuis l'IHM**
   (affordance IHM manquante, re-signalée gate s31 — candidat goal prochain).
+- **Déléguer la récupération d'UN jour** *(livré s44 — 1ᵉʳ écriture du noyau produit « qui récupère »)* → une
+  **entrée « déléguer ce jour » du menu clic-case** (à côté d'« Affecter une période » / « Définir un transfert »)
+  ouvre un **mini-dialog** de choix de l'acteur **recevant** parmi les acteurs éligibles du foyer. C'est l'**action
+  utilisateur task-orientée** « je ne récupère pas ce jour-là, X le fera » (imprévu / échange de dernière minute,
+  **UN jour ponctuel**, non récurrent). Côté back, `DeleguerRecuperation(jour, enfant, versActeur)` est un **use case
+  de COMPOSITION** : il **expose l'écriture « surcharge ponctuelle » EXISTANTE** (une période d'UN jour, s06) avec le
+  délégataire comme responsable — **aucun modèle/commande/store de transfert neuf**. La résolution **surcharge > fond**
+  fait primer le délégataire pour ce jour, et le **transfert cédant → recevant** en résultant est **AUTO-DÉRIVÉ par
+  s31** (R24, bascule fond→surcharge→fond, rendu bicolore réutilisé), **jamais réécrit**. **Deux adaptateurs** (InMemory
+  + Mongo durable). **Cas limite** : jour déjà couvert par une surcharge → **last-write-wins R11** (réaffecte, aucun
+  doublon) ; **délégation à soi-même** (délégataire = responsable déjà résolu) → **refus explicite sans écriture** ; jour
+  **hors fenêtre chargée** → écriture valide (une date), affichage suivant la fenêtre, sans crash. **Cas erreur** :
+  **délégataire inconnu / orphelin** (id stable absent du store) → **refus AVANT écriture**, store intact, aucune
+  écriture partielle. **IHM** : mini-dialog **Parent-gated** (l'Invité ne voit ni le menu ni l'entrée) ; **refus domaine**
+  → dialog **reste ouverte** + **motif** + **saisie conservée**, store intact ; **Échap = Annuler** (port
+  `IEcouteurEchapModal` s33) ; valider émet la commande par le **canal d'écriture** (jamais la diffusion). **Temps réel** :
+  la **case du jour de la grille** d'un 2ᵉ écran **converge** (nouveau responsable + transfert bicolore dérivé) par
+  **reprojection client** via **SignalR lecture seule**, **0 GET** sur push. **Défaire** = re-déléguer (last-write-wins)
+  ou supprimer la surcharge du jour via la dialog de suppression existante s16 (aucun undo dédié). **Hors scope s44**
+  (backlog) : délégation **récurrente/série** (D2), **notifications** « X a délégué » (Palier 11).
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 *Résolution de la case (surcharge > fond > neutre) & suppression/édition de période :*
