@@ -40,6 +40,12 @@ public static class CanalEcriture
     public sealed record DeleguerRecuperationRequete(
         DateOnly Jour, string EnfantId, string VersActeurId, DateOnly? JourFin = null);
 
+    /// <summary>Corps de la requête « reprendre ce jour » (s46, ferme la boucle <i>undo</i> s44/s45) émise via
+    /// le canal d'écriture : le jour REPRIS et l'enfant sélectionné. Granularité = UNE occurrence (seul ce jour,
+    /// même dans une plage s45). Le use case COMPOSE la SUPPRESSION de surcharge existante (s16) : la case
+    /// retombe sur le fond, le transfert dérivé s31 disparaît. Jour sans délégation active = no-op idempotent.</summary>
+    public sealed record AnnulerDelegationRequete(DateOnly Jour, string EnfantId);
+
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
 

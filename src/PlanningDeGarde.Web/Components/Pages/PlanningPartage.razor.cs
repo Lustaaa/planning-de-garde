@@ -70,6 +70,10 @@ public partial class PlanningPartage
     // (s43) HÉBERGENT une action « déléguer ce jour » ouvrant un mini-dialog de choix du délégataire. Jour de
     // contexte de la dialog (null = fermée). La grille reste LECTURE SEULE : la dialog porte l'écriture.
     private DateOnly? _dateDialogDeleguer;
+    // Reprise d'UN jour délégué (s46, ferme la boucle undo s44/s45) : l'entrée conditionnelle « reprendre ce
+    // jour » du menu clic-case ouvre un mini-dialog de confirmation. Jour de contexte (null = fermé). La grille
+    // reste LECTURE SEULE : la dialog porte l'écriture (canal requête/réponse, composition suppression s16).
+    private DateOnly? _dateDialogReprendre;
     // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
     // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
     // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
@@ -470,6 +474,27 @@ public partial class PlanningPartage
         _dateDialogDeleguer = date;
     }
 
+    /// <summary>
+    /// Ouvre le mini-dialog « reprendre ce jour » (s46) sur la <paramref name="date"/> de la case, depuis
+    /// l'entrée CONDITIONNELLE du menu clic-case (visible seulement sur une case portant une délégation active).
+    /// Gating Invité (règle 9) mutualisé avec le menu (il ne s'ouvre que pour un Parent, OuvrirMenu) et re-gardé
+    /// ici par sécurité. La grille reste en LECTURE SEULE : la dialog porte l'écriture (canal requête/réponse).
+    /// </summary>
+    private void OuvrirReprendre(DateOnly date)
+    {
+        if (!Session.EstParent)
+            return;
+
+        _dateMenu = null;
+        _dateDialogReprendre = date;
+    }
+
+    /// <summary>Vrai si la case de la <paramref name="date"/> porte une DÉLÉGATION ACTIVE (surcharge résolvable
+    /// couvrant ce jour, PorteSurcharge du read model) — condition d'affichage de l'entrée « reprendre ce jour »
+    /// (s46). Pur affichage : la décision de résolution vient de la projection distante, jamais recalculée ici.</summary>
+    private bool CasePorteDelegationActive(DateOnly date)
+        => _grille.Jours.FirstOrDefault(j => j.Date == date)?.PorteSurcharge == true;
+
     /// <summary>Depuis le menu, ouvre la dialog « Poser un slot » pré-remplie sur la date de la case.</summary>
     private void OuvrirPoserSlot(DateOnly date)
     {
@@ -606,6 +631,7 @@ public partial class PlanningPartage
         _dateDialogEditerPeriode = null;
         _dateDialogSupprimerSlot = null;
         _dateDialogDeleguer = null;
+        _dateDialogReprendre = null;
         // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
         _plageDebut = null;
         _plageFin = null;

@@ -34,10 +34,13 @@ public sealed record EntreeLegende(string IdentifiantStable, string Nom, string 
 /// aucune période ne le couvre) et les slots rattachés à sa date. <see cref="Transfert"/> porte
 /// l'information <b>bicolore</b> quand un transfert est saisi ce jour-là (sinon <c>null</c> : case
 /// unicolore inchangée) — présentation seule, la résolution de responsabilité reste inchangée.
+/// <see cref="PorteSurcharge"/> signale qu'une surcharge (période saisie) résolvable couvre ce jour et
+/// prime le fond — une <b>délégation active</b>, reprenable (s46). Décision de résolution surfacée en
+/// lecture, pas un modèle neuf.
 /// </summary>
 public sealed record JourCase(
     DateOnly Date, string CouleurResponsable, string NomResponsable, IReadOnlyList<SlotCase> Slots, InfoTransfert? Transfert = null,
-    string? ResponsableId = null);
+    string? ResponsableId = null, bool PorteSurcharge = false);
 
 /// <summary>
 /// Information bicolore d'une case portant un transfert : couleur de <see cref="CouleurDepart"/>

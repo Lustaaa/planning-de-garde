@@ -107,8 +107,8 @@ aucune persistance tirée en avant. Texte complet :
   → dialog **reste ouverte** + **motif** + **saisie conservée**, store intact ; **Échap = Annuler** (port
   `IEcouteurEchapModal` s33) ; valider émet la commande par le **canal d'écriture** (jamais la diffusion). **Temps réel** :
   la **case du jour de la grille** d'un 2ᵉ écran **converge** (nouveau responsable + transfert bicolore dérivé) par
-  **reprojection client** via **SignalR lecture seule**, **0 GET** sur push. **Défaire** = re-déléguer (last-write-wins)
-  ou supprimer la surcharge du jour via la dialog de suppression existante s16 (aucun undo dédié). **Hors scope s44**
+  **reprojection client** via **SignalR lecture seule**, **0 GET** sur push. **Défaire** *(undo dédié livré s46, ci-dessous)* = **reprendre ce jour** (`AnnulerDelegation`) ;
+  à défaut, re-déléguer (last-write-wins) ou supprimer la surcharge du jour via la dialog s16. **Hors scope s44**
   (backlog) : délégation **récurrente/série** (D2), **notifications** « X a délégué » (Palier 11).
 - **Déléguer la récupération sur une PLAGE `[J1..J2]`** *(livré s45 — EXTENSION de s44 du jour unique à une plage contiguë)* →
   l'imprévu qui **dure** (voyage, hospitalisation). **AUCUNE surface neuve** : le **mini-dialog « déléguer ce jour » de s44 est
@@ -129,7 +129,27 @@ aucune persistance tirée en avant. Texte complet :
   responsable + transferts bicolores dérivés aux frontières) par **reprojection client** via **SignalR lecture seule**, **0 GET**
   sur push. **Hors scope s45** (backlog) : délégation **récurrente/série** « tous les mardis » (D2, distincte d'une plage
   contiguë), **sélection de plage par DRAG sur la grille** (dépend du palier 9 calendrier-navigable non livré — la plage se
-  saisit par le champ « jusqu'au »), **undo dédié**, **notifications** (Palier 11).
+  saisit par le champ « jusqu'au »), **notifications** (Palier 11) *(l'**undo dédié** est livré s46, ci-dessous)*.
+- **Annuler / reprendre une délégation d'un jour** *(livré s46 — ferme la boucle undo laissée ouverte en s44/s45)* → une
+  **entrée « reprendre ce jour » du menu clic-case EXISTANT** (à côté de « déléguer ce jour » s44), affichée
+  **CONDITIONNELLEMENT** : **présente uniquement quand la case cliquée porte une délégation active** (surcharge de
+  délégation résolue via `JourCase.PorteSurcharge`, surface en **lecture**), **absente** sinon. C'est l'action « finalement
+  je peux récupérer ». **AUCUNE surface neuve** (ni bouton undo, ni toast overlay : la grille reste la seule surface, garde
+  s44). Côté back, `AnnulerDelegation(jour[, enfant])` est un **use case de COMPOSITION** : il **compose la SUPPRESSION de
+  surcharge EXISTANTE (s16)** → la case du jour **retombe sur le FOND (cycle)** et le **transfert bicolore dérivé s31
+  DISPARAÎT** (re-dérivé de la résolution après suppression, jamais réécrit) — **aucun modèle / commande / store neuf**.
+  **Granularité = UNE OCCURRENCE** : « reprendre ce jour » annule **le seul jour cliqué**, **même s'il appartient à une plage
+  `[J1..J2]` déléguée (s45)** — les autres jours de la plage **restent délégués**, les **segments restants sont réécrits par
+  le chemin période s06** et les **transferts dérivés s31 aux frontières RECALCULÉS** (le trou créé produit ses propres
+  bascules) ; reprendre toute une plage = répéter l'action jour par jour (pas d'action « plage » dédiée). **Deux adaptateurs**
+  (InMemory + Mongo durable), écriture prouvée store réel. **Cas limite** : jour **sans délégation active** → **no-op
+  idempotent** (succès, store intact, aucune suppression collatérale) ; **ré-annulation idempotente** ; écriture concurrente
+  → **last-write-wins R11** sans doublon ni jour tiers touché. **IHM** : entrée **Parent-gated** (l'Invité ne voit ni le menu
+  ni l'entrée), **mini-dialog de confirmation** ; **Échap = Annuler** (port `IEcouteurEchapModal` s33, aucune commande émise,
+  store intact) ; valider émet `annuler-delegation` par le **canal d'écriture** (jamais la diffusion). **Temps réel** : la
+  **case du jour** d'un 2ᵉ écran **converge** (responsable de fond restauré, transfert dérivé disparu) par **reprojection
+  client** via **SignalR lecture seule**, **0 GET** sur push. **Hors scope s46** (backlog) : action « reprendre toute la
+  plage » d'un coup, **notifications** (Palier 11).
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 *Résolution de la case (surcharge > fond > neutre) & suppression/édition de période :*

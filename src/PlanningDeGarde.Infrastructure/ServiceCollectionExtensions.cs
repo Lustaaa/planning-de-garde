@@ -225,6 +225,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<SupprimerSlotHandler>();
         services.AddScoped<AffecterPeriodeHandler>();
         services.AddScoped<DeleguerRecuperationHandler>();
+        services.AddScoped<AnnulerDelegationHandler>();
         services.AddScoped<ModifierPeriodeHandler>();
         services.AddScoped<EditerPeriodeHandler>();
         services.AddScoped<SupprimerPeriodeHandler>();
