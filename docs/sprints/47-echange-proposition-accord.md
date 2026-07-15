@@ -5,7 +5,7 @@
 > proposition→accord** dont les propositions arrivent comme **notifications ACTIONNABLES** dans la
 > cloche. La cloche est la **1ʳᵉ surface hors-grille rouverte** depuis s44.
 
-## Avancement — 2/9
+## Avancement — 3/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -17,7 +17,7 @@
 | **BRIQUE B — Échange proposition → accord (greffé sur la cloche)** | | | |
 | Sc.5 | PROPOSER = notification `pending` chez le recevant **SANS aucune écriture de surcharge** (résolution de la case inchangée) | @back | ✅ |
 | Sc.6 | ACCEPTER **compose la délégation s44** (surcharge + transfert dérivé s31) ; REFUSER retire sans écriture — Mongo durable | @back | ✅ |
-| Sc.7 | Cas limite / erreur : soi-même refusé · délégataire inconnu/orphelin refusé AVANT écriture · ré-proposition last-write-wins R11 · jour hors fenêtre sans crash | @back | 🔴 |
+| Sc.7 | Cas limite / erreur : soi-même refusé · délégataire inconnu/orphelin refusé AVANT écriture · ré-proposition last-write-wins R11 · jour hors fenêtre sans crash | @back | ✅ |
 | Sc.8 | Notification d'échange **ACTIONNABLE dans la cloche** (Accepter / Refuser depuis la notif) + entrée « proposer un échange » du menu clic-case (Parent-gated), Échap | @ihm | 🔴 |
 | Sc.9 | Temps réel : accord → notif + case résolue (surcharge + transfert) sur 2ᵉ écran par reprojection SignalR, 0 GET ; refus → notif close sans écriture | @ihm | 🔴 |
 
@@ -163,7 +163,7 @@ Quand une autre Proposition pending est REFUSÉE (RefuserProposition)
 Alors elle passe à "refusé", AUCUNE surcharge n'est écrite, le store reste intact
 ```
 
-### Sc.7 — Cas limite & erreur : refus AVANT écriture, idempotence, robustesse @back @pending
+### Sc.7 — Cas limite & erreur : refus AVANT écriture, idempotence, robustesse @back @vert
 ```gherkin
 Quand un parent PROPOSE l'échange à SOI-MÊME (recevant = responsable déjà résolu)
 Alors la proposition est REFUSÉE explicitement, sans aucune écriture (aucune Proposition, aucune surcharge)
