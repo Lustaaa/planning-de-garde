@@ -64,7 +64,7 @@
 >   suppression EXISTANTE s16 — **aucun** bouton « annuler » neuf (candidat backlog séparé).
 > - **Notifications** : aucune cloche « X a délégué » — Palier 11 (backlog).
 
-## Avancement — 5/6
+## Avancement — 6/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -73,7 +73,7 @@
 | 3 | **Cas ERREUR — délégataire inconnu / orphelin** : déléguer une plage `[J1..J2]` vers un acteur dont l'**id est absent du store** → **refus AVANT écriture**, store **intact**, **aucune écriture partielle** (aucun jour de la plage écrit) ; identique sur les deux adaptateurs | back | ✅ |
 | 4 | **Champ « jusqu'au » dans le mini-dialog EXISTANT (menu clic-case)** : depuis l'entrée « déléguer ce jour » du `menu-actions-case`, le mini-dialog porte un **champ « jusqu'au »** (défaut = jour cliqué) ; valider émet la commande `[début..fin]` via le **canal d'écriture** ; **Échap = Annuler** (aucune commande) ; **Parent-gated** (l'Invité ne voit ni menu ni entrée) | 🖥️ IHM | ✅ |
 | 5 | **Refus domaine → dialog reste ouverte + motif + saisie (plage) conservée** : une délégation de plage refusée (`fin < début`, soi-même, délégataire inconnu) laisse le **mini-dialog OUVERT**, affiche le **motif**, **conserve la saisie** (acteur **ET** plage début/fin) ; **store intact** ; fermeture uniquement sur Annuler/Échap ou succès | 🖥️ IHM | ✅ |
-| 6 | **Temps réel — TOUTES les cases de la plage convergent (0 GET)** : après une délégation de plage sur le 1ᵉʳ écran, **chaque case `[J1..J2]`** de la grille d'un **2ᵉ écran CONVERGE** sans rechargement (nouveau responsable + **transferts bicolores dérivés s31** aux frontières) ; convergence par **reprojection client** via **SignalR lecture seule** (**0 GET** sur push) | 🖥️ IHM | 🔴 |
+| 6 | **Temps réel — TOUTES les cases de la plage convergent (0 GET)** : après une délégation de plage sur le 1ᵉʳ écran, **chaque case `[J1..J2]`** de la grille d'un **2ᵉ écran CONVERGE** sans rechargement (nouveau responsable + **transferts bicolores dérivés s31** aux frontières) ; convergence par **reprojection client** via **SignalR lecture seule** (**0 GET** sur push) | 🖥️ IHM | ✅ |
 
 > **⚠️ Porte de conception SURFACE — AUCUNE surface neuve (décision SM au cadrage, anti-rework G3).**
 > La plage se saisit **dans le mini-dialog EXISTANT s44** (champ « jusqu'au »), ouvert depuis
@@ -187,7 +187,7 @@ Et rien n'est appliqué, le store reste intact
 Et le dialog ne se ferme que sur Annuler / Échap, ou sur un succès
 ```
 
-### Sc.6 — Temps réel : TOUTES les cases de la plage convergent (0 GET) @ihm @pending
+### Sc.6 — Temps réel : TOUTES les cases de la plage convergent (0 GET) @ihm @vert
 ```gherkin
 Étant donné deux écrans planning ouverts sur le même enfant et la même fenêtre de grille chargée
 Quand un PARENT délègue la récupération d'une plage [J1..J2] depuis le menu clic-case sur le 1ᵉʳ écran (Sc.4)
