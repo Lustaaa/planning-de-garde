@@ -24,7 +24,28 @@
 > persistante hors semaine » et « à-venir au-delà de la fenêtre » (limitations s42/s43) **tombent** avec
 > le retrait de ces surfaces.
 
-**s45 `deleguer-plage-de-jours` MERGÉ — EXTENSION de la délégation s44 du JOUR UNIQUE à une PLAGE `[J1..J2]`** : l'imprévu
+**s46 `annuler-reprendre-delegation` MERGÉ — FERME la boucle *undo* laissée ouverte en s44/s45** : un parent qui a délégué la
+récupération d'un jour peut **reprendre ce jour** (« finalement je peux récupérer »). **AUCUN modèle / store / commande neuf,
+AUCUNE surface neuve.** **@back** : use case `AnnulerDelegation(jour[, enfant])` de **COMPOSITION** — **compose la SUPPRESSION de
+surcharge EXISTANTE (s16)** → la case retombe sur le **FOND (cycle)**, le **transfert bicolore dérivé s31 DISPARAÎT** (re-dérivé
+de la résolution, jamais réécrit) ; deux adaptateurs InMemory + Mongo durable, prouvé store réel. **Cas limite** : jour **sans
+délégation active** → **no-op idempotent** (store intact), **ré-annulation idempotente**, **last-write-wins R11** sans doublon ni
+jour tiers touché. **GRANULARITÉ = UNE OCCURRENCE** : reprendre **le seul jour cliqué** **même s'il fait partie d'une plage s45** —
+les segments restants `[J1..J-1]`/`[J+1..J3]` réécrits par le **chemin période s06**, transferts dérivés **recalculés** (le trou
+produit ses propres bascules) ; **PAS** toute la série d'un coup (reprendre une plage = jour par jour). **@ihm** : **entrée
+conditionnelle « reprendre ce jour » du menu clic-case EXISTANT** (à côté de « déléguer ce jour » s44), **visible seulement si la
+case porte une délégation active** (`JourCase.PorteSurcharge`, surface en lecture), **absente** sinon ; **Parent-gated** (Invité ne
+voit ni menu ni entrée), **mini-dialog de confirmation Échap = Annuler** (port s33), émission par le **canal d'écriture**
+`annuler-delegation` ; **convergence temps réel** de la case sur 2ᵉ écran par **reprojection client SignalR, 0 GET**. **PORTE DE
+CONCEPTION SURFACE arbitrée AU CADRAGE** (garde s44) : aucune surface neuve, **0 rework G3, 6/6 du 1ᵉʳ coup**, gate G3 validé PO,
+**aucun retour produit**. Suite **784/787** (3 skip baseline). **La boucle undo (hors scope s44/s45) est désormais FERMÉE.** **Hors
+scope s46** (backlog) : action « reprendre toute la plage » d'un coup, **notifications** « X a repris » (Palier 11). **Candidats de
+tête au prochain `/planning`** : **panneau cloche notifications/alertes push** (Palier 11), **délégation récurrente/série** (D2),
+reste Config foyer (édition depuis le graphe, graphe étendu, arbitrage inline vs modal, liste de slots par activité, lien adresse
+acteur↔lieu, suppression slot récurrent IHM, suppression d'un enfant) ; **P0 auth** (Google OAuth réel + écran
+définir-mot-de-passe), **R3 « exactement 2 » à l'écriture** (non imposée, choix produit).
+
+Précédent = **s45 `deleguer-plage-de-jours` MERGÉ — EXTENSION de la délégation s44 du JOUR UNIQUE à une PLAGE `[J1..J2]`** : l'imprévu
 qui DURE (voyage, hospitalisation, « je pars du 20 au 25, X récupère les enfants »). **AUCUNE surface neuve, AUCUN modèle/
 commande neuf** : le **mini-dialog « déléguer ce jour » EXISTANT (s44)** est **enrichi d'un champ « jusqu'au »** (date de
 fin, **défaut = jour cliqué = parité s44 stricte** → délégation d'UN jour inchangée). **@back** : `DeleguerRecuperation(début,
@@ -39,8 +60,8 @@ plage)** ; convergence temps réel de **TOUTES les cases de la plage** (nouveau 
 sur 2ᵉ écran par **reprojection client SignalR, 0 GET**. **PORTE DE CONCEPTION SURFACE arbitrée AU CADRAGE** (garde s44) :
 surface tenue (mini-dialog existant), **0 rework G3, 6/6 du 1ᵉʳ coup**, gate G3 validé PO. Suite **770/773** (3 skip). **Hors
 scope (backlog)** : délégation **récurrente/série « tous les mardis »** (D2, distincte d'une plage contiguë), **sélection de
-plage par DRAG sur la grille** (dépend du **palier 9 calendrier-navigable non livré**), **annulation/undo dédié** (re-déléguer
-last-write-wins ou supprimer via dialog s16), **notifications** « X a délégué » (Palier 11). **Candidats de tête au prochain
+plage par DRAG sur la grille** (dépend du **palier 9 calendrier-navigable non livré**), ~~**annulation/undo dédié**~~ **LIVRÉ s46**
+(`AnnulerDelegation` compose la suppression s16, retour au fond, granularité une occurrence), **notifications** « X a délégué » (Palier 11). **Candidats de tête au prochain
 `/planning`** : **panneau cloche notifications/alertes push** (Palier 11), **délégation récurrente/série** (D2), reste Config
 foyer (édition depuis le graphe, graphe étendu, arbitrage inline vs modal, liste de slots par activité, lien adresse
 acteur↔lieu, suppression slot récurrent IHM, suppression d'un enfant) ; **P0 auth** (Google OAuth réel + écran
