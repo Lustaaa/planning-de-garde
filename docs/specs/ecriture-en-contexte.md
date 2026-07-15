@@ -110,6 +110,26 @@ aucune persistance tirée en avant. Texte complet :
   **reprojection client** via **SignalR lecture seule**, **0 GET** sur push. **Défaire** = re-déléguer (last-write-wins)
   ou supprimer la surcharge du jour via la dialog de suppression existante s16 (aucun undo dédié). **Hors scope s44**
   (backlog) : délégation **récurrente/série** (D2), **notifications** « X a délégué » (Palier 11).
+- **Déléguer la récupération sur une PLAGE `[J1..J2]`** *(livré s45 — EXTENSION de s44 du jour unique à une plage contiguë)* →
+  l'imprévu qui **dure** (voyage, hospitalisation). **AUCUNE surface neuve** : le **mini-dialog « déléguer ce jour » de s44 est
+  enrichi d'un champ « jusqu'au »** (date de fin) ; son **défaut = le jour cliqué (`fin = début`)** → la délégation d'UN jour
+  (s44) reste **strictement inchangée**. Côté back, `DeleguerRecuperation(début, fin, enfant, versActeur)` **COMPOSE l'écriture
+  « surcharge » sur la période `[début..fin]` via le chemin EXISTANT s06** (qui gère déjà une période multi-jours) — **aucun
+  modèle / commande / store neuf, aucune nouvelle dérivation de transfert**. Le délégataire **prime (surcharge > fond) sur
+  CHAQUE jour** de la plage, et les **transferts bicolores** sont **AUTO-DÉRIVÉS par s31** (R24) aux **DEUX frontières** (entrée
+  à `J1`, sortie après `J2`), **jamais réécrits**. **Deux adaptateurs** (InMemory + Mongo durable), écriture prouvée store réel.
+  **Cas limite** : plage chevauchant une surcharge existante → **last-write-wins R11** (réaffecte, **aucun doublon**) ; **`fin <
+  début` (plage vide)** → **refus AVANT écriture**, store intact ; **délégation à soi-même** (délégataire = responsable de fond
+  de toute la plage) → **refus explicite sans écriture** ; **`fin` hors fenêtre chargée** → écriture valide **sans crash**,
+  affichage suivant la fenêtre. **Cas erreur** : **délégataire inconnu / orphelin** → **refus AVANT écriture**, store intact,
+  **aucune écriture partielle** (aucun jour de la plage écrit) — le refus est **ATOMIQUE** sur toute la plage. **IHM** : champ
+  « jusqu'au » **Parent-gated**, **Échap = Annuler** (port `IEcouteurEchapModal` s33) ; **refus domaine → dialog reste ouverte**
+  + **motif** + **saisie conservée (acteur ET plage début/fin)**, store intact ; valider émet la commande `[début..fin]` par le
+  **canal d'écriture**. **Temps réel** : **TOUTES les cases de la plage** de la grille d'un 2ᵉ écran **convergent** (nouveau
+  responsable + transferts bicolores dérivés aux frontières) par **reprojection client** via **SignalR lecture seule**, **0 GET**
+  sur push. **Hors scope s45** (backlog) : délégation **récurrente/série** « tous les mardis » (D2, distincte d'une plage
+  contiguë), **sélection de plage par DRAG sur la grille** (dépend du palier 9 calendrier-navigable non livré — la plage se
+  saisit par le champ « jusqu'au »), **undo dédié**, **notifications** (Palier 11).
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 *Résolution de la case (surcharge > fond > neutre) & suppression/édition de période :*
