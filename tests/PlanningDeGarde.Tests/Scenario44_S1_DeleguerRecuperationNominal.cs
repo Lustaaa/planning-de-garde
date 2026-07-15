@@ -39,6 +39,11 @@ public class Scenario44_S1_DeleguerRecuperationNominal
             new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB())),
             new FakeEnumerationActeursFoyer(ParentA, ParentB));
 
+    // Observation de la case résolue d'un jour via la GRILLE (socle : les read models de lecture s42/s43
+    // qui la composaient ont été retirés — décision PO s44 Sc.7). La semaine du jour le contient toujours.
+    private static JourCase CaseDuJour(GrilleAgendaQuery grille, DateOnly jour)
+        => grille.Projeter(jour, VuePlanning.Semaine).Jours.Single(j => j.Date == jour);
+
     // ---------- Test d'acceptation (boucle externe, frontière Application) ----------
     [Fact]
     public void Acceptation_Should_Ecrire_une_surcharge_dun_jour_et_faire_primer_le_delegataire_avec_transfert_derive()
@@ -47,8 +52,7 @@ public class Scenario44_S1_DeleguerRecuperationNominal
         var grille = Grille(periodes);
 
         // Précondition : le jour J est RÉSOLU PAR LE FOND (Parent A), aucune surcharge.
-        var avant = new CarteDuJourQuery(grille).Lire(Mercredi_08_07_2026, LeaId).Responsable;
-        Assert.Equal(ParentA, avant.ActeurId);
+        Assert.Equal(ParentA, CaseDuJour(grille, Mercredi_08_07_2026).ResponsableId);
         Assert.Empty(periodes.AllSnapshots());
 
         // When — je délègue la récupération du jour J à Parent B.
@@ -64,17 +68,17 @@ public class Scenario44_S1_DeleguerRecuperationNominal
         Assert.Equal(Mercredi_08_07_2026, DateOnly.FromDateTime(periode.Fin));
 
         // Then — la case du jour J fait désormais PRIMER B (surcharge > fond).
-        var apres = new CarteDuJourQuery(grille).Lire(Mercredi_08_07_2026, LeaId);
-        Assert.Equal(ParentB, apres.Responsable.ActeurId);
-        Assert.Equal("Bruno", apres.Responsable.Nom);
+        var apres = CaseDuJour(grille, Mercredi_08_07_2026);
+        Assert.Equal(ParentB, apres.ResponsableId);
+        Assert.Equal("Bruno", apres.NomResponsable);
 
         // Then — A reste le fond des autres jours (la veille, même semaine ISO).
-        Assert.Equal(ParentA, new CarteDuJourQuery(grille).Lire(Mardi_07_07_2026, LeaId).Responsable.ActeurId);
+        Assert.Equal(ParentA, CaseDuJour(grille, Mardi_07_07_2026).ResponsableId);
 
         // Then — un transfert A → B est AUTO-DÉRIVÉ pour J (bascule fond→surcharge), LU jamais réécrit.
         Assert.NotNull(apres.Transfert);
-        Assert.Equal("Alice", apres.Transfert!.CedantNom);
-        Assert.Equal("Bruno", apres.Transfert.RecevantNom);
+        Assert.Equal("Alice", apres.Transfert!.NomDepart);
+        Assert.Equal("Bruno", apres.Transfert.NomArrivee);
     }
 
     // ---------- Acceptation runtime — adaptateur InMemory RÉEL (1er des deux adaptateurs) ----------
@@ -94,7 +98,7 @@ public class Scenario44_S1_DeleguerRecuperationNominal
             cycle, config, new InMemorySlotRecurrentRepository(), new InMemoryTransfertRepository());
 
         // Précondition : le jour J est résolu par le fond (Alice).
-        Assert.Equal(aliceId, new CarteDuJourQuery(grille).Lire(Mercredi_08_07_2026, LeaId).Responsable.ActeurId);
+        Assert.Equal(aliceId, CaseDuJour(grille, Mercredi_08_07_2026).ResponsableId);
 
         var resultat = new DeleguerRecuperationHandler(grille, periodes, config)
             .Handle(new DeleguerRecuperationCommand(Mercredi_08_07_2026, LeaId, brunoId));
@@ -104,10 +108,10 @@ public class Scenario44_S1_DeleguerRecuperationNominal
         var periode = Assert.Single(periodes.AllSnapshots());
         Assert.Equal(brunoId, periode.ResponsableId);
 
-        var carte = new CarteDuJourQuery(grille).Lire(Mercredi_08_07_2026, LeaId);
-        Assert.Equal(brunoId, carte.Responsable.ActeurId);
-        Assert.NotNull(carte.Transfert);
-        Assert.Equal("Alice", carte.Transfert!.CedantNom);
-        Assert.Equal("Bruno", carte.Transfert.RecevantNom);
+        var caseJour = CaseDuJour(grille, Mercredi_08_07_2026);
+        Assert.Equal(brunoId, caseJour.ResponsableId);
+        Assert.NotNull(caseJour.Transfert);
+        Assert.Equal("Alice", caseJour.Transfert!.NomDepart);
+        Assert.Equal("Bruno", caseJour.Transfert.NomArrivee);
     }
 }

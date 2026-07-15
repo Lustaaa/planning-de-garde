@@ -24,6 +24,11 @@ public sealed class DeleguerRecuperationMongoTests : IDisposable
 
     private static readonly DateOnly Mercredi_08_07_2026 = new(2026, 7, 8); // ISO 28 paire → fond Parent A, aucune surcharge
 
+    // Observation de la case résolue d'un jour via la GRILLE (socle : les read models de lecture s42/s43
+    // qui la composaient ont été retirés — décision PO s44 Sc.7). La semaine du jour le contient toujours.
+    private static JourCase CaseDuJour(GrilleAgendaQuery grille, DateOnly jour)
+        => grille.Projeter(jour, VuePlanning.Semaine).Jours.Single(j => j.Date == jour);
+
     private GrilleAgendaQuery GrilleNeuve()
     {
         var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
@@ -49,7 +54,7 @@ public sealed class DeleguerRecuperationMongoTests : IDisposable
         cycle.DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = parentA, [1] = parentB }));
 
         // Précondition : le jour J est résolu par le fond (Parent A).
-        Assert.Equal(parentA, new CarteDuJourQuery(GrilleNeuve()).Lire(Mercredi_08_07_2026, "enfant-lea").Responsable.ActeurId);
+        Assert.Equal(parentA, CaseDuJour(GrilleNeuve(), Mercredi_08_07_2026).ResponsableId);
 
         // --- When : je délègue la récupération du jour J à Parent B via le use case câblé sur Mongo réel ---
         var grille = GrilleNeuve();
@@ -66,13 +71,13 @@ public sealed class DeleguerRecuperationMongoTests : IDisposable
         Assert.Equal(Mercredi_08_07_2026, DateOnly.FromDateTime(surcharge.Debut));
         Assert.Equal(Mercredi_08_07_2026, DateOnly.FromDateTime(surcharge.Fin));
 
-        // --- Then : la carte (grille neuve) résout B pour J + transfert dérivé A → B ---
-        var carte = new CarteDuJourQuery(GrilleNeuve()).Lire(Mercredi_08_07_2026, "enfant-lea");
-        Assert.Equal(parentB, carte.Responsable.ActeurId);
-        Assert.Equal("Bruno", carte.Responsable.Nom);
-        Assert.NotNull(carte.Transfert);
-        Assert.Equal("Alice", carte.Transfert!.CedantNom);
-        Assert.Equal("Bruno", carte.Transfert.RecevantNom);
+        // --- Then : la grille neuve résout B pour J + transfert dérivé A → B ---
+        var caseJour = CaseDuJour(GrilleNeuve(), Mercredi_08_07_2026);
+        Assert.Equal(parentB, caseJour.ResponsableId);
+        Assert.Equal("Bruno", caseJour.NomResponsable);
+        Assert.NotNull(caseJour.Transfert);
+        Assert.Equal("Alice", caseJour.Transfert!.NomDepart);
+        Assert.Equal("Bruno", caseJour.Transfert.NomArrivee);
     }
 
     [MongoRequisFact]

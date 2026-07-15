@@ -30,7 +30,7 @@ public sealed class FrontWasmDeleguerRefusResteOuverteTests : TestContext
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Aujourdhui);
         Assert.Equal(
             "Alice",
-            grille.Find("[data-testid='carte-aujourdhui'] [data-testid='carte-qui']").TextContent.Trim());
+            GrilleRuntimeHarness.CaseDuJour(grille, "29/06").QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
 
         // When — le Parent ouvre « déléguer ce jour » via le MENU CLIC-CASE (surface tranchée au gate G3) :
         // clic sur la case du jour (29/06) → menu → entrée « déléguer ce jour » → mini-dialog ; il choisit

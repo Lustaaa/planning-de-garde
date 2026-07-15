@@ -37,6 +37,11 @@ public class Scenario44_S2_DeleguerCasLimite
     private static DeleguerRecuperationHandler Handler(IPeriodeRepository periodes)
         => new(Grille(periodes), periodes, new FakeEnumerationActeursFoyer(ParentA, ParentB, ParentC));
 
+    // Observation de la case résolue d'un jour via la GRILLE (socle : les read models de lecture s42/s43
+    // qui la composaient ont été retirés — décision PO s44 Sc.7). La semaine du jour le contient toujours.
+    private static JourCase CaseDuJour(GrilleAgendaQuery grille, DateOnly jour)
+        => grille.Projeter(jour, VuePlanning.Semaine).Jours.Single(j => j.Date == jour);
+
     [Fact]
     public void Should_Reaffecter_sans_doublon_When_le_jour_est_deja_couvert_par_une_surcharge()
     {
@@ -51,7 +56,7 @@ public class Scenario44_S2_DeleguerCasLimite
         var periode = Assert.Single(periodes.AllSnapshots());
         Assert.Equal(ParentB, periode.ResponsableId);
         // La case résout désormais B.
-        Assert.Equal(ParentB, new CarteDuJourQuery(Grille(periodes)).Lire(Mercredi_08_07_2026, LeaId).Responsable.ActeurId);
+        Assert.Equal(ParentB, CaseDuJour(Grille(periodes), Mercredi_08_07_2026).ResponsableId);
     }
 
     [Fact]

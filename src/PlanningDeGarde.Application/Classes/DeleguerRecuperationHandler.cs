@@ -15,9 +15,9 @@ public sealed record DeleguerRecuperationCommand(DateOnly Jour, string EnfantId,
 
 /// <summary>
 /// Use case de COMPOSITION : « déléguer la récupération d'UN jour » COMPOSE le chemin d'écriture
-/// « affecter une période » (surcharge d'UN jour, s06) avec le délégataire comme responsable — miroir
-/// de la façon dont <see cref="CarteDuJourQuery"/> / <see cref="AVenirQuery"/> composent
-/// <see cref="GrilleAgendaQuery"/> en lecture. Aucun nouveau modèle de résolution (surcharge &gt; fond
+/// « affecter une période » (surcharge d'UN jour, s06) avec le délégataire comme responsable — il
+/// COMPOSE la résolution existante portée par <see cref="GrilleAgendaQuery"/> en lecture, sans la
+/// réimplémenter. Aucun nouveau modèle de résolution (surcharge &gt; fond
 /// &gt; neutre inchangée), aucun store neuf, aucune nouvelle dérivation de transfert : le bicolore sort
 /// de s31 par construction dès que la surcharge fait basculer la responsabilité du jour.
 /// </summary>

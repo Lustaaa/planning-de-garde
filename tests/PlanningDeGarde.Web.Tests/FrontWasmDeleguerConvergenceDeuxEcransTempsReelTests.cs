@@ -16,20 +16,21 @@ namespace PlanningDeGarde.Web.Tests;
 
 /// <summary>
 /// Sprint 44 — Sc.6 (🖥️ @ihm) — acceptation de NIVEAU RUNTIME : après une délégation sur le 1ᵉʳ écran, la
-/// CARTE « Aujourd'hui » (s42) ET le PANNEAU « À venir » (s43) d'un 2ᵉ écran CONVERGENT sans rechargement —
-/// nouveau responsable + TRANSFERT dérivé bicolore (s31) — par REPROJECTION CLIENT de la grille rafraîchie
-/// via la diffusion SignalR de LECTURE SEULE (s20). L'écriture, elle, a transité par le canal requête/réponse.
+/// CASE DU JOUR de la GRILLE AGENDA d'un 2ᵉ écran CONVERGE sans rechargement — nouveau responsable + TRANSFERT
+/// dérivé bicolore (s31) — par REPROJECTION CLIENT de la grille rafraîchie via la diffusion SignalR de LECTURE
+/// SEULE (s20). L'écriture, elle, a transité par le canal requête/réponse. La grille est la SEULE surface de
+/// lecture depuis le retrait de la carte s42 / du panneau s43 (décision PO s44 Sc.7).
 ///
 /// <para>Profil réaliste : un CYCLE DE FOND (parent-a semaines paires ISO, parent-b impaires) pilote le
-/// planning. Aujourd'hui (lundi 29/06, ISO 27 → Bruno) porte déjà un transfert dérivé Alice→Bruno (bascule du
-/// cycle au lundi). Déléguer la récupération d'aujourd'hui à Nina (la nounou) sur l'écran 1 fait, sur l'écran
-/// 2 : (a) la CARTE reprojeter le transfert dérivé Alice→<b>Nina</b> (nouveau recevant) ; (b) le PANNEAU
-/// (30/06) reprojeter un NOUVEAU transfert dérivé <b>Nina→Bruno</b> (la bascule se décale d'un jour). Aucune
-/// teinte réinventée, aucun GET dédié sur push : les deux surfaces se recalculent depuis la MÊME grille relue.</para>
+/// planning. Aujourd'hui (lundi 29/06) porte déjà un transfert dérivé Alice→Bruno (bascule du cycle au lundi).
+/// Déléguer la récupération d'aujourd'hui à Nina (la nounou) sur l'écran 1 fait, sur l'écran 2 : (a) la CASE
+/// du jour reprojeter le nouveau responsable <b>Nina</b> (recevant délégué) + conserver la pastille bicolore ;
+/// (b) la CASE du 30/06 reprojeter un NOUVEAU transfert dérivé (la bascule se décale d'un jour). Aucune teinte
+/// réinventée, aucun GET dédié sur push : la case se recalcule depuis la MÊME grille relue.</para>
 ///
 /// Anti « vert qui ment » : l'écriture part réellement du canal (POST) de l'écran 1, la convergence de l'écran
-/// 2 passe par la diffusion SignalR RÉELLE — pas une doublure. Un GET dédié par surface amplifierait le flake
-/// TempsReel (garde s42/s43) : ici les surfaces sont de simples reprojections de la grille en main.
+/// 2 passe par la diffusion SignalR RÉELLE — pas une doublure. Un GET dédié sur push amplifierait le flake
+/// TempsReel (garde s42/s43) : ici la case est une simple reprojection de la grille en main.
 /// </summary>
 [Collection("SignalRTempsReel")]
 public sealed class FrontWasmDeleguerConvergenceDeuxEcransTempsReelTests : TestContext
@@ -47,13 +48,18 @@ public sealed class FrontWasmDeleguerConvergenceDeuxEcransTempsReelTests : TestC
         var ecran1 = RendreGrillePartagee(api, Aujourdhui);
         var ecran2 = RendreGrillePartagee(api, Aujourdhui);
 
-        // Précondition écran 2 — aujourd'hui (29/06) porte déjà un transfert dérivé Alice → Bruno (bascule du
-        // cycle au lundi), et le 30/06 est unicolore Bruno (même semaine ISO, pas de bascule).
+        // Précondition écran 2 — la CASE du jour (29/06) de la grille porte déjà un transfert dérivé
+        // Alice → Bruno (bascule du cycle au lundi) : responsable résolu Bruno + pastille bicolore. Le 30/06
+        // est unicolore Bruno (même semaine ISO, pas de bascule) : aucune pastille de transfert.
         ecran2.WaitForAssertion(
-            () => Assert.Equal("Bruno",
-                ecran2.Find("[data-testid='carte-aujourdhui'] [data-testid='carte-transfert-recevant']").TextContent.Trim()),
+            () =>
+            {
+                Assert.Equal("Bruno",
+                    GrilleRuntimeHarness.CaseDuJour(ecran2, "29/06").QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
+                Assert.NotNull(GrilleRuntimeHarness.CaseDuJour(ecran2, "29/06").QuerySelector("[data-testid='case-transfert-bicolore']"));
+            },
             TimeSpan.FromSeconds(10));
-        Assert.NotNull(Ligne(ecran2, "2026-06-30").QuerySelector("[data-testid='a-venir-responsable']"));
+        Assert.Null(GrilleRuntimeHarness.CaseDuJour(ecran2, "30/06").QuerySelector("[data-testid='case-transfert-bicolore']"));
 
         // When — sur l'ÉCRAN 1, un Parent délègue la récupération d'aujourd'hui à Nina (la nounou) via l'ENTRÉE
         // DU MENU CLIC-CASE (surface tranchée au gate G3) : clic sur la case du jour (29/06) → menu → entrée
@@ -86,25 +92,26 @@ public sealed class FrontWasmDeleguerConvergenceDeuxEcransTempsReelTests : TestC
         try
         {
             // Then — SANS rechargement, l'ÉCRAN 2 CONVERGE (reprojection client depuis la grille relue) :
-            //  (a) la CARTE du jour reprojette le transfert dérivé Alice → NINA (nouveau recevant délégué) ;
-            ecran2.WaitForAssertion(
-                () => Assert.Equal("Nina la nounou",
-                    ecran2.Find("[data-testid='carte-aujourdhui'] [data-testid='carte-transfert-recevant']").TextContent.Trim()),
-                TimeSpan.FromSeconds(15));
-            Assert.Equal("Alice",
-                ecran2.Find("[data-testid='carte-aujourdhui'] [data-testid='carte-transfert-cedant']").TextContent.Trim());
-
-            //  (b) le PANNEAU à-venir (30/06) reprojette un NOUVEAU transfert dérivé bicolore NINA → BRUNO
-            //      (la bascule s'est décalée d'un jour du fait de la surcharge d'aujourd'hui).
+            //  (a) la CASE du jour (29/06) reprojette le nouveau responsable NINA (le délégataire) + conserve
+            //      la pastille bicolore du transfert dérivé (cédant Alice → recevant Nina) ;
             ecran2.WaitForAssertion(
                 () =>
                 {
-                    var transfert = Ligne(ecran2, "2026-06-30").QuerySelector("[data-testid='a-venir-transfert-bicolore']");
-                    Assert.NotNull(transfert);
                     Assert.Equal("Nina la nounou",
-                        Ligne(ecran2, "2026-06-30").QuerySelector("[data-testid='a-venir-transfert-cedant']")!.TextContent.Trim());
+                        GrilleRuntimeHarness.CaseDuJour(ecran2, "29/06").QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
+                    Assert.NotNull(GrilleRuntimeHarness.CaseDuJour(ecran2, "29/06").QuerySelector("[data-testid='case-transfert-bicolore']"));
+                },
+                TimeSpan.FromSeconds(15));
+
+            //  (b) la CASE du 30/06 reprojette un NOUVEAU transfert dérivé bicolore (la bascule s'est décalée
+            //      d'un jour du fait de la surcharge d'aujourd'hui) : recevant résolu Bruno + pastille bicolore
+            //      là où le jour était unicolore avant la délégation.
+            ecran2.WaitForAssertion(
+                () =>
+                {
+                    Assert.NotNull(GrilleRuntimeHarness.CaseDuJour(ecran2, "30/06").QuerySelector("[data-testid='case-transfert-bicolore']"));
                     Assert.Equal("Bruno",
-                        Ligne(ecran2, "2026-06-30").QuerySelector("[data-testid='a-venir-transfert-recevant']")!.TextContent.Trim());
+                        GrilleRuntimeHarness.CaseDuJour(ecran2, "30/06").QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
                 },
                 TimeSpan.FromSeconds(15));
         }
@@ -114,11 +121,6 @@ public sealed class FrontWasmDeleguerConvergenceDeuxEcransTempsReelTests : TestC
             await pousseurDeDiffusion;
         }
     }
-
-    private static AngleSharp.Dom.IElement Ligne(IRenderedComponent<PlanningPartage> grille, string dateIso)
-        => grille.Find("[data-testid='panneau-a-venir']")
-            .QuerySelectorAll("[data-testid='a-venir-jour']")
-            .Single(j => j.GetAttribute("data-date") == dateIso);
 
     /// <summary>
     /// Rend une grille réelle câblée à l'API distante en PARTAGEANT le provider DI de la TestContext (mêmes

@@ -1,10 +1,17 @@
 # Sprint 44 — Déléguer la récupération d'UN jour (imprévu & échange de dernière minute — 1ʳᵉ ÉCRITURE du noyau produit)
 
-> **Goal G2 (tranché PO — délégation, goal 1 du SM · 1ʳᵉ ÉCRITURE du NOYAU PRODUIT)** : après les
-> deux incréments **LECTURE** du noyau produit (carte « Aujourd'hui » s42, panneau « À venir » s43),
-> on livre la **première ACTION D'ÉCRITURE** de la promesse « qui récupère » : un parent qui **ne peut
-> pas récupérer un jour donné** en **délègue la récupération à un autre acteur**, pour **CE jour-là
-> uniquement** (imprévu ponctuel, non récurrent).
+> **Goal G2 (tranché PO — délégation, goal 1 du SM · 1ʳᵉ ÉCRITURE du NOYAU PRODUIT)** : on livre la
+> **première ACTION D'ÉCRITURE** de la promesse « qui récupère » : un parent qui **ne peut pas récupérer
+> un jour donné** en **délègue la récupération à un autre acteur**, pour **CE jour-là uniquement**
+> (imprévu ponctuel, non récurrent). L'écriture est portée **directement sur la GRILLE AGENDA** (menu
+> clic-case), **seule surface de lecture/action** de la page planning.
+>
+> **RÉCONCILIATION NARRATIVE (décision PO au gate G3 — À LIRE).** Le noyau produit **ne s'appuie plus**
+> sur deux incréments de LECTURE dédiés (carte « Aujourd'hui » s42, panneau « À venir » s43) : ces deux
+> briques sont **RETIRÉES ENTIÈREMENT sur décision PO** (composants IHM **et** read models backend
+> `CarteDuJourQuery` / `AVenirQuery` + leurs tests — **pas de code mort**). Le PO ne veut que la **grille
+> agenda** et l'**action sur la case**. La valeur de s44 devient donc la **1ʳᵉ ÉCRITURE (délégation)
+> portée directement sur la grille**, sans surface de lecture intermédiaire.
 >
 > **SÉMANTIQUE CADRÉE (anti-tension s31 — À LIRE AVANT DE CODER).** « Déléguer la récupération d'un
 > jour » est l'**ACTION UTILISATEUR task-orientée** « je ne récupère pas ce jour-là, X le fera » qui
@@ -17,16 +24,15 @@
 >
 > **Tranche verticale back d'abord** puis IHM :
 > - **@back — use case `DeleguerRecuperation(jour, enfant, versActeur)` qui COMPOSE le chemin
->   d'écriture « affecter une surcharge ponctuelle »** (période d'UN jour, s06) — miroir de la façon
->   dont `CarteDuJourQuery` s42 / `AVenirQuery` s43 **composent** `GrilleAgendaQuery`. **AUCUN nouveau
+>   d'écriture « affecter une surcharge ponctuelle »** (période d'UN jour, s06). **AUCUN nouveau
 >   modèle de résolution** (surcharge > fond > neutre inchangée), **AUCUN store neuf**, **AUCUNE
 >   nouvelle dérivation de transfert** (le bicolore sort de s31, non réécrit). **Deux adaptateurs**
 >   (InMemory + Mongo durable), écriture prouvée store réel.
 > - **@back — cas LIMITE** : un jour **déjà couvert par une surcharge** → **last-write-wins R11**
 >   (réaffecte le responsable, **aucun doublon** de période) ; **délégation à soi-même** (versActeur =
 >   responsable déjà résolu) → **refus explicite** (no-op inutile, pas d'écriture) ; **jour hors
->   fenêtre chargée** → l'écriture reste valide (une date), l'affichage suit la limitation s42/s43,
->   **sans crash**.
+>   fenêtre chargée** → l'écriture reste valide (une date), l'affichage suit la fenêtre de grille
+>   chargée, **sans crash**.
 > - **@back — cas ERREUR** : **délégataire inconnu / orphelin** (id stable absent du store) →
 >   **refus AVANT écriture**, store **intact**, **aucune écriture partielle**.
 > - **@ihm — action « déléguer ce jour » = ENTRÉE DU MENU CLIC-CASE** de la grille agenda (clic sur
@@ -34,17 +40,19 @@
 >   transfert ») → **mini-dialog** de choix de l'acteur recevant ; **refus** (domaine) → dialog
 >   **reste ouverte** + **motif** + **saisie conservée** ; **Échap = Annuler** (port
 >   `IEcouteurEchapModal` s33) ; **Parent-gated** (l'**Invité ne voit ni le menu ni l'entrée** —
->   aucune commande émissible). **La carte « Aujourd'hui » s42 et le panneau « À venir » s43 ne
->   portent PLUS aucun bouton de délégation : ils redeviennent STRICTEMENT lecture seule** (invariant
->   CLAUDE.md « les cartes de lecture n'hébergent pas d'écriture »).
+>   aucune commande émissible).
 > - **@ihm — temps réel** : après une délégation **via le menu clic-case**, la **GRILLE (case du
 >   jour)** reprojette le **nouveau responsable** ET le **transfert dérivé** (rendu **bicolore s31**) ;
 >   convergence sur un **2ᵉ écran** via **SignalR** (**0 GET**, reprojection client — garde
->   anti-amplification flake s42/s43).
+>   anti-amplification flake).
+> - **@ihm — RETRAIT s42+s43 (décision PO gate G3)** : la page planning ne rend **NI carte
+>   « Aujourd'hui » NI panneau « À venir »** ; les read models `CarteDuJourQuery` (s42) et `AVenirQuery`
+>   (s43) **et leurs tests** sont **supprimés** (pas de code mort) ; la **grille agenda reste la seule
+>   surface de lecture**.
 >
 > **Ordre d'attaque (backend d'abord, CLAUDE.md)** : @back (use case composant l'écriture ponctuelle,
-> cas limite/erreur, deux adaptateurs) → puis @ihm (bouton + mini-dialog, gating, refus, convergence
-> SignalR).
+> cas limite/erreur, deux adaptateurs) → puis @ihm (entrée menu + mini-dialog, gating, refus, convergence
+> SignalR) → puis @ihm retrait des deux surfaces de lecture s42/s43 + read models.
 >
 > **HORS scope explicite (périmètre resserré, décision SM)** :
 > - **Délégation récurrente / série** : ce sprint délègue **UN jour ponctuel** — **pas** de « déléguer
@@ -58,25 +66,29 @@
 >   surface.)*
 > - **Notifications / alertes** : aucune cloche « X a délégué » — c'est le Palier 11 (backlog).
 
-## Avancement — 6/6
+## Avancement — 7/7
 
-> **Réouverture après gate visuel G3 (décision PO).** La **SURFACE** d'écriture de la délégation
-> change : elle devient une **entrée du MENU CLIC-CASE de la grille agenda** (`menu-actions-case`
-> ouvert au clic sur une `jour-case`, convention Palier 7), **et non plus** un bouton posé sur la
-> carte « Aujourd'hui » (s42) ni le panneau « À venir » (s43) — **ces cartes redeviennent
-> STRICTEMENT lecture seule**. Le back Sc.1-3 (use case, cas limite/erreur, 2 adaptateurs) **reste
-> vert et inchangé** ; le mini-dialog, le gating Parent, Échap=Annuler, le refus domaine et la
-> convergence SignalR 0 GET **restent exigés** — seule la surface qui ouvre le dialog change.
-> **Sc.4-6 repassent 🔴 (à refaire).**
+> **Réouverture après gate visuel G3 (2 décisions PO successives).**
+> **Décision PO n°1** : la **SURFACE** d'écriture de la délégation devient une **entrée du MENU
+> CLIC-CASE de la grille agenda** (`menu-actions-case` ouvert au clic sur une `jour-case`, convention
+> Palier 7), **et non plus** un bouton posé sur une carte de lecture. Sc.4-6 refaits (commit 8fa4e65),
+> **verts**.
+> **Décision PO n°2 (celle-ci)** : les **deux briques de LECTURE** s42 (carte « Aujourd'hui ») et s43
+> (panneau « À venir ») **ne sont plus voulues du tout** — **retrait ENTIER** des composants IHM **et**
+> des read models backend `CarteDuJourQuery` / `AVenirQuery` + leurs tests (**pas de code mort**). État
+> cible : **grille agenda seule** + délégation par le **menu clic-case**. Ce retrait est un **Sc.7 🔴 à
+> implémenter** ; le back de délégation (Sc.1-3) et la surface menu clic-case (Sc.4-6) **restent
+> valables et verts**.
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | **Déléguer un jour COMPOSE l'écriture surcharge ponctuelle (nominal)** : un jour résolu par le **fond** est délégué à un autre acteur → une **surcharge d'UN jour** est écrite via le **chemin s06 existant** (aucune commande de transfert neuve, aucun store neuf) ; la résolution **surcharge > fond** fait **primer** le délégataire pour ce jour ; le **transfert cédant→recevant** apparaît **AUTO-DÉRIVÉ s31** ; écriture **identique et durable** sur les **deux adaptateurs** (InMemory + Mongo) | back | ✅ |
 | 2 | **Cas LIMITE — last-write-wins + délégation à soi-même** : un jour **déjà couvert par une surcharge** → la délégation **réaffecte** le responsable (**last-write-wins R11**, **aucun doublon** de période) ; une **délégation à soi-même** (délégataire = responsable déjà résolu) → **refus explicite**, **aucune écriture** ; un **jour hors fenêtre chargée** reste **écrivable** sans crash | back | ✅ |
 | 3 | **Cas ERREUR — délégataire inconnu / orphelin** : déléguer vers un acteur dont l'**id stable est absent du store** (inconnu / supprimé) → **refus AVANT écriture**, store **intact**, **aucune écriture partielle** ; identique sur les deux adaptateurs | back | ✅ |
-| 4 | **SWAP DE SURFACE (lot atomique) — « déléguer ce jour » = entrée du MENU CLIC-CASE + retrait des boutons cartes** : l'action « déléguer ce jour » devient une **entrée de `menu-actions-case`** (clic sur une `jour-case`, à côté d'« Affecter une période » / « Définir un transfert ») ouvrant le **mini-dialog** ; valider émet la commande via le **canal d'écriture** ; **Échap = Annuler** ; **Parent-gated** (l'Invité ne voit ni le menu ni l'entrée) ; **ET** la carte « Aujourd'hui » s42 et le panneau « À venir » s43 **ne portent PLUS aucun bouton de délégation** (lecture seule) | 🖥️ IHM | ✅ |
+| 4 | **« Déléguer ce jour » = entrée du MENU CLIC-CASE de la grille** : l'action « déléguer ce jour » est une **entrée de `menu-actions-case`** (clic sur une `jour-case`, à côté d'« Affecter une période » / « Définir un transfert ») ouvrant le **mini-dialog** ; valider émet la commande via le **canal d'écriture** ; **Échap = Annuler** ; **Parent-gated** (l'Invité ne voit ni le menu ni l'entrée) | 🖥️ IHM | ✅ |
 | 5 | **Refus domaine → dialog reste ouverte + motif + saisie conservée** : une délégation (ouverte depuis le **menu clic-case**) refusée (soi-même, délégataire inconnu) laisse le **mini-dialog OUVERT**, affiche le **motif**, **conserve la saisie** (acteur choisi) ; **store intact** ; fermeture uniquement sur Annuler/Échap ou succès | 🖥️ IHM | ✅ |
-| 6 | **Temps réel — la GRILLE converge, transfert dérivé visible (0 GET)** : après une délégation **via le menu clic-case** sur le 1ᵉʳ écran, la **case du jour de la grille** d'un **2ᵉ écran CONVERGE** (nouveau responsable + **transfert bicolore dérivé s31**) **sans rechargement** ; convergence par **reprojection client** via **SignalR lecture seule** (**0 GET** sur push, garde anti-flake s42/s43) | 🖥️ IHM | ✅ |
+| 6 | **Temps réel — la GRILLE converge, transfert dérivé visible (0 GET)** : après une délégation **via le menu clic-case** sur le 1ᵉʳ écran, la **case du jour de la grille** d'un **2ᵉ écran CONVERGE** (nouveau responsable + **transfert bicolore dérivé s31**) **sans rechargement** ; convergence par **reprojection client** via **SignalR lecture seule** (**0 GET** sur push) | 🖥️ IHM | ✅ |
+| 7 | **RETRAIT des surfaces de lecture s42/s43 (décision PO)** : la page planning ne rend **NI carte « Aujourd'hui » NI panneau « À venir »** ; les read models `CarteDuJourQuery` (s42) et `AVenirQuery` (s43) **et leurs tests** sont **supprimés** (pas de code mort) ; la **grille agenda reste la SEULE surface de lecture** ; la délégation par le menu clic-case (Sc.4-6) reste intacte | 🖥️ IHM | ✅ |
 
 > **⚠️ Point de vigilance — RÉUTILISER l'écriture s06 + la dérivation s31, ne RIEN inventer (Sc.1-3,
 > décision SM).** `DeleguerRecuperation` est un **use case de composition** : il **appelle le chemin
@@ -86,21 +98,22 @@
 > (R24) **par construction** dès que la surcharge fait basculer la responsabilité du jour. Une commande
 > de transfert neuve serait **deux vérités divergentes** et **hors scope**.
 
-> **⚠️ Point de vigilance — SURFACE = MENU CLIC-CASE (Palier 7), cartes en LECTURE SEULE stricte
-> (Sc.4-6, décision PO au gate G3).** L'écriture s'ouvre **exclusivement** depuis l'**entrée
-> « déléguer ce jour » du `menu-actions-case`** (clic sur une `jour-case`), aux côtés des actions
-> Palier 7 existantes — **jamais** depuis la carte « Aujourd'hui » ni le panneau « À venir », qui
-> **ne portent AUCUN bouton d'écriture** (invariant CLAUDE.md « les cartes de lecture n'hébergent pas
-> d'écriture »). L'entrée déclenche une **commande** par le **canal d'écriture** (jamais par la
-> diffusion) ; la **convergence** du 2ᵉ écran passe **exclusivement** par la **diffusion SignalR de
-> lecture** (s20) **par reprojection client** (**0 GET** sur push).
+> **⚠️ Point de vigilance — SURFACE = MENU CLIC-CASE (Palier 7), GRILLE seule surface (Sc.4-6, décisions
+> PO au gate G3).** L'écriture s'ouvre **exclusivement** depuis l'**entrée « déléguer ce jour » du
+> `menu-actions-case`** (clic sur une `jour-case`), aux côtés des actions Palier 7 existantes.
+> L'entrée déclenche une **commande** par le **canal d'écriture** (jamais par la diffusion) ; la
+> **convergence** du 2ᵉ écran passe **exclusivement** par la **diffusion SignalR de lecture** (s20)
+> **par reprojection client** (**0 GET** sur push). Depuis la décision PO n°2, il n'existe **aucune
+> autre surface de lecture** (ni carte, ni panneau) : la **grille agenda est la seule**.
 
-> **⚠️ Point de vigilance — SWAP DE SURFACE = LOT ATOMIQUE (Sc.4).** Le retrait des boutons de
-> délégation des cartes s42/s43 et le branchement de l'entrée dans `menu-actions-case` sont les
-> **deux faces d'un même refactor** (mêmes commandes, mêmes testids d'écriture) : les traiter en **un
-> seul lot atomique** (Sc.4), chaque assertion restant vérifiée dedans — **pas** de coexistence
-> durable ancien bouton + nouvelle entrée (rempart suite-complète-verte). Les fichiers d'acceptation
-> qui pilotaient le bouton des cartes **migrent** vers l'entrée du menu.
+> **⚠️ Point de vigilance — RETRAIT s42/s43 = suppression FRANCHE, pas de code mort (Sc.7, décision PO).**
+> Supprimer **les composants IHM** (carte « Aujourd'hui », panneau « À venir ») **ET** les read models
+> backend `CarteDuJourQuery` (s42) / `AVenirQuery` (s43) **ET leurs tests**. Ne **PAS** laisser de query,
+> de DTO, d'endpoint, de composant ou de test orphelin « au cas où » : le PO tranche que ces surfaces ne
+> reviennent pas. La **suite complète doit rester verte** après retrait (les tests qui exerçaient s42/s43
+> partent **avec** le code qu'ils couvraient ; aucun test résiduel ne doit référencer une query supprimée).
+> La **grille agenda** (`GrilleAgendaQuery`, socle des deux read models retirés) **reste intacte** — elle
+> n'était pas dérivée d'elles, ce sont elles qui la composaient.
 
 > **⚠️ Point de vigilance — cohérence JOUR ↔ résolution de fond au make-gherkin (Sc.1).** Le scénario
 > nominal exige un jour **résolu par le CYCLE DE FOND** (pour prouver la bascule fond→surcharge et le
@@ -108,12 +121,13 @@
 > à un responsable ≠ délégataire) — ne pas poser une date « au hasard » supposée de fond. Ancrer
 > l'attendu sur la **règle de résolution** (`semaine ISO % N`), pas sur un index codé en dur.
 
-> **⚠️ Anti-vert-qui-ment — preuve runtime sur profil RÉALISTE (Sc.1-6).** La délégation doit être
+> **⚠️ Anti-vert-qui-ment — preuve runtime sur profil RÉALISTE (Sc.1-7).** La délégation doit être
 > prouvée de bout en bout : un **jour de fond délégué** → **surcharge écrite (Mongo durable)** →
-> **délégataire résolu responsable** ET **transfert dérivé bicolore VISIBLE** dans la carte/le panneau,
-> **convergé sur un 2ᵉ écran** sans reload ni GET. Une preuve qui n'écrirait pas réellement (doublure de
-> port) ou ne montrerait pas le transfert dérivé **surestimerait** la couverture. Preuve finale =
-> **round-trip runtime réel (Mongo durable)** + **gate navigateur PO**.
+> **délégataire résolu responsable** ET **transfert dérivé bicolore VISIBLE** dans la **case de la
+> grille**, **convergé sur un 2ᵉ écran** sans reload ni GET. Une preuve qui n'écrirait pas réellement
+> (doublure de port) ou ne montrerait pas le transfert dérivé **surestimerait** la couverture. Preuve
+> finale = **round-trip runtime réel (Mongo durable)** + **gate navigateur PO** (dont la page planning
+> ne montrant PLUS ni carte ni panneau — Sc.7).
 
 > **⚠️ Repli neutre — JAMAIS de délégataire orphelin résolu (Sc.3).** Un délégataire dont l'id stable
 > est absent du store est **refusé à l'écriture** (Sc.3) ; et si, par ailleurs, une surcharge existante
@@ -150,7 +164,7 @@ Alors la délégation est REFUSÉE explicitement (aucun changement utile), AUCUN
 
 Étant donné un jour J situé HORS de la fenêtre de grille chargée
 Quand je délègue la récupération du jour J à un acteur valide
-Alors l'écriture RÉUSSIT (une date reste écrivable) sans crash ; son AFFICHAGE suit la limitation assumée s42/s43 (visible seulement si la fenêtre couvre J)
+Alors l'écriture RÉUSSIT (une date reste écrivable) sans crash ; son AFFICHAGE suit la fenêtre de grille chargée (visible seulement si la grille couvre J)
 ```
 
 ### Sc.3 — Cas ERREUR : délégataire inconnu / orphelin @back @vert
@@ -163,18 +177,15 @@ Et le store des périodes reste INTACT (aucune surcharge écrite, aucune écritu
 Et le comportement est IDENTIQUE sur les deux adaptateurs (InMemory ET Mongo réel)
 ```
 
-### Sc.4 — Swap de surface (lot atomique) : « déléguer ce jour » = entrée du MENU CLIC-CASE + retrait des boutons cartes @ihm @vert
+### Sc.4 — « Déléguer ce jour » = entrée du MENU CLIC-CASE de la grille @ihm @vert
 ```gherkin
-Étant donné le planning ouvert (grille agenda, carte « Aujourd'hui » s42, panneau « À venir » s43), un enfant sélectionné, un utilisateur PARENT
+Étant donné le planning ouvert (grille agenda), un enfant sélectionné, un utilisateur PARENT
 Quand je clique sur une case « jour-case » de la grille agenda
 Alors le menu « menu-actions-case » s'ouvre et propose une ENTRÉE « déléguer ce jour », à côté d'« Affecter une période » et « Définir un transfert » (convention Palier 7)
 Quand je choisis l'entrée « déléguer ce jour »
 Alors un MINI-DIALOG s'ouvre proposant de choisir l'acteur RECEVANT parmi les acteurs éligibles du foyer
 Et valider émet la commande de délégation via le CANAL D'ÉCRITURE (requête/réponse), puis la grille se met à jour
 Et Échap FERME le dialog sans émettre aucune commande (port IEcouteurEchapModal s33)
-
-Étant donné le même planning affiché
-Alors la carte « Aujourd'hui » s42 et le panneau « À venir » s43 ne portent PLUS AUCUN bouton de délégation (lecture seule stricte, invariant CLAUDE.md)
 
 Étant donné un utilisateur INVITÉ (lecture seule)
 Quand il clique sur une case « jour-case »
@@ -198,8 +209,26 @@ Quand un PARENT délègue la récupération d'un jour depuis le MENU CLIC-CASE s
 Alors la CASE DU JOUR de la grille agenda du 2ᵉ écran CONVERGE sans rechargement
 Et elle affiche le NOUVEAU responsable (le délégataire) pour ce jour
 Et elle matérialise le TRANSFERT cédant → recevant par le rendu BICOLORE dérivé s31 (présentation réutilisée, aucune teinte réinventée)
-Et la convergence passe par une REPROJECTION CLIENT depuis la grille rafraîchie — AUCUN GET dédié sur push (garde anti-amplification flake s42/s43)
+Et la convergence passe par une REPROJECTION CLIENT depuis la grille rafraîchie — AUCUN GET dédié sur push (anti-amplification flake)
 Et la convergence passe EXCLUSIVEMENT par le canal SignalR de LECTURE SEULE (l'écriture, elle, a transité par le canal requête/réponse)
+```
+
+### Sc.7 — RETRAIT des surfaces de lecture s42/s43, la grille reste seule surface @ihm @vert
+```gherkin
+Étant donné la page planning ouverte (grille agenda + délégation par le menu clic-case Sc.4-6)
+Quand la page planning est rendue
+Alors elle ne rend NI carte « Aujourd'hui » (s42) NI panneau « À venir » (s43) — ces surfaces sont supprimées
+Et la GRILLE AGENDA est la SEULE surface de lecture de la page
+
+Étant donné le code du sprint après retrait
+Alors le read model backend CarteDuJourQuery (s42) et le composant IHM de la carte « Aujourd'hui » sont SUPPRIMÉS, avec leurs tests (aucun code mort, aucun test orphelin)
+Et le read model backend AVenirQuery (s43) et le composant IHM du panneau « À venir » sont SUPPRIMÉS, avec leurs tests (aucun code mort, aucun test orphelin)
+Et aucune query, DTO, endpoint ou composant orphelin ne subsiste pour ces deux surfaces
+
+Étant donné le retrait effectué
+Quand j'exécute la suite COMPLÈTE (test.ps1, Docker actif)
+Alors elle reste VERTE, et la délégation par le menu clic-case (Sc.4-6) demeure inchangée
+Et la GrilleAgendaQuery (socle que composaient les read models retirés) reste intacte
 ```
 
 ---

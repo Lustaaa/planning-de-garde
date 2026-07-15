@@ -72,13 +72,11 @@ public sealed class FrontWasmDeleguerRecuperationActionMiniDialogTests : TestCon
     public void Un_parent_delegue_ce_jour_depuis_le_menu_clic_case_via_le_canal_decriture()
     {
         // Given — la grille réellement câblée à l'API distante (store réel vierge), Parent, jour courant
-        // NEUTRE (aucun responsable) : la carte affiche « Personne assignée ». L'action « déléguer ce jour »
-        // vit dans le MENU CLIC-CASE (la carte est en lecture seule stricte).
+        // NEUTRE (aucun responsable) : la case du jour ne porte aucun nom de responsable. L'action « déléguer
+        // ce jour » vit dans le MENU CLIC-CASE (la grille est la seule surface de lecture, s44 Sc.7).
         using var api = new ApiDistanteFactory();
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Aujourdhui);
-        Assert.Equal(
-            "Personne assignée",
-            grille.Find("[data-testid='carte-aujourdhui'] [data-testid='carte-qui']").TextContent.Trim());
+        Assert.Null(GrilleRuntimeHarness.CaseDuJour(grille, "29/06").QuerySelector("[data-testid='nom-responsable']"));
 
         // When — le Parent clique la case du jour (29/06) → menu → entrée « déléguer ce jour » → mini-dialog,
         // choisit « Alice » (id stable parent-a) comme acteur recevant et valide.
@@ -86,14 +84,14 @@ public sealed class FrontWasmDeleguerRecuperationActionMiniDialogTests : TestCon
         this.SurDispatcher(() => grille.Find("[data-testid='champ-delegataire']").Change("parent-a"));
         this.SurDispatcher(() => grille.Find("[data-testid='dialog-deleguer'] form").Submit());
 
-        // Then — la dialog se ferme ET la carte converge vers « Alice » (surcharge du jour, relue du store).
+        // Then — la dialog se ferme ET la CASE de la grille converge vers « Alice » (surcharge du jour, relue du store).
         grille.WaitForAssertion(
             () =>
             {
                 Assert.Empty(grille.FindAll("[data-testid='dialog-deleguer']"));
                 Assert.Equal(
                     "Alice",
-                    grille.Find("[data-testid='carte-aujourdhui'] [data-testid='carte-qui']").TextContent.Trim());
+                    GrilleRuntimeHarness.CaseDuJour(grille, "29/06").QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
             },
             TimeSpan.FromSeconds(10));
 
@@ -109,26 +107,25 @@ public sealed class FrontWasmDeleguerRecuperationActionMiniDialogTests : TestCon
     [Fact]
     public void Un_parent_delegue_un_jour_a_venir_depuis_le_menu_clic_case()
     {
-        // Given — grille câblée réelle, Parent. Le 1ᵉʳ jour du panneau « À venir » (lecture seule) sert de
-        // repère de date : on délègue CE jour via le MENU CLIC-CASE de la grille (la case correspondante).
+        // Given — grille câblée réelle, Parent. On délègue un jour À VENIR (30/06, lendemain, dans la fenêtre
+        // chargée) via le MENU CLIC-CASE de la grille — seule surface de lecture/action (s44 Sc.7).
         using var api = new ApiDistanteFactory();
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Aujourdhui);
-        var jour = grille.FindAll("[data-testid='a-venir-jour']").First();
-        var dateIso = jour.GetAttribute("data-date")!;
-        var date = DateOnly.Parse(dateIso);
+        var date = new DateOnly(2026, 6, 30);
 
         // When — le Parent clique la case de ce jour → menu → entrée « déléguer ce jour » → choisit Alice → valide.
         OuvrirDialogViaMenu(grille, date.ToString("dd/MM"));
         this.SurDispatcher(() => grille.Find("[data-testid='champ-delegataire']").Change("parent-a"));
         this.SurDispatcher(() => grille.Find("[data-testid='dialog-deleguer'] form").Submit());
 
-        // Then — la dialog se ferme ET ce jour du panneau converge vers « Alice » (surcharge relue du store).
+        // Then — la dialog se ferme ET la case de ce jour à venir converge vers « Alice » (surcharge relue du store).
         grille.WaitForAssertion(
             () =>
             {
                 Assert.Empty(grille.FindAll("[data-testid='dialog-deleguer']"));
-                var jourApres = grille.FindAll("[data-testid='a-venir-jour']").Single(j => j.GetAttribute("data-date") == dateIso);
-                Assert.Equal("Alice", jourApres.QuerySelector("[data-testid='a-venir-responsable']")!.TextContent.Trim());
+                Assert.Equal(
+                    "Alice",
+                    GrilleRuntimeHarness.CaseDuJour(grille, date.ToString("dd/MM")).QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
             },
             TimeSpan.FromSeconds(10));
 
@@ -163,16 +160,16 @@ public sealed class FrontWasmDeleguerRecuperationActionMiniDialogTests : TestCon
     }
 
     [Fact]
-    public void Les_cartes_restent_en_lecture_seule_sans_bouton_deleguer_et_le_menu_porte_l_entree()
+    public void La_page_ne_rend_ni_carte_ni_panneau_et_le_menu_porte_l_entree_deleguer()
     {
         // Given — grille câblée réelle, Parent.
         using var api = new ApiDistanteFactory();
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Aujourdhui);
 
-        // Then — la carte « Aujourd'hui » (s42) et le panneau « À venir » (s43) ne portent PLUS AUCUN bouton
-        // de délégation (lecture seule stricte, invariant CLAUDE.md).
-        Assert.Empty(grille.FindAll("[data-testid='carte-deleguer']"));
-        Assert.Empty(grille.FindAll("[data-testid='a-venir-deleguer']"));
+        // Then — les surfaces de lecture s42/s43 sont RETIRÉES (décision PO s44 Sc.7) : ni carte « Aujourd'hui »
+        // ni panneau « À venir » ne sont rendus ; la grille est la seule surface de lecture/action.
+        Assert.Empty(grille.FindAll("[data-testid='carte-aujourdhui']"));
+        Assert.Empty(grille.FindAll("[data-testid='panneau-a-venir']"));
 
         // … et l'entrée « déléguer ce jour » est offerte par le MENU CLIC-CASE, à côté des actions Palier 7.
         this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click());
@@ -192,10 +189,8 @@ public sealed class FrontWasmDeleguerRecuperationActionMiniDialogTests : TestCon
         session.Role = RoleAuteur.Invite;
         grille.Render();
 
-        // Then — les cartes ne portent aucun bouton de délégation, et cliquer une case n'ouvre PAS le menu
-        // (Parent-gated, OuvrirMenu) : aucune commande de délégation n'est émissible.
-        Assert.Empty(grille.FindAll("[data-testid='carte-deleguer']"));
-        Assert.Empty(grille.FindAll("[data-testid='a-venir-deleguer']"));
+        // Then — cliquer une case n'ouvre PAS le menu (Parent-gated, OuvrirMenu) : aucune commande de
+        // délégation n'est émissible pour l'Invité (la grille reste consultable en lecture seule).
         this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").Click());
         Assert.Empty(grille.FindAll("[data-testid='menu-actions-case']"));
         Assert.Empty(grille.FindAll("[data-testid='action-deleguer']"));
