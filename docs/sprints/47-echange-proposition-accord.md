@@ -5,13 +5,13 @@
 > proposition→accord** dont les propositions arrivent comme **notifications ACTIONNABLES** dans la
 > cloche. La cloche est la **1ʳᵉ surface hors-grille rouverte** depuis s44.
 
-## Avancement — 4/9
+## Avancement — 5/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | **BRIQUE A — Cloche générale (fondation : lecture + lu/non-lu)** | | | |
 | Sc.1 | **Journal de changements append-only** alimenté par les handlers d'écriture existants (délégations s44 / plages s45 / **reprises s46** / transferts) — **trace de LECTURE horodatée, NON autorité de résolution** ; liste chrono (récence) par utilisateur, 2 adaptateurs InMemory + Mongo | @back | ✅ |
-| Sc.2 | État **lu / non-lu PAR utilisateur** (vrai état persisté), marquer-lu idempotent, **compteur de non-lus** — 2 adaptateurs InMemory + Mongo durable | @back | 🔴 |
+| Sc.2 | État **lu / non-lu PAR utilisateur** (vrai état persisté), marquer-lu idempotent, **compteur de non-lus** — 2 adaptateurs InMemory + Mongo durable | @back | ✅ |
 | Sc.3 | Cloche + **badge compteur** en en-tête du planning + **panneau déroulant** (liste chrono, lu/non-lu, marquer lu), Parent-gated, Échap ferme | @ihm | 🔴 |
 | Sc.4 | Temps réel : un changement → nouvelle notif + compteur incrémenté chez les destinataires par reprojection client SignalR, **0 GET** | @ihm | 🔴 |
 | **BRIQUE B — Échange proposition → accord (greffé sur la cloche)** | | | |
@@ -111,7 +111,7 @@ Et le journal est une TRACE DE LECTURE : il n'est JAMAIS lu par la résolution (
 Et le comportement est prouvé sur les DEUX adaptateurs (InMemory + Mongo durable)
 ```
 
-### Sc.2 — État lu / non-lu par utilisateur + compteur @back @pending
+### Sc.2 — État lu / non-lu par utilisateur + compteur @back @vert
 ```gherkin
 Étant donné un flux de notifications pour un utilisateur avec des événements non lus
 Quand on lit le compteur de non-lus
