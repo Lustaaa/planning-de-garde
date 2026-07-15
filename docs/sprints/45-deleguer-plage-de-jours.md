@@ -64,14 +64,14 @@
 >   suppression EXISTANTE s16 — **aucun** bouton « annuler » neuf (candidat backlog séparé).
 > - **Notifications** : aucune cloche « X a délégué » — Palier 11 (backlog).
 
-## Avancement — 3/6
+## Avancement — 4/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
 | 1 | **Déléguer une PLAGE COMPOSE l'écriture surcharge multi-jours (nominal)** : une plage `[J1..J2]` de jours résolus par le **fond** est déléguée à un acteur B → une **SURCHARGE de la période `[J1..J2]`** est écrite via le **chemin s06 existant** (aucune commande/modèle/store neuf) ; B **prime** (surcharge > fond) sur **chaque** jour de la plage ; les **transferts bicolores** apparaissent **AUTO-DÉRIVÉS s31** aux **deux frontières** (entrée à J1, sortie après J2) ; **défaut `fin=début`** = parité s44 ; écriture **durable et identique** sur **deux adaptateurs** (InMemory + Mongo) | back | ✅ |
 | 2 | **Cas LIMITE — chevauchement / plage vide / soi-même / frontière de fenêtre** : plage chevauchant une surcharge existante → **last-write-wins R11**, **aucun doublon** ; **`fin < début` (plage vide)** → **refus AVANT écriture**, store intact ; **délégation à soi-même** (B = responsable de fond de toute la plage) → **refus explicite** sans écriture ; **`fin` hors fenêtre chargée** → écriture **valide sans crash**, affichage suivant la fenêtre | back | ✅ |
 | 3 | **Cas ERREUR — délégataire inconnu / orphelin** : déléguer une plage `[J1..J2]` vers un acteur dont l'**id est absent du store** → **refus AVANT écriture**, store **intact**, **aucune écriture partielle** (aucun jour de la plage écrit) ; identique sur les deux adaptateurs | back | ✅ |
-| 4 | **Champ « jusqu'au » dans le mini-dialog EXISTANT (menu clic-case)** : depuis l'entrée « déléguer ce jour » du `menu-actions-case`, le mini-dialog porte un **champ « jusqu'au »** (défaut = jour cliqué) ; valider émet la commande `[début..fin]` via le **canal d'écriture** ; **Échap = Annuler** (aucune commande) ; **Parent-gated** (l'Invité ne voit ni menu ni entrée) | 🖥️ IHM | 🔴 |
+| 4 | **Champ « jusqu'au » dans le mini-dialog EXISTANT (menu clic-case)** : depuis l'entrée « déléguer ce jour » du `menu-actions-case`, le mini-dialog porte un **champ « jusqu'au »** (défaut = jour cliqué) ; valider émet la commande `[début..fin]` via le **canal d'écriture** ; **Échap = Annuler** (aucune commande) ; **Parent-gated** (l'Invité ne voit ni menu ni entrée) | 🖥️ IHM | ✅ |
 | 5 | **Refus domaine → dialog reste ouverte + motif + saisie (plage) conservée** : une délégation de plage refusée (`fin < début`, soi-même, délégataire inconnu) laisse le **mini-dialog OUVERT**, affiche le **motif**, **conserve la saisie** (acteur **ET** plage début/fin) ; **store intact** ; fermeture uniquement sur Annuler/Échap ou succès | 🖥️ IHM | 🔴 |
 | 6 | **Temps réel — TOUTES les cases de la plage convergent (0 GET)** : après une délégation de plage sur le 1ᵉʳ écran, **chaque case `[J1..J2]`** de la grille d'un **2ᵉ écran CONVERGE** sans rechargement (nouveau responsable + **transferts bicolores dérivés s31** aux frontières) ; convergence par **reprojection client** via **SignalR lecture seule** (**0 GET** sur push) | 🖥️ IHM | 🔴 |
 
@@ -161,7 +161,7 @@ Et le store des périodes reste INTACT — AUCUN jour de la plage n'est écrit, 
 Et le comportement est IDENTIQUE sur les deux adaptateurs (InMemory ET Mongo réel)
 ```
 
-### Sc.4 — Champ « jusqu'au » dans le mini-dialog EXISTANT (menu clic-case) @ihm @pending
+### Sc.4 — Champ « jusqu'au » dans le mini-dialog EXISTANT (menu clic-case) @ihm @vert
 ```gherkin
 Étant donné le planning ouvert (grille agenda), un enfant sélectionné, un utilisateur PARENT
 Quand je clique sur une case « jour-case » et choisis l'entrée « déléguer ce jour » du menu « menu-actions-case »

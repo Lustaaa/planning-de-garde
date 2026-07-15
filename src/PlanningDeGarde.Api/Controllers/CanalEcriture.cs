@@ -36,11 +36,13 @@ public static class CanalEcriture
     /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
     public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
 
-    /// <summary>Corps de la requête de délégation de la récupération d'UN jour (s44) émise via le canal
-    /// requête/réponse : le jour concerné, l'enfant sélectionné et l'identifiant stable de l'acteur RECEVANT.
-    /// Le use case COMPOSE l'écriture surcharge ponctuelle existante (s06) ; refus métier (délégataire inconnu,
-    /// délégation à soi-même) renvoyé avec son motif.</summary>
-    public sealed record DeleguerRecuperationRequete(DateOnly Jour, string EnfantId, string VersActeurId);
+    /// <summary>Corps de la requête de délégation de la récupération d'une PLAGE (s44 → s45) émise via le canal
+    /// requête/réponse : le jour de DÉBUT, l'enfant sélectionné, l'identifiant stable de l'acteur RECEVANT et le
+    /// jour de FIN (INCLUS) <paramref name="JourFin"/> (champ « jusqu'au »). <paramref name="JourFin"/> absent
+    /// (null) = plage réduite à UN jour (fin = début) → parité s44. Le use case COMPOSE l'écriture surcharge
+    /// MULTI-JOURS existante (s06) ; refus métier (délégataire inconnu, soi-même, fin &lt; début) renvoyé avec son motif.</summary>
+    public sealed record DeleguerRecuperationRequete(
+        DateOnly Jour, string EnfantId, string VersActeurId, DateOnly? JourFin = null);
 
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
@@ -272,7 +274,7 @@ public static class CanalEcriture
             (DeleguerRecuperationRequete requete, DeleguerRecuperationHandler handler, INotificateurPlanning notificateur) =>
         {
             var resultat = handler.Handle(new DeleguerRecuperationCommand(
-                requete.Jour, requete.EnfantId, requete.VersActeurId));
+                requete.Jour, requete.EnfantId, requete.VersActeurId, requete.JourFin));
 
             // Le use case COMPOSE l'écriture surcharge ponctuelle (s06) : succès acquitté (la surcharge du jour
             // fait primer le délégataire, le transfert bicolore sort dérivé de s31), refus métier (délégataire
