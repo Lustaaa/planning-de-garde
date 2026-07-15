@@ -73,6 +73,41 @@ public sealed class AnnulerDelegationMongoTests : IDisposable
         Assert.Null(caseJour.Transfert);
     }
 
+    [MongoRequisFact]
+    public void Acceptation_Should_Reprendre_une_occurrence_au_milieu_dune_plage_decoupe_le_store_durable()
+    {
+        // --- Given : deux acteurs durables, cycle N=2 (index 0 pair → Parent A), plage [J1..J3] déléguée à Bruno ---
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var parentA = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+        var parentB = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bruno")).Valeur!.ActeurId;
+        new CycleDeFondMongo(ConnectionString, _baseDeTest)
+            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = parentA, [1] = parentB }));
+
+        new DeleguerRecuperationHandler(GrilleNeuve(), new MongoPeriodeRepository(ConnectionString, _baseDeTest), new ConfigurationFoyerMongo(ConnectionString, _baseDeTest))
+            .Handle(new DeleguerRecuperationCommand(Mardi_07_07_2026, "enfant-lea", parentB, Jeudi_09_07_2026));
+
+        // --- When : je reprends le SEUL jour du milieu (J2) sur Mongo réel ---
+        var resultat = new AnnulerDelegationHandler(new MongoPeriodeRepository(ConnectionString, _baseDeTest))
+            .Handle(new AnnulerDelegationCommand(Mercredi_08_07_2026, "enfant-lea"));
+        Assert.True(resultat.EstSucces);
+
+        // --- Redémarrage : DEUX surcharges Bruno durables, aucune ne couvre plus J2 ---
+        var snaps = new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots();
+        Assert.Equal(2, snaps.Count);
+        Assert.All(snaps, s => Assert.Equal(parentB, s.ResponsableId));
+        Assert.DoesNotContain(snaps, s =>
+            DateOnly.FromDateTime(s.Debut) <= Mercredi_08_07_2026 && DateOnly.FromDateTime(s.Fin) >= Mercredi_08_07_2026);
+
+        // --- Then : J2 retombe sur le FOND (Alice), J1 et J3 restent Bruno ---
+        var grille = GrilleNeuve();
+        Assert.Equal(parentA, CaseDuJour(grille, Mercredi_08_07_2026).ResponsableId);
+        Assert.Equal(parentB, CaseDuJour(grille, Mardi_07_07_2026).ResponsableId);
+        Assert.Equal(parentB, CaseDuJour(grille, Jeudi_09_07_2026).ResponsableId);
+        // Transferts recalculés au trou : sortie après J1 (à J2, Bruno→Alice), entrée avant J3 (à J3, Alice→Bruno).
+        Assert.Equal("Alice", CaseDuJour(grille, Mercredi_08_07_2026).Transfert!.NomArrivee);
+        Assert.Equal("Bruno", CaseDuJour(grille, Jeudi_09_07_2026).Transfert!.NomArrivee);
+    }
+
     public void Dispose()
     {
         try { new MongoClient(ConnectionString).DropDatabase(_baseDeTest); }

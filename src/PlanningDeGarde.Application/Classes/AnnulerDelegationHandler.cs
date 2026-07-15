@@ -30,13 +30,29 @@ public sealed class AnnulerDelegationHandler
 
     public Result<AnnulerDelegationResultat> Handle(AnnulerDelegationCommand commande)
     {
-        var couvrantes = _periodes.AllSnapshots().Where(p => Couvre(p, commande.Jour)).ToList();
+        var jour = commande.Jour;
+        var couvrantes = _periodes.AllSnapshots().Where(p => Couvre(p, jour)).ToList();
 
         foreach (var surcharge in couvrantes)
+        {
+            // Granularité = UNE occurrence : la surcharge couvrant le jour est retirée via le chemin s16,
+            // puis les segments RESTANTS (avant / après le jour repris) sont réécrits via le chemin période
+            // EXISTANT (s06) — une plage [J1..J3] reprise en J2 laisse [J1..J2-1] et [J2+1..J3] intacts.
             _periodes.Supprimer(surcharge.Id);
+            var debut = DateOnly.FromDateTime(surcharge.Debut);
+            var fin = DateOnly.FromDateTime(surcharge.Fin);
+            if (debut < jour)
+                ReecrireSegment(surcharge.ResponsableId, debut, jour.AddDays(-1));
+            if (fin > jour)
+                ReecrireSegment(surcharge.ResponsableId, jour.AddDays(1), fin);
+        }
 
         return Result<AnnulerDelegationResultat>.Succes(new AnnulerDelegationResultat(couvrantes.Count > 0));
     }
+
+    private void ReecrireSegment(string responsableId, DateOnly debut, DateOnly fin)
+        => _periodes.Enregistrer(PeriodeDeGarde.Affecter(
+            responsableId, debut.ToDateTime(TimeOnly.MinValue), fin.ToDateTime(TimeOnly.MinValue)).Valeur!);
 
     private static bool Couvre(PeriodeSnapshot periode, DateOnly jour)
         => DateOnly.FromDateTime(periode.Debut) <= jour && DateOnly.FromDateTime(periode.Fin) >= jour;
