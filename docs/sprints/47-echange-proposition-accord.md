@@ -5,7 +5,7 @@
 > proposition→accord** dont les propositions arrivent comme **notifications ACTIONNABLES** dans la
 > cloche. La cloche est la **1ʳᵉ surface hors-grille rouverte** depuis s44.
 
-## Avancement — 1/9
+## Avancement — 2/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -16,7 +16,7 @@
 | Sc.4 | Temps réel : un changement → nouvelle notif + compteur incrémenté chez les destinataires par reprojection client SignalR, **0 GET** | @ihm | 🔴 |
 | **BRIQUE B — Échange proposition → accord (greffé sur la cloche)** | | | |
 | Sc.5 | PROPOSER = notification `pending` chez le recevant **SANS aucune écriture de surcharge** (résolution de la case inchangée) | @back | ✅ |
-| Sc.6 | ACCEPTER **compose la délégation s44** (surcharge + transfert dérivé s31) ; REFUSER retire sans écriture — Mongo durable | @back | 🔴 |
+| Sc.6 | ACCEPTER **compose la délégation s44** (surcharge + transfert dérivé s31) ; REFUSER retire sans écriture — Mongo durable | @back | ✅ |
 | Sc.7 | Cas limite / erreur : soi-même refusé · délégataire inconnu/orphelin refusé AVANT écriture · ré-proposition last-write-wins R11 · jour hors fenêtre sans crash | @back | 🔴 |
 | Sc.8 | Notification d'échange **ACTIONNABLE dans la cloche** (Accepter / Refuser depuis la notif) + entrée « proposer un échange » du menu clic-case (Parent-gated), Échap | @ihm | 🔴 |
 | Sc.9 | Temps réel : accord → notif + case résolue (surcharge + transfert) sur 2ᵉ écran par reprojection SignalR, 0 GET ; refus → notif close sans écriture | @ihm | 🔴 |
@@ -152,7 +152,7 @@ Et la résolution de la case reste "surcharge > fond" inchangée (aucun basculem
 Et le comportement est prouvé sur les DEUX adaptateurs (InMemory + Mongo durable)
 ```
 
-### Sc.6 — ACCEPTER compose la délégation s44 ; REFUSER retire sans écriture @back @pending
+### Sc.6 — ACCEPTER compose la délégation s44 ; REFUSER retire sans écriture @back @vert
 ```gherkin
 Étant donné une Proposition "proposé" (pending) sur un jour, adressée à un recevant connu
 Quand le recevant ACCEPTE (AccepterProposition)
