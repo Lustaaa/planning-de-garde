@@ -64,7 +64,7 @@
 >   suppression EXISTANTE s16 — **aucun** bouton « annuler » neuf (candidat backlog séparé).
 > - **Notifications** : aucune cloche « X a délégué » — Palier 11 (backlog).
 
-## Avancement — 4/6
+## Avancement — 5/6
 
 | # | Scénario | Type | Statut |
 |--:|----------|------|:------:|
@@ -72,7 +72,7 @@
 | 2 | **Cas LIMITE — chevauchement / plage vide / soi-même / frontière de fenêtre** : plage chevauchant une surcharge existante → **last-write-wins R11**, **aucun doublon** ; **`fin < début` (plage vide)** → **refus AVANT écriture**, store intact ; **délégation à soi-même** (B = responsable de fond de toute la plage) → **refus explicite** sans écriture ; **`fin` hors fenêtre chargée** → écriture **valide sans crash**, affichage suivant la fenêtre | back | ✅ |
 | 3 | **Cas ERREUR — délégataire inconnu / orphelin** : déléguer une plage `[J1..J2]` vers un acteur dont l'**id est absent du store** → **refus AVANT écriture**, store **intact**, **aucune écriture partielle** (aucun jour de la plage écrit) ; identique sur les deux adaptateurs | back | ✅ |
 | 4 | **Champ « jusqu'au » dans le mini-dialog EXISTANT (menu clic-case)** : depuis l'entrée « déléguer ce jour » du `menu-actions-case`, le mini-dialog porte un **champ « jusqu'au »** (défaut = jour cliqué) ; valider émet la commande `[début..fin]` via le **canal d'écriture** ; **Échap = Annuler** (aucune commande) ; **Parent-gated** (l'Invité ne voit ni menu ni entrée) | 🖥️ IHM | ✅ |
-| 5 | **Refus domaine → dialog reste ouverte + motif + saisie (plage) conservée** : une délégation de plage refusée (`fin < début`, soi-même, délégataire inconnu) laisse le **mini-dialog OUVERT**, affiche le **motif**, **conserve la saisie** (acteur **ET** plage début/fin) ; **store intact** ; fermeture uniquement sur Annuler/Échap ou succès | 🖥️ IHM | 🔴 |
+| 5 | **Refus domaine → dialog reste ouverte + motif + saisie (plage) conservée** : une délégation de plage refusée (`fin < début`, soi-même, délégataire inconnu) laisse le **mini-dialog OUVERT**, affiche le **motif**, **conserve la saisie** (acteur **ET** plage début/fin) ; **store intact** ; fermeture uniquement sur Annuler/Échap ou succès | 🖥️ IHM | ✅ |
 | 6 | **Temps réel — TOUTES les cases de la plage convergent (0 GET)** : après une délégation de plage sur le 1ᵉʳ écran, **chaque case `[J1..J2]`** de la grille d'un **2ᵉ écran CONVERGE** sans rechargement (nouveau responsable + **transferts bicolores dérivés s31** aux frontières) ; convergence par **reprojection client** via **SignalR lecture seule** (**0 GET** sur push) | 🖥️ IHM | 🔴 |
 
 > **⚠️ Porte de conception SURFACE — AUCUNE surface neuve (décision SM au cadrage, anti-rework G3).**
@@ -176,7 +176,7 @@ Quand il clique sur une case « jour-case »
 Alors soit le menu ne s'ouvre pas, soit il ne contient PAS l'entrée « déléguer ce jour » (Parent-gated) et AUCUNE commande n'est émissible
 ```
 
-### Sc.5 — Refus domaine → dialog reste ouverte + motif + saisie (plage) conservée @ihm @pending
+### Sc.5 — Refus domaine → dialog reste ouverte + motif + saisie (plage) conservée @ihm @vert
 ```gherkin
 Étant donné le mini-dialog « déléguer ce jour » ouvert (depuis le menu clic-case, Sc.4) avec un acteur choisi et une plage saisie
 Quand je valide une délégation que le domaine REFUSE (fin < début, délégation à soi-même, ou délégataire inconnu/orphelin — Sc.2/Sc.3)
