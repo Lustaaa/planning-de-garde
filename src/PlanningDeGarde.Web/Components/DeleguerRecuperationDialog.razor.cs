@@ -21,10 +21,18 @@ public partial class DeleguerRecuperationDialog
     private sealed class Formulaire
     {
         public string VersActeurId { get; set; } = "";
+
+        /// <summary>Borne de FIN (INCLUSE) de la plage déléguée (champ « jusqu'au » du mini-dialog, s45).
+        /// Défaut = le jour cliqué (fin = début) → la délégation d'UN jour (s44) reste inchangée.</summary>
+        public DateTime Jusqu { get; set; }
     }
 
     private readonly Formulaire _form = new();
     private string? _motifEchec;
+
+    // Défaut du champ « jusqu'au » = le jour cliqué (parité s44 : fin = début). Une plage postérieure
+    // n'est saisie que si l'utilisateur porte cette borne plus loin.
+    protected override void OnInitialized() => _form.Jusqu = DateContexte.ToDateTime(TimeOnly.MinValue);
 
     /// <summary>Acteurs éligibles du foyer (id stable + nom), fournis par le parent depuis le store vivant :
     /// le sélecteur ne propose que ces acteurs réels (jamais un libellé en dur).</summary>
@@ -61,7 +69,8 @@ public partial class DeleguerRecuperationDialog
         {
             reponse = await Canal.PostAsJsonAsync(
                 "api/canal/deleguer-recuperation",
-                new DeleguerRecuperationRequete(DateContexte, EnfantId, _form.VersActeurId));
+                new DeleguerRecuperationRequete(
+                    DateContexte, EnfantId, _form.VersActeurId, DateOnly.FromDateTime(_form.Jusqu)));
         }
         catch (HttpRequestException)
         {

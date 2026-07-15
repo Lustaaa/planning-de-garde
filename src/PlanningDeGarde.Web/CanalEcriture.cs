@@ -31,11 +31,14 @@ public static class CanalEcriture
     /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
     public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
 
-    /// <summary>Corps de la requête de délégation de la récupération d'UN jour (s44) : le jour, l'enfant
-    /// sélectionné et l'identifiant stable de l'acteur RECEVANT. Émis via le canal d'écriture ; le use case
-    /// COMPOSE l'écriture surcharge ponctuelle existante (s06). Refus métier (délégataire inconnu / à soi-même)
-    /// renvoyé avec son motif (dialog restée ouverte, Sc.5).</summary>
-    public sealed record DeleguerRecuperationRequete(DateOnly Jour, string EnfantId, string VersActeurId);
+    /// <summary>Corps de la requête de délégation de la récupération d'une PLAGE (s44 → s45) : le jour de
+    /// DÉBUT, l'enfant sélectionné, l'identifiant stable de l'acteur RECEVANT et le jour de FIN (INCLUS)
+    /// <paramref name="JourFin"/> (champ « jusqu'au »). <paramref name="JourFin"/> absent (null) = plage
+    /// réduite à UN jour (fin = début) → parité STRICTE s44. Émis via le canal d'écriture ; le use case
+    /// COMPOSE l'écriture surcharge MULTI-JOURS existante (s06). Refus métier (délégataire inconnu / à
+    /// soi-même / fin &lt; début) renvoyé avec son motif (dialog restée ouverte, Sc.5).</summary>
+    public sealed record DeleguerRecuperationRequete(
+        DateOnly Jour, string EnfantId, string VersActeurId, DateOnly? JourFin = null);
 
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);

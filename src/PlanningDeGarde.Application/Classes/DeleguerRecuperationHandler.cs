@@ -5,13 +5,16 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application;
 
 /// <summary>
-/// Commande task-orientée « je ne récupère pas ce jour-là, X le fera » (s44) : déléguer la récupération
-/// du jour <paramref name="Jour"/> de l'enfant <paramref name="EnfantId"/> à l'acteur
-/// <paramref name="VersActeurId"/>. EXPOSE l'écriture « surcharge ponctuelle » EXISTANTE (une période
-/// d'UN jour, s06) — ce n'est PAS un mécanisme neuf. Le transfert bicolore qui en résulte reste
-/// AUTO-DÉRIVÉ par s31 (R24), jamais réécrit.
+/// Commande task-orientée « je ne récupère pas ces jours-là, X le fera » (s44 → s45) : déléguer la
+/// récupération de la PLAGE <c>[<paramref name="Jour"/>..<paramref name="JourFin"/>]</c> de l'enfant
+/// <paramref name="EnfantId"/> à l'acteur <paramref name="VersActeurId"/>. <paramref name="JourFin"/> est
+/// la date de fin (INCLUSE) ; <b>absente (null) = plage réduite à UN jour</b> (<c>fin = début</c>) → parité
+/// STRICTE avec la délégation d'un jour s44. EXPOSE l'écriture « surcharge » EXISTANTE (une période
+/// <c>[début..fin]</c>, s06) — ce n'est PAS un mécanisme neuf. Les transferts bicolores aux frontières de
+/// la plage restent AUTO-DÉRIVÉS par s31 (R24), jamais réécrits.
 /// </summary>
-public sealed record DeleguerRecuperationCommand(DateOnly Jour, string EnfantId, string VersActeurId);
+public sealed record DeleguerRecuperationCommand(
+    DateOnly Jour, string EnfantId, string VersActeurId, DateOnly? JourFin = null);
 
 /// <summary>
 /// Use case de COMPOSITION : « déléguer la récupération d'UN jour » COMPOSE le chemin d'écriture
@@ -43,22 +46,24 @@ public sealed class DeleguerRecuperationHandler
             return Result<PeriodeSnapshot>.Echec(
                 "Délégataire inconnu : cet acteur n'existe pas (ou plus) dans le foyer.");
 
-        // Refus de la délégation à soi-même : le délégataire est DÉJÀ le responsable RÉSOLU du jour
-        // (surcharge > fond), la délégation n'apporterait aucun changement utile — aucune écriture.
-        var resolu = _grille.Projeter(commande.Jour, VuePlanning.Semaine)
-            .Jours.Single(j => j.Date == commande.Jour).ResponsableId;
-        if (resolu == commande.VersActeurId)
-            return Result<PeriodeSnapshot>.Echec(
-                "Délégation à soi-même : cet acteur récupère déjà ce jour-là, aucun changement n'est nécessaire.");
-
-        var debut = commande.Jour.ToDateTime(TimeOnly.MinValue);
-        var affectation = PeriodeDeGarde.Affecter(commande.VersActeurId, debut, debut);
+        // Fin ABSENTE = plage réduite à UN jour (parité s44). La borne fin < début (plage vide) est
+        // rejetée AVANT écriture par l'agrégat (bornes invalides) — refus ATOMIQUE, aucun jour écrit.
+        var debutJour = commande.Jour;
+        var finJour = commande.JourFin ?? commande.Jour;
+        var affectation = PeriodeDeGarde.Affecter(
+            commande.VersActeurId, debutJour.ToDateTime(TimeOnly.MinValue), finJour.ToDateTime(TimeOnly.MinValue));
         if (!affectation.EstSucces)
             return Result<PeriodeSnapshot>.Echec(affectation.Motif!);
 
-        // Last-write-wins R11 : une surcharge existante couvrant le jour est RÉAFFECTÉE (retirée avant
-        // ré-écriture), jamais dupliquée — le jour n'est couvert que par la dernière écriture.
-        foreach (var existante in _periodes.AllSnapshots().Where(p => CouvreLeJour(p, commande.Jour)).ToList())
+        // Refus de la délégation à soi-même : le délégataire est DÉJÀ le responsable RÉSOLU de CHAQUE jour
+        // de la plage (surcharge > fond) — la délégation n'apporterait aucun changement utile, aucune écriture.
+        if (TouteLaPlageResoutDeja(debutJour, finJour, commande.VersActeurId))
+            return Result<PeriodeSnapshot>.Echec(
+                "Délégation à soi-même : cet acteur récupère déjà ces jours-là, aucun changement n'est nécessaire.");
+
+        // Last-write-wins R11 : toute surcharge existante CHEVAUCHANT la plage est RÉAFFECTÉE (retirée avant
+        // ré-écriture), jamais dupliquée — la plage n'est couverte que par la dernière écriture.
+        foreach (var existante in _periodes.AllSnapshots().Where(p => Chevauche(p, debutJour, finJour)).ToList())
             _periodes.Supprimer(existante.Id);
 
         var periode = affectation.Valeur!;
@@ -66,6 +71,18 @@ public sealed class DeleguerRecuperationHandler
         return Result<PeriodeSnapshot>.Succes(periode.ToSnapshot());
     }
 
-    private static bool CouvreLeJour(PeriodeSnapshot periode, DateOnly jour)
-        => jour >= DateOnly.FromDateTime(periode.Debut) && jour <= DateOnly.FromDateTime(periode.Fin);
+    private bool TouteLaPlageResoutDeja(DateOnly debut, DateOnly fin, string acteurId)
+    {
+        for (var jour = debut; jour <= fin; jour = jour.AddDays(1))
+        {
+            var resolu = _grille.Projeter(jour, VuePlanning.Semaine)
+                .Jours.Single(j => j.Date == jour).ResponsableId;
+            if (resolu != acteurId)
+                return false;
+        }
+        return true;
+    }
+
+    private static bool Chevauche(PeriodeSnapshot periode, DateOnly debut, DateOnly fin)
+        => DateOnly.FromDateTime(periode.Debut) <= fin && DateOnly.FromDateTime(periode.Fin) >= debut;
 }

@@ -24,7 +24,29 @@
 > persistante hors semaine » et « à-venir au-delà de la fenêtre » (limitations s42/s43) **tombent** avec
 > le retrait de ces surfaces.
 
-**s44 `deleguer-recuperation-jour` MERGÉ — 1ʳᵉ ÉCRITURE du NOYAU PRODUIT « qui récupère »** : un parent qui ne peut
+**s45 `deleguer-plage-de-jours` MERGÉ — EXTENSION de la délégation s44 du JOUR UNIQUE à une PLAGE `[J1..J2]`** : l'imprévu
+qui DURE (voyage, hospitalisation, « je pars du 20 au 25, X récupère les enfants »). **AUCUNE surface neuve, AUCUN modèle/
+commande neuf** : le **mini-dialog « déléguer ce jour » EXISTANT (s44)** est **enrichi d'un champ « jusqu'au »** (date de
+fin, **défaut = jour cliqué = parité s44 stricte** → délégation d'UN jour inchangée). **@back** : `DeleguerRecuperation(début,
+fin, enfant, versActeur)` **COMPOSE l'écriture surcharge MULTI-JOURS `[début..fin]` via s06** (`s06` gère déjà une période) —
+B prime (surcharge > fond) sur **chaque** jour ; **transferts bicolores AUTO-DÉRIVÉS s31** (R24) aux **DEUX frontières**
+(entrée J1, sortie J2+1), jamais réécrits ; deux adaptateurs InMemory + Mongo durable. **Cas limite** : chevauchement →
+**last-write-wins R11** sans doublon ; **`fin < début` (plage vide)** → refus AVANT écriture, store intact ; **soi-même** →
+refus sans écriture ; **`fin` hors fenêtre chargée** → écriture valide sans crash. **Cas erreur** : **délégataire inconnu /
+orphelin** → refus AVANT écriture, **aucune écriture partielle** (aucun jour de la plage écrit). **@ihm** : champ « jusqu'au »
+Parent-gated, **Échap = Annuler** (port s33), **refus domaine → dialog reste ouverte + motif + saisie conservée (acteur ET
+plage)** ; convergence temps réel de **TOUTES les cases de la plage** (nouveau responsable + transferts dérivés aux frontières)
+sur 2ᵉ écran par **reprojection client SignalR, 0 GET**. **PORTE DE CONCEPTION SURFACE arbitrée AU CADRAGE** (garde s44) :
+surface tenue (mini-dialog existant), **0 rework G3, 6/6 du 1ᵉʳ coup**, gate G3 validé PO. Suite **770/773** (3 skip). **Hors
+scope (backlog)** : délégation **récurrente/série « tous les mardis »** (D2, distincte d'une plage contiguë), **sélection de
+plage par DRAG sur la grille** (dépend du **palier 9 calendrier-navigable non livré**), **annulation/undo dédié** (re-déléguer
+last-write-wins ou supprimer via dialog s16), **notifications** « X a délégué » (Palier 11). **Candidats de tête au prochain
+`/planning`** : **panneau cloche notifications/alertes push** (Palier 11), **délégation récurrente/série** (D2), reste Config
+foyer (édition depuis le graphe, graphe étendu, arbitrage inline vs modal, liste de slots par activité, lien adresse
+acteur↔lieu, suppression slot récurrent IHM, suppression d'un enfant) ; **P0 auth** (Google OAuth réel + écran
+définir-mot-de-passe), **R3 « exactement 2 » à l'écriture** (non imposée, choix produit).
+
+Précédent = **s44 `deleguer-recuperation-jour` MERGÉ — 1ʳᵉ ÉCRITURE du NOYAU PRODUIT « qui récupère »** : un parent qui ne peut
 pas récupérer un jour en **délègue la récupération à un autre acteur pour CE jour-là** (imprévu / échange de dernière
 minute, **UN jour ponctuel**). **@back** : use case `DeleguerRecuperation(jour, enfant, versActeur)` de **COMPOSITION**
 — expose l'**écriture surcharge ponctuelle EXISTANTE** (période d'UN jour, s06) avec le délégataire responsable, **aucun
