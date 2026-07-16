@@ -98,7 +98,9 @@ public static class CanalLecture
                     .Select(n => new NotificationClocheVue(
                         n.Evenement.Id, n.Evenement.Type.ToString().ToLowerInvariant(), n.Evenement.Jour,
                         n.Evenement.EnfantId, n.Evenement.CedantId, n.Evenement.RecevantId, n.Evenement.Horodatage,
-                        n.Lu, false, null, "changement"));
+                        // Statut porte le SOUS-TYPE d'imprévu (s48 : « malade » / « retard ») pour le libellé
+                        // informatif de la cloche, sinon « changement » (délégation / reprise / transfert).
+                        n.Lu, false, null, n.Evenement.Imprevu?.ToString().ToLowerInvariant() ?? "changement"));
 
                 var echanges = propositions.AllSnapshots()
                     .Where(p => (p.VersActeurId == utilisateurId || p.DeActeurId == utilisateurId)

@@ -184,7 +184,9 @@ public partial class Cloche : IAsyncDisposable
             return; // reprojection IDEMPOTENTE : une même diffusion re-reçue (reconnexion) ne double pas le compteur
         _notifications.Insert(0, new NotificationCloche(
             e.Id, e.Type.ToString().ToLowerInvariant(), e.Jour, e.EnfantId, e.CedantId, e.RecevantId,
-            e.Horodatage, false, false, null, "changement"));
+            // Statut porte le SOUS-TYPE d'imprévu (s48 : « malade » / « retard ») pour le libellé informatif,
+            // sinon « changement » — parité EXACTE avec le rendu du GET initial (canal de lecture).
+            e.Horodatage, false, false, null, e.Imprevu?.ToString().ToLowerInvariant() ?? "changement"));
         RecalculerNonLus();
         StateHasChanged();
     }
@@ -295,6 +297,10 @@ public partial class Cloche : IAsyncDisposable
         "delegation" => $"Délégation du {n.Jour:dd/MM} : {Nom(n.CedantId)} → {Nom(n.RecevantId)}",
         "reprise" => $"Reprise du {n.Jour:dd/MM} : {Nom(n.CedantId)}",
         "transfert" => $"Transfert du {n.Jour:dd/MM} : {Nom(n.CedantId)} → {Nom(n.RecevantId)}",
+        // Imprévu (s48) : informatif, non négociable. « malade » porte sur l'ENFANT ; « retard » sur le SIGNALANT
+        // (RecevantId = acteur signalant). Le sous-type vit dans Statut (parité GET initial / reprojection).
+        "imprevu" when n.Statut == "retard" => $"{Nom(n.RecevantId)} sera en retard le {n.Jour:dd/MM}",
+        "imprevu" => $"{Nom(n.EnfantId)} est malade le {n.Jour:dd/MM}",
         "echange" when n.Statut == "acceptee" => $"Échange du {n.Jour:dd/MM} accepté : {Nom(n.CedantId)} → {Nom(n.RecevantId)}",
         _ => $"Échange proposé du {n.Jour:dd/MM} : {Nom(n.CedantId)} → {Nom(n.RecevantId)}",
     };

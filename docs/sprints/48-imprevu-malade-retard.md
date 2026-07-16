@@ -8,7 +8,7 @@
 > bascule de responsable). Réutilise intégralement les briques s47 (journal de changements, cloche, diffusion porteuse
 > de payload) et le pattern d'entrée de menu clic-case (s44 délégation / s47 proposer-échange).
 
-## Avancement — 5/7
+## Avancement — 6/7
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -17,7 +17,7 @@
 | 3 | Cas limite : motif optionnel vide accepté ; jour hors fenêtre chargée enregistré sans crash ; deux adaptateurs InMemory + Mongo durable | @back | ✅ |
 | 4 | Cas erreur / gating back : type d'imprévu inconnu refusé sans écriture ; le journal reste trace non-autorité (résolution jamais impactée) | @back | ✅ |
 | 5 | Entrée « signaler un imprévu » du menu clic-case (Parent-gated), choix malade/retard + motif optionnel, Échap = Annuler (port s33) | @ihm | ✅ |
-| 6 | La notification d'imprévu apparaît dans la CLOCHE s47 (libellé informatif « X est malade le 12 »), lu/non-lu, PAS d'action de suivi | @ihm | 🔴 |
+| 6 | La notification d'imprévu apparaît dans la CLOCHE s47 (libellé informatif « X est malade le 12 »), lu/non-lu, PAS d'action de suivi | @ihm | ✅ |
 | 7 | Temps réel : diffusion porteuse de payload (INotificateurChangement s47) → la cloche d'un 2ᵉ écran converge, 0 GET sur push | @ihm | 🔴 |
 
 ## Goal & cadrage
@@ -103,7 +103,7 @@ Scénario Sc.5 — Entrée « signaler un imprévu » du menu clic-case, Parent-
   Et Échap annule et ferme le mini-dialog (port IEcouteurEchapModal s33), sans commande
   Et un Invité ne voit NI le menu clic-case NI l'entrée (Parent-gated, cohérent s44/s47)
 
-@ihm @pending
+@ihm @vert
 Scénario Sc.6 — La notification d'imprévu apparaît dans la cloche, informative, sans action de suivi
   Étant donné un imprévu « malade » signalé sur le 12 pour un enfant
   Quand j'ouvre le panneau de la cloche s47
