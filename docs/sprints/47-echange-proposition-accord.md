@@ -5,7 +5,7 @@
 > proposition→accord** dont les propositions arrivent comme **notifications ACTIONNABLES** dans la
 > cloche. La cloche est la **1ʳᵉ surface hors-grille rouverte** depuis s44.
 
-## Avancement — 8/9
+## Avancement — 9/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -19,7 +19,7 @@
 | Sc.6 | ACCEPTER **compose la délégation s44** (surcharge + transfert dérivé s31) ; REFUSER retire sans écriture — Mongo durable | @back | ✅ |
 | Sc.7 | Cas limite / erreur : soi-même refusé · délégataire inconnu/orphelin refusé AVANT écriture · ré-proposition last-write-wins R11 · jour hors fenêtre sans crash | @back | ✅ |
 | Sc.8 | Notification d'échange **ACTIONNABLE dans la cloche** (Accepter / Refuser depuis la notif) + entrée « proposer un échange » du menu clic-case (Parent-gated), Échap | @ihm | ✅ |
-| Sc.9 | Temps réel : accord → notif + case résolue (surcharge + transfert) sur 2ᵉ écran par reprojection SignalR, 0 GET ; refus → notif close sans écriture | @ihm | 🔴 |
+| Sc.9 | Temps réel : accord → notif + case résolue (surcharge + transfert) sur 2ᵉ écran par reprojection SignalR, 0 GET ; refus → notif close sans écriture | @ihm | ✅ |
 
 > **Ligne de coupe (si découpage 2 sprints retenu par le PO)** : Sc.1–4 = **sprint 47 (cloche générale
 > lecture + lu/non-lu)**, brique livrable et cohérente seule ; Sc.5–9 = **sprint 48 (échange
@@ -210,7 +210,7 @@ Et l'émetteur PROPOSE via l'entrée "proposer un échange" du menu clic-case de
 Et Échap ferme le mini-dialog / le panneau sans commande ; un Invité ne voit ni cloche ni entrée (Parent-gated)
 ```
 
-### Sc.9 — Temps réel : accord / refus convergent @ihm @pending
+### Sc.9 — Temps réel : accord / refus convergent @ihm @vert
 ```gherkin
 Étant donné deux écrans, une Proposition pending notifiée dans la cloche du recevant
 Quand le recevant ACCEPTE depuis sa cloche
