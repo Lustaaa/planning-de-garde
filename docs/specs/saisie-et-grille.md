@@ -48,13 +48,20 @@ Texte complet : [`sequence-de-livraison.md` § paliers 2-3](sequence-de-livraiso
   dérivation **n'écrit rien**, et la **résolution de responsabilité de la case** (surcharge > fond > neutre)
   n'est **pas** affectée.
 
-- **Grille agenda = SEULE surface de lecture du planning** *(décision PO gate G3 s44)* : le noyau produit
-  « qui récupère » se **lit directement sur la grille agenda** (socle `GrilleAgendaQuery`) — responsable résolu
-  (surcharge > fond > neutre, R19), slot(s) de localisation du jour (s29) et transfert éventuel (saisi OU dérivé
-  s31, rendu bicolore ci-dessus). Il n'existe **aucune surface de lecture intermédiaire**. *La carte « Aujourd'hui »
-  (s42) et le panneau « À venir » (s43), incréments de lecture précédemment posés en tête du planning, ont été
-  **RETIRÉS ENTIÈREMENT en s44** — composants IHM **et** read models `CarteDuJourQuery` / `AVenirQuery` — sur
-  décision PO : ils faisaient doublon avec la grille. Ne pas les réintroduire sans arbitrage PO.*
+- **Grille agenda = SEULE surface de LECTURE du planning** *(décision PO gate G3 s44 — amendée s47 pour la
+  cloche)* : le noyau produit « qui récupère » se **lit directement sur la grille agenda** (socle `GrilleAgendaQuery`)
+  — responsable résolu (surcharge > fond > neutre, R19), slot(s) de localisation du jour (s29) et transfert éventuel
+  (saisi OU dérivé s31, rendu bicolore ci-dessus). Il n'existe **aucune surface de lecture du planning intermédiaire**.
+  *La carte « Aujourd'hui » (s42) et le panneau « À venir » (s43), incréments de lecture précédemment posés en tête du
+  planning, ont été **RETIRÉS ENTIÈREMENT en s44** — composants IHM **et** read models `CarteDuJourQuery` / `AVenirQuery`
+  — sur décision PO : ils faisaient doublon avec la grille. Ne pas les réintroduire sans arbitrage PO.*
+  - **AMENDEMENT s47 — la CLOCHE (barre du haut) est une surface hors-grille ASSUMÉE.** La décision « seule surface »
+    vise les surfaces de **re-lecture du planning** redondantes avec la grille. Elle **ne couvre PAS** la **cloche de
+    notifications** rouverte en s47 : la cloche **n'est pas une re-lecture du planning**, c'est une **surface de
+    NOTIFICATION de CHANGEMENT** (journal append-only, lu/non-lu, propositions d'échange actionnables), **assumée
+    hors-grille**, posée **dans la barre d'application du haut** (`MainLayout`), gatée connecté && Parent. Le **noyau de
+    lecture** du planning reste la grille ; la cloche s'y ajoute comme **surface transverse**. Texte complet :
+    [`notifications-et-echange.md`](notifications-et-echange.md).
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 

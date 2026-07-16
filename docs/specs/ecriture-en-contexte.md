@@ -149,7 +149,13 @@ aucune persistance tirée en avant. Texte complet :
   store intact) ; valider émet `annuler-delegation` par le **canal d'écriture** (jamais la diffusion). **Temps réel** : la
   **case du jour** d'un 2ᵉ écran **converge** (responsable de fond restauré, transfert dérivé disparu) par **reprojection
   client** via **SignalR lecture seule**, **0 GET** sur push. **Hors scope s46** (backlog) : action « reprendre toute la
-  plage » d'un coup, **notifications** (Palier 11).
+  plage » d'un coup, **notifications** (Palier 11) *(livrées s47, ci-dessous)*.
+- **Proposer un échange (flux consenti)** *(livré s47 — entrée « proposer un échange » du menu clic-case, Parent-gated)* →
+  contrairement à la **délégation directe** s44 (effet immédiat), c'est le **consentement du recevant** qui déclenche
+  l'écriture : `ProposerEchange` crée une **Proposition `pending`** (notification chez le recevant) **SANS aucune écriture**
+  (résolution de la case inchangée), et la **réponse (Accepter / Refuser) se fait dans la CLOCHE**, pas dans le menu
+  clic-case (plus de badge sur la case ni d'entrée conditionnelle pour répondre). **Accepter compose la délégation s44** ;
+  **refuser** clôt sans écriture. Texte canonique : [`notifications-et-echange.md`](notifications-et-echange.md).
 
 *Texte complet des mécaniques transverses :* [`mecaniques-de-base.md`](mecaniques-de-base.md).
 *Résolution de la case (surcharge > fond > neutre) & suppression/édition de période :*
