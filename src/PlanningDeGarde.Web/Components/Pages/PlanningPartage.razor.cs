@@ -78,6 +78,10 @@ public partial class PlanningPartage
     // mini-dialog de choix du recevant. Jour de contexte (null = fermé). PROPOSER n'écrit rien : la case reste
     // inchangée ; le recevant est notifié via sa cloche et répond depuis la notification actionnable.
     private DateOnly? _dateDialogProposer;
+    // Signalement d'imprévu d'UN jour (s48) : l'entrée « signaler un imprévu » du menu clic-case ouvre un
+    // mini-dialog de choix du type (malade/retard) + motif optionnel. Jour de contexte (null = fermé). Purement
+    // INFORMATIF : le signalement n'écrit AUCUNE surcharge (résolution inchangée) ; la cloche des concernés reprojette.
+    private DateOnly? _dateDialogSignalerImprevu;
     // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
     // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
     // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
@@ -491,6 +495,19 @@ public partial class PlanningPartage
         _dateDialogProposer = date;
     }
 
+    /// <summary>Ouvre le mini-dialog « signaler un imprévu » (s48) sur la <paramref name="date"/> de la case, depuis
+    /// l'entrée « signaler un imprévu » du menu clic-case. Gating Invité (règle 9) mutualisé avec le menu (il ne
+    /// s'ouvre que pour un Parent) et re-gardé ici. Purement INFORMATIF : le signalement n'écrit AUCUNE surcharge —
+    /// la résolution reste inchangée (invariant s48), seule la cloche des concernés est notifiée.</summary>
+    private void OuvrirSignalerImprevu(DateOnly date)
+    {
+        if (!Session.EstParent)
+            return;
+
+        _dateMenu = null;
+        _dateDialogSignalerImprevu = date;
+    }
+
     /// <summary>
     /// Ouvre le mini-dialog « reprendre ce jour » (s46) sur la <paramref name="date"/> de la case, depuis
     /// l'entrée CONDITIONNELLE du menu clic-case (visible seulement sur une case portant une délégation active).
@@ -650,6 +667,7 @@ public partial class PlanningPartage
         _dateDialogDeleguer = null;
         _dateDialogReprendre = null;
         _dateDialogProposer = null;
+        _dateDialogSignalerImprevu = null;
         // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
         _plageDebut = null;
         _plageFin = null;

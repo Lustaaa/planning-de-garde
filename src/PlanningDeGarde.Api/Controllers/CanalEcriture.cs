@@ -238,6 +238,13 @@ public static class CanalEcriture
     /// refuser clôt sans aucune écriture.</summary>
     public sealed record RepondrePropositionRequete(string PropositionId);
 
+    /// <summary>Corps de la requête SIGNALER un imprévu (s48) émise via le canal d'écriture : le jour, l'enfant, le
+    /// TYPE d'imprévu (malade / retard), l'acteur SIGNALANT, un motif OPTIONNEL. Purement INFORMATIF — consigne une
+    /// trace au journal (cloche s47) DIFFUSÉE (payload), N'ÉCRIT AUCUNE surcharge (résolution jamais touchée, invariant
+    /// s48). Refus métier (type inconnu) renvoyé avec son motif — le mini-dialog reste ouvert côté front.</summary>
+    public sealed record SignalerImprevuRequete(
+        DateOnly Jour, string EnfantId, TypeImprevu Type, string SignalantId, string Motif = "");
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
         routes.MapPost("/api/canal/marquer-notifications-lues",
@@ -295,6 +302,22 @@ public static class CanalEcriture
             notificateur.NotifierProposition(resultat.Valeur!);
             return Results.Ok();
         });
+        routes.MapPost("/api/canal/signaler-imprevu",
+            (SignalerImprevuRequete requete, SignalerImprevuHandler handler) =>
+        {
+            var resultat = handler.Handle(new SignalerImprevuCommand(
+                requete.Jour, requete.EnfantId, requete.Type, requete.SignalantId, requete.Motif));
+
+            // Signalement d'imprévu (s48) : purement INFORMATIF. La consignation au journal (décoré
+            // JournalChangementsDiffusant) DIFFUSE déjà l'événement (payload → cloche des concernés), 0 GET sur
+            // push. AUCUNE surcharge écrite : la résolution du planning n'est jamais touchée (invariant s48).
+            // Refus métier (type inconnu) renvoyé avec son motif — le mini-dialog reste ouvert côté front (Sc.5).
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            return Results.Ok();
+        });
+
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
         {
             var resultat = handler.Handle(new PoserSlotCommand(

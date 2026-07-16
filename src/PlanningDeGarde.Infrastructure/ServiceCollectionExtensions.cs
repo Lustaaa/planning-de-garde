@@ -294,6 +294,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AccepterPropositionHandler>();
         services.AddScoped<RefuserPropositionHandler>();
 
+        // Signalement d'imprévu (s48) : consigne une trace au journal (décoré diffusant → cloche des concernés,
+        // 0 GET), SANS aucune écriture de surcharge (résolution jamais touchée). Le journal injecté est le port
+        // IJournalChangements (JournalChangementsDiffusant) : la consignation diffuse l'événement (payload).
+        services.AddScoped<SignalerImprevuHandler>();
+
         return services;
     }
 }

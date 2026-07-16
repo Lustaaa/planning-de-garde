@@ -8,7 +8,7 @@
 > bascule de responsable). Réutilise intégralement les briques s47 (journal de changements, cloche, diffusion porteuse
 > de payload) et le pattern d'entrée de menu clic-case (s44 délégation / s47 proposer-échange).
 
-## Avancement — 4/7
+## Avancement — 5/7
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -16,7 +16,7 @@
 | 2 | L'événement d'imprévu apparaît dans le flux notifications du/des acteur(s) concerné(s), trié par récence, lu/non-lu par utilisateur | @back | ✅ |
 | 3 | Cas limite : motif optionnel vide accepté ; jour hors fenêtre chargée enregistré sans crash ; deux adaptateurs InMemory + Mongo durable | @back | ✅ |
 | 4 | Cas erreur / gating back : type d'imprévu inconnu refusé sans écriture ; le journal reste trace non-autorité (résolution jamais impactée) | @back | ✅ |
-| 5 | Entrée « signaler un imprévu » du menu clic-case (Parent-gated), choix malade/retard + motif optionnel, Échap = Annuler (port s33) | @ihm | 🔴 |
+| 5 | Entrée « signaler un imprévu » du menu clic-case (Parent-gated), choix malade/retard + motif optionnel, Échap = Annuler (port s33) | @ihm | ✅ |
 | 6 | La notification d'imprévu apparaît dans la CLOCHE s47 (libellé informatif « X est malade le 12 »), lu/non-lu, PAS d'action de suivi | @ihm | 🔴 |
 | 7 | Temps réel : diffusion porteuse de payload (INotificateurChangement s47) → la cloche d'un 2ᵉ écran converge, 0 GET sur push | @ihm | 🔴 |
 
@@ -94,7 +94,7 @@ Scénario Sc.4 — Cas erreur / invariant : type inconnu refusé, journal reste 
   Et pour un signalement valide, aucune lecture ultérieure de la résolution ne consulte le journal
   Et écrire/supprimer une surcharge par ailleurs n'altère jamais la vérité via le journal (séparation tenue)
 
-@ihm @pending
+@ihm @vert
 Scénario Sc.5 — Entrée « signaler un imprévu » du menu clic-case, Parent-gated, Échap = Annuler
   Étant donné le hub /planning et le menu clic-case d'un jour (à côté de « déléguer ce jour » s44 / « proposer un échange » s47)
   Quand un Parent ouvre le menu et choisit « signaler un imprévu »
