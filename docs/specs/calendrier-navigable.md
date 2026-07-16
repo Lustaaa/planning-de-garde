@@ -2,18 +2,19 @@
 
 > Sujet **migré** depuis `docs/15-specification.md` (palier 9, épics É4 + É7) à la migration complète
 > des specs. Source de vérité pour la **navigation passé/futur**, les **vues prédéfinies** et la
-> **sélection de plage de cases**. **Prochain sujet — NON LIVRÉ.** Édité en diff, jamais réécrit en
-> bloc.
+> **sélection de plage de cases**. **NAVIGATION + VUES LIVRÉES s15** ; **seule la sélection de plage
+> reste non livrée (tranche 2).** Édité en diff, jamais réécrit en bloc.
 
 ## Contexte
 
-Le **calendrier navigable** reste **à livrer** : la grille actuelle est une **vue posée non encore
-navigable**. Le but est de faire du hub `/planning` un **agenda navigable** : se déplacer dans le
-**passé et le futur**, choisir des **vues prédéfinies** (semaine, mois, **4 semaines glissantes** par
-défaut à partir de la semaine en cours), et **sélectionner une plage de cases** pour affecter une
-période sur l'**intervalle** choisi (l'affectation par plage rouvre l'écriture en contexte sur
-plusieurs jours d'un coup). Ce palier enrichit la grille **sans toucher aux mécaniques d'écriture déjà
-livrées** (dialogs). **Aucune persistance tirée en avant.**
+**NAVIGATION + VUES LIVRÉES (s15).** Le hub `/planning` est un **agenda navigable** : déplacement
+**passé/futur** (`PlanningPartage.razor` — boutons `nav-semaine-precedente` / `nav-semaine-suivante` /
+`nav-aujourdhui`) et **vues prédéfinies** (semaine / 4 semaines glissantes / mois — `selecteur-vue`),
+la fenêtre étant résolue par `GrilleAgendaQuery.Projeter(ancre, vue)` sur `SessionPlanning`
+(**état de navigation NON persisté** — borne anti-cliquet). **Reste NON LIVRÉ = la SÉLECTION DE PLAGE
+de cases** (tranche 2) pour affecter une période sur l'**intervalle** choisi (l'affectation par plage
+rouvre l'écriture en contexte sur plusieurs jours d'un coup) — enrichit la grille **sans toucher aux
+mécaniques d'écriture déjà livrées** (dialogs), **aucune persistance tirée en avant**.
 
 ## Objectif & arbitrage
 
@@ -24,12 +25,12 @@ navigation / s03), **rang +2** du backlog, tranché en **porte G2** par le PO. D
 
 ## Séquence
 
-**Palier 9 — NON LIVRÉ, prochain sujet.** **Orientation de découpe (pas une règle, palier gardé
-groupé)** : (a) plus petit incrément probable = **navigation seule** (semaines préc. / suiv., bascule
-de vue) ; (b) **sélection de plage** = sujet plein **cuttable en tranche 2** si elle déborde ~2h ; (c)
-**périmètre exact tranché au make-gherkin**, non pré-arbitré ici (corollaire de découpe). Pas de découpe
-9a/9b actée en spec. Sujet `/2-make-gherkin` = `calendrier-navigable`. Texte complet :
-[`sequence-de-livraison.md` § palier 9](sequence-de-livraison.md).
+**Palier 9 — NAVIGATION + VUES LIVRÉES s15 ; SÉLECTION DE PLAGE = tranche 2 restante.** La tranche 1
+(navigation passé/futur + vues semaine / 4 semaines glissantes / mois + état non persisté) est **livrée
+au sprint 15**. La tranche 2 = **sélection de plage** (drag / sélection multi-jours pour affecter une
+période sur l'intervalle) **reste non livrée** (séquencée s49). **Périmètre exact tranché au
+make-gherkin** (corollaire de découpe). Sujet `/2-make-gherkin` = `calendrier-navigable`. Texte
+complet : [`sequence-de-livraison.md` § palier 9](sequence-de-livraison.md).
 
 ## Mécaniques (cibles)
 
