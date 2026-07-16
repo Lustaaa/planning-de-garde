@@ -13,21 +13,29 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components;
 
 /// <summary>
-/// CLOCHE de notifications (s47) en en-tête du planning : badge du compteur de non-lus + panneau déroulant
-/// listant les changements récents (délégations / reprises / transferts — informationnels, lu/non-lu) et les
-/// propositions d'échange ACTIONNABLES (Accepter / Refuser via mini-dialog de confirmation). Parent-gated
-/// (un Invité ne voit pas la cloche). Le compteur/flux est chargé à l'ouverture (GET initial), puis CONVERGE
-/// en temps réel par REPROJECTION depuis la diffusion PORTEUSE DE PAYLOAD (SignalR) — AUCUN GET sur push
-/// (garde-fou anti-flake). L'écriture (marquer-lu / accepter / refuser) transite par le canal requête/réponse,
-/// jamais la diffusion. Échap ferme le mini-dialog puis le panneau (port <see cref="IEcouteurEchapModal"/> s33).
+/// CLOCHE de notifications (s47) dans la BARRE D'APPLICATION (MainLayout, retour PO au gate visuel) : badge du
+/// compteur de non-lus + panneau déroulant listant les changements récents (délégations / reprises / transferts
+/// — informationnels, lu/non-lu) et les propositions d'échange ACTIONNABLES (Accepter / Refuser via mini-dialog
+/// de confirmation). Gating identique au menu utilisateur (rien hors session) + Parent-gated (un Invité ne voit
+/// pas la cloche) : elle ne s'affiche donc PAS sur l'écran de connexion ni pour un non-Parent. Le composant est
+/// AUTONOME dans le layout — il charge lui-même son référentiel d'acteurs (résolution ids→noms) et son flux, se
+/// connecte à SignalR, et suit la session (il s'abonne à <see cref="SessionPlanning.EtatConnexionChange"/> pour
+/// (re)charger quand une connexion survient pendant la vie du layout, présent sur toutes les routes). Le
+/// compteur/flux est chargé à l'ouverture (GET initial), puis CONVERGE en temps réel par REPROJECTION depuis la
+/// diffusion PORTEUSE DE PAYLOAD (SignalR) — AUCUN GET sur push (garde-fou anti-flake). L'écriture (marquer-lu /
+/// accepter / refuser) transite par le canal requête/réponse, jamais la diffusion. Échap ferme le mini-dialog
+/// puis le panneau (port <see cref="IEcouteurEchapModal"/> s33).
 /// </summary>
 public partial class Cloche : IAsyncDisposable
 {
     private List<NotificationCloche> _notifications = new();
+    private List<ActeurFoyer> _acteurs = new();
     private int _nonLus;
     private bool _ouvert;
     private HubConnection? _hub;
     private IAsyncDisposable? _abonnementEchap;
+    private bool _charge;                 // flux + acteurs chargés (une seule fois par session ouverte)
+    private bool _hubDemarrageDemande;    // le hub ne se démarre qu'une fois par session ouverte
 
     // Mini-dialog de confirmation d'une réponse à une proposition actionnable (Sc.8). null = fermé.
     private string? _confirmPropositionId;
@@ -38,30 +46,44 @@ public partial class Cloche : IAsyncDisposable
     [Inject] private OptionsConnexionHub OptionsHub { get; set; } = default!;
 
     // Port Échap (s33) résolu PARESSEUSEMENT via le provider (jamais un [Inject] dur) : la cloche est rendue
-    // en permanence dans l'en-tête, on n'impose donc pas sa présence à tout hôte qui rend le planning (l'app
-    // réelle l'enregistre — Program.cs ; un contexte de test qui n'exerce pas Échap peut l'omettre sans casser
-    // le rendu). L'écoute document ne s'attache qu'à l'ouverture du panneau.
+    // en permanence dans la barre d'application, on n'impose donc pas sa présence à tout hôte qui rend le layout
+    // (l'app réelle l'enregistre — Program.cs ; un contexte de test qui n'exerce pas Échap peut l'omettre sans
+    // casser le rendu). L'écoute document ne s'attache qu'à l'ouverture du panneau.
     [Inject] private IServiceProvider Fournisseur { get; set; } = default!;
     private IEcouteurEchapModal? Echap => Fournisseur.GetService(typeof(IEcouteurEchapModal)) as IEcouteurEchapModal;
 
-    /// <summary>Référentiel des acteurs (déjà chargé par la page) pour résoudre les ids en noms — parité de
-    /// rendu entre le chargement initial et la reprojection depuis la diffusion (qui ne porte que des ids).</summary>
-    [Parameter] public IReadOnlyList<ActeurFoyer> Acteurs { get; set; } = Array.Empty<ActeurFoyer>();
+    /// <summary>Gating d'affichage : même règle que le menu utilisateur (rien hors session) COMPOSÉE au
+    /// Parent-gating (un Invité / une identité effective non Parent ne voit pas la cloche). Rendue dans le layout
+    /// (présent sur toutes les routes, dont /connexion), elle reste donc invisible tant qu'aucun Parent n'est
+    /// connecté.</summary>
+    private bool DoitAfficher => Session.EstConnecte && Session.EstParent;
 
     private string MonId => Session.IdentiteEffective.Id;
 
+    protected override void OnInitialized()
+        // Le layout persiste à travers la navigation (login → planning) : la cloche s'abonne à la session pour
+        // (re)charger quand la connexion est déclenchée depuis un AUTRE composant (la page de connexion dédiée).
+        => Session.EtatConnexionChange += SurChangementConnexion;
+
     protected override async Task OnInitializedAsync()
     {
-        // Parent-gated : un Invité (ou une identité effective non Parent/Admin) ne voit pas la cloche.
-        if (!Session.EstParent)
-            return;
-        await ChargerAsync();
+        if (DoitAfficher)
+            await ChargerAsync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (!firstRender || !Session.EstParent)
-            return;
+        // Démarre le hub dès que la cloche doit s'afficher et qu'il n'est pas déjà (re)demandé — que la session
+        // soit déjà ouverte au premier rendu, ou ouverte plus tard pendant la vie du layout (post-login).
+        if (DoitAfficher && !_hubDemarrageDemande)
+        {
+            _hubDemarrageDemande = true;
+            await DemarrerHubAsync();
+        }
+    }
+
+    private async Task DemarrerHubAsync()
+    {
         try
         {
             var urlHub = new Uri(Canal.BaseAddress!, "hubs/planning");
@@ -86,9 +108,40 @@ public partial class Cloche : IAsyncDisposable
         }
     }
 
-    /// <summary>Chargement INITIAL du flux (GET, autorisé — jamais sur push) : compteur + notifications chrono.</summary>
+    /// <summary>Réagit à un changement d'état de connexion (Sc.11 pattern menu utilisateur). À l'ouverture d'une
+    /// session Parent : charge le flux + référentiel puis re-rend (le rendu déclenche le démarrage du hub). À la
+    /// déconnexion : réinitialise (aucune notif fantôme, hub fermé) pour repartir propre à la prochaine session.</summary>
+    private async void SurChangementConnexion()
+    {
+        if (DoitAfficher && !_charge)
+        {
+            await ChargerAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+        else if (!Session.EstConnecte)
+        {
+            await ReinitialiserAsync();
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    /// <summary>Chargement INITIAL (GET, autorisé — jamais sur push) : le référentiel d'acteurs (résolution
+    /// ids→noms, parité rendu initial / reprojeté) puis le flux (compteur + notifications chrono). Le composant
+    /// étant AUTONOME dans le layout, il charge lui-même ces deux sources (la page ne les lui passe plus).</summary>
     private async Task ChargerAsync()
     {
+        _charge = true; // tentative marquée d'emblée : évite un double chargement concurrent
+        try
+        {
+            var acteurs = await Canal.GetFromJsonAsync<List<ActeurFoyer>>("api/foyer/acteurs");
+            if (acteurs is not null)
+                _acteurs = acteurs;
+        }
+        catch (HttpRequestException)
+        {
+            // Référentiel injoignable : les libellés retombent sur l'id brut (Nom), la cloche reste fonctionnelle.
+        }
+
         try
         {
             var cloche = await Canal.GetFromJsonAsync<ClocheChargement>($"api/notifications/{MonId}");
@@ -101,6 +154,25 @@ public partial class Cloche : IAsyncDisposable
         catch (HttpRequestException)
         {
             // API distante injoignable : la cloche reste vide plutôt que de planter la vue.
+        }
+    }
+
+    /// <summary>Réinitialise l'état à la déconnexion : aucune notification résiduelle d'une session précédente,
+    /// panneau/mini-dialog fermés, écoute Échap détachée, hub fermé — la prochaine connexion repart de zéro.</summary>
+    private async Task ReinitialiserAsync()
+    {
+        _notifications = new();
+        _acteurs = new();
+        _nonLus = 0;
+        _ouvert = false;
+        _confirmPropositionId = null;
+        _charge = false;
+        _hubDemarrageDemande = false;
+        await DetacherEchap();
+        if (_hub is not null)
+        {
+            await _hub.DisposeAsync();
+            _hub = null;
         }
     }
 
@@ -215,7 +287,7 @@ public partial class Cloche : IAsyncDisposable
         await Canal.PostAsJsonAsync(endpoint, new RepondrePropositionRequete(propositionId));
     }
 
-    private string Nom(string id) => Acteurs.FirstOrDefault(a => a.Id == id)?.Nom ?? id;
+    private string Nom(string id) => _acteurs.FirstOrDefault(a => a.Id == id)?.Nom ?? id;
 
     /// <summary>Libellé humain d'une notification (résolution des ids en noms sur le référentiel chargé).</summary>
     private string Libelle(NotificationCloche n) => n.Type switch
@@ -229,6 +301,7 @@ public partial class Cloche : IAsyncDisposable
 
     public async ValueTask DisposeAsync()
     {
+        Session.EtatConnexionChange -= SurChangementConnexion;
         await DetacherEchap();
         if (_hub is not null)
             await _hub.DisposeAsync();

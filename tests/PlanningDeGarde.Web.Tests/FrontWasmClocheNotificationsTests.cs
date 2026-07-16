@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.Components;
 using PlanningDeGarde.Web.State;
 using Xunit;
 using static PlanningDeGarde.Web.CanalEcriture;
@@ -16,11 +16,13 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Tests;
 
 /// <summary>
-/// Sprint 47 — Sc.3 (🖥️ @ihm) — acceptation de NIVEAU RUNTIME : la CLOCHE de notifications en en-tête du
-/// planning réellement câblé (store réel, projection réelle, canal réel). Un Parent connecté qui a des
-/// changements le concernant voit une icône cloche + un BADGE compteur de non-lus ; cliquer la cloche déroule
-/// un PANNEAU listant les changements récents (chrono, lu/non-lu) ; marquer lu décroît le compteur ; Échap
-/// ferme le panneau (port document s33, DOUBLÉ) ; un Invité ne voit PAS la cloche (Parent-gated).
+/// Sprint 47 — Sc.3 (🖥️ @ihm) — acceptation de NIVEAU RUNTIME : la CLOCHE de notifications, désormais dans la
+/// BARRE D'APPLICATION (repositionnée par le PO au gate visuel), réellement câblée (store réel, projection
+/// réelle, canal réel). Rendue en ISOLATION comme dans le layout — composant AUTONOME (charge lui-même son
+/// référentiel + son flux, se connecte à SignalR). Un Parent connecté qui a des changements le concernant voit
+/// une icône cloche + un BADGE compteur de non-lus ; cliquer la cloche déroule un PANNEAU listant les
+/// changements récents (chrono, lu/non-lu) ; marquer lu décroît le compteur ; Échap ferme le panneau (port
+/// document s33, DOUBLÉ) ; un Invité ne voit PAS la cloche (Parent-gated).
 ///
 /// Anti « vert qui ment » : la notification provient d'une VRAIE écriture (délégation) transitée par le canal
 /// requête/réponse, consignée au journal réel, relue par le canal de lecture réel — jamais une doublure.
@@ -28,8 +30,6 @@ namespace PlanningDeGarde.Web.Tests;
 [Collection("SignalRTempsReel")]
 public sealed class FrontWasmClocheNotificationsTests : TestContext
 {
-    private static readonly DateTime Aujourdhui = GrilleRuntimeHarness.Lundi_29_06_2026; // 29/06/2026, ISO 27 → parent-b
-
     /// <summary>Double à la main du port d'écoute Échap (spy) : capte le callback d'attache et rejoue Échap document.</summary>
     private sealed class EspionEchap : IEcouteurEchapModal
     {
@@ -60,11 +60,13 @@ public sealed class FrontWasmClocheNotificationsTests : TestContext
         return session;
     }
 
-    private IRenderedComponent<PlanningPartage> Rendre(ApiDistanteFactory api, SessionPlanning session, IEcouteurEchapModal? echap = null)
+    /// <summary>Rend la CLOCHE en ISOLATION, câblée comme dans le layout : composant autonome (référentiel + flux
+    /// chargés par lui-même) branché sur l'API distante réelle + le hub SignalR réel. Rempart anti vert-qui-ment
+    /// préservé — le chemin observé n'est jamais doublé (store / projection / diffusion réels).</summary>
+    private IRenderedComponent<Cloche> Rendre(ApiDistanteFactory api, SessionPlanning session, IEcouteurEchapModal? echap = null)
     {
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
         Services.AddSingleton(session);
-        Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(Aujourdhui));
         Services.AddSingleton(new OptionsConnexionHub
         {
             Configurer = options =>
@@ -76,9 +78,7 @@ public sealed class FrontWasmClocheNotificationsTests : TestContext
         if (echap is not null)
             Services.AddSingleton(echap);
 
-        var grille = RenderComponent<PlanningPartage>();
-        grille.WaitForState(() => grille.FindAll("[data-testid='jour-case']").Count == 28, TimeSpan.FromSeconds(10));
-        return grille;
+        return RenderComponent<Cloche>();
     }
 
     /// <summary>Sème une VRAIE délégation (canal réel) dont <paramref name="versActeurId"/> est le RECEVANT :

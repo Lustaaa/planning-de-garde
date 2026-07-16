@@ -15,10 +15,8 @@
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <h1 class="m-0">Planning partagé du foyer</h1>
     <div class="d-flex align-items-center flex-wrap gap-3">
-        @* Cloche de notifications (s47) : badge compteur de non-lus + panneau déroulant en en-tête. Parent-gated
-           (l'Invité ne la voit pas). Temps réel par reprojection depuis la diffusion (0 GET). Le référentiel
-           acteurs déjà chargé sert à résoudre les ids en noms (parité rendu initial / reprojeté). *@
-        <Cloche Acteurs="_acteursFoyer" />
+        @* Cloche de notifications DÉPLACÉE dans la barre d'application (MainLayout, retour PO au gate visuel s47) :
+           l'en-tête du planning ne la porte plus. Elle est désormais autonome dans le layout. *@
         @* Sélecteur d'incarnation (impersonation bornée, lecture seule — sprint 14) : COMPLÈTE le
            sélecteur de rôle démo sans le remplacer (préserve la consultation Invité existante). Incarner
            un acteur reflète son rôle dans la vue (bandeau + menu clic-case selon le type, règle 8) ; la

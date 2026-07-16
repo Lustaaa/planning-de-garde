@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web;
+using PlanningDeGarde.Web.Components;
 using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
@@ -59,7 +60,8 @@ public sealed class FrontWasmEchangeActionnableTests : TestContext
         return session;
     }
 
-    private IRenderedComponent<PlanningPartage> Rendre(ApiDistanteFactory api, SessionPlanning session, IEcouteurEchapModal? echap = null)
+    /// <summary>Enregistre le câblage runtime commun (canal + session + hub réels).</summary>
+    private void CablerServices(ApiDistanteFactory api, SessionPlanning session, IEcouteurEchapModal? echap = null)
     {
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
         Services.AddSingleton(session);
@@ -74,9 +76,23 @@ public sealed class FrontWasmEchangeActionnableTests : TestContext
         });
         if (echap is not null)
             Services.AddSingleton(echap);
+    }
+
+    /// <summary>Rend la PAGE (PlanningPartage) : le menu clic-case (« proposer un échange ») y vit toujours.</summary>
+    private IRenderedComponent<PlanningPartage> Rendre(ApiDistanteFactory api, SessionPlanning session, IEcouteurEchapModal? echap = null)
+    {
+        CablerServices(api, session, echap);
         var grille = RenderComponent<PlanningPartage>();
         grille.WaitForState(() => grille.FindAll("[data-testid='jour-case']").Count == 28, TimeSpan.FromSeconds(10));
         return grille;
+    }
+
+    /// <summary>Rend la CLOCHE (barre d'application) en isolation, autonome — la RÉPONSE actionnable
+    /// (Accepter / Refuser) vit désormais dans la cloche du layout, plus dans l'en-tête de la page.</summary>
+    private IRenderedComponent<Cloche> RendreCloche(ApiDistanteFactory api, SessionPlanning session, IEcouteurEchapModal? echap = null)
+    {
+        CablerServices(api, session, echap);
+        return RenderComponent<Cloche>();
     }
 
     /// <summary>Sème une proposition pending adressée à <paramref name="versActeurId"/> par le canal réel
@@ -130,7 +146,7 @@ public sealed class FrontWasmEchangeActionnableTests : TestContext
         using var api = new ApiDistanteFactory();
         SemerCycle(api);
         await SemerPropositionVers(api, "parent-a");
-        var grille = Rendre(api, SessionComme("parent-a", "Alice"));
+        var grille = RendreCloche(api, SessionComme("parent-a", "Alice"));
 
         // When — ouvrir la cloche : la notification d'échange porte Accepter / Refuser (actionnable).
         this.SurDispatcher(() => grille.Find("[data-testid='cloche-bouton']").Click());
@@ -167,7 +183,7 @@ public sealed class FrontWasmEchangeActionnableTests : TestContext
         using var api = new ApiDistanteFactory();
         SemerCycle(api);
         await SemerPropositionVers(api, "parent-a");
-        var grille = Rendre(api, SessionComme("parent-a", "Alice"));
+        var grille = RendreCloche(api, SessionComme("parent-a", "Alice"));
 
         this.SurDispatcher(() => grille.Find("[data-testid='cloche-bouton']").Click());
         grille.WaitForAssertion(() => Assert.NotEmpty(grille.FindAll("[data-testid='cloche-refuser']")), TimeSpan.FromSeconds(10));
@@ -190,10 +206,17 @@ public sealed class FrontWasmEchangeActionnableTests : TestContext
         SemerCycle(api);
         await SemerPropositionVers(api, "parent-a");
         var espion = new EspionEchap();
-        var grille = Rendre(api, SessionComme("parent-a", "Alice"), espion);
+        var grille = RendreCloche(api, SessionComme("parent-a", "Alice"), espion);
 
         this.SurDispatcher(() => grille.Find("[data-testid='cloche-bouton']").Click());
-        grille.WaitForAssertion(() => Assert.Equal(1, espion.Attachements), TimeSpan.FromSeconds(10));
+        // Ouverture du panneau : l'écouteur Échap est attaché ET la notification actionnable est chargée (flux GET).
+        grille.WaitForAssertion(
+            () =>
+            {
+                Assert.Equal(1, espion.Attachements);
+                Assert.NotEmpty(grille.FindAll("[data-testid='cloche-accepter']"));
+            },
+            TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => grille.Find("[data-testid='cloche-accepter']").Click());
         grille.WaitForAssertion(() => Assert.NotEmpty(grille.FindAll("[data-testid='cloche-confirmer']")), TimeSpan.FromSeconds(10));
 

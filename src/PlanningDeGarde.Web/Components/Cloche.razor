@@ -1,8 +1,10 @@
-@* Cloche de notifications (s47) : badge compteur de non-lus + panneau déroulant (liste chrono, lu/non-lu,
-   marquer-lu, propositions actionnables). Parent-gated : rendue UNIQUEMENT pour un Parent/Admin (un Invité ne
-   voit pas la cloche). Temps réel par reprojection depuis la diffusion porteuse de payload (0 GET sur push).
-   Échap ferme le mini-dialog puis le panneau (port document s33). Voir Cloche.razor.cs. *@
-@if (Session.EstParent)
+@* Cloche de notifications (s47) dans la BARRE D'APPLICATION (MainLayout, retour PO au gate) : badge compteur de
+   non-lus + panneau déroulant (liste chrono, lu/non-lu, marquer-lu, propositions actionnables). Rendue dans le
+   layout (toutes les routes) : gating = session ouverte (comme le menu utilisateur) COMPOSÉ au Parent-gating —
+   PAS de cloche sur l'écran de connexion ni pour un Invité. Temps réel par reprojection depuis la diffusion
+   porteuse de payload (0 GET sur push). Échap ferme le mini-dialog puis le panneau (port document s33). Voir
+   Cloche.razor.cs. *@
+@if (DoitAfficher)
 {
     <div class="pdg-cloche">
         <button type="button" class="pdg-cloche-bouton btn btn-outline-secondary position-relative"

@@ -10,6 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web;
+using PlanningDeGarde.Web.Components;
 using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
@@ -45,7 +46,11 @@ public sealed class FrontWasmEchangeConvergenceTempsReelTests : TestContext
         return session;
     }
 
-    private IRenderedComponent<PlanningPartage> RendreEmetteur(ApiDistanteFactory api)
+    /// <summary>Câble le runtime de l'ÉMETTEUR (parent-b) : canal + session + hub réels. Depuis le repositionnement
+    /// de la cloche dans la barre d'application (retour PO), la CASE vit dans la PAGE (PlanningPartage) et la
+    /// NOTIFICATION dans la CLOCHE (composant du layout) : on rend les deux en frères, partageant ce même
+    /// câblage, exactement comme le layout enveloppe la page dans l'app réelle.</summary>
+    private void CablerEmetteur(ApiDistanteFactory api)
     {
         Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
         Services.AddSingleton(SessionComme("parent-b", "Bruno")); // l'émetteur observe
@@ -58,6 +63,10 @@ public sealed class FrontWasmEchangeConvergenceTempsReelTests : TestContext
                 options.Transports = HttpTransportType.LongPolling;
             },
         });
+    }
+
+    private IRenderedComponent<PlanningPartage> RendreGrille()
+    {
         var grille = RenderComponent<PlanningPartage>();
         grille.WaitForState(() => grille.FindAll("[data-testid='jour-case']").Count == 28, TimeSpan.FromSeconds(10));
         return grille;
@@ -82,12 +91,14 @@ public sealed class FrontWasmEchangeConvergenceTempsReelTests : TestContext
         using var api = new ApiDistanteFactory();
         SemerCycle(api);
         var propositionId = await SemerPropositionVersParentA(api);
-        var grille = RendreEmetteur(api);
+        CablerEmetteur(api);
+        var grille = RendreGrille();
+        var cloche = RenderComponent<Cloche>();
 
         // La cloche de l'émetteur montre la proposition (informationnelle, « proposé ») ; la case 29/06 est au fond (Bruno).
-        this.SurDispatcher(() => grille.Find("[data-testid='cloche-bouton']").Click());
-        grille.WaitForAssertion(
-            () => Assert.NotEmpty(grille.FindAll("[data-testid='cloche-panneau'] [data-testid='cloche-notif'][data-type='echange']")),
+        this.SurDispatcher(() => cloche.Find("[data-testid='cloche-bouton']").Click());
+        cloche.WaitForAssertion(
+            () => Assert.NotEmpty(cloche.FindAll("[data-testid='cloche-panneau'] [data-testid='cloche-notif'][data-type='echange']")),
             TimeSpan.FromSeconds(10));
         Assert.Equal("Bruno", GrilleRuntimeHarness.CaseDuJour(grille, CaseJJMM).QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());
 
@@ -126,10 +137,10 @@ public sealed class FrontWasmEchangeConvergenceTempsReelTests : TestContext
                 TimeSpan.FromSeconds(15));
 
             // (b) la notification d'échange de la cloche passe à « accepté » (reprojection depuis la diffusion Proposition).
-            grille.WaitForAssertion(
+            cloche.WaitForAssertion(
                 () =>
                 {
-                    var notif = grille.Find("[data-testid='cloche-panneau'] [data-testid='cloche-notif'][data-type='echange']");
+                    var notif = cloche.Find("[data-testid='cloche-panneau'] [data-testid='cloche-notif'][data-type='echange']");
                     Assert.Contains("accepté", notif.TextContent);
                 },
                 TimeSpan.FromSeconds(15));
@@ -148,10 +159,11 @@ public sealed class FrontWasmEchangeConvergenceTempsReelTests : TestContext
         using var api = new ApiDistanteFactory();
         SemerCycle(api);
         var propositionId = await SemerPropositionVersParentA(api);
-        var grille = RendreEmetteur(api);
-        this.SurDispatcher(() => grille.Find("[data-testid='cloche-bouton']").Click());
-        grille.WaitForAssertion(
-            () => Assert.NotEmpty(grille.FindAll("[data-testid='cloche-panneau'] [data-testid='cloche-notif'][data-type='echange']")),
+        CablerEmetteur(api);
+        var cloche = RenderComponent<Cloche>();
+        this.SurDispatcher(() => cloche.Find("[data-testid='cloche-bouton']").Click());
+        cloche.WaitForAssertion(
+            () => Assert.NotEmpty(cloche.FindAll("[data-testid='cloche-panneau'] [data-testid='cloche-notif'][data-type='echange']")),
             TimeSpan.FromSeconds(10));
 
         // When — le RECEVANT REFUSE (autre écran = POST refus).
@@ -174,8 +186,8 @@ public sealed class FrontWasmEchangeConvergenceTempsReelTests : TestContext
         try
         {
             // Then — la notification d'échange se CLÔT (retirée par reprojection), et AUCUNE surcharge n'est écrite.
-            grille.WaitForAssertion(
-                () => Assert.Empty(grille.FindAll("[data-testid='cloche-panneau'] [data-testid='cloche-notif'][data-type='echange']")),
+            cloche.WaitForAssertion(
+                () => Assert.Empty(cloche.FindAll("[data-testid='cloche-panneau'] [data-testid='cloche-notif'][data-type='echange']")),
                 TimeSpan.FromSeconds(15));
             Assert.Empty(api.Services.GetRequiredService<IPeriodeRepository>().AllSnapshots());
         }

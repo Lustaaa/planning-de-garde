@@ -11,7 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.Components;
 using PlanningDeGarde.Web.State;
 using Xunit;
 using static PlanningDeGarde.Web.CanalEcriture;
@@ -32,8 +32,6 @@ namespace PlanningDeGarde.Web.Tests;
 [Collection("SignalRTempsReel")]
 public sealed class FrontWasmClocheTempsReelTests : TestContext
 {
-    private static readonly DateTime Aujourdhui = GrilleRuntimeHarness.Lundi_29_06_2026;
-
     /// <summary>Handler qui relaie tout vers l'API distante RÉELLE SAUF un <c>GET /api/notifications/…</c>, coupé
     /// par un échec de transport déterministe — reproduit « aucun GET de la cloche ne peut aboutir » pour prouver
     /// que la convergence vient de la diffusion, pas d'un rechargement.</summary>
@@ -67,7 +65,6 @@ public sealed class FrontWasmClocheTempsReelTests : TestContext
         var clientCoupe = new HttpClient(new NotificationsGetCoupe(api.Server.CreateHandler())) { BaseAddress = api.Server.BaseAddress };
         Services.AddSingleton(clientCoupe);
         Services.AddSingleton(SessionComme("parent-a", "Alice"));
-        Services.AddSingleton<IDateTimeProvider>(new DateTimeProviderFige(Aujourdhui));
         Services.AddSingleton(new OptionsConnexionHub
         {
             Configurer = options =>
@@ -77,9 +74,9 @@ public sealed class FrontWasmClocheTempsReelTests : TestContext
             },
         });
 
-        var grille = RenderComponent<PlanningPartage>();
-        grille.WaitForState(() => grille.FindAll("[data-testid='jour-case']").Count == 28, TimeSpan.FromSeconds(10));
-        // Compteur initial N = 0 (aucun badge) : le GET de chargement de la cloche est coupé.
+        // La CLOCHE (barre d'application) rendue en isolation, autonome. Son GET /api/notifications est coupé →
+        // compteur initial N = 0 (aucun badge) ; seul le référentiel (GET /api/foyer/acteurs, non coupé) passe.
+        var grille = RenderComponent<Cloche>();
         Assert.Empty(grille.FindAll("[data-testid='cloche-badge']"));
 
         // When — depuis un AUTRE écran (client réel non coupé), un changement concernant parent-a est écrit :
