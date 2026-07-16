@@ -8,14 +8,14 @@
 > bascule de responsable). Réutilise intégralement les briques s47 (journal de changements, cloche, diffusion porteuse
 > de payload) et le pattern d'entrée de menu clic-case (s44 délégation / s47 proposer-échange).
 
-## Avancement — 3/7
+## Avancement — 4/7
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | 1 | Signaler malade/retard consigne un événement au JOURNAL s47, SANS toucher la résolution (0 surcharge / 0 transfert / 0 bascule) | @back | ✅ |
 | 2 | L'événement d'imprévu apparaît dans le flux notifications du/des acteur(s) concerné(s), trié par récence, lu/non-lu par utilisateur | @back | ✅ |
 | 3 | Cas limite : motif optionnel vide accepté ; jour hors fenêtre chargée enregistré sans crash ; deux adaptateurs InMemory + Mongo durable | @back | ✅ |
-| 4 | Cas erreur / gating back : type d'imprévu inconnu refusé sans écriture ; le journal reste trace non-autorité (résolution jamais impactée) | @back | 🔴 |
+| 4 | Cas erreur / gating back : type d'imprévu inconnu refusé sans écriture ; le journal reste trace non-autorité (résolution jamais impactée) | @back | ✅ |
 | 5 | Entrée « signaler un imprévu » du menu clic-case (Parent-gated), choix malade/retard + motif optionnel, Échap = Annuler (port s33) | @ihm | 🔴 |
 | 6 | La notification d'imprévu apparaît dans la CLOCHE s47 (libellé informatif « X est malade le 12 »), lu/non-lu, PAS d'action de suivi | @ihm | 🔴 |
 | 7 | Temps réel : diffusion porteuse de payload (INotificateurChangement s47) → la cloche d'un 2ᵉ écran converge, 0 GET sur push | @ihm | 🔴 |
@@ -86,7 +86,7 @@ Scénario Sc.3 — Cas limite : motif vide, jour hors fenêtre, deux adaptateurs
   Et un imprévu signalé sur un jour HORS de la fenêtre de grille chargée s'enregistre sans crash (une date)
   Et le comportement est prouvé identique sur les deux adaptateurs (InMemory ET Mongo durable)
 
-@back @pending
+@back @vert
 Scénario Sc.4 — Cas erreur / invariant : type inconnu refusé, journal reste non-autorité
   Étant donné une demande de signalement portant un type d'imprévu INCONNU (ni malade ni retard)
   Quand la commande est traitée

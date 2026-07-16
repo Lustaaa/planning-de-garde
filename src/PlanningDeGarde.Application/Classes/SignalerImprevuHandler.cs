@@ -34,15 +34,17 @@ public sealed class SignalerImprevuHandler
 
     public Result<EvenementChangementSnapshot> Handle(SignalerImprevuCommand commande)
     {
+        // Règle métier dans l'agrégat (Tell-Don't-Ask) : un type d'imprévu inconnu est REFUSÉ AVANT écriture.
+        var imprevu = Imprevu.Signaler(commande.Jour, commande.EnfantId, commande.Type, commande.SignalantId, commande.Motif);
+        if (!imprevu.EstSucces)
+            return Result<EvenementChangementSnapshot>.Echec(imprevu.Motif!);
+
         // Acteur CONCERNÉ (au-delà du signalant) = responsable RÉSOLU du jour (celui qui a l'enfant ce jour-là).
         // Il est LU sans être modifié — la résolution n'est jamais altérée par le signalement (invariant s48).
         var responsableDuJour = _grille?.Projeter(commande.Jour, VuePlanning.Semaine)
             .Jours.Single(j => j.Date == commande.Jour).ResponsableId ?? "";
 
-        var evenement = new EvenementChangementSnapshot(
-            Guid.NewGuid().ToString("N"), TypeChangement.Imprevu, commande.Jour, commande.EnfantId,
-            CedantId: responsableDuJour, RecevantId: commande.SignalantId, _horloge.Maintenant,
-            commande.Type, commande.Motif);
+        var evenement = imprevu.Valeur!.VersEvenement(responsableDuJour, _horloge.Maintenant);
         _journal.Consigner(evenement);
         return Result<EvenementChangementSnapshot>.Succes(evenement);
     }
