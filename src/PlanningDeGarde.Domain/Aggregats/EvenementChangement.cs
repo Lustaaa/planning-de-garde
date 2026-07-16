@@ -13,6 +13,20 @@ public enum TypeChangement
 
     /// <summary>Un transfert de bascule a été saisi (s31).</summary>
     Transfert,
+
+    /// <summary>Un imprévu a été SIGNALÉ (s48 : enfant malade / retard) — trace INFORMATIVE, sans effet sur la
+    /// résolution (aucune surcharge, aucun transfert, aucune bascule). Le sous-type est porté par <see cref="TypeImprevu"/>.</summary>
+    Imprevu,
+}
+
+/// <summary>Nature d'un imprévu SIGNALÉ (s48) : purement informatif, jamais actionnable (l'échange s47 couvre le négocié).</summary>
+public enum TypeImprevu
+{
+    /// <summary>L'enfant est malade ce jour-là.</summary>
+    Malade,
+
+    /// <summary>Le parent sera en retard ce jour-là.</summary>
+    Retard,
 }
 
 /// <summary>
@@ -29,4 +43,6 @@ public sealed record EvenementChangementSnapshot(
     string EnfantId,
     string CedantId,
     string RecevantId,
-    DateTime Horodatage);
+    DateTime Horodatage,
+    TypeImprevu? Imprevu = null,
+    string Motif = "");
