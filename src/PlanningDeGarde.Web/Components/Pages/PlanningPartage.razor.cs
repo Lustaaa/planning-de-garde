@@ -74,6 +74,10 @@ public partial class PlanningPartage
     // jour » du menu clic-case ouvre un mini-dialog de confirmation. Jour de contexte (null = fermé). La grille
     // reste LECTURE SEULE : la dialog porte l'écriture (canal requête/réponse, composition suppression s16).
     private DateOnly? _dateDialogReprendre;
+    // Proposition d'échange d'UN jour (s47) : l'entrée « proposer un échange » du menu clic-case ouvre un
+    // mini-dialog de choix du recevant. Jour de contexte (null = fermé). PROPOSER n'écrit rien : la case reste
+    // inchangée ; le recevant est notifié via sa cloche et répond depuis la notification actionnable.
+    private DateOnly? _dateDialogProposer;
     // Sélection de plage de cases contiguës (Sc.5) : un mode de sélection (gardé EstParent, mutualise le
     // gating Invité avec le menu — Sc.7) où l'on clique la case de début puis la case de fin pour émettre
     // UNE période sur l'intervalle. État de PRÉSENTATION uniquement (la grille reste lecture seule) :
@@ -474,6 +478,19 @@ public partial class PlanningPartage
         _dateDialogDeleguer = date;
     }
 
+    /// <summary>Ouvre le mini-dialog « proposer un échange » (s47) sur la <paramref name="date"/> de la case,
+    /// depuis l'entrée « proposer un échange » du menu clic-case. Gating Invité (règle 9) mutualisé avec le menu
+    /// (il ne s'ouvre que pour un Parent) et re-gardé ici. PROPOSER n'écrit rien (canal de consentement) : la
+    /// case reste inchangée tant que le recevant n'a pas accepté depuis sa cloche.</summary>
+    private void OuvrirProposer(DateOnly date)
+    {
+        if (!Session.EstParent)
+            return;
+
+        _dateMenu = null;
+        _dateDialogProposer = date;
+    }
+
     /// <summary>
     /// Ouvre le mini-dialog « reprendre ce jour » (s46) sur la <paramref name="date"/> de la case, depuis
     /// l'entrée CONDITIONNELLE du menu clic-case (visible seulement sur une case portant une délégation active).
@@ -632,6 +649,7 @@ public partial class PlanningPartage
         _dateDialogSupprimerSlot = null;
         _dateDialogDeleguer = null;
         _dateDialogReprendre = null;
+        _dateDialogProposer = null;
         // Une sélection de plage consommée (ou annulée) ne survit pas à la fermeture de la dialog.
         _plageDebut = null;
         _plageFin = null;

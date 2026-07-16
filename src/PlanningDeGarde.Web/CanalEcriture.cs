@@ -190,4 +190,18 @@ public static class CanalEcriture
     /// sans recalcul côté UI), et son <b>type</b> (Admin / Parent / Autre) résolu côté serveur — le front
     /// ancre l'identité réelle de la session sur CET acteur et son type (gating suivant le type réel).</summary>
     public sealed record SeConnecterReponse(string ActeurId, string Nom, PlanningDeGarde.Application.TypeActeur Type);
+
+    /// <summary>Corps de la requête « marquer lu » de la cloche (s47) : l'utilisateur courant (id d'acteur =
+    /// IdentiteEffective.Id) + l'événement à marquer, ou <c>EvenementId</c> null = marquer TOUTES ses
+    /// notifications lues. Idempotent côté handler ; mute uniquement l'état de lecture PAR utilisateur.</summary>
+    public sealed record MarquerNotificationsLuesRequete(string UtilisateurId, string? EvenementId = null);
+
+    /// <summary>Corps de la requête PROPOSER un échange (s47) émise depuis l'entrée « proposer un échange » du
+    /// menu clic-case : le jour visé, l'enfant, l'acteur RECEVANT. N'écrit aucune surcharge (consentement) ;
+    /// refus métier (recevant inconnu / à soi-même) renvoyé — le mini-dialog reste ouvert.</summary>
+    public sealed record ProposerEchangeRequete(DateOnly Jour, string EnfantId, string VersActeurId);
+
+    /// <summary>Corps de la requête ACCEPTER / REFUSER une proposition (s47) émise depuis la notification
+    /// actionnable de la cloche : la clé est l'identifiant stable de la proposition.</summary>
+    public sealed record RepondrePropositionRequete(string PropositionId);
 }

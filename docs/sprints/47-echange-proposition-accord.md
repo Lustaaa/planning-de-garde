@@ -5,14 +5,14 @@
 > proposition→accord** dont les propositions arrivent comme **notifications ACTIONNABLES** dans la
 > cloche. La cloche est la **1ʳᵉ surface hors-grille rouverte** depuis s44.
 
-## Avancement — 5/9
+## Avancement — 6/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | **BRIQUE A — Cloche générale (fondation : lecture + lu/non-lu)** | | | |
 | Sc.1 | **Journal de changements append-only** alimenté par les handlers d'écriture existants (délégations s44 / plages s45 / **reprises s46** / transferts) — **trace de LECTURE horodatée, NON autorité de résolution** ; liste chrono (récence) par utilisateur, 2 adaptateurs InMemory + Mongo | @back | ✅ |
 | Sc.2 | État **lu / non-lu PAR utilisateur** (vrai état persisté), marquer-lu idempotent, **compteur de non-lus** — 2 adaptateurs InMemory + Mongo durable | @back | ✅ |
-| Sc.3 | Cloche + **badge compteur** en en-tête du planning + **panneau déroulant** (liste chrono, lu/non-lu, marquer lu), Parent-gated, Échap ferme | @ihm | 🔴 |
+| Sc.3 | Cloche + **badge compteur** en en-tête du planning + **panneau déroulant** (liste chrono, lu/non-lu, marquer lu), Parent-gated, Échap ferme | @ihm | ✅ |
 | Sc.4 | Temps réel : un changement → nouvelle notif + compteur incrémenté chez les destinataires par reprojection client SignalR, **0 GET** | @ihm | 🔴 |
 | **BRIQUE B — Échange proposition → accord (greffé sur la cloche)** | | | |
 | Sc.5 | PROPOSER = notification `pending` chez le recevant **SANS aucune écriture de surcharge** (résolution de la case inchangée) | @back | ✅ |
@@ -86,6 +86,26 @@ parallèle de la mise en place du journal (Sc.1–2). Contrainte inchangée : **
 chaque commit, un scénario individuellement asserté par commit. Les scénarios @ihm (Sc.3, 4, 8, 9)
 restent **derrière** leurs backends respectifs.
 
+### DÉCISION TRANSPORT TEMPS RÉEL — diffusion PORTEUSE DE PAYLOAD (SM, arbitrage dev-team, Sc.4 & Sc.9)
+
+**Option (A) retenue.** Les surfaces temps réel s42–s46 reprojetaient depuis la donnée **déjà
+chargée par l'unique GET grille** parce que leur changement vivait DANS le read model grille. La
+**cloche est hors read-model-grille** : reprojeter depuis la grille ne suffit pas. Nouveau port de
+diffusion **`INotificateurChangement`** portant l'**`EvenementChangementSnapshot`**, branché sur
+**CHAQUE endpoint d'écriture** (délégation s44, plage s45, reprise s46, transfert s31,
+proposition/accept/refus s47). Le client **reçoit l'événement dans la diffusion et reprojette** →
+**0 GET sur push**, conforme au garde-fou anti-flake ([[flake-signalr-blast-radius]] : « nouveau
+client SignalR = reprojection depuis la diffusion, JAMAIS un GET sur push »).
+
+- **Ne viole PAS « diffusion = lecture seule »** : la diffusion **porte une donnée de LECTURE**
+  (snapshot d'un changement déjà écrit) ; **l'écriture reste exclusivement sur le canal
+  requête/réponse**. La diffusion ne déclenche aucune écriture et n'est jamais un canal d'écriture.
+- **Donnée derrière un PORT** : `INotificateurChangement` (jamais figée dans le code), pas de couplage
+  au read model grille (option B écartée : mélangerait deux read models) ; **pas** de GET dédié sur
+  push (option C interdite).
+- **Identité du flux** : `IdentiteEffective.Id` de la session courante — **validée** (identité
+  effective résolue, cohérente avec le Parent-gating et le lu/non-lu par utilisateur).
+
 ### POINT DE VIGILANCE — anti vert-qui-ment (Sc.5)
 
 **PROPOSER ne doit RIEN écrire.** Prouver que **le store des surcharges reste intact** et que **la
@@ -122,7 +142,7 @@ Et re-marquer lu est idempotent (aucun doublon, compteur stable)
 Et l'état lu/non-lu est durable (prouvé sur store Mongo réel), deux adaptateurs
 ```
 
-### Sc.3 — Cloche + badge compteur + panneau déroulant @ihm @pending
+### Sc.3 — Cloche + badge compteur + panneau déroulant @ihm @vert
 ```gherkin
 Étant donné un Parent connecté avec des notifications non lues
 Alors une icône cloche avec un badge compteur de non-lus est visible en en-tête du planning
@@ -139,7 +159,8 @@ Et un Invité ne voit pas la cloche (Parent-gated)
 Quand un changement le concernant est écrit (délégation / plage / reprise / transfert) depuis un autre écran
 Alors sa cloche CONVERGE par reprojection client (SignalR lecture seule, 0 GET) :
   une nouvelle notification apparaît en tête du panneau et le compteur passe à N+1
-Et aucun GET dédié n'est déclenché sur le push
+Et l'événement est PORTÉ PAR LA DIFFUSION (INotificateurChangement / EvenementChangementSnapshot), reprojeté côté client
+Et aucun GET dédié n'est déclenché sur le push (diffusion = lecture seule ; l'écriture reste sur le canal requête/réponse)
 ```
 
 ### Sc.5 — PROPOSER crée une notif pending SANS écrire de surcharge @back @vert
@@ -197,6 +218,7 @@ Alors sur le 2ᵉ écran (émetteur) la case du jour CONVERGE par reprojection c
   le recevant devient responsable (surcharge), le transfert bicolore dérivé apparaît, la notif passe "accepté"
 Quand, dans une autre passe, le recevant REFUSE
 Alors la notification se clôt (refusé) par reprojection client (0 GET), sans écriture ni changement de responsable
+Et dans les deux passes l'événement est PORTÉ PAR LA DIFFUSION (INotificateurChangement), reprojeté client — jamais un GET sur push (diffusion = lecture seule)
 ```
 
 # Retours produit (PO)

@@ -15,6 +15,10 @@
 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
     <h1 class="m-0">Planning partagé du foyer</h1>
     <div class="d-flex align-items-center flex-wrap gap-3">
+        @* Cloche de notifications (s47) : badge compteur de non-lus + panneau déroulant en en-tête. Parent-gated
+           (l'Invité ne la voit pas). Temps réel par reprojection depuis la diffusion (0 GET). Le référentiel
+           acteurs déjà chargé sert à résoudre les ids en noms (parité rendu initial / reprojeté). *@
+        <Cloche Acteurs="_acteursFoyer" />
         @* Sélecteur d'incarnation (impersonation bornée, lecture seule — sprint 14) : COMPLÈTE le
            sélecteur de rôle démo sans le remplacer (préserve la consultation Invité existante). Incarner
            un acteur reflète son rôle dans la vue (bandeau + menu clic-case selon le type, règle 8) ; la
@@ -374,6 +378,12 @@ else
                    pour un Parent, OuvrirMenu). L'écriture transite par le canal requête/réponse. *@
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-deleguer"
                         @onclick="@(() => OuvrirDeleguer(dateMenu))">Déléguer ce jour</button>
+                @* Entrée « proposer un échange » (s47) : « je ne peux pas récupérer ce jour, échange-le avec moi ».
+                   Ouvre le mini-dialog de choix du recevant sur la date de la case ; Parent-gated par construction
+                   (le menu ne s'ouvre que pour un Parent). PROPOSER n'écrit rien (canal de consentement) : le
+                   recevant est notifié via sa cloche et ACCEPTE / REFUSE depuis la notification. *@
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-proposer-echange"
+                        @onclick="@(() => OuvrirProposer(dateMenu))">Proposer un échange</button>
                 @* Entrée CONDITIONNELLE « reprendre ce jour » (s46, ferme la boucle undo s44/s45) : affichée
                    UNIQUEMENT quand la case cliquée porte une DÉLÉGATION ACTIVE (surcharge résolue), à côté de
                    « déléguer ce jour ». Ouvre le mini-dialog de confirmation ; la reprise transite par le canal
@@ -466,6 +476,16 @@ else
                          EnfantId="@(_enfantSelectionne ?? "")"
                          OnValide="FermerDialogEtRecharger"
                          OnAnnule="FermerDialog" />
+}
+
+@if (_dateDialogProposer is { } dateProposer && _enfantSelectionne is { } enfantProposer)
+{
+    <ProposerEchangeDialog DateContexte="dateProposer"
+                           EnfantId="enfantProposer"
+                           Acteurs="_acteursFoyer"
+                           ActeursCharges="_acteursFoyerCharges"
+                           OnValide="FermerDialog"
+                           OnAnnule="FermerDialog" />
 }
 }
 

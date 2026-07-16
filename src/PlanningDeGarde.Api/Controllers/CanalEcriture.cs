@@ -221,8 +221,80 @@ public static class CanalEcriture
     /// Pose le condensat sur le compte (jamais le clair) → le compte devient connectable email + mot de passe.</summary>
     public sealed record DefinirMotDePasseRequete(string CompteId, string MotDePasse);
 
+    /// <summary>Corps de la requête « marquer lu » de la cloche (s47) émise via le canal d'écriture : l'utilisateur
+    /// courant (id d'acteur) + l'événement à marquer, ou <c>EvenementId</c> null = marquer TOUTES ses notifications
+    /// lues. Idempotent côté handler (re-marquer = aucun doublon, compteur stable). Mute uniquement l'état de
+    /// lecture, jamais le planning ; ne déclenche pas la diffusion (état PAR utilisateur, privé).</summary>
+    public sealed record MarquerNotificationsLuesRequete(string UtilisateurId, string? EvenementId = null);
+
+    /// <summary>Corps de la requête PROPOSER un échange (s47) émise via le canal d'écriture : le jour visé,
+    /// l'enfant, l'acteur RECEVANT. N'écrit AUCUNE surcharge (canal de consentement) ; refus métier (recevant
+    /// inconnu, à soi-même) renvoyé avec son motif. Sur succès, la proposition est diffusée (payload) à la cloche
+    /// du recevant.</summary>
+    public sealed record ProposerEchangeRequete(DateOnly Jour, string EnfantId, string VersActeurId);
+
+    /// <summary>Corps de la requête ACCEPTER / REFUSER une proposition (s47) émise via le canal d'écriture : la clé
+    /// est l'identifiant stable de la proposition. Accepter COMPOSE la délégation s44 (surcharge + transfert dérivé) ;
+    /// refuser clôt sans aucune écriture.</summary>
+    public sealed record RepondrePropositionRequete(string PropositionId);
+
     public static IEndpointRouteBuilder MapperCanalEcriture(this IEndpointRouteBuilder routes)
     {
+        routes.MapPost("/api/canal/marquer-notifications-lues",
+            (MarquerNotificationsLuesRequete requete, MarquerNotificationsLuesHandler handler) =>
+        {
+            // Marquer lu = mutation de l'état de lecture PAR utilisateur (cloche s47), jamais du planning.
+            // Idempotent côté handler. Aucune diffusion : l'état lu/non-lu est privé à l'utilisateur (le badge
+            // de sa cloche décroît sur sa propre reprojection locale, pas chez les autres).
+            var resultat = handler.Handle(new MarquerNotificationsLuesCommand(requete.UtilisateurId, requete.EvenementId));
+            return resultat.EstSucces ? Results.Ok(resultat.Valeur) : Results.BadRequest(resultat.Motif);
+        });
+
+        routes.MapPost("/api/canal/proposer-echange",
+            (ProposerEchangeRequete requete, ProposerEchangeHandler handler, INotificateurChangement notificateur) =>
+        {
+            var resultat = handler.Handle(new ProposerEchangeCommand(requete.Jour, requete.EnfantId, requete.VersActeurId));
+
+            // PROPOSER n'écrit AUCUNE surcharge (canal de consentement). Refus métier (recevant inconnu, à
+            // soi-même) renvoyé avec son motif — le mini-dialog reste ouvert côté front (Sc.5). Sur succès, la
+            // proposition est DIFFUSÉE (payload) : la cloche du recevant reprojette la notif actionnable, 0 GET.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierProposition(resultat.Valeur!);
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/accepter-proposition",
+            (RepondrePropositionRequete requete, AccepterPropositionHandler handler, INotificateurPlanning planning, INotificateurChangement notificateur) =>
+        {
+            var resultat = handler.Handle(new AccepterPropositionCommand(requete.PropositionId));
+
+            // ACCEPTER COMPOSE la délégation s44 : la surcharge du jour est écrite (le recevant prime), le transfert
+            // dérivé s31 sort par construction. La consignation au journal (dans le handler de délégation) DIFFUSE
+            // déjà l'événement de changement (payload → cloche) ET on notifie MiseAJour (la grille recharge → case
+            // converge). On diffuse aussi la proposition (statut accepté) pour clore la notif actionnable. 0 GET.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            planning.NotifierMiseAJour();
+            notificateur.NotifierProposition(resultat.Valeur!);
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/refuser-proposition",
+            (RepondrePropositionRequete requete, RefuserPropositionHandler handler, INotificateurChangement notificateur) =>
+        {
+            var resultat = handler.Handle(new RefuserPropositionCommand(requete.PropositionId));
+
+            // REFUSER clôt la proposition (refusé) SANS aucune écriture de surcharge (store intact). Sur succès,
+            // la proposition (statut refusé) est diffusée (payload) : la cloche des concernés retire la notif, 0 GET.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierProposition(resultat.Valeur!);
+            return Results.Ok();
+        });
         routes.MapPost("/api/canal/poser-slot", (PoserSlotRequete requete, PoserSlotHandler handler, JourneeEnfantQuery journee) =>
         {
             var resultat = handler.Handle(new PoserSlotCommand(
