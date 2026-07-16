@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using PlanningDeGarde.Application;
+using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Api;
 
@@ -70,8 +72,53 @@ public static class CanalLecture
     /// n'apparaissaient pas dans la config, retour PO gate s32). Lecture seule.</summary>
     public sealed record CycleFoyerVue(int IndexSemaine, string ResponsableId);
 
+    /// <summary>Vue d'une notification de la CLOCHE (s47) pour l'utilisateur courant : un événement du journal
+    /// (délégation / reprise / transfert — trace de lecture) OU une proposition d'échange (actionnable). Le
+    /// <see cref="Type"/> discrimine le rendu ; <see cref="Lu"/> pilote le style non-lu ; <see cref="Actionnable"/>
+    /// = proposition PENDING adressée à l'utilisateur (boutons Accepter / Refuser) ; <see cref="PropositionId"/>
+    /// est la clé d'action (null pour un événement du journal). Ids d'acteurs bruts : le nom est résolu côté
+    /// client sur le référentiel déjà chargé (parité rendu initial / reprojeté depuis la diffusion, 0 GET).</summary>
+    public sealed record NotificationClocheVue(
+        string Id, string Type, DateOnly Jour, string EnfantId, string CedantId, string RecevantId,
+        DateTime Horodatage, bool Lu, bool Actionnable, string? PropositionId, string Statut);
+
+    /// <summary>Charge de la cloche pour l'utilisateur courant : compteur de non-lus (badge) + flux chrono.</summary>
+    public sealed record ClocheVue(int NonLus, IReadOnlyList<NotificationClocheVue> Notifications);
+
     public static IEndpointRouteBuilder MapperCanalLecture(this IEndpointRouteBuilder routes)
     {
+        // Cloche s47 (canal de lecture, CQRS) : le flux de notifications de l'utilisateur courant (id d'acteur
+        // = IdentiteEffective.Id côté front) — événements du journal (délégation / reprise / transfert) enrichis
+        // de l'état lu/non-lu PAR utilisateur, PLUS les propositions d'échange le concernant (pending adressées
+        // = actionnables ; acceptées = informationnelles). Trié par récence. Ne déclenche jamais la diffusion.
+        routes.MapGet("/api/notifications/{utilisateurId}",
+            (string utilisateurId, FluxNotificationsQuery flux, IPropositionEchangeRepository propositions) =>
+            {
+                var evenements = flux.FluxAvecEtat(utilisateurId)
+                    .Select(n => new NotificationClocheVue(
+                        n.Evenement.Id, n.Evenement.Type.ToString().ToLowerInvariant(), n.Evenement.Jour,
+                        n.Evenement.EnfantId, n.Evenement.CedantId, n.Evenement.RecevantId, n.Evenement.Horodatage,
+                        n.Lu, false, null, "changement"));
+
+                var echanges = propositions.AllSnapshots()
+                    .Where(p => (p.VersActeurId == utilisateurId || p.DeActeurId == utilisateurId)
+                                && p.Statut != StatutProposition.Refusee)
+                    .Select(p => new NotificationClocheVue(
+                        p.Id, "echange", p.Jour, p.EnfantId, p.DeActeurId, p.VersActeurId,
+                        DateTime.MinValue, p.Statut != StatutProposition.Proposee,
+                        p.Statut == StatutProposition.Proposee && p.VersActeurId == utilisateurId,
+                        p.Id, p.Statut.ToString().ToLowerInvariant()));
+
+                var toutes = evenements.Concat(echanges)
+                    .OrderByDescending(n => n.Horodatage)
+                    .ToList();
+
+                var nonLus = flux.NombreNonLus(utilisateurId)
+                    + propositions.AllSnapshots().Count(p => p.Statut == StatutProposition.Proposee && p.VersActeurId == utilisateurId);
+
+                return Results.Ok(new ClocheVue(nonLus, toutes));
+            });
+
         // Énumération des acteurs du foyer DEPUIS LE STORE (et non la liste statique front
         // Foyer.ActeursEditables) : l'écran de configuration la lit pour faire apparaître un acteur
         // fraîchement ajouté (Sc.1). Le nom est résolu sur l'identifiant stable (jamais le libellé).

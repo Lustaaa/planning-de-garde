@@ -10,8 +10,16 @@ public sealed record DefinirTransfertCommand(string DeposeParId, string Recupere
 public sealed class DefinirTransfertHandler
 {
     private readonly ITransfertRepository _transferts;
+    private readonly IJournalChangements? _journal;
+    private readonly IDateTimeProvider? _horloge;
 
-    public DefinirTransfertHandler(ITransfertRepository transferts) => _transferts = transferts;
+    public DefinirTransfertHandler(
+        ITransfertRepository transferts, IJournalChangements? journal = null, IDateTimeProvider? horloge = null)
+    {
+        _transferts = transferts;
+        _journal = journal;
+        _horloge = horloge;
+    }
 
     public Result<TransfertSnapshot> Handle(DefinirTransfertCommand commande)
     {
@@ -21,6 +29,13 @@ public sealed class DefinirTransfertHandler
 
         var transfert = definition.Valeur!;
         _transferts.Enregistrer(transfert);
+
+        // Trace de LECTURE au journal (cloche s47) : un transfert saisi consigne un événement horodaté.
+        if (_journal is not null && _horloge is not null)
+            _journal.Consigner(new EvenementChangementSnapshot(
+                Guid.NewGuid().ToString("N"), TypeChangement.Transfert, DateOnly.FromDateTime(commande.Date),
+                "", commande.DeposeParId, commande.RecupereParId, _horloge.Maintenant));
+
         return Result<TransfertSnapshot>.Succes(transfert.ToSnapshot());
     }
 }

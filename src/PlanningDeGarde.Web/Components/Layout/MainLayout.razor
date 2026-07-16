@@ -13,8 +13,13 @@
         <NavMenu />
 
         <div class="app-bar-actions">
+            @* Ordre PO (gate visuel s47) : Déconnexion — Cloche — Sombre. *@
             @* Menu utilisateur : identité + accès Foyer + Se déconnecter, une fois connecté (sinon rien). *@
             <MenuUtilisateur />
+            @* Cloche de notifications (s47, repositionnée dans la barre par le PO) : autonome dans le layout
+               (charge son flux + référentiel, se connecte à SignalR, suit la session). Gating = session ouverte
+               + Parent → rien sur /connexion ni pour un Invité. *@
+            <Cloche />
             @* Bascule de thème clair/sombre : persiste le choix (localStorage), applique sans rechargement. *@
             <BasculeTheme />
         </div>

@@ -29,13 +29,18 @@ public sealed class DeleguerRecuperationHandler
     private readonly GrilleAgendaQuery _grille;
     private readonly IPeriodeRepository _periodes;
     private readonly IEnumerationActeursFoyer _acteurs;
+    private readonly IJournalChangements? _journal;
+    private readonly IDateTimeProvider? _horloge;
 
     public DeleguerRecuperationHandler(
-        GrilleAgendaQuery grille, IPeriodeRepository periodes, IEnumerationActeursFoyer acteurs)
+        GrilleAgendaQuery grille, IPeriodeRepository periodes, IEnumerationActeursFoyer acteurs,
+        IJournalChangements? journal = null, IDateTimeProvider? horloge = null)
     {
         _grille = grille;
         _periodes = periodes;
         _acteurs = acteurs;
+        _journal = journal;
+        _horloge = horloge;
     }
 
     public Result<PeriodeSnapshot> Handle(DeleguerRecuperationCommand commande)
@@ -66,9 +71,26 @@ public sealed class DeleguerRecuperationHandler
         foreach (var existante in _periodes.AllSnapshots().Where(p => Chevauche(p, debutJour, finJour)).ToList())
             _periodes.Supprimer(existante.Id);
 
+        // Cédant = responsable RÉSOLU du jour AVANT écriture (celui qui devait récupérer) — lu pour la trace.
+        var cedant = _grille.Projeter(debutJour, VuePlanning.Semaine)
+            .Jours.Single(j => j.Date == debutJour).ResponsableId ?? "";
+
         var periode = affectation.Valeur!;
         _periodes.Enregistrer(periode);
+
+        // Trace de LECTURE au journal (cloche s47) : une délégation consigne un événement horodaté. Ne change
+        // JAMAIS la résolution (la vérité reste les périodes). Optionnel : absent (null) = comportement antérieur.
+        ConsignerAuJournal(TypeChangement.Delegation, debutJour, commande.EnfantId, cedant, commande.VersActeurId);
+
         return Result<PeriodeSnapshot>.Succes(periode.ToSnapshot());
+    }
+
+    private void ConsignerAuJournal(TypeChangement type, DateOnly jour, string enfantId, string cedantId, string recevantId)
+    {
+        if (_journal is null || _horloge is null)
+            return;
+        _journal.Consigner(new EvenementChangementSnapshot(
+            Guid.NewGuid().ToString("N"), type, jour, enfantId, cedantId, recevantId, _horloge.Maintenant));
     }
 
     private bool TouteLaPlageResoutDeja(DateOnly debut, DateOnly fin, string acteurId)

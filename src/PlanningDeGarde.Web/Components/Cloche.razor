@@ -1,0 +1,91 @@
+@* Cloche de notifications (s47) dans la BARRE D'APPLICATION (MainLayout, retour PO au gate) : badge compteur de
+   non-lus + panneau déroulant (liste chrono, lu/non-lu, marquer-lu, propositions actionnables). Rendue dans le
+   layout (toutes les routes) : gating = session ouverte (comme le menu utilisateur) COMPOSÉ au Parent-gating —
+   PAS de cloche sur l'écran de connexion ni pour un Invité. Temps réel par reprojection depuis la diffusion
+   porteuse de payload (0 GET sur push). Échap ferme le mini-dialog puis le panneau (port document s33). Voir
+   Cloche.razor.cs. *@
+@if (DoitAfficher)
+{
+    <div class="pdg-cloche">
+        <button type="button" class="pdg-cloche-bouton btn btn-outline-secondary position-relative"
+                data-testid="cloche-bouton" aria-label="Notifications" @onclick="BasculerPanneau">
+            <span aria-hidden="true">&#128276;</span>
+            @if (_nonLus > 0)
+            {
+                <span class="pdg-cloche-badge badge rounded-pill bg-danger" data-testid="cloche-badge">@_nonLus</span>
+            }
+        </button>
+
+        @if (_ouvert)
+        {
+            <div class="pdg-cloche-panneau" data-testid="cloche-panneau" @onclick:stopPropagation="true">
+                <div class="pdg-cloche-entete">
+                    <span class="pdg-cloche-titre">Notifications</span>
+                    <button type="button" class="btn btn-link btn-sm p-0" data-testid="cloche-marquer-tout-lu"
+                            @onclick="MarquerToutLu">Tout marquer lu</button>
+                </div>
+
+                @if (_notifications.Count == 0)
+                {
+                    <p class="text-muted small m-0 py-2" data-testid="cloche-vide">Aucune notification.</p>
+                }
+                else
+                {
+                    <ul class="pdg-cloche-liste list-unstyled m-0">
+                        @foreach (var n in _notifications)
+                        {
+                            <li class="pdg-cloche-notif @(n.Lu ? "est-lu" : "est-non-lu")"
+                                data-testid="cloche-notif" data-type="@n.Type" data-lu="@(n.Lu ? "1" : "0")">
+                                <span class="pdg-cloche-notif-texte">@Libelle(n)</span>
+
+                                @if (n.Actionnable)
+                                {
+                                    @if (_confirmPropositionId == n.PropositionId)
+                                    {
+                                        <div class="pdg-cloche-confirm" data-testid="cloche-confirm">
+                                            <span class="small">@(_confirmAccepter ? "Accepter cet échange ?" : "Refuser cet échange ?")</span>
+                                            <button type="button" class="btn btn-primary btn-sm" data-testid="cloche-confirmer"
+                                                    @onclick="Confirmer">Confirmer</button>
+                                            <button type="button" class="btn btn-link btn-sm" data-testid="cloche-confirm-annuler"
+                                                    @onclick="AnnulerConfirmation">Annuler</button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="pdg-cloche-actions">
+                                            <button type="button" class="btn btn-outline-success btn-sm" data-testid="cloche-accepter"
+                                                    @onclick="@(() => DemanderAccepter(n.PropositionId!))">Accepter</button>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" data-testid="cloche-refuser"
+                                                    @onclick="@(() => DemanderRefuser(n.PropositionId!))">Refuser</button>
+                                        </div>
+                                    }
+                                }
+                                else if (!n.Lu)
+                                {
+                                    <button type="button" class="btn btn-link btn-sm p-0" data-testid="cloche-marquer-lu"
+                                            @onclick="@(() => MarquerLu(n.Id))">Marquer lu</button>
+                                }
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        }
+    </div>
+}
+
+<style>
+    .pdg-cloche { position: relative; display: inline-flex; }
+    .pdg-cloche-badge { position: absolute; top: -6px; right: -6px; font-size: .68rem; }
+    .pdg-cloche-panneau { position: absolute; top: calc(100% + 8px); right: 0; z-index: 1050; width: min(360px, 92vw);
+                          background: var(--pdg-card); color: var(--pdg-ink); border: 1px solid var(--pdg-border);
+                          border-radius: 14px; padding: 12px; box-shadow: 0 12px 40px rgba(16,24,40,.28); }
+    .pdg-cloche-entete { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .pdg-cloche-titre { font-weight: 700; }
+    .pdg-cloche-liste { display: flex; flex-direction: column; gap: 6px; max-height: 60vh; overflow-y: auto; }
+    .pdg-cloche-notif { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; border-radius: 10px;
+                        border: 1px solid var(--pdg-border); }
+    .pdg-cloche-notif.est-non-lu { border-left: 3px solid var(--pdg-accent); font-weight: 600; }
+    .pdg-cloche-notif.est-lu { opacity: .72; }
+    .pdg-cloche-actions, .pdg-cloche-confirm { display: flex; align-items: center; gap: 6px; }
+</style>

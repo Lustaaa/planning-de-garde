@@ -187,6 +187,33 @@ public static class ServiceCollectionExtensions
         // Port temps réel réel (SignalR) — remplace le fake des scénarios.
         services.AddSingleton<INotificateurPlanning, SignalRNotificateurPlanning>();
 
+        // Diffusion PORTEUSE DE PAYLOAD de la cloche (s47, décision transport SM) : le client reprojette sa
+        // cloche depuis la diffusion (0 GET sur push, garde-fou anti-flake). Lecture seule : la donnée diffusée
+        // est une trace de lecture, l'écriture reste sur le canal requête/réponse.
+        services.AddSingleton<INotificateurChangement, SignalRNotificateurChangement>();
+
+        // Cloche s47 : journal de changements (trace de LECTURE, jamais autorité de résolution), état lu/non-lu
+        // PAR utilisateur, propositions d'échange. Stores SINGLETONS = source de vérité partagée du foyer. Le
+        // journal est DÉCORÉ (JournalChangementsDiffusant) : chaque consignation par un handler d'écriture DIFFUSE
+        // l'événement (payload) SANS modifier les handlers (composition de ports). En mode Mongo, tout est durable.
+        if (string.Equals(configuration?["Foyer:Persistance"], "Mongo", System.StringComparison.OrdinalIgnoreCase))
+        {
+            var connectionString = configuration?["Foyer:Mongo:ConnectionString"] ?? "mongodb://localhost:27017";
+            var baseDeDonnees = configuration?["Foyer:Mongo:Database"] ?? "planning_de_garde";
+            services.AddSingleton<IJournalChangements>(sp => new JournalChangementsDiffusant(
+                new MongoJournalChangements(connectionString, baseDeDonnees), sp.GetRequiredService<INotificateurChangement>()));
+            services.AddSingleton<IEtatLectureNotifications>(_ => new MongoEtatLectureNotifications(connectionString, baseDeDonnees));
+            services.AddSingleton<IPropositionEchangeRepository>(_ => new MongoPropositionEchangeRepository(connectionString, baseDeDonnees));
+        }
+        else
+        {
+            services.AddSingleton<InMemoryJournalChangements>();
+            services.AddSingleton<IJournalChangements>(sp => new JournalChangementsDiffusant(
+                sp.GetRequiredService<InMemoryJournalChangements>(), sp.GetRequiredService<INotificateurChangement>()));
+            services.AddSingleton<IEtatLectureNotifications, InMemoryEtatLectureNotifications>();
+            services.AddSingleton<IPropositionEchangeRepository, InMemoryPropositionEchangeRepository>();
+        }
+
         // Facteur mot de passe local (volet 3, s25) : hachage PBKDF2 salé réel, réalise IHacheurMotDePasse.
         services.AddSingleton<IHacheurMotDePasse, HacheurMotDePassePbkdf2>();
 
@@ -258,6 +285,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GrapheFoyerQuery>();
         services.AddScoped<PeriodesDuJourQuery>();
         services.AddScoped<SlotsDuJourQuery>();
+
+        // Cloche s47 : lecture du flux de notifications par utilisateur (+ compteur non-lus), marquer-lu,
+        // et les use cases d'échange consenti (proposer / accepter / refuser).
+        services.AddScoped<FluxNotificationsQuery>();
+        services.AddScoped<MarquerNotificationsLuesHandler>();
+        services.AddScoped<ProposerEchangeHandler>();
+        services.AddScoped<AccepterPropositionHandler>();
+        services.AddScoped<RefuserPropositionHandler>();
 
         return services;
     }

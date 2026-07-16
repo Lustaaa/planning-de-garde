@@ -1,0 +1,143 @@
+# Notifications (cloche) & échange consenti
+
+> Sujet **créé s47** (paliers « Immédiat & événements à venir » / cloche **et** « Imprévu &
+> échange » / flux consenti). Source de vérité pour la **cloche générale de changements**
+> (journal, lu/non-lu, surface barre du haut, diffusion temps réel porteuse de payload) et pour
+> l'**échange proposition → accord**. Édité en diff, jamais réécrit en bloc.
+
+## Contexte
+
+Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
+
+- **(A) une CLOCHE GÉNÉRALE** de changements — la 1ʳᵉ **surface hors-grille** rouverte depuis s44 —
+  qui signale à chaque utilisateur **ce qui a changé le concernant** (délégations, plages, reprises,
+  transferts, propositions d'échange), avec un **compteur de non-lus** et un état **lu / non-lu par
+  utilisateur** ;
+- **(B) l'échange PROPOSITION → ACCORD** — l'imprévu / échange de dernière minute **consenti** : un
+  parent **propose** un jour à un autre acteur, qui est **notifié via la cloche** et **accepte /
+  refuse depuis la notification**. Contrairement à la **délégation directe** s44 (unilatérale, effet
+  immédiat), la **proposition n'a AUCUN effet sur la résolution** tant qu'elle n'est pas acceptée :
+  c'est le **consentement** du recevant qui déclenche l'écriture.
+
+> **Amendement de « grille = seule surface » (s44).** Le PO avait fait retirer en s44 les surfaces de
+> lecture **redondantes avec la grille** (carte du jour s42, panneau « À venir » s43). La cloche
+> **n'est pas une re-lecture du planning** : c'est une surface de **notification de changement**,
+> **assumée hors-grille**, posée **dans la barre d'application du haut**. Le noyau de **lecture** du
+> planning reste la grille agenda (cf. [`saisie-et-grille.md`](saisie-et-grille.md)).
+
+## Brique A — Cloche générale de changements
+
+### Journal de changements = TRACE DE LECTURE, jamais autorité de résolution
+
+- Les notifications sont servies par un **JOURNAL DE CHANGEMENTS append-only** (port neuf
+  **`IJournalChangements`**, deux adaptateurs InMemory + Mongo durable), **alimenté par CHAQUE handler
+  d'écriture existant** — délégation (s44), plage (s45), **reprise (s46)**, transfert (s31), plus les
+  propositions d'échange (brique B) — qui y consigne un événement `{type, jour, enfant,
+  cédant / recevant, horodatage via `IDateTimeProvider`}`.
+- **Le journal est une TRACE DE LECTURE horodatée, JAMAIS une source de vérité.** La **résolution
+  d'une case reste EXCLUSIVEMENT les périodes / transferts** (surcharge > fond > neutre, transferts
+  dérivés s31) : **aucun code de résolution ne lit le journal**. Écrire / supprimer une surcharge
+  n'altère pas la vérité via le journal, et réciproquement. **Pas de « store d'événements vérité
+  divergent »** au sens interdit.
+- **Le journal est PERSISTÉ, pas dérivé de l'état courant** *(décision d'archi SM, arbitrage
+  dev-team, Sc.1)* : une **reprise s46 SUPPRIME la surcharge** (aucune trace dérivable de l'état
+  courant), et ni `PeriodeSnapshot` ni `TransfertSnapshot` ne portent d'**horodatage de création**
+  (ils ne connaissent que le jour couvert, pas l'instant d'écriture, donc pas de tri par récence).
+  Dériver le flux de notifications de l'état courant est donc **infaisable** — d'où un journal
+  persisté, distinct de la résolution.
+- Le flux d'un utilisateur restitue **les événements le concernant, triés par RÉCENCE de l'écriture**
+  (le plus récent en tête).
+
+### État lu / non-lu par utilisateur
+
+- Un **second état persisté**, séparé du journal : le **lu / non-lu PAR utilisateur** (+ **compteur
+  de non-lus**), derrière le port **`IEtatLectureNotifications`** (deux adaptateurs InMemory + Mongo
+  durable). Un utilisateur qui marque lu **n'affecte pas** l'état non-lu d'un autre.
+- **Marquer-lu (une notif ou toutes) est idempotent** : re-marquer lu ne crée aucun doublon, le
+  compteur reste stable.
+
+### Surface — cloche en barre du haut
+
+- **Icône cloche + badge compteur de non-lus + panneau déroulant** (liste chrono, chaque événement
+  marqué lu / non-lu, action marquer-lu) — **DANS LA BARRE D'APPLICATION DU HAUT** (`MainLayout`,
+  ordre : déconnexion — **cloche** — thème sombre), **composant autonome**.
+- **Gating** : visible **connecté && Parent** — **rien** sur `/connexion` ni pour un **Invité**.
+- **Échap ferme** le panneau (port `IEcouteurEchapModal` s33).
+
+### Temps réel — diffusion PORTEUSE DE PAYLOAD
+
+*(décision d'archi SM, arbitrage dev-team, Sc.4 & Sc.9)*
+
+- Les surfaces temps réel s42–s46 reprojetaient depuis la donnée **déjà chargée par l'unique GET
+  grille**, car leur changement vivait **dans le read model grille**. La **cloche est hors
+  read-model-grille** : reprojeter depuis la grille ne suffit pas.
+- Nouveau **port de diffusion `INotificateurChangement`** portant l'**`EvenementChangementSnapshot`**
+  (journal décoré `JournalChangementsDiffusant`), branché sur **CHAQUE endpoint d'écriture**
+  (délégation s44, plage s45, reprise s46, transfert s31, proposition / accept / refus s47). Le
+  client **reçoit l'événement dans la diffusion et reprojette → 0 GET sur push**, conforme au
+  garde-fou anti-flake ([[flake-signalr-blast-radius]] : « nouveau client SignalR = reprojection
+  depuis la diffusion, jamais un GET sur push »).
+- **Ne viole PAS « diffusion = lecture seule »** : la diffusion **porte une donnée de LECTURE**
+  (snapshot d'un changement déjà écrit) ; **l'écriture reste exclusivement sur le canal
+  requête / réponse**. La diffusion ne déclenche jamais d'écriture. **Donnée derrière un port**
+  (jamais figée dans le code) ; **pas** de couplage au read model grille, **pas** de GET dédié sur
+  push. **Identité du flux** = `IdentiteEffective.Id` de la session courante (cohérente avec le
+  Parent-gating et le lu/non-lu par utilisateur).
+
+## Brique B — Échange proposition → accord (consenti)
+
+- **`ProposerEchange(jour, enfant, versActeur)`** crée une **Proposition `pending`** (notification
+  chez le recevant) **SANS AUCUNE écriture de surcharge** : le store des surcharges reste **intact**
+  et la **résolution de la case est inchangée** (surcharge > fond, aucun basculement, aucun transfert
+  dérivé) tant que la proposition n'est pas acceptée. *(Anti vert-qui-ment, Sc.5 : un pending qui
+  teinterait déjà la case serait une **délégation déguisée** s44, pas un échange consenti.)*
+- **`AccepterProposition`** → `accepté` : **COMPOSE la délégation EXISTANTE s44** — une **surcharge
+  du jour** est écrite (le recevant prime, surcharge > fond) et le **transfert cédant → recevant est
+  AUTO-DÉRIVÉ** (s31, R24), jamais réécrit. Écriture durable (prouvée Mongo réel).
+- **`RefuserProposition`** → `refusé` : la proposition se clôt, **AUCUNE surcharge n'est écrite**, le
+  store reste intact.
+- **Cas limite & erreur** *(Sc.7)* : **proposer à SOI-MÊME** (recevant = responsable déjà résolu) →
+  **refusé sans écriture** ; **délégataire INCONNU / orphelin** (id stable absent du store) → **refus
+  AVANT écriture**, store intact, aucune écriture partielle ; **seconde proposition** sur un jour /
+  enfant déjà porteur d'un pending → **last-write-wins (R11)**, une seule Proposition pending subsiste
+  sans doublon ; **jour hors fenêtre chargée** → enregistrement valide (une date), sans crash. Deux
+  adaptateurs InMemory + Mongo durable.
+
+### Surface de l'échange
+
+- **Proposer** = entrée **« proposer un échange » du menu clic-case** (Parent-gated) sur la case du
+  jour visé (cf. [`ecriture-en-contexte.md`](ecriture-en-contexte.md), menu clic-case mutualisé).
+- **Répondre** = la Proposition pending est une **notification ACTIONNABLE dans la cloche** :
+  **Accepter / Refuser DEPUIS la notification** (via mini-dialog de confirmation), émis par le
+  **canal d'écriture** (jamais la diffusion). **PLUS de badge sur la case**, **PLUS d'entrée
+  conditionnelle du menu clic-case** pour répondre. Échap ferme le mini-dialog / le panneau sans
+  commande ; un **Invité** ne voit ni cloche ni entrée (Parent-gated).
+- **Temps réel** *(Sc.9)* : à l'**accord**, la case du jour d'un 2ᵉ écran **converge** (recevant
+  responsable par surcharge + transfert bicolore dérivé, notif → « accepté ») par reprojection client
+  (SignalR, 0 GET) ; au **refus**, la notification se clôt sans écriture ni changement de responsable.
+
+## Règles de gestion (catalogue : `regles-de-gestion.md`)
+
+- **Journal = trace de lecture non-autorité** : le journal de changements n'est **jamais** lu par la
+  résolution ; la vérité de résolution reste **périodes / transferts** (surcharge > fond > neutre,
+  transferts dérivés s31).
+- **Proposer n'écrit rien** : une Proposition `pending` **n'altère ni le store des surcharges ni la
+  résolution** ; seul le **consentement** (accepter) déclenche l'écriture (composition s44).
+- **Diffusion porteuse de payload ≠ écriture par la diffusion** : la diffusion porte une **donnée de
+  lecture** ; l'écriture reste exclusivement sur le canal requête / réponse (invariant de séparation
+  des canaux tenu).
+- **R11 (last-write-wins)** appliquée à la ré-proposition ; **R24 / R25** (transfert dérivé /
+  ponctuel) réutilisées par l'accord — textes canoniques dans
+  [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md).
+
+## Risques / hors-scope (backlog)
+
+- **Échange borné à UN jour ponctuel** : plage `[J1..J2]` (s45), récurrence / série (D2) et
+  **multi-enfants** restent ouverts.
+- **Cloche in-app uniquement** : notifications **push / e-mail externes** hors scope (la diffusion est
+  temps réel SignalR in-app).
+- **Signalement d'imprévu dédié** (malade / retard) distinct de l'échange : le mécanisme de
+  notification existe, l'entrée dédiée reste à cadrer.
+
+Cf. [`risques-et-questions-ouvertes.md`](risques-et-questions-ouvertes.md) et le backlog
+[`../BACKLOG.md`](../BACKLOG.md) (Épics 9 & 11).

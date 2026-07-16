@@ -24,6 +24,51 @@
 > persistante hors semaine » et « à-venir au-delà de la fenêtre » (limitations s42/s43) **tombent** avec
 > le retrait de ces surfaces.
 
+> **✅ AMENDEMENT s47 — la décision « grille = SEULE surface » (s44) est AMENDÉE : la CLOCHE (barre du haut) est une
+> surface hors-grille ASSUMÉE, alignée à la vision v1.** Le PO a **rouvert explicitement** en G2 s47 la surface
+> cloche / notifications qu'il avait fait retirer en s44. La décision s44 **tenait pour les surfaces de LECTURE du
+> planning redondantes avec la grille** (carte du jour s42, panneau « À venir » s43 — toujours retirées, ne pas
+> réintroduire sans arbitrage). Elle **NE couvre PAS** la cloche : la cloche **n'est pas une re-lecture du planning**,
+> c'est une **surface de NOTIFICATION de CHANGEMENT** (paliers cloche/imprévu de la vision), **assumée hors-grille**,
+> désormais **DANS LA BARRE D'APPLICATION du haut** (MainLayout, ordre : déconnexion — cloche — sombre), gatée
+> connecté && Parent (rien sur `/connexion` ni Invité). **Le noyau de LECTURE du planning reste la grille agenda ;
+> la cloche s'y ajoute comme surface transverse.** Backlog et spec (`saisie-et-grille.md`, `notifications-et-echange.md`)
+> alignés sur cet amendement — plus de contradiction « seule surface ».
+
+**s47 `echange-proposition-accord` MERGÉ — attaque les paliers CLOCHE (11/14) + IMPRÉVU & ÉCHANGE (12/15) de la vision.**
+Sprint le plus lourd de la série (2 modèles neufs + surface + port de transport). **Brique A — CLOCHE GÉNÉRALE (palier
+11/14 « Immédiat & événements à venir »)** : read model d'événements de changement = **JOURNAL DE CHANGEMENTS append-only**
+derrière un port neuf **`IJournalChangements`**, **alimenté par CHAQUE handler d'écriture existant** (délégation s44, plage
+s45, reprise s46, transfert s31) qui y consigne `{type, jour/enfant, cédant/recevant, horodatage via IDateTimeProvider}` —
+**TRACE DE LECTURE horodatée, JAMAIS lue par la résolution** (non-autorité, pas de double vérité : la vérité de résolution
+reste périodes/transferts). Capte les **reprises s46 malgré la suppression** (indérivable de l'état courant → journal
+persisté nécessaire). **État LU / NON-LU PAR utilisateur** persisté (port **`IEtatLectureNotifications`**) + **compteur**,
+**marquer-lu idempotent**. **2 adaptateurs InMemory + Mongo durable** pour chaque port. **IHM** : cloche + **badge compteur**
++ **panneau déroulant** (liste chrono, lu/non-lu, marquer-lu, Échap ferme), **DANS LA BARRE DU HAUT** (MainLayout), composant
+autonome, **gating connecté && Parent** (rien sur `/connexion` ni Invité). **Brique B — ÉCHANGE PROPOSITION → ACCORD (palier
+12/15 « Imprévu & échange », flux consenti)** : `ProposerEchange(jour, enfant, versActeur)` crée une **Proposition `pending`**
+(notif chez le recevant) **SANS écrire de surcharge ni changer la résolution** (anti vert-qui-ment prouvé : store des
+surcharges intact, case inchangée tant que non acceptée) ; **`AccepterProposition` COMPOSE la délégation s44** (surcharge du
+jour + transfert bicolore auto-dérivé s31, R24) → `accepté` ; **`RefuserProposition` retire SANS écriture** → `refusé`. **Cas
+limite / erreur** : soi-même refusé sans écriture · délégataire inconnu/orphelin refusé **AVANT** écriture · ré-proposition
+**last-write-wins R11** sans doublon · jour hors fenêtre sans crash. **IHM** : notification d'échange **ACTIONNABLE dans la
+cloche** (Accepter / Refuser via mini-dialog) + entrée **« proposer un échange » du menu clic-case** (Parent-gated) ; **PLUS
+de badge sur la case NI d'entrée conditionnelle** pour répondre (réponse dans la cloche). **Transport temps réel (décision
+archi tranchée en cours de sprint, SM)** : diffusion SignalR **PORTEUSE DE PAYLOAD** via port neuf **`INotificateurChangement`**
+(journal décoré `JournalChangementsDiffusant` portant `EvenementChangementSnapshot`), branchée sur **chaque endpoint
+d'écriture** ; la cloche **reprojette depuis la diffusion → 0 GET sur push** (prouvé Sc.4 & Sc.9, garde-fou anti-flake
+[[flake-signalr-blast-radius]] respecté). **NE viole PAS « diffusion = lecture seule »** : la diffusion porte une donnée de
+LECTURE (snapshot d'un changement déjà écrit), l'écriture reste exclusivement sur le canal requête/réponse. **9/9 ✅**, suite
+complète **809/812** (3 skip baseline), **gate G3 validé PO** (y compris le **repositionnement de la cloche en barre du haut**).
+**Aucun retour produit nouveau** au gate. **La décision « grille = seule surface » (s44) est AMENDÉE** (voir ⚠️ ci-dessus).
+**2 escalades de conception BIEN gérées** (journal dérivé-vs-persisté Sc.1 ; transport 0-GET Sc.4/9 : la dev-team a escaladé
+AVANT de coder, le SM a tranché — comportement voulu). **Hors scope s47** (backlog) : échange sur une **PLAGE `[J1..J2]`**
+(s45, sprint borné à UN jour), échange **récurrent/série** (D2) & **multi-enfants**, **notifications push / e-mail externes**
+(la cloche est **in-app** temps réel SignalR). **Candidats de tête au prochain `/planning`** : échange sur une plage /
+multi-enfants, **signalement d'imprévu** (malade/retard, entrée dédiée), notifications push externes ; reste Config foyer
+(édition depuis le graphe, graphe étendu, arbitrage inline vs modal, liste de slots par activité, lien adresse acteur↔lieu,
+suppression slot récurrent IHM, suppression d'un enfant) ; **P0 auth** (Google OAuth réel + écran définir-mot-de-passe).
+
 **s46 `annuler-reprendre-delegation` MERGÉ — FERME la boucle *undo* laissée ouverte en s44/s45** : un parent qui a délégué la
 récupération d'un jour peut **reprendre ce jour** (« finalement je peux récupérer »). **AUCUN modèle / store / commande neuf,
 AUCUNE surface neuve.** **@back** : use case `AnnulerDelegation(jour[, enfant])` de **COMPOSITION** — **compose la SUPPRESSION de
@@ -403,15 +448,15 @@ validé PO. Prochain = `/planning`.
 | Transfert ponctuel & modifiable | 🟡 | Palier 5+ | spec règle 18 |
 | ~~**Transfert matérialisé sur le planning** : case **bicolore** + séparation en diagonale (départ → arrivée)~~ **livré s29** (diagonale bicolore sur la **pastille de date**, couleurs cédant/recevant résolues sur le référentiel acteurs, orphelin → neutre, légende motif « Transfert », jour sans transfert = unicolore inchangé ; **transfert saisi inchangé**, présentation seule) | ✅ | s29 | retours s17 (#7) |
 | ~~**Transfert AUTO-dérivé de la succession de périodes**~~ **livré s31 (D3)** : **deux chemins de dérivation séparés** — (1) succession de **périodes saisies** (fin A jour J + début B jour J+1, même enfant) ; (2) **bascule du cycle de fond** (le responsable résolu change d'un jour à l'autre, ajouté au rework G3 option A). Priorité **SAISI > DÉRIVÉ** (pas de doublon), cas limites tenus : **neutre** (fin sans successeur), **bord de fenêtre** (J+1 non chargé), **orphelin R6** (acteur supprimé → repli neutre côté orphelin) ; rendu bicolore réutilisé (présentation s29). Prouvé runtime sur Mongo réel (06/07, 10/08). | ✅ | s31 | retours s29 · spec règle 24 |
-| Transferts exposés dans le panneau cloche | ⬜ | Palier 11 | spec règle 20 · retours s02 (#8)/s03 |
+| ~~Transferts exposés dans le panneau cloche~~ **livré s47** : chaque écriture de transfert/délégation (s31/s44/s45/s46) est consignée au **journal de changements** (`IJournalChangements`) et surface comme **notification horodatée dans la cloche** (barre du haut), lu/non-lu par utilisateur, temps réel SignalR porteur de payload (0 GET). | ✅ | s47 | spec règle 20 · retours s02 (#8)/s03 |
 
 ### Épic 9 — Notifications & événements à venir
 
 | Besoin | Statut | Palier | Origine |
 |--------|:------:|--------|---------|
-| **Panneau cloche = NOTIFICATION de CHANGEMENT** (badge « non-lu », diff, signal qu'une chose a changé) — **AFFICHAGE de la liste des à-venir LIVRÉ s43 en lecture** (cf. ligne dédiée ci-dessous) ; **reste** le **mécanisme de notification de changement** (cloche qui signale un CHANGEMENT, badge non-lu) — **explicitement hors scope s42/s43** qui n'ont livré que l'affichage lecture, pas la notification | ⬜ | Palier 11 | spec règles 20/120 · retours s02/s03 · **hors scope s42/s43** |
-| Transferts listés comme événements (date, acteurs, lieu, heure) | ⬜ | Palier 11 | spec règle 20 |
-| Changements de planning exposés comme événements | ⬜ | Palier 11 | spec règle 20 |
+| ~~**Panneau cloche = NOTIFICATION de CHANGEMENT** (badge « non-lu », diff, signal qu'une chose a changé)~~ **livré s47** : **CLOCHE GÉNÉRALE** dans la **barre du haut** (MainLayout, gating connecté && Parent) — icône + **badge compteur de non-lus** + **panneau déroulant** (liste chrono, lu/non-lu, marquer-lu idempotent, Échap ferme). Servie par un **JOURNAL DE CHANGEMENTS append-only** (`IJournalChangements`, 2 adaptateurs InMemory + Mongo) alimenté par chaque handler d'écriture, **TRACE DE LECTURE horodatée non-autorité** (jamais lue par la résolution) ; **état lu/non-lu PAR utilisateur** persisté (`IEtatLectureNotifications`) ; temps réel SignalR **porteur de payload** (`INotificateurChangement`), reprojection client **0 GET**. **Surface hors-grille assumée** (amende « grille = seule surface » s44). | ✅ | s47 | spec règles 20/120 · retours s02/s03 |
+| ~~Transferts listés comme événements (date, acteurs, lieu, heure)~~ **livré s47** (journal de changements : type, jour/enfant, cédant/recevant, horodatage). | ✅ | s47 | spec règle 20 |
+| ~~Changements de planning exposés comme événements~~ **livré s47** (délégation s44 / plage s45 / reprise s46 / transfert s31 / proposition d'échange → événements horodatés dans la cloche). | ✅ | s47 | spec règle 20 |
 | ~~« Qui récupère ce soir » — immédiat (qui-quand-où du jour)~~ **livré s42 EN LECTURE** : carte « Aujourd'hui » (jour courant + enfant sélectionné) restituant **qui / où / transfert du jour**, via query `CarteDuJourQuery` **PURE composant** `GrilleAgendaQuery` (résolution surcharge>fond>neutre + slots s29 + transfert saisi/dérivé s31, **aucun store neuf, aucune mutation**, deux adaptateurs, Mongo durable) ; carte en tête du planning par **reprojection client**, **STRICTEMENT lecture**, **Invité VOIT**, convergence **SignalR par reprojection client** (0 GET sur push). **1ᵉʳ incrément du noyau produit** après l'épic Config foyer. | ✅ | s42 | spec p4 · spec v03 incrément 2 |
 | ~~**Liste « À venir » — prochains jours (qui/où/transfert)**~~ **livré s43 EN LECTURE** (**2ᵉ incrément du noyau produit**, prolonge la carte du jour s42) : **panneau « À venir »** sous la carte « Aujourd'hui » listant les **N prochains jours de la fenêtre de grille chargée** (date croissante) + l'enfant sélectionné avec **qui / où / transfert** par jour, via query `AVenirQuery` **PURE composant** `GrilleAgendaQuery` (**miroir strict de `CarteDuJourQuery` s42** itérée sur les jours à venir, **aucun store neuf, aucune mutation**, deux adaptateurs, Mongo durable) ; repli fidèle (personne assignée / orphelin neutre `Resolvable` s13 / sans slot sans lieu / **fenêtre sans à-venir = liste vide message neutre**) ; **STRICTEMENT lecture**, **Invité VOIT**, **reprojection client**, convergence **SignalR** (0 GET sur push). **Notifications/alertes push explicitement HORS scope** (cf. ligne cloche ci-dessus). | ✅ | s43 | spec p4/p7 · spec règle 20 · **suite carte du jour s42** |
 | **Carte du jour ET liste « À venir » PERSISTANTES hors de la semaine courante** (limitation s42 **+ s43**) : carte (s42) et panneau « À venir » (s43) se reprojettent depuis la **fenêtre de grille chargée**, donc **disparaissent / ne s'affichent pas au-delà** si l'utilisateur navigue hors du jour courant / de la fenêtre. Choix guidé par l'**anti-amplification flake** (aucun GET dédié sur push). **À arbitrer** : persistance hors vue **vs** coût d'un GET sur push (risque flake). | ⬜ | Palier 11 (arbitrage) | **limitation s42/s43** |
@@ -439,8 +484,10 @@ validé PO. Prochain = `/planning`.
 
 | Besoin | Statut | Palier | Origine |
 |--------|:------:|--------|---------|
-| Signalement d'imprévu (malade, retard…) + notification immédiate | ⬜ | Palier 12 | spec p7 |
-| Échange de dernière minute *(proposition + accord requis)* — s44 a livré la **délégation directe** (un parent délègue, sans workflow de proposition/accord) ; le **flux proposition→accord** reste ⬜ | ⬜ | Palier 12 | spec p7 · partiel s44 |
+| **Signalement d'imprévu (malade, retard…) + notification immédiate** — le **mécanisme de notification** (cloche + journal + temps réel) est **livré s47** ; reste une **entrée dédiée « signaler un imprévu »** (malade/retard) distincte de l'échange (candidat goal prochain). | 🟡 | Palier 12 | spec p7 · **mécanisme s47** |
+| ~~Échange de dernière minute *(proposition + accord requis)*~~ **livré s47 (flux PROPOSITION → ACCORD consenti)** : `ProposerEchange` crée une **Proposition `pending`** (notif chez le recevant) **SANS écrire de surcharge ni changer la résolution** (anti vert-qui-ment prouvé) ; **`AccepterProposition` COMPOSE la délégation s44** (surcharge + transfert dérivé s31) → `accepté` ; **`RefuserProposition` retire SANS écriture** → `refusé`. Cas limite/erreur (soi-même, inconnu/orphelin refusé avant écriture, last-write-wins R11, jour hors fenêtre sans crash), 2 adaptateurs InMemory + Mongo. **IHM** : notif **ACTIONNABLE dans la cloche** (Accepter/Refuser) + entrée « proposer un échange » du menu clic-case, temps réel 0 GET. Complète la **délégation directe** s44 par le **workflow de consentement**. | ✅ | s47 | spec p7 · **s47** (partiel s44) |
+| **Échange sur une PLAGE `[J1..J2]`** (s45) & échange **récurrent/série** (D2) & **multi-enfants** — s47 borné à **UN jour ponctuel** ; étendre le flux proposition→accord à une plage / série / plusieurs enfants. | ⬜ | Palier 12 | hors scope s47 |
+| **Notifications push / e-mail externes** — la cloche s47 est **in-app** (temps réel SignalR) ; notifier hors de l'app (push mobile, e-mail) reste ouvert. | ⬜ | Palier 12/13 | hors scope s47 · spec p7 |
 | ~~**Transferts temporaires** (exception, non récurrents)~~ **livré s44** : **délégation de la récupération d'UN jour** — use case `DeleguerRecuperation` composant l'écriture surcharge ponctuelle (s06), transfert **auto-dérivé s31**, entrée du menu clic-case Parent-gated, refus (soi-même / délégataire inconnu) sans écriture, convergence temps réel de la case (0 GET). **Reste ⬜** : délégation **récurrente/série** (D2). | ✅ | s44 | spec règles 17-18 · **s44** |
 
 ---
@@ -454,8 +501,8 @@ validé PO. Prochain = `/planning`.
 |-------:|--------|-------|---------|
 | 9bis | **Survol → résumé de la journée** (enrichissement après ~1s ; périmètre à cadrer) | É5, É9 | spec v09 · besoins s07 |
 | 10 | **Config foyer durable restante** (~~lieux~~ **livré s27** · set couleurs par défaut) + Admin/Parent/Autre + écran de config complet | É1, É2, É7 | spec v05 p5-6 · retours s01/s03 |
-| 11 | **Immédiat & événements à venir** — panneau cloche (transferts + changements + « qui récupère ce soir ») | É8, É9 | spec v05 p7 · retours s02/s03 |
-| 12 | **Imprévu & échange** — malade/retard/échange + transferts dérivés automatiquement | É8, É11 | spec v05 p8 · spec règles 19-20 |
+| ~~11~~ | ~~**Immédiat & événements à venir** — panneau cloche~~ **livré s47** (cloche générale : journal de changements append-only non-autorité, lu/non-lu par utilisateur, badge, panneau, barre du haut, temps réel porteur de payload 0 GET) ; « qui récupère ce soir » livré s42 en lecture | É8, É9 | spec v05 p7 · **s47** |
+| ~~12~~ | ~~**Imprévu & échange**~~ **échange proposition→accord livré s47** (flux consenti : proposer=pending sans écriture, accepter compose s44, refuser sans écriture ; actionnable dans la cloche) ; **reste** : signalement d'imprévu dédié (malade/retard), échange plage/série/multi-enfants (⬜, Épic 11) | É8, É11 | spec v05 p8 · **s47** |
 | 13 | **Ouverture de l'accès (reste)** — câblage adaptateurs auth réels + comptes inactifs (droits) + prise en main par rôle + personnalisation des couleurs *(auth logique + landing + thème sombre déjà livrés s22-s26)* | É10, É2, É5 | spec v05 p9 · retours s01/s07/s08 |
 | 15 | **PWA — saisie hors-ligne** (cache + file d'écritures rejouée au retour de connexion) | É12, É3 | spec v06 · besoins s05 |
 

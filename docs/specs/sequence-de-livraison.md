@@ -32,8 +32,8 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
 | 11 | Survol → résumé de la journée | ⏳ skippé (faute de demande PO) | (ci-dessous) |
 | 12 | Config foyer durable — reste de la config | ⏳ non livré (technique) | (ci-dessous) |
 | 13 | Modèle d'acteurs & foyer | ⏳ non livré | (ci-dessous) |
-| 14 | Immédiat & événements à venir (panneau cloche) | ⏳ non livré | (ci-dessous) |
-| 15 | Imprévu & échange | ⏳ non livré | (ci-dessous) |
+| 14 | Immédiat & événements à venir (panneau cloche) | ✅ livré s47 (cloche générale) | [`notifications-et-echange.md`](notifications-et-echange.md) |
+| 15 | Imprévu & échange | 🟡 échange consenti livré s47 ; imprévu dédié ⏳ | [`notifications-et-echange.md`](notifications-et-echange.md) |
 | 16 | Ouverture de l'accès — landing + auth réelle | ⏳ non livré | (ci-dessous) |
 | 17 | Persistance réelle — adaptateurs de droite (reste du domaine) | ⏳ non livré (technique) | (ci-dessous) |
 | 18 | Saisie hors-ligne (PWA) | ⏳ non livré (technique) | (ci-dessous) |
@@ -192,15 +192,22 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
     de couleurs par défaut**. *Exploite la config persistée des paliers précédents ; prérequis de
     l'ouverture de l'accès.*
 
-14. **Immédiat & événements à venir** — « qui récupère ce soir », où est l'enfant maintenant,
-    transferts et changements à venir présentés comme événements dans un **panneau cloche**, plus
-    comme un tableau permanent. *Valeur quotidienne ; expose enfin les transferts, aujourd'hui
-    invisibles par construction.*
+14. **Immédiat & événements à venir** *(**cloche générale LIVRÉE s47**)* — transferts et changements
+    présentés comme **événements dans une CLOCHE** (barre du haut), plus comme un tableau permanent.
+    **Livré** : **journal de changements append-only** (`IJournalChangements`) alimenté par chaque
+    handler d'écriture = **trace de lecture non-autorité** (jamais lue par la résolution), **lu/non-lu
+    par utilisateur** + compteur, badge + panneau, gating connecté && Parent, **temps réel porteur de
+    payload** (`INotificateurChangement`, 0 GET). « Qui récupère ce soir » avait été livré s42 en
+    lecture (retiré s44). *Expose enfin les transferts, invisibles par construction jusque-là.* →
+    [`notifications-et-echange.md`](notifications-et-echange.md)
 
-15. **Imprévu & échange** — enfant malade / retard / échange de dernière minute, transferts
-    **dérivés automatiquement** par défaut et saisie réservée à l'exception. *Le plus délicat ; après
-    que l'usage à deux est acquis. Porte la question ouverte du **workflow demande/accord** avant
-    réaffectation d'une période à l'autre parent.*
+15. **Imprévu & échange** *(**échange consenti LIVRÉ s47** ; imprévu dédié non livré)* — échange de
+    dernière minute, transferts **dérivés automatiquement** par défaut. **Livré s47** : le **workflow
+    demande / accord** (question longtemps ouverte) — `ProposerEchange` crée un `pending` **sans
+    écriture**, `AccepterProposition` **compose la délégation s44** (surcharge + transfert dérivé s31),
+    `RefuserProposition` clôt sans écriture ; proposition **actionnable dans la cloche**. **Reste** :
+    **signalement d'imprévu dédié** (enfant malade / retard, entrée distincte de l'échange) et
+    l'extension plage / série / multi-enfants. → [`notifications-et-echange.md`](notifications-et-echange.md)
 
 16. **Ouverture de l'accès** — landing page et authentification des acteurs réels (email via Gmail /
     Apple / Microsoft) pour lever le risque mortel d'adoption. Débloque aussi la **personnalisation
