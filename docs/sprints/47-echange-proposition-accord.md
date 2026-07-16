@@ -5,7 +5,7 @@
 > proposition→accord** dont les propositions arrivent comme **notifications ACTIONNABLES** dans la
 > cloche. La cloche est la **1ʳᵉ surface hors-grille rouverte** depuis s44.
 
-## Avancement — 7/9
+## Avancement — 8/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -18,7 +18,7 @@
 | Sc.5 | PROPOSER = notification `pending` chez le recevant **SANS aucune écriture de surcharge** (résolution de la case inchangée) | @back | ✅ |
 | Sc.6 | ACCEPTER **compose la délégation s44** (surcharge + transfert dérivé s31) ; REFUSER retire sans écriture — Mongo durable | @back | ✅ |
 | Sc.7 | Cas limite / erreur : soi-même refusé · délégataire inconnu/orphelin refusé AVANT écriture · ré-proposition last-write-wins R11 · jour hors fenêtre sans crash | @back | ✅ |
-| Sc.8 | Notification d'échange **ACTIONNABLE dans la cloche** (Accepter / Refuser depuis la notif) + entrée « proposer un échange » du menu clic-case (Parent-gated), Échap | @ihm | 🔴 |
+| Sc.8 | Notification d'échange **ACTIONNABLE dans la cloche** (Accepter / Refuser depuis la notif) + entrée « proposer un échange » du menu clic-case (Parent-gated), Échap | @ihm | ✅ |
 | Sc.9 | Temps réel : accord → notif + case résolue (surcharge + transfert) sur 2ᵉ écran par reprojection SignalR, 0 GET ; refus → notif close sans écriture | @ihm | 🔴 |
 
 > **Ligne de coupe (si découpage 2 sprints retenu par le PO)** : Sc.1–4 = **sprint 47 (cloche générale
@@ -199,7 +199,7 @@ Quand la proposition porte sur un jour HORS de la fenêtre chargée
 Alors l'enregistrement est valide (une date), sans crash, affichage suivant la fenêtre
 ```
 
-### Sc.8 — Notification d'échange ACTIONNABLE dans la cloche @ihm @pending
+### Sc.8 — Notification d'échange ACTIONNABLE dans la cloche @ihm @vert
 ```gherkin
 Étant donné une Proposition pending adressée à l'utilisateur courant, visible dans sa cloche
 Alors la notification d'échange porte deux actions "Accepter" et "Refuser" (notification actionnable)
