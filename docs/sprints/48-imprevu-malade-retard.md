@@ -8,12 +8,12 @@
 > bascule de responsable). Réutilise intégralement les briques s47 (journal de changements, cloche, diffusion porteuse
 > de payload) et le pattern d'entrée de menu clic-case (s44 délégation / s47 proposer-échange).
 
-## Avancement — 1/7
+## Avancement — 2/7
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | 1 | Signaler malade/retard consigne un événement au JOURNAL s47, SANS toucher la résolution (0 surcharge / 0 transfert / 0 bascule) | @back | ✅ |
-| 2 | L'événement d'imprévu apparaît dans le flux notifications du/des acteur(s) concerné(s), trié par récence, lu/non-lu par utilisateur | @back | 🔴 |
+| 2 | L'événement d'imprévu apparaît dans le flux notifications du/des acteur(s) concerné(s), trié par récence, lu/non-lu par utilisateur | @back | ✅ |
 | 3 | Cas limite : motif optionnel vide accepté ; jour hors fenêtre chargée enregistré sans crash ; deux adaptateurs InMemory + Mongo durable | @back | 🔴 |
 | 4 | Cas erreur / gating back : type d'imprévu inconnu refusé sans écriture ; le journal reste trace non-autorité (résolution jamais impactée) | @back | 🔴 |
 | 5 | Entrée « signaler un imprévu » du menu clic-case (Parent-gated), choix malade/retard + motif optionnel, Échap = Annuler (port s33) | @ihm | 🔴 |
@@ -70,7 +70,7 @@ Scénario Sc.1 — Signaler un imprévu consigne au journal SANS toucher la rés
   Et aucun transfert n'est dérivé, aucune bascule de responsable n'a lieu
   Et la résolution de la case reste STRICTEMENT inchangée (le journal n'est jamais lu par la résolution)
 
-@back @pending
+@back @vert
 Scénario Sc.2 — L'imprévu apparaît dans le flux notifications, trié par récence, lu/non-lu par utilisateur
   Étant donné un imprévu signalé et des acteurs concernés par le jour/enfant
   Quand le flux de notifications d'un acteur concerné est restitué

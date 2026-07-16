@@ -23,18 +23,25 @@ public sealed class SignalerImprevuHandler
 {
     private readonly IJournalChangements _journal;
     private readonly IDateTimeProvider _horloge;
+    private readonly GrilleAgendaQuery? _grille;
 
-    public SignalerImprevuHandler(IJournalChangements journal, IDateTimeProvider horloge)
+    public SignalerImprevuHandler(IJournalChangements journal, IDateTimeProvider horloge, GrilleAgendaQuery? grille = null)
     {
         _journal = journal;
         _horloge = horloge;
+        _grille = grille;
     }
 
     public Result<EvenementChangementSnapshot> Handle(SignalerImprevuCommand commande)
     {
+        // Acteur CONCERNÉ (au-delà du signalant) = responsable RÉSOLU du jour (celui qui a l'enfant ce jour-là).
+        // Il est LU sans être modifié — la résolution n'est jamais altérée par le signalement (invariant s48).
+        var responsableDuJour = _grille?.Projeter(commande.Jour, VuePlanning.Semaine)
+            .Jours.Single(j => j.Date == commande.Jour).ResponsableId ?? "";
+
         var evenement = new EvenementChangementSnapshot(
             Guid.NewGuid().ToString("N"), TypeChangement.Imprevu, commande.Jour, commande.EnfantId,
-            CedantId: "", RecevantId: commande.SignalantId, _horloge.Maintenant,
+            CedantId: responsableDuJour, RecevantId: commande.SignalantId, _horloge.Maintenant,
             commande.Type, commande.Motif);
         _journal.Consigner(evenement);
         return Result<EvenementChangementSnapshot>.Succes(evenement);
