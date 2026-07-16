@@ -5,7 +5,7 @@
 > proposition→accord** dont les propositions arrivent comme **notifications ACTIONNABLES** dans la
 > cloche. La cloche est la **1ʳᵉ surface hors-grille rouverte** depuis s44.
 
-## Avancement — 6/9
+## Avancement — 7/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -13,7 +13,7 @@
 | Sc.1 | **Journal de changements append-only** alimenté par les handlers d'écriture existants (délégations s44 / plages s45 / **reprises s46** / transferts) — **trace de LECTURE horodatée, NON autorité de résolution** ; liste chrono (récence) par utilisateur, 2 adaptateurs InMemory + Mongo | @back | ✅ |
 | Sc.2 | État **lu / non-lu PAR utilisateur** (vrai état persisté), marquer-lu idempotent, **compteur de non-lus** — 2 adaptateurs InMemory + Mongo durable | @back | ✅ |
 | Sc.3 | Cloche + **badge compteur** en en-tête du planning + **panneau déroulant** (liste chrono, lu/non-lu, marquer lu), Parent-gated, Échap ferme | @ihm | ✅ |
-| Sc.4 | Temps réel : un changement → nouvelle notif + compteur incrémenté chez les destinataires par reprojection client SignalR, **0 GET** | @ihm | 🔴 |
+| Sc.4 | Temps réel : un changement → nouvelle notif + compteur incrémenté chez les destinataires par reprojection client SignalR, **0 GET** | @ihm | ✅ |
 | **BRIQUE B — Échange proposition → accord (greffé sur la cloche)** | | | |
 | Sc.5 | PROPOSER = notification `pending` chez le recevant **SANS aucune écriture de surcharge** (résolution de la case inchangée) | @back | ✅ |
 | Sc.6 | ACCEPTER **compose la délégation s44** (surcharge + transfert dérivé s31) ; REFUSER retire sans écriture — Mongo durable | @back | ✅ |
@@ -153,7 +153,7 @@ Et Échap ferme le panneau (port IEcouteurEchapModal s33)
 Et un Invité ne voit pas la cloche (Parent-gated)
 ```
 
-### Sc.4 — Temps réel : nouvelle notif + compteur convergent @ihm @pending
+### Sc.4 — Temps réel : nouvelle notif + compteur convergent @ihm @vert
 ```gherkin
 Étant donné deux écrans, celui d'un utilisateur destinataire affichant sa cloche (compteur = N)
 Quand un changement le concernant est écrit (délégation / plage / reprise / transfert) depuis un autre écran
