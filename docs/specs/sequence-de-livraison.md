@@ -33,7 +33,7 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
 | 12 | Config foyer durable — reste de la config | ⏳ non livré (technique) | (ci-dessous) |
 | 13 | Modèle d'acteurs & foyer | ⏳ non livré | (ci-dessous) |
 | 14 | Immédiat & événements à venir (panneau cloche) | ✅ livré s47 (cloche générale) | [`notifications-et-echange.md`](notifications-et-echange.md) |
-| 15 | Imprévu & échange | 🟡 échange consenti livré s47 ; imprévu dédié ⏳ | [`notifications-et-echange.md`](notifications-et-echange.md) |
+| 15 | Imprévu & échange | ✅ échange consenti livré s47 ; imprévu dédié (malade / retard, informatif) livré s48 | [`notifications-et-echange.md`](notifications-et-echange.md) |
 | 16 | Ouverture de l'accès — landing + auth réelle | ⏳ non livré | (ci-dessous) |
 | 17 | Persistance réelle — adaptateurs de droite (reste du domaine) | ⏳ non livré (technique) | (ci-dessous) |
 | 18 | Saisie hors-ligne (PWA) | ⏳ non livré (technique) | (ci-dessous) |
@@ -199,13 +199,16 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
     lecture (retiré s44). *Expose enfin les transferts, invisibles par construction jusque-là.* →
     [`notifications-et-echange.md`](notifications-et-echange.md)
 
-15. **Imprévu & échange** *(**échange consenti LIVRÉ s47** ; imprévu dédié non livré)* — échange de
+15. **Imprévu & échange** *(**échange consenti LIVRÉ s47** ; **imprévu dédié LIVRÉ s48**)* — échange de
     dernière minute, transferts **dérivés automatiquement** par défaut. **Livré s47** : le **workflow
     demande / accord** (question longtemps ouverte) — `ProposerEchange` crée un `pending` **sans
     écriture**, `AccepterProposition` **compose la délégation s44** (surcharge + transfert dérivé s31),
-    `RefuserProposition` clôt sans écriture ; proposition **actionnable dans la cloche**. **Reste** :
-    **signalement d'imprévu dédié** (enfant malade / retard, entrée distincte de l'échange) et
-    l'extension plage / série / multi-enfants. → [`notifications-et-echange.md`](notifications-et-echange.md)
+    `RefuserProposition` clôt sans écriture ; proposition **actionnable dans la cloche**. **Livré s48** :
+    le **signalement d'imprévu dédié** (malade / retard, entrée distincte de l'échange) — cas
+    **non-négocié / informatif**, `SignalerImprevu` consigne au journal **sans toucher la résolution**,
+    notif cloche **sans action de suivi** (brique C). **Reste** : **action de suivi** (réagir à un
+    imprévu par un échange) et l'extension plage / série / multi-enfants. →
+    [`notifications-et-echange.md`](notifications-et-echange.md)
 
 16. **Ouverture de l'accès** — landing page et authentification des acteurs réels (email via Gmail /
     Apple / Microsoft) pour lever le risque mortel d'adoption. Débloque aussi la **personnalisation

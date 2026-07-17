@@ -116,6 +116,37 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
   responsable par surcharge + transfert bicolore dérivé, notif → « accepté ») par reprojection client
   (SignalR, 0 GET) ; au **refus**, la notification se clôt sans écriture ni changement de responsable.
 
+## Brique C — Signalement d'imprévu dédié (malade / retard) *(livré s48)*
+
+- **Cas NON-négocié, purement INFORMATIF**, distinct de l'échange consenti (brique B). Là où l'échange
+  **négocie** un jour (proposer → accepter / refuser), le signalement d'imprévu **PRÉVIENT d'un fait
+  subi** : « l'enfant EST malade », « je serai en retard ce soir ». Il n'y a **rien à accepter**, juste
+  à **informer** les autres acteurs.
+- **`SignalerImprevu(type, jour, enfant[, motif])`** (agrégat `Imprevu`, `type ∈ {malade, retard}`,
+  **motif optionnel**) **consigne un événement au JOURNAL DE CHANGEMENTS existant** (`IJournalChangements`,
+  brique A) `{type, jour, enfant, acteur signalant, horodatage `IDateTimeProvider`}` — **AUCUN store neuf**.
+- **Invariant s47 tenu et explicitement prouvé** *(Sc.1, Sc.4)* : signaler un imprévu **ne touche JAMAIS
+  la résolution** — **aucune surcharge écrite** (store des surcharges **intact**), **aucun transfert
+  dérivé**, **aucune bascule de responsable**, **case STRICTEMENT inchangée**. Le journal reste **trace
+  de lecture non-autorité**, jamais lu par la résolution.
+- **Cas limite** *(Sc.3)* : **motif vide accepté** (aucune écriture partielle) ; jour hors fenêtre de
+  grille chargée enregistré sans crash ; comportement identique **InMemory + Mongo durable**.
+- **Cas erreur** *(Sc.4)* : **type d'imprévu INCONNU refusé AVANT écriture** (règle dans l'agrégat
+  `Imprevu`, aucun événement consigné).
+- **Surface — AUCUNE surface neuve** : entrée **« signaler un imprévu » du menu clic-case** (Parent-gated,
+  à côté de « déléguer ce jour » s44 / « proposer un échange » s47) → **mini-dialog malade / retard +
+  motif optionnel**, **Échap = Annuler** (port `IEcouteurEchapModal` s33), émission par le **canal
+  d'écriture**. Restitution dans la **cloche s47** : notification **INFORMATIVE** (« X est malade le 12 »,
+  « Y sera en retard le 12 »), lu/non-lu + marquer-lu, **SANS aucune action de suivi** *(Sc.6)* — pas
+  d'accepter / refuser : l'imprévu informatif n'est **pas négociable** (c'est ce qui le distingue de
+  l'échange brique B).
+- **Temps réel** *(Sc.7)* : la cloche d'un 2ᵉ écran **converge par reprojection client depuis la diffusion
+  porteuse de payload** (`INotificateurChangement`), **0 GET sur push** ; la diffusion porte une **donnée
+  de lecture** (ne déclenche aucune écriture — séparation des canaux tenue).
+- **Hors scope s48** (backlog) : **action de suivi / réaction** à un imprévu (proposer un échange déclenché
+  depuis la notif — dépend de l'échange brique B) ; **multi-enfants / plage / récurrence** (un imprévu =
+  **un jour, un enfant**) ; notifications **push / e-mail externes**.
+
 ## Règles de gestion (catalogue : `regles-de-gestion.md`)
 
 - **Journal = trace de lecture non-autorité** : le journal de changements n'est **jamais** lu par la
@@ -136,8 +167,9 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
   **multi-enfants** restent ouverts.
 - **Cloche in-app uniquement** : notifications **push / e-mail externes** hors scope (la diffusion est
   temps réel SignalR in-app).
-- **Signalement d'imprévu dédié** (malade / retard) distinct de l'échange : le mécanisme de
-  notification existe, l'entrée dédiée reste à cadrer.
+- **Signalement d'imprévu dédié** (malade / retard) distinct de l'échange : **livré s48** (brique C
+  ci-dessus, informatif, sans action de suivi). Reste ouverte l'**action de suivi** (proposer un échange
+  en réaction à un imprévu).
 
 Cf. [`risques-et-questions-ouvertes.md`](risques-et-questions-ouvertes.md) et le backlog
 [`../BACKLOG.md`](../BACKLOG.md) (Épics 9 & 11).
