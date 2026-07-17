@@ -27,13 +27,13 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
 | 6 | Récurrence des périodes — cycle de fond | ✅ livré | [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md) |
 | 7 | Écriture en contexte — dialogs depuis le planning | ✅ livré (épic refermé) | [`ecriture-en-contexte.md`](ecriture-en-contexte.md) |
 | 8 | CRUD acteurs complet & impersonation bornée lecture | ✅ livré | [`acteurs-et-config-foyer.md`](acteurs-et-config-foyer.md) |
-| 9 | Calendrier navigable — navigation, vues, sélection de plage | 🔜 **non livré (prochain)** | [`calendrier-navigable.md`](calendrier-navigable.md) |
+| 9 | Calendrier navigable — navigation, vues, sélection de plage | 🟡 **navigation + vues LIVRÉES s15 ; sélection de plage restante (s49)** | [`calendrier-navigable.md`](calendrier-navigable.md) |
 | 10 | Cycle de fond riche — ancre, frontière, plages, sur-cycles | ⏳ non livré | (ci-dessous) |
 | 11 | Survol → résumé de la journée | ⏳ skippé (faute de demande PO) | (ci-dessous) |
 | 12 | Config foyer durable — reste de la config | ⏳ non livré (technique) | (ci-dessous) |
 | 13 | Modèle d'acteurs & foyer | ⏳ non livré | (ci-dessous) |
 | 14 | Immédiat & événements à venir (panneau cloche) | ✅ livré s47 (cloche générale) | [`notifications-et-echange.md`](notifications-et-echange.md) |
-| 15 | Imprévu & échange | 🟡 échange consenti livré s47 ; imprévu dédié ⏳ | [`notifications-et-echange.md`](notifications-et-echange.md) |
+| 15 | Imprévu & échange | ✅ échange consenti livré s47 ; imprévu dédié (malade / retard, informatif) livré s48 | [`notifications-et-echange.md`](notifications-et-echange.md) |
 | 16 | Ouverture de l'accès — landing + auth réelle | ⏳ non livré | (ci-dessous) |
 | 17 | Persistance réelle — adaptateurs de droite (reste du domaine) | ⏳ non livré (technique) | (ci-dessous) |
 | 18 | Saisie hors-ligne (PWA) | ⏳ non livré (technique) | (ci-dessous) |
@@ -147,17 +147,15 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
    [`acteurs-et-config-foyer.md`](acteurs-et-config-foyer.md)
 
 9. **Calendrier navigable — navigation, vues prédéfinies & sélection de plage** *(reprise produit —
-   **NON LIVRÉ**, **PROCHAIN SUJET**)*. Faire du hub `/planning` un **agenda navigable** : se déplacer
-   dans le **passé et le futur**, choisir des **vues prédéfinies** (semaine, mois, **4 semaines
-   glissantes** par défaut à partir de la semaine en cours), et **sélectionner une plage de cases**
-   pour affecter une période sur l'**intervalle** choisi (l'affectation par plage rouvre l'écriture en
-   contexte sur plusieurs jours d'un coup). *La grille actuelle est une **vue posée non encore
-   navigable** ; ce palier l'enrichit sans toucher aux mécaniques d'écriture déjà livrées (dialogs).
-   Aucune persistance tirée en avant. **Orientation de découpe (pas une règle, palier gardé
-   groupé)** : le plus petit incrément probable est la **navigation seule** (semaines préc. / suiv.,
-   bascule de vue) ; la **sélection de plage** est un sujet plein **cuttable en tranche 2** si elle
-   déborde ~2h ; **périmètre exact tranché au make-gherkin**, non pré-arbitré ici (corollaire de
-   découpe).* → [`calendrier-navigable.md`](calendrier-navigable.md)
+   **NAVIGATION + VUES LIVRÉES s15** ; **sélection de plage restante, séquencée s49**)*. Le hub
+   `/planning` est un **agenda navigable** : déplacement **passé/futur** (`PlanningPartage.razor` —
+   `nav-semaine-precedente` / `nav-semaine-suivante` / `nav-aujourdhui`) et **vues prédéfinies**
+   (semaine, mois, **4 semaines glissantes** — `selecteur-vue`), la fenêtre résolue par
+   `GrilleAgendaQuery.Projeter(ancre, vue)` sur `SessionPlanning` (**état de navigation NON persisté**).
+   **Reste NON LIVRÉ** = **sélectionner une plage de cases** pour affecter une période sur
+   l'**intervalle** choisi (l'affectation par plage rouvre l'écriture en contexte sur plusieurs jours
+   d'un coup) — enrichit la grille sans toucher aux mécaniques d'écriture déjà livrées (dialogs),
+   **aucune persistance tirée en avant**. → [`calendrier-navigable.md`](calendrier-navigable.md)
 
 ## Paliers non livrés (sans sujet dédié à ce stade)
 
@@ -201,13 +199,16 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
     lecture (retiré s44). *Expose enfin les transferts, invisibles par construction jusque-là.* →
     [`notifications-et-echange.md`](notifications-et-echange.md)
 
-15. **Imprévu & échange** *(**échange consenti LIVRÉ s47** ; imprévu dédié non livré)* — échange de
+15. **Imprévu & échange** *(**échange consenti LIVRÉ s47** ; **imprévu dédié LIVRÉ s48**)* — échange de
     dernière minute, transferts **dérivés automatiquement** par défaut. **Livré s47** : le **workflow
     demande / accord** (question longtemps ouverte) — `ProposerEchange` crée un `pending` **sans
     écriture**, `AccepterProposition` **compose la délégation s44** (surcharge + transfert dérivé s31),
-    `RefuserProposition` clôt sans écriture ; proposition **actionnable dans la cloche**. **Reste** :
-    **signalement d'imprévu dédié** (enfant malade / retard, entrée distincte de l'échange) et
-    l'extension plage / série / multi-enfants. → [`notifications-et-echange.md`](notifications-et-echange.md)
+    `RefuserProposition` clôt sans écriture ; proposition **actionnable dans la cloche**. **Livré s48** :
+    le **signalement d'imprévu dédié** (malade / retard, entrée distincte de l'échange) — cas
+    **non-négocié / informatif**, `SignalerImprevu` consigne au journal **sans toucher la résolution**,
+    notif cloche **sans action de suivi** (brique C). **Reste** : **action de suivi** (réagir à un
+    imprévu par un échange) et l'extension plage / série / multi-enfants. →
+    [`notifications-et-echange.md`](notifications-et-echange.md)
 
 16. **Ouverture de l'accès** — landing page et authentification des acteurs réels (email via Gmail /
     Apple / Microsoft) pour lever le risque mortel d'adoption. Débloque aussi la **personnalisation
@@ -282,9 +283,8 @@ métier touché — et sa condition de sortie a été tenue : **suite complète 
 
 ### Prochain sujet
 
-**Calendrier navigable** (`calendrier-navigable`, palier 9, épics É4 + É7) — faire de `/planning` un
-**agenda navigable** (déplacement passé/futur, vues prédéfinies semaine / mois / 4 semaines glissantes,
-**amorce de sélection de plage de cases** pour définir une période), **sans persistance neuve**.
-**Orientation de découpe (pas une règle, palier groupé)** : plus petit incrément probable = navigation
-seule ; sélection de plage = sujet plein cuttable en tranche 2 si débordement ~2h ; périmètre exact
-**tranché au make-gherkin**. C'est ce sujet qui réamorce `/2-make-gherkin` sur cette spec.
+**Calendrier navigable — SÉLECTION DE PLAGE** (`calendrier-navigable`, palier 9 tranche 2, épics
+É4 + É7). La **navigation passé/futur + vues** (tranche 1) sont **livrées s15** ; **reste** la
+**sélection de plage de cases** (drag / multi-jours) pour affecter une période sur l'**intervalle**,
+**sans persistance neuve**. **Séquencée s49** (après l'imprévu malade/retard s48). Périmètre exact
+**tranché au make-gherkin**.

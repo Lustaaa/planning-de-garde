@@ -35,7 +35,33 @@
 > la cloche s'y ajoute comme surface transverse.** Backlog et spec (`saisie-et-grille.md`, `notifications-et-echange.md`)
 > alignés sur cet amendement — plus de contradiction « seule surface ».
 
-**s47 `echange-proposition-accord` MERGÉ — attaque les paliers CLOCHE (11/14) + IMPRÉVU & ÉCHANGE (12/15) de la vision.**
+**s48 `imprevu-malade-retard` MERGÉ — SIGNALEMENT D'IMPRÉVU DÉDIÉ, cas NON-négocié / purement INFORMATIF (palier 15).**
+Complète l'échange consenti s47 (négocié, actionnable) par le cas **subi** : « l'enfant EST malade », « je serai en retard
+ce soir » — un **fait qu'on PRÉVIENT**, pas qu'on négocie. **AUCUNE surface neuve, AUCUN store neuf** (garde surface arbitrée
+AU CADRAGE : réutilise entrée menu clic-case + cloche s47 + journal `IJournalChangements` + diffusion porteuse de payload
+`INotificateurChangement`, 0 rework G3). **@back** : signaler un imprévu `{type: malade|retard, jour, enfant, acteur signalant,
+horodatage IDateTimeProvider}` **consigne au JOURNAL s47 SANS TOUCHER LA RÉSOLUTION** — invariant s47 tenu et **explicitement
+prouvé** (store des surcharges INTACT, aucune surcharge écrite, aucun transfert dérivé, aucune bascule de responsable, case
+STRICTEMENT inchangée, journal jamais lu par la résolution). Flux notifications trié par récence, **lu/non-lu PAR utilisateur**
++ compteur, **marquer-lu idempotent**. Cas limite : **motif optionnel vide accepté**, jour hors fenêtre chargée sans crash,
+prouvé sur **deux adaptateurs InMemory + Mongo durable**. Cas erreur : **type d'imprévu inconnu REFUSÉ AVANT écriture** (règle
+dans l'agrégat `Imprevu`, aucune écriture partielle). **@ihm** : entrée **« signaler un imprévu » du menu clic-case**
+(Parent-gated, à côté de « déléguer ce jour » s44 / « proposer un échange » s47), mini-dialog **malade/retard + motif optionnel**,
+**Échap = Annuler** (port `IEcouteurEchapModal` s33), émission par le **canal d'écriture** ; la notif apparaît dans la **cloche s47
+INFORMATIVE** (« X est malade le 12 » / « Y sera en retard le 12 »), lu/non-lu + marquer-lu, **SANS action de suivi** (pas
+d'accepter/refuser — non négociable, non-négligeable : c'est ce qui la distingue de l'échange s47) ; **temps réel** — la cloche
+d'un 2ᵉ écran converge **par reprojection client depuis la diffusion porteuse de payload, 0 GET sur push** (garde anti-flake
+[[flake-signalr-blast-radius]] respectée). **7/7 ✅**, gate G3 validé PO, **aucun retour produit** au gate. **Le candidat de
+tête « signalement d'imprévu (malade/retard) » est LIVRÉ.** **Hors scope s48** (backlog) : **action de suivi / réaction** à un
+imprévu (proposer un échange déclenché depuis la notif — dépend de l'échange s47 déjà livré), **notifications push / e-mail
+externes** (cloche in-app SignalR), **multi-enfants / plage / récurrence** du signalement (un imprévu = un jour, un enfant).
+**Candidats de tête au prochain `/planning`** : **action de suivi sur imprévu** (proposer un échange en réaction), **palier 9
+sélection de plage** (tranche 2, s49), **délégation récurrente/série** (D2), échange sur une **plage** / **multi-enfants**, reste
+Config foyer (édition depuis le graphe, graphe étendu, arbitrage inline vs modal, liste de slots par activité, lien adresse
+acteur↔lieu, suppression slot récurrent IHM, suppression d'un enfant) ; **P0 auth** (Google OAuth réel + écran
+définir-mot-de-passe).
+
+Précédent = **s47 `echange-proposition-accord` MERGÉ — attaque les paliers CLOCHE (11/14) + IMPRÉVU & ÉCHANGE (12/15) de la vision.**
 Sprint le plus lourd de la série (2 modèles neufs + surface + port de transport). **Brique A — CLOCHE GÉNÉRALE (palier
 11/14 « Immédiat & événements à venir »)** : read model d'événements de changement = **JOURNAL DE CHANGEMENTS append-only**
 derrière un port neuf **`IJournalChangements`**, **alimenté par CHAQUE handler d'écriture existant** (délégation s44, plage

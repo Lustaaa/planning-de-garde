@@ -382,6 +382,12 @@ else
                    recevant est notifié via sa cloche et ACCEPTE / REFUSE depuis la notification. *@
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-proposer-echange"
                         @onclick="@(() => OuvrirProposer(dateMenu))">Proposer un échange</button>
+                @* Entrée « signaler un imprévu » (s48) : « l'enfant est malade », « je serai en retard ». Ouvre le
+                   mini-dialog de choix du type (malade/retard) + motif optionnel sur la date de la case ;
+                   Parent-gated par construction (le menu ne s'ouvre que pour un Parent). Purement INFORMATIF : le
+                   signalement N'ÉCRIT AUCUNE surcharge (résolution inchangée) — la notification arrive dans la cloche. *@
+                <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-signaler-imprevu"
+                        @onclick="@(() => OuvrirSignalerImprevu(dateMenu))">Signaler un imprévu</button>
                 @* Entrée CONDITIONNELLE « reprendre ce jour » (s46, ferme la boucle undo s44/s45) : affichée
                    UNIQUEMENT quand la case cliquée porte une DÉLÉGATION ACTIVE (surcharge résolue), à côté de
                    « déléguer ce jour ». Ouvre le mini-dialog de confirmation ; la reprise transite par le canal
@@ -482,6 +488,14 @@ else
                            EnfantId="enfantProposer"
                            Acteurs="_acteursFoyer"
                            ActeursCharges="_acteursFoyerCharges"
+                           OnValide="FermerDialog"
+                           OnAnnule="FermerDialog" />
+}
+
+@if (_dateDialogSignalerImprevu is { } dateImprevu && _enfantSelectionne is { } enfantImprevu)
+{
+    <SignalerImprevuDialog DateContexte="dateImprevu"
+                           EnfantId="enfantImprevu"
                            OnValide="FermerDialog"
                            OnAnnule="FermerDialog" />
 }

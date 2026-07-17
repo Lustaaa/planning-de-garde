@@ -204,4 +204,11 @@ public static class CanalEcriture
     /// <summary>Corps de la requête ACCEPTER / REFUSER une proposition (s47) émise depuis la notification
     /// actionnable de la cloche : la clé est l'identifiant stable de la proposition.</summary>
     public sealed record RepondrePropositionRequete(string PropositionId);
+
+    /// <summary>Corps de la requête SIGNALER un imprévu (s48) émise depuis l'entrée « signaler un imprévu » du
+    /// menu clic-case : le jour visé, l'enfant, le TYPE (malade / retard), l'acteur SIGNALANT (identité de la
+    /// session) et un motif OPTIONNEL. Purement INFORMATIF : consigne une trace au journal (cloche s47), n'écrit
+    /// AUCUNE surcharge (résolution intacte). Refus métier (type inconnu) renvoyé — le mini-dialog reste ouvert.</summary>
+    public sealed record SignalerImprevuRequete(
+        DateOnly Jour, string EnfantId, PlanningDeGarde.Domain.TypeImprevu Type, string SignalantId, string Motif = "");
 }
