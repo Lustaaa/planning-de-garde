@@ -8,14 +8,14 @@
 > la sélection est un **état d'interaction client VOLATILE** (borne anti-cliquet). Enrichit la grille
 > **sans toucher aux dialogs déjà livrées**.
 
-## Avancement — 3/8
+## Avancement — 4/8
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | 1 | Filet non-régression : affecter une période sur un intervalle `[J1..J3]` pose la surcharge sur CHAQUE jour (réemploi s06, deux adaptateurs) | back | ✅ |
 | 2 | Filet : intervalle d'UN seul jour `[J..J]` = période ponctuelle inchangée, aucune écriture doublonnée | back | ✅ |
 | 3 | Nominal : drag de J1 à J3 → dialog « Affecter une période » EXISTANTE pré-remplie `début=J1 fin=J3` → valider écrit sur l'intervalle → grille converge | 🖥️ IHM | ✅ |
-| 4 | Limite : une seule case sans drag = **clic simple INCHANGÉ** (menu clic-case s'ouvre, PAS la dialog plage) | 🖥️ IHM | ⏳ |
+| 4 | Limite : une seule case sans drag = **clic simple INCHANGÉ** (menu clic-case s'ouvre, PAS la dialog plage) | 🖥️ IHM | ✅ |
 | 5 | Limite : drag en **sens inverse** (J3→J1) → intervalle **NORMALISÉ** `[min..max]`, dialog `début ≤ fin` (jamais plage vide/inversée) | 🖥️ IHM | ⏳ |
 | 6 | Limite : drag **débordant la fenêtre de vue** courante → sélection **BORNÉE à la vue chargée**, aucune case hors-vue, aucune navigation, aucune persistance | 🖥️ IHM | ⏳ |
 | 7 | Erreur/annulation : **Échap** pendant/après la sélection **ANNULE** (aucune dialog, aucune écriture, surbrillance retirée) — port `IEcouteurEchapModal` s33 | 🖥️ IHM | ⏳ |
@@ -93,7 +93,7 @@ Fonctionnalité: Sélection d'une plage de cases sur la grille agenda
     # Mené RED->GREEN runtime sur app câblée (store réel), pas de doublure de grille.
 ```
 
-### Sc.4 — `@ihm @pending` Limite : une seule case sans drag = clic simple inchangé
+### Sc.4 — `@ihm @vert` Limite : une seule case sans drag = clic simple inchangé
 
 ```gherkin
   Scénario: Un mousedown/mouseup sur la même case conserve le comportement de clic existant
