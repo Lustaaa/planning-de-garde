@@ -234,10 +234,14 @@
                 {
                     var jourCase = _grille.Jours[i];
                     var nomJour = JoursDeLaSemaine[i % 7];
-                    <div class="grille-horaire-col @(Session.EstParent ? "grille-horaire-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-horaire-selectionnee" : null) @(EstAujourdhui(jourCase.Date) ? "grille-horaire-aujourdhui" : null)"
+                    <div class="grille-horaire-col @(Session.EstParent ? "grille-horaire-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-horaire-selectionnee" : null) @(EstDansPlageDrag(jourCase.Date) ? "grille-horaire-plage-drag" : null) @(EstAujourdhui(jourCase.Date) ? "grille-horaire-aujourdhui" : null)"
                          data-testid="jour-case"
                          data-couleur="@jourCase.CouleurResponsable"
+                         data-plage-drag="@(EstDansPlageDrag(jourCase.Date) ? "1" : null)"
                          data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
+                         @onmousedown="@(() => DebutSelectionPlage(jourCase.Date))"
+                         @onmouseover="@(() => SurvolerCasePlage(jourCase.Date))"
+                         @onmouseup="FinSelectionPlage"
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
                         <div class="grille-horaire-entete">
                             <span class="grille-horaire-jour-nom">@nomJour</span>
@@ -303,10 +307,14 @@ else
             <div class="grille-semaine">
                 @foreach (var jourCase in semaine.Jours)
                 {
-                    <div class="grille-jour @(Session.EstParent ? "grille-jour-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-jour-selectionnee" : null) @(EstAujourdhui(jourCase.Date) ? "grille-jour-aujourdhui" : null)"
+                    <div class="grille-jour @(Session.EstParent ? "grille-jour-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-jour-selectionnee" : null) @(EstDansPlageDrag(jourCase.Date) ? "grille-jour-plage-drag" : null) @(EstAujourdhui(jourCase.Date) ? "grille-jour-aujourdhui" : null)"
                          data-testid="jour-case"
                          data-couleur="@jourCase.CouleurResponsable"
+                         data-plage-drag="@(EstDansPlageDrag(jourCase.Date) ? "1" : null)"
                          data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
+                         @onmousedown="@(() => DebutSelectionPlage(jourCase.Date))"
+                         @onmouseover="@(() => SurvolerCasePlage(jourCase.Date))"
+                         @onmouseup="FinSelectionPlage"
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
                         <div class="grille-jour-entete">
                             @* Transfert bicolore (s29, S13 — retour PO gate) : un jour portant un transfert
@@ -532,6 +540,11 @@ else
     .grille-jour-cliquable:hover { border-color: var(--pdg-accent); transform: translateY(-2px);
                                    box-shadow: 0 6px 16px rgba(16,24,40,.10); }
     .grille-jour-selectionnee { outline: 3px solid var(--pdg-accent); outline-offset: -3px; }
+    /* Surbrillance de la sélection de plage EN COURS (drag, s49) : teinte d'accent de REMPLISSAGE (pas une
+       simple bordure), recalculée à chaque survol sur [ancre..curseur]. Purement cliente, disparaît à fin de
+       geste / Échap / changement de vue. Un liseré d'accent renforce le repère sans écraser la pastille. */
+    .grille-jour-plage-drag { background: color-mix(in srgb, var(--pdg-accent) 20%, var(--pdg-card));
+                              outline: 2px solid var(--pdg-accent); outline-offset: -2px; }
     /* « Aujourd'hui » : liseré + halo d'accent indigo, sans écraser la pastille de responsabilité. */
     .grille-jour-aujourdhui { border-color: var(--pdg-accent);
                               box-shadow: 0 0 0 2px var(--pdg-accent-soft); }
@@ -571,6 +584,9 @@ else
     .grille-horaire-cliquable { cursor: pointer; }
     .grille-horaire-cliquable:hover { background: color-mix(in srgb, var(--pdg-accent) 5%, transparent); }
     .grille-horaire-selectionnee { outline: 3px solid var(--pdg-accent); outline-offset: -3px; }
+    /* Surbrillance de plage EN COURS (drag, s49) en vue horaire : même teinte d'accent de remplissage. */
+    .grille-horaire-plage-drag { background: color-mix(in srgb, var(--pdg-accent) 20%, var(--pdg-card));
+                                 outline: 2px solid var(--pdg-accent); outline-offset: -2px; }
     .grille-horaire-aujourdhui { background: var(--pdg-accent-soft); }
     .grille-horaire-entete { height: 64px; box-sizing: border-box; border-bottom: 1px solid var(--pdg-border);
                              display: flex; flex-direction: column; align-items: center; justify-content: center;
