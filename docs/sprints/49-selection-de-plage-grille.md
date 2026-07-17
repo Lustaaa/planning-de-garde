@@ -8,12 +8,12 @@
 > la sélection est un **état d'interaction client VOLATILE** (borne anti-cliquet). Enrichit la grille
 > **sans toucher aux dialogs déjà livrées**.
 
-## Avancement — 1/8
+## Avancement — 2/8
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | 1 | Filet non-régression : affecter une période sur un intervalle `[J1..J3]` pose la surcharge sur CHAQUE jour (réemploi s06, deux adaptateurs) | back | ✅ |
-| 2 | Filet : intervalle d'UN seul jour `[J..J]` = période ponctuelle inchangée, aucune écriture doublonnée | back | ⏳ |
+| 2 | Filet : intervalle d'UN seul jour `[J..J]` = période ponctuelle inchangée, aucune écriture doublonnée | back | ✅ |
 | 3 | Nominal : drag de J1 à J3 → dialog « Affecter une période » EXISTANTE pré-remplie `début=J1 fin=J3` → valider écrit sur l'intervalle → grille converge | 🖥️ IHM | ⏳ |
 | 4 | Limite : une seule case sans drag = **clic simple INCHANGÉ** (menu clic-case s'ouvre, PAS la dialog plage) | 🖥️ IHM | ⏳ |
 | 5 | Limite : drag en **sens inverse** (J3→J1) → intervalle **NORMALISÉ** `[min..max]`, dialog `début ≤ fin` (jamais plage vide/inversée) | 🖥️ IHM | ⏳ |
@@ -62,7 +62,7 @@ Fonctionnalité: Écriture d'une période sur un intervalle (chemin réutilisé 
     # Ce scénario est un FILET de non-régression du chemin d'écriture que la sélection réutilise.
 ```
 
-### Sc.2 — `@back @pending` Filet : intervalle d'un seul jour = période ponctuelle
+### Sc.2 — `@back @vert` Filet : intervalle d'un seul jour = période ponctuelle
 
 ```gherkin
   Scénario: Affecter une période sur [J..J] écrit exactement un jour, sans doublon
