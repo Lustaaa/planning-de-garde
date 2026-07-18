@@ -8,7 +8,7 @@
 > la sélection est un **état d'interaction client VOLATILE** (borne anti-cliquet). Enrichit la grille
 > **sans toucher aux dialogs déjà livrées**.
 
-## Avancement — 5/8
+## Avancement — 6/8
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -17,7 +17,7 @@
 | 3 | Nominal : drag de J1 à J3 → dialog « Affecter une période » EXISTANTE pré-remplie `début=J1 fin=J3` → valider écrit sur l'intervalle → grille converge | 🖥️ IHM | ✅ |
 | 4 | Limite : une seule case sans drag = **clic simple INCHANGÉ** (menu clic-case s'ouvre, PAS la dialog plage) | 🖥️ IHM | ✅ |
 | 5 | Limite : drag en **sens inverse** (J3→J1) → intervalle **NORMALISÉ** `[min..max]`, dialog `début ≤ fin` (jamais plage vide/inversée) | 🖥️ IHM | ✅ |
-| 6 | Limite : drag **débordant la fenêtre de vue** courante → sélection **BORNÉE à la vue chargée**, aucune case hors-vue, aucune navigation, aucune persistance | 🖥️ IHM | ⏳ |
+| 6 | Limite : drag **débordant la fenêtre de vue** courante → sélection **BORNÉE à la vue chargée**, aucune case hors-vue, aucune navigation, aucune persistance | 🖥️ IHM | ✅ |
 | 7 | Erreur/annulation : **Échap** pendant/après la sélection **ANNULE** (aucune dialog, aucune écriture, surbrillance retirée) — port `IEcouteurEchapModal` s33 | 🖥️ IHM | ⏳ |
 | 8 | Gating : **Invité** (non-Parent) ne peut PAS sélectionner (drag inerte, aucune dialog) ; **Parent** seul sélectionne | 🖥️ IHM | ⏳ |
 
@@ -113,7 +113,7 @@ Fonctionnalité: Sélection d'une plage de cases sur la grille agenda
     Et jamais avec une plage inversée ou vide
 ```
 
-### Sc.6 — `@ihm @pending` Limite : débordement borné à la vue, sans persistance
+### Sc.6 — `@ihm @vert` Limite : débordement borné à la vue, sans persistance
 
 ```gherkin
   Scénario: Un drag qui déborde la fenêtre de vue reste borné à la vue chargée

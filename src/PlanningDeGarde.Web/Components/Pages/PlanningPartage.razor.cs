@@ -357,6 +357,11 @@ public partial class PlanningPartage
     /// pas de l'état) et le bandeau d'échec levé — même pivot que la navigation (Sc.6). Aucune écriture.</summary>
     private async Task ChangerVueAsync(ChangeEventArgs e)
     {
+        // La sélection de plage est un état d'interaction VOLATILE (borne anti-cliquet, s49 Sc.6) : elle ne
+        // survit pas à une re-projection. Un changement de vue l'EFFACE — l'ancre/curseur du geste en cours
+        // sont vidés avant de re-projeter, si bien qu'aucune surbrillance de plage ne persiste sur la nouvelle vue.
+        _ancreDrag = null;
+        _curseurDrag = null;
         var vueAvant = Session.Vue;
         Session.Vue = VueDepuisCode(e.Value?.ToString());
         await ReprojeterAsync(() => Session.Vue = vueAvant);
