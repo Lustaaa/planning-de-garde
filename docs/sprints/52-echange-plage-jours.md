@@ -5,7 +5,7 @@
 > consenti). **Miroir EXACT de la progression s44→s45** (la délégation directe est passée du jour
 > unique à la plage), transposée au **workflow d'échange consenti s47**.
 
-## Avancement — 5/10
+## Avancement — 6/10
 
 | # | Scénario | Type | Statut |
 |--:|---|---|:--:|
@@ -14,7 +14,7 @@
 | 3 | Accepter COMPOSE la délégation-plage s45 (surcharge multi-jours + transferts aux 2 frontières) | @back | ✅ |
 | 4 | Refuser retire SANS écriture → `refusé`, store intact | @back | ✅ |
 | 5 | Bornes refusées AVANT écriture (fin<début / soi-même / délégataire inconnu-orphelin) | @back | ✅ |
-| 6 | Ré-proposition = last-write-wins R11 sans doublon · `fin` hors fenêtre sans crash | @back | ⏳ |
+| 6 | Ré-proposition = last-write-wins R11 sans doublon · `fin` hors fenêtre sans crash | @back | ✅ |
 | 7 | Champ « jusqu'au » dans `ProposerEchangeDialog` (miroir s45), Parent-gated | @ihm | ⏳ |
 | 8 | Notif d'échange de plage ACTIONNABLE dans la cloche (Accepter/Refuser) chez le recevant | @ihm | ⏳ |
 | 9 | Échap = Annuler (port s33) · refus domaine → dialog reste ouverte + motif + saisie conservée | @ihm | ⏳ |
@@ -129,7 +129,7 @@ Scénario 5 — Bornes refusées AVANT écriture, sans écriture partielle
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 6 — Ré-proposition last-write-wins R11 · fin hors fenêtre sans crash
   Étant donné une Proposition pending sur [J1..J3] vers un délégataire A
   Quand une nouvelle proposition sur [J1..J3] est faite vers un délégataire B
