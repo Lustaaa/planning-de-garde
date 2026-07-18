@@ -84,6 +84,89 @@
                 }
             };
         })();
+
+        // Module d'écoute du RELÂCHEMENT du pointeur au niveau DOCUMENT (s49, correctif du gate G3 : le drag
+        // multi-jours de la grille ne fonctionnait pas en navigateur réel), consommé par le port
+        // IEcouteurRelachementPointeur via JS interop. La capture est au niveau DOCUMENT (jamais un
+        // @onmouseup/@onpointerup sur la case seule : relâcher le bouton HORS d'une case — gouttière, au-delà
+        // du bord, sur le document — n'atteint pas le handler de la case, et la plage n'est jamais finalisée).
+        // attacher : pose un document.addEventListener('pointerup') rappelant .NET (Declencher → FinSelectionPlage,
+        // qui n'agit que si une sélection est armée) et renvoie un id opaque. detacher : retire CE listener (par id).
+        window.pdgPointeur = (function () {
+            var registre = new Map();
+            var seq = 0;
+
+            // CEINTURE anti-sélection-native (s49, 2ᵉ passe du gate G3) : même quand user-select:none est
+            // posé en CSS, les événements SOURIS de compatibilité déclenchés pendant un geste de POINTEUR
+            // peuvent encore démarrer une sélection de texte / un drag natif sur les cases de la grille
+            // (le texte se surligne en bleu, les pointerover/pointerup intermédiaires sont avalés et le
+            // drag de plage ne s'installe pas). On empêche donc DÉFINITIVEMENT le démarrage de sélection
+            // (selectstart) et le drag natif (dragstart) — MAIS UNIQUEMENT lorsque l'événement part d'une
+            // surface de grille ([data-testid="grille-agenda"]) : la sélection de texte reste normale
+            // partout ailleurs (copier un libellé, une notification…). Attaché une seule fois au niveau
+            // document (le geste peut sortir d'une case), jamais retiré (coût nul hors grille).
+            var empecherSelectionSurGrille = function (e) {
+                var cible = e.target;
+                if (cible && cible.closest && cible.closest('[data-testid="grille-agenda"]')) {
+                    e.preventDefault();
+                }
+            };
+            document.addEventListener('selectstart', empecherSelectionSurGrille);
+            document.addEventListener('dragstart', empecherSelectionSurGrille);
+
+            // Résolution de la case sous un point écran (s49, 2ᵉ correctif du gate G3 : le drag ne surlignait
+            // AUCUNE case intermédiaire en navigateur réel). Le survol NE PEUT PAS reposer sur les
+            // @onpointerover posés par case : pendant un glisser souris ils sont fragiles / manqués, et la
+            // moindre capture de pointeur les court-circuiterait. On résout donc la case sous le curseur au
+            // niveau DOCUMENT : document.elementFromPoint(x, y) → plus proche [data-testid="jour-case"] →
+            // lit son identifiant de jour (data-date). Renvoie null hors d'une case (gouttière, bord, dehors).
+            var dateCaseSousPoint = function (x, y) {
+                var el = document.elementFromPoint(x, y);
+                var caseJour = el && el.closest ? el.closest('[data-testid="jour-case"]') : null;
+                return caseJour ? caseJour.getAttribute('data-date') : null;
+            };
+
+            return {
+                attacher: function (dotNetRef) {
+                    var id = ++seq;
+                    var handler = function () {
+                        dotNetRef.invokeMethodAsync('Declencher');
+                    };
+                    document.addEventListener('pointerup', handler);
+                    registre.set(id, handler);
+                    return id;
+                },
+                detacher: function (id) {
+                    var handler = registre.get(id);
+                    if (handler) {
+                        document.removeEventListener('pointerup', handler);
+                        registre.delete(id);
+                    }
+                },
+                // Écoute du MOUVEMENT du pointeur au niveau DOCUMENT (s49) : à chaque déplacement BOUTON APPUYÉ
+                // (e.buttons & 1 — un simple survol sans bouton ne compte pas, aucune inondation d'interop hors
+                // geste), résout la case sous le curseur (elementFromPoint) et remonte son data-date au .NET
+                // (Survoler(date), date=null hors case). C'est LA voie fiable du drag continu — indépendante des
+                // @onpointerover par case et de toute capture de pointeur. Attaché au document (le geste sort des cases).
+                attacherMouvement: function (dotNetRef) {
+                    var id = ++seq;
+                    var handler = function (e) {
+                        if (!(e.buttons & 1)) return; // seul un glisser bouton primaire appuyé arme le survol
+                        dotNetRef.invokeMethodAsync('Survoler', dateCaseSousPoint(e.clientX, e.clientY));
+                    };
+                    document.addEventListener('pointermove', handler);
+                    registre.set(id, handler);
+                    return id;
+                },
+                detacherMouvement: function (id) {
+                    var handler = registre.get(id);
+                    if (handler) {
+                        document.removeEventListener('pointermove', handler);
+                        registre.delete(id);
+                    }
+                }
+            };
+        })();
     </script>
 </head>
 

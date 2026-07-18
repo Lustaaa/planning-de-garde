@@ -160,6 +160,26 @@ a, .btn-link {
 .content .legende { background: var(--pdg-card); border-color: var(--pdg-border); border-radius: 12px; }
 .content .legende-titre { color: var(--pdg-muted); text-transform: uppercase; font-size: .72rem; letter-spacing: .04em; }
 
+/* Neutralisation INCONDITIONNELLE de la sélection de texte native sur les surfaces de GRILLE
+   (correctif gate G3 s49 — 2ᵉ passe). CAUSE du gate raté : au glisser souris, le navigateur démarrait
+   une SÉLECTION DE TEXTE native (les cases portent jour / date / responsable) qui avalait les
+   pointerover/pointerup intermédiaires → aucune case survolée n'était surlignée, le relâchement
+   n'ouvrait pas la dialog, et le drag de plage ne s'installait pas. Le remède `user-select:none`
+   vivait UNIQUEMENT dans un `<style>` inline du composant (livré via la DLL WASM, ABSENT de tout .css
+   servi — invisible à curl app.css / PlanningDeGarde.Web.styles.css) et ne couvrait pas de façon
+   certaine les descendants texte au repos. On le pose ici en CSS GLOBAL (servi par app.css), au REPOS,
+   sur le conteneur de grille ET TOUS ses descendants (les spans de texte inclus) — clair ET sombre.
+   La ceinture JS selectstart/dragstart (index.html, module pdgPointeur) achève la neutralisation quand
+   user-select est contourné par les événements souris de compatibilité pendant le geste de pointeur. */
+.grille-agenda, .grille-agenda *,
+.grille-horaire, .grille-horaire * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
+}
+
 /* En-tête de domaine de la barre latérale : marque + sous-titre « garde des enfants ». */
 .pdg-brand { display: flex; flex-direction: column; line-height: 1.1; }
 .pdg-brand-titre { font-weight: 700; letter-spacing: -0.01em; }

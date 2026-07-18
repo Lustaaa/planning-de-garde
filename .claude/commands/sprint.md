@@ -51,7 +51,26 @@ Quand la `dev-team` renvoie `{ "type":"question", … }` :
 5. **Gate visuel — porte G3 (IMPÉRATIVE, direct PO).**
    1. **Prouve back + IHM up** : `pwsh -NoProfile -File .claude/skills/dotnet/scripts/test.ps1 -Serial`
       (suite COMPLÈTE, **assemblies sérialisées = mode gate par défaut**, s37) puis **lance l'app** en tâche
-      de fond via `pwsh .claude/skills/run/scripts/run.ps1`. **Pourquoi `-Serial` au gate** : le flake P1
+      de fond via `pwsh .claude/skills/run/scripts/run.ps1`.
+
+      **GARANTIR que le build SERVI = source courante AVANT de solliciter le PO (obligatoire).** Quand l'app
+      est servie via Docker, le service `build` **one-shot** compile le Web dans un volume nommé
+      (`build-artifacts`) et le conteneur `web` sert `--no-build` **depuis ce volume** : un conteneur non
+      recréé **ressert un artefact WASM PÉRIMÉ**, antérieur au câblage du sprint courant, et les **hard
+      refresh du PO ne changent RIEN** (c'est le serveur qui livre l'ancien binaire). **Recompiler le build
+      servi** avant le gate : `docker compose up build --force-recreate` (recompile la source courante dans le
+      volume) puis `docker compose up -d --force-recreate web api` (ressert les binaires frais) — ou
+      l'équivalent selon `run.ps1`. **Sinon le PO teste du vieux code → allers-retours FANTÔMES** (correctifs
+      inutiles alors que la source était déjà correcte). *(Récit : JOURNAL-METHODE s49 — 3 échecs G3 sur un
+      build servi périmé.)*
+
+      **Geste navigateur (drag souris, `elementFromPoint`, interop JS) → SMOKE Playwright, jamais itérer à
+      l'aveugle via le PO.** Ces gestes sont **HORS de portée de bUnit** (qui n'exécute ni le geste souris
+      natif ni `addEventListener`/`elementFromPoint`). Prévoir un **smoke test navigateur** (projet
+      `tests/PlanningDeGarde.Web.E2E`, Playwright/Chromium réel, **hors `.slnx`**) pour **observer** le
+      symptôme sur l'app servie plutôt que de coder des correctifs à l'aveugle au gate. *(Récit : s49.)*
+
+      **Pourquoi `-Serial` au gate** : le flake P1
       *TempsReel* qui motivait ce mode est **soldé à la cause s39** (collection xUnit `SignalRTempsReelCollection`
       sur les 55 `FrontWasm*TempsReel*` ; parallèle mesuré **0 % rouge sur 12 runs**). `-Serial` **reste** au gate
       en **ceinture + bretelles** (coût quasi nul, supprime tout résidu de course cross-assembly sous machine

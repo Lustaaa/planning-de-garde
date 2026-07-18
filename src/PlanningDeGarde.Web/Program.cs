@@ -49,6 +49,17 @@ builder.Services.AddScoped<RestaurateurSession>();
 // Adaptateur de bord, aucune règle métier.
 builder.Services.AddScoped<IEcouteurEchapModal, EcouteurEchapModalJs>();
 
+// Écoute du RELÂCHEMENT du pointeur au niveau DOCUMENT (s49, correctif du gate G3) : la sélection de plage
+// par drag est finalisée même si le bouton est relâché HORS d'une case, via le module JS window.pdgPointeur
+// (document.addEventListener('pointerup')). Adaptateur de bord, aucune règle métier.
+builder.Services.AddScoped<IEcouteurRelachementPointeur, EcouteurRelachementPointeurJs>();
+
+// Écoute du MOUVEMENT du pointeur au niveau DOCUMENT (s49, 2ᵉ correctif du gate G3) : pendant un drag, la case
+// sous le curseur est résolue par document.elementFromPoint (module JS window.pdgPointeur) et remontée au
+// composant, qui met à jour le curseur de sélection — voie FIABLE, indépendante des @onpointerover par case
+// (fragiles/manqués pendant un glisser). Adaptateur de bord, aucune règle métier.
+builder.Services.AddScoped<IEcouteurMouvementPointeur, EcouteurMouvementPointeurJs>();
+
 // Câblage de la connexion au hub SignalR de lecture. Neutre en WASM réel (le navigateur négocie
 // en WebSocket vers l'API distante) ; surchargeable par un hôte de test pour pointer son TestServer.
 builder.Services.AddSingleton(new OptionsConnexionHub());

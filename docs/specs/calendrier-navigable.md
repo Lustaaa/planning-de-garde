@@ -2,8 +2,8 @@
 
 > Sujet **migré** depuis `docs/15-specification.md` (palier 9, épics É4 + É7) à la migration complète
 > des specs. Source de vérité pour la **navigation passé/futur**, les **vues prédéfinies** et la
-> **sélection de plage de cases**. **NAVIGATION + VUES LIVRÉES s15** ; **seule la sélection de plage
-> reste non livrée (tranche 2).** Édité en diff, jamais réécrit en bloc.
+> **sélection de plage de cases**. **NAVIGATION + VUES LIVRÉES s15** ; **SÉLECTION DE PLAGE (tranche 2)
+> LIVRÉE s49 → palier 9 COMPLET.** Édité en diff, jamais réécrit en bloc.
 
 ## Contexte
 
@@ -11,10 +11,25 @@
 **passé/futur** (`PlanningPartage.razor` — boutons `nav-semaine-precedente` / `nav-semaine-suivante` /
 `nav-aujourdhui`) et **vues prédéfinies** (semaine / 4 semaines glissantes / mois — `selecteur-vue`),
 la fenêtre étant résolue par `GrilleAgendaQuery.Projeter(ancre, vue)` sur `SessionPlanning`
-(**état de navigation NON persisté** — borne anti-cliquet). **Reste NON LIVRÉ = la SÉLECTION DE PLAGE
-de cases** (tranche 2) pour affecter une période sur l'**intervalle** choisi (l'affectation par plage
-rouvre l'écriture en contexte sur plusieurs jours d'un coup) — enrichit la grille **sans toucher aux
-mécaniques d'écriture déjà livrées** (dialogs), **aucune persistance tirée en avant**.
+(**état de navigation NON persisté** — borne anti-cliquet).
+
+**SÉLECTION DE PLAGE LIVRÉE (s49, tranche 2 — palier 9 COMPLET).** La grille gagne la **sélection d'une
+plage de cases par DRAG** pour affecter une période sur l'**intervalle** choisi. **Réemploi STRICT** de la
+dialog « Affecter une période » (écriture-en-contexte s06) : elle est **pré-remplie** avec l'intervalle
+sélectionné, **aucune mécanique d'écriture / DTO / store neuf** ; le back multi-jours existe déjà (une
+période EST un intervalle `[début..fin]`). La sélection est un **état d'interaction client VOLATILE**
+(**aucune persistance** — borne anti-cliquet ; effacée au changement de vue / rechargement / Échap).
+**Mécanique** : `pointerdown` pose l'**ancre**, `pointermove` résolu au niveau **DOCUMENT** (port
+`IEcouteurMouvementPointeur`, `document.elementFromPoint` → `data-date` de la case survolée) met à jour la
+surbrillance **`[min..max]`**, `pointerup` **document** (port `IEcouteurRelachementPointeur`) finalise **où
+que le bouton soit lâché** et ouvre la dialog ; `user-select:none` / `touch-action:none` / `draggable=false`
+neutralisent la sélection de texte native. **Contrat** : seuil **clic simple vs plage** (une case sans
+déplacement = menu clic-case inchangé, PAS la dialog plage), **normalisation `[min..max]`** (drag sens
+inverse J3→J1 → `début ≤ fin`), **bornage à la vue chargée** (drag débordant → aucune case hors-vue, aucune
+navigation), **Échap** annule (port `IEcouteurEchapModal` s33, capture document), **Parent-gated** (Invité =
+drag inerte). **Preuve** : @ihm menés RED→GREEN runtime + **projet E2E Playwright** `tests/PlanningDeGarde.Web.E2E`
+(**HORS `.slnx`**, Chromium réel) figeant le geste sur l'app servie — bUnit reste **aveugle** au geste souris
+natif / `elementFromPoint` (limite honnête, comme l'Échap document s33).
 
 ## Objectif & arbitrage
 
@@ -25,12 +40,12 @@ navigation / s03), **rang +2** du backlog, tranché en **porte G2** par le PO. D
 
 ## Séquence
 
-**Palier 9 — NAVIGATION + VUES LIVRÉES s15 ; SÉLECTION DE PLAGE = tranche 2 restante.** La tranche 1
+**Palier 9 — COMPLET (navigation + vues s15 ; sélection de plage s49).** La tranche 1
 (navigation passé/futur + vues semaine / 4 semaines glissantes / mois + état non persisté) est **livrée
-au sprint 15**. La tranche 2 = **sélection de plage** (drag / sélection multi-jours pour affecter une
-période sur l'intervalle) **reste non livrée** (séquencée s49). **Périmètre exact tranché au
-make-gherkin** (corollaire de découpe). Sujet `/2-make-gherkin` = `calendrier-navigable`. Texte
-complet : [`sequence-de-livraison.md` § palier 9](sequence-de-livraison.md).
+au sprint 15**. La tranche 2 = **sélection de plage par DRAG** (multi-jours pour affecter une période sur
+l'intervalle, réemploi s06) est **livrée au sprint 49**. **Restent hors palier 9** (backlog) : plage vide /
+chevauchement riches, plage à cheval sur plusieurs vues / mois (navigation pendant le drag), sélection
+persistée. Texte complet : [`sequence-de-livraison.md` § palier 9](sequence-de-livraison.md).
 
 ## Mécaniques (cibles)
 
@@ -47,7 +62,7 @@ complet : [`sequence-de-livraison.md` § palier 9](sequence-de-livraison.md).
 
 - **R14** (texte canonique : [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md)) — la
   **sélection d'une plage de cases** pour affecter une période sur l'intervalle est une **capacité du
-  palier 9**, non encore livrée.
+  palier 9**, **livrée s49** (drag → dialog « Affecter une période » s06 pré-remplie sur `[min..max]`).
 
 ## Risques
 
