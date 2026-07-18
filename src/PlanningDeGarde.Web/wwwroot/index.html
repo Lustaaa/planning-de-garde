@@ -114,6 +114,18 @@
             document.addEventListener('selectstart', empecherSelectionSurGrille);
             document.addEventListener('dragstart', empecherSelectionSurGrille);
 
+            // Résolution de la case sous un point écran (s49, 2ᵉ correctif du gate G3 : le drag ne surlignait
+            // AUCUNE case intermédiaire en navigateur réel). Le survol NE PEUT PAS reposer sur les
+            // @onpointerover posés par case : pendant un glisser souris ils sont fragiles / manqués, et la
+            // moindre capture de pointeur les court-circuiterait. On résout donc la case sous le curseur au
+            // niveau DOCUMENT : document.elementFromPoint(x, y) → plus proche [data-testid="jour-case"] →
+            // lit son identifiant de jour (data-date). Renvoie null hors d'une case (gouttière, bord, dehors).
+            var dateCaseSousPoint = function (x, y) {
+                var el = document.elementFromPoint(x, y);
+                var caseJour = el && el.closest ? el.closest('[data-testid="jour-case"]') : null;
+                return caseJour ? caseJour.getAttribute('data-date') : null;
+            };
+
             return {
                 attacher: function (dotNetRef) {
                     var id = ++seq;
@@ -128,6 +140,28 @@
                     var handler = registre.get(id);
                     if (handler) {
                         document.removeEventListener('pointerup', handler);
+                        registre.delete(id);
+                    }
+                },
+                // Écoute du MOUVEMENT du pointeur au niveau DOCUMENT (s49) : à chaque déplacement BOUTON APPUYÉ
+                // (e.buttons & 1 — un simple survol sans bouton ne compte pas, aucune inondation d'interop hors
+                // geste), résout la case sous le curseur (elementFromPoint) et remonte son data-date au .NET
+                // (Survoler(date), date=null hors case). C'est LA voie fiable du drag continu — indépendante des
+                // @onpointerover par case et de toute capture de pointeur. Attaché au document (le geste sort des cases).
+                attacherMouvement: function (dotNetRef) {
+                    var id = ++seq;
+                    var handler = function (e) {
+                        if (!(e.buttons & 1)) return; // seul un glisser bouton primaire appuyé arme le survol
+                        dotNetRef.invokeMethodAsync('Survoler', dateCaseSousPoint(e.clientX, e.clientY));
+                    };
+                    document.addEventListener('pointermove', handler);
+                    registre.set(id, handler);
+                    return id;
+                },
+                detacherMouvement: function (id) {
+                    var handler = registre.get(id);
+                    if (handler) {
+                        document.removeEventListener('pointermove', handler);
                         registre.delete(id);
                     }
                 }

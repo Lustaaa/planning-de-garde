@@ -27,12 +27,13 @@ public sealed class FrontWasmSelectionPlageDragInverseTempsReelTests : TestConte
         // (fenêtre 4 semaines démarrant au lundi 08/06).
         using var api = new ApiDistanteFactory();
         var relachement = GrilleRuntimeHarness.DoublerRelachementPointeur(this);
+        var mouvement = GrilleRuntimeHarness.DoublerMouvementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
 
-        // When — pointerdown sur J3 (11/06), survol (pointerover) jusqu'à J1 (09/06) : SENS INVERSE. La
-        // surbrillance couvre néanmoins J1, J2, J3 (intervalle normalisé, identique au sens direct).
+        // When — pointerdown sur J3 (11/06), MOUVEMENT du pointeur (document, elementFromPoint) jusqu'à J1 (09/06) :
+        // SENS INVERSE. La surbrillance couvre néanmoins J1, J2, J3 (intervalle normalisé, identique au sens direct).
         this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerOver());
+        this.SurDispatcher(() => GrilleRuntimeHarness.SurvolerCaseParPointeurDocument(mouvement, grille, "09/06"));
 
         grille.WaitForAssertion(
             () =>

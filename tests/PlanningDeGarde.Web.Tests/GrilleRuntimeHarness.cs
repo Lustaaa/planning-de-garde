@@ -277,4 +277,67 @@ internal static class GrilleRuntimeHarness
         ctx.Services.AddSingleton<IEcouteurRelachementPointeur>(espion);
         return espion;
     }
+
+    /// <summary>
+    /// Double à la main (spy) du port <see cref="IEcouteurMouvementPointeur"/> (s49, 2ᵉ correctif du gate G3 : le
+    /// drag ne surlignait AUCUNE case intermédiaire en navigateur RÉEL). En navigateur réel, le survol des cases
+    /// pendant un glisser est résolu au niveau <b>document</b> (<c>pointermove</c> → <c>elementFromPoint</c> → plus
+    /// proche <c>[data-testid="jour-case"]</c> → son <c>data-date</c>), JAMAIS par un <c>@onpointerover</c> posé sur
+    /// la case (fragile / manqué pendant un glisser, court-circuité par toute capture de pointeur). bUnit ne peut
+    /// pas exécuter <c>elementFromPoint</c> ; le spy capte le callback d'attache et le rejoue avec le <c>data-date</c>
+    /// RÉEL lu sur la case cible (via <see cref="SurvolerCaseParPointeurDocument"/>) — reproduisant fidèlement la
+    /// VOIE d'événement réelle (résolution au document), à défaut du geste souris natif qu'aucun harnais bUnit ne
+    /// peut simuler (limite documentée au tableau du sprint : vérifié manuellement au gate).
+    /// </summary>
+    public sealed class EspionMouvementPointeur : IEcouteurMouvementPointeur
+    {
+        private Func<string?, System.Threading.Tasks.Task>? _onSurvol;
+        public int Attachements { get; private set; }
+
+        public System.Threading.Tasks.ValueTask<IAsyncDisposable> EcouterAsync(Func<string?, System.Threading.Tasks.Task> onSurvolCase)
+        {
+            Attachements++;
+            _onSurvol = onSurvolCase;
+            return System.Threading.Tasks.ValueTask.FromResult<IAsyncDisposable>(new Abonnement(this));
+        }
+
+        /// <summary>Rejoue un <c>pointermove</c> document : le JS aurait résolu la case sous le curseur par
+        /// <c>elementFromPoint</c> et remonté son <c>data-date</c> (ou <c>null</c> hors case).</summary>
+        public System.Threading.Tasks.Task DeplacerVersCase(string? dataDate)
+            => _onSurvol?.Invoke(dataDate) ?? System.Threading.Tasks.Task.CompletedTask;
+
+        private sealed class Abonnement : IAsyncDisposable
+        {
+            private readonly EspionMouvementPointeur _espion;
+            public Abonnement(EspionMouvementPointeur espion) => _espion = espion;
+            public System.Threading.Tasks.ValueTask DisposeAsync()
+            {
+                _espion._onSurvol = null;
+                return System.Threading.Tasks.ValueTask.CompletedTask;
+            }
+        }
+    }
+
+    /// <summary>Enregistre le spy du port de mouvement document (à appeler AVANT <see cref="RendreGrille"/>).</summary>
+    public static EspionMouvementPointeur DoublerMouvementPointeur(Bunit.TestContext ctx)
+    {
+        var espion = new EspionMouvementPointeur();
+        ctx.Services.AddSingleton<IEcouteurMouvementPointeur>(espion);
+        return espion;
+    }
+
+    /// <summary>
+    /// Rejoue le survol RÉEL d'une case pendant le drag par la VOIE de production (pointermove document) : lit le
+    /// <c>data-date</c> effectivement rendu sur la case d'en-tête <paramref name="jjMM"/> (exactement ce que
+    /// <c>elementFromPoint</c> résoudrait sous le curseur) et le remonte au composant via le spy du port document.
+    /// N'utilise JAMAIS un <c>@onpointerover</c> de case (voie fragile écartée au gate G3). Significativité : si la
+    /// case ne portait pas de <c>data-date</c> ou si le composant n'écoutait pas le mouvement document, le curseur
+    /// ne bougerait pas et aucune surbrillance n'apparaîtrait.
+    /// </summary>
+    public static void SurvolerCaseParPointeurDocument(
+        EspionMouvementPointeur espion, IRenderedComponent<PlanningPartage> grille, string jjMM)
+    {
+        var dataDate = CaseDuJour(grille, jjMM).GetAttribute("data-date");
+        espion.DeplacerVersCase(dataDate).GetAwaiter().GetResult();
+    }
 }

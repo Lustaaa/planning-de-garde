@@ -36,6 +36,7 @@ public sealed class FrontWasmSelectionPlageDragNominalTempsReelTests : TestConte
         // = mercredi 10/06/2026 (fenêtre 4 semaines démarrant au lundi 08/06). Les cases J1..J3 sont neutres.
         using var api = new ApiDistanteFactory();
         var relachement = GrilleRuntimeHarness.DoublerRelachementPointeur(this);
+        var mouvement = GrilleRuntimeHarness.DoublerMouvementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
         Assert.Null(GrilleRuntimeHarness.CaseDuJour(grille, "09/06").QuerySelector("[data-testid='nom-responsable']"));
         Assert.Null(GrilleRuntimeHarness.CaseDuJour(grille, "11/06").QuerySelector("[data-testid='nom-responsable']"));
@@ -43,11 +44,12 @@ public sealed class FrontWasmSelectionPlageDragNominalTempsReelTests : TestConte
         // SÉLECTION DE TEXTE native (user-select:none) — sans elle, le glisser souris est avalé en navigateur réel.
         Assert.Contains("grille-plage-selectionnable", GrilleRuntimeHarness.CaseDuJour(grille, "09/06").ClassList);
 
-        // When — pointerdown sur J1 (09/06), survol (pointerover) jusqu'à J3 (11/06) : les 3 cases sont en
-        // surbrillance. La voie d'événement est celle des POINTER EVENTS (fiable pour un drag continu), et non
-        // plus les mouse events (avalés par la sélection de texte native — cause du gate G3 échoué).
+        // When — pointerdown sur J1 (09/06), puis MOUVEMENT du pointeur jusqu'à J3 (11/06) : les 3 cases sont en
+        // surbrillance. La voie d'événement est celle du 2ᵉ correctif du gate G3 : le survol est résolu au niveau
+        // DOCUMENT (pointermove → elementFromPoint → data-date de la case), JAMAIS un @onpointerover de case (que
+        // le navigateur réel manque pendant un glisser / court-circuite sous capture de pointeur).
         this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
+        this.SurDispatcher(() => GrilleRuntimeHarness.SurvolerCaseParPointeurDocument(mouvement, grille, "11/06"));
 
         grille.WaitForAssertion(
             () =>

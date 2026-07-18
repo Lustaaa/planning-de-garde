@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Json;
@@ -92,9 +93,10 @@ public partial class PlanningPartage
     private DateOnly? _plageFin;
     // Sélection de plage par DRAG (s49, tranche 2 palier 9) — affordance tranchée par le scrum-master :
     // la GRILLE est la seule surface. État d'interaction VOLATILE (jamais persisté, borne anti-cliquet) :
-    // mousedown pose l'ANCRE, le survol met à jour le CURSEUR, mouseup ouvre la dialog EXISTANTE « Affecter
-    // une période » (s06) pré-remplie sur l'intervalle normalisé [min, max]. Effacé à fin de geste / Échap /
-    // changement de vue / rechargement. Aucun store, aucune persistance, aucune surface de lecture neuve.
+    // pointerdown pose l'ANCRE, le MOUVEMENT du pointeur (capté au niveau DOCUMENT, résolu par elementFromPoint
+    // → data-date de la case sous le curseur, port s49) met à jour le CURSEUR, pointerup (document) ouvre la
+    // dialog EXISTANTE « Affecter une période » (s06) pré-remplie sur l'intervalle normalisé [min, max]. Effacé
+    // à fin de geste / Échap / changement de vue / rechargement. Aucun store, aucune persistance, aucune lecture neuve.
     private DateOnly? _ancreDrag;
     private DateOnly? _curseurDrag;
     // Avertissement de chevauchement « à part » (Sc.7, règle 16) : pose acceptée mais signalée, bandeau
@@ -164,6 +166,12 @@ public partial class PlanningPartage
     // avant l'attache et manquerait sa finalisation). Le callback FinSelectionPlage ne fait rien sans sélection
     // armée. Détaché à la fermeture de la page (aucune fuite).
     private IAsyncDisposable? _abonnementRelachement;
+
+    // Abonnement à l'écouteur de MOUVEMENT du pointeur au niveau document (s49, 2ᵉ correctif du gate G3) :
+    // attaché EAGER au premier rendu (comme le relâchement). Pendant un drag, chaque déplacement bouton-appuyé
+    // remonte le data-date de la case sous le curseur (résolu par elementFromPoint côté JS) → SurvolerCasePlageParDate,
+    // qui met à jour le curseur. Le callback ne fait rien sans sélection armée. Détaché à la fermeture (aucune fuite).
+    private IAsyncDisposable? _abonnementMouvement;
 
     protected override async Task OnInitializedAsync()
     {
@@ -266,6 +274,10 @@ public partial class PlanningPartage
         // (y compris celui du tout premier geste). Résolution OPTIONNELLE du port (tests de lecture pure sans
         // port restent fonctionnels).
         await AssurerEcouteRelachementAsync();
+        // Écoute EAGER du mouvement du pointeur au niveau document (s49, 2ᵉ correctif du gate G3) : la case sous
+        // le curseur est résolue par elementFromPoint (JS) et le curseur de sélection suit le glisser — voie
+        // fiable, indépendante des @onpointerover par case. Résolution OPTIONNELLE du port (tests de lecture pure).
+        await AssurerEcouteMouvementAsync();
 
         try
         {
@@ -332,6 +344,19 @@ public partial class PlanningPartage
         var ecouteur = Services.GetService<IEcouteurRelachementPointeur>();
         if (ecouteur is not null)
             _abonnementRelachement = await ecouteur.EcouterAsync(FinSelectionPlage);
+    }
+
+    /// <summary>Attache l'écouteur de MOUVEMENT du pointeur au niveau <b>document</b> (port s49, 2ᵉ correctif du
+    /// gate G3). Résolution OPTIONNELLE : absent (tests de lecture pure), la grille reste fonctionnelle sans
+    /// suivi de curseur par mouvement document (les tests qui l'exercent doublent le port). Idempotent.</summary>
+    private async Task AssurerEcouteMouvementAsync()
+    {
+        if (_abonnementMouvement is not null)
+            return;
+
+        var ecouteur = Services.GetService<IEcouteurMouvementPointeur>();
+        if (ecouteur is not null)
+            _abonnementMouvement = await ecouteur.EcouterAsync(SurvolerCasePlageParDate);
     }
 
     // Date de référence = l'ANCRE DE NAVIGATION (en session/mémoire), décalée par les contrôles
@@ -541,17 +566,27 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Survol d'une case pendant le geste : met à jour le <b>CURSEUR</b> (la surbrillance [ancre..curseur] est
-    /// recalculée). Sans ancre armée, le survol est ignoré (aucune sélection hors geste). Le curseur est
-    /// naturellement <b>borné à la vue</b> : seules les cases rendues (fenêtre chargée) émettent le survol, un
-    /// débordement au-delà du bord ne sélectionne donc aucune case hors-vue et ne navigue pas (Sc.6).
+    /// Mouvement du pointeur pendant le geste (callback du port document s49, résolu par <c>elementFromPoint</c>
+    /// côté JS : <paramref name="dateCase"/> est le <c>data-date</c> « yyyy-MM-dd » de la case sous le curseur, ou
+    /// <c>null</c> hors d'une case) : met à jour le <b>CURSEUR</b> (la surbrillance [ancre..curseur] est recalculée).
+    /// Sans ancre armée, le mouvement est ignoré (aucune sélection hors geste — gate Invité tenu à la source, Sc.8).
+    /// Hors case (null / non parsable) le curseur est CONSERVÉ. Le curseur est naturellement <b>borné à la vue</b> :
+    /// seules les cases RENDUES portent un <c>data-date</c>, un débordement au-delà du bord ne résout aucune case
+    /// hors-vue et ne navigue pas (Sc.6). Le re-render est forcé (callback hors cycle Blazor).
     /// </summary>
-    private void SurvolerCasePlage(DateOnly date)
+    private async Task SurvolerCasePlageParDate(string? dateCase)
     {
         if (_ancreDrag is null)
-            return;
+            return; // pas de geste armé : mouvement document ignoré (aucune sélection hors drag)
+
+        if (!DateOnly.TryParseExact(dateCase, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
+            return; // hors d'une case (gouttière, bord, dehors) : curseur conservé (borné à la vue)
+
+        if (date == _curseurDrag)
+            return; // pas de changement de case : évite un re-render inutile pendant le glisser
 
         _curseurDrag = date;
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>
@@ -882,6 +917,8 @@ public partial class PlanningPartage
             await _abonnementEchap.DisposeAsync();
         if (_abonnementRelachement is not null)
             await _abonnementRelachement.DisposeAsync();
+        if (_abonnementMouvement is not null)
+            await _abonnementMouvement.DisposeAsync();
         if (_hub is not null)
             await _hub.DisposeAsync();
     }

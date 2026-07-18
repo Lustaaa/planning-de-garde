@@ -187,6 +187,31 @@ surbrillance des cases intermédiaires NI l'ouverture de la dialog au relâcheme
   souris natif du navigateur ni exécuter le `addEventListener` JS — le fonctionnement effectif du drag reste
   **non couvrable par bUnit**, à **vérifier manuellement au gate PO** (comme l'Échap document s33).
 
+## 2ᵉ correctif du gate G3 — le drag ne surlignait AUCUNE case (mécanique de survol refondue)
+
+Nouveau constat runtime du PO (front réel `5292`) après le 1ᵉʳ correctif : plus de sélection de texte native, mais
+le drag ne surligne **aucune** case intermédiaire et n'ouvre **aucune** dialog au relâchement — la mécanique de
+survol elle-même ne s'arme pas en navigateur réel (bUnit reste aveugle à ce geste).
+
+- **Cause.** Le survol reposait sur des `@onpointerover` **posés par case** : pendant un glisser souris continu ces
+  événements par-case sont **fragiles / manqués** (et seraient court-circuités par toute capture de pointeur), si
+  bien que le curseur ne progresse pas, le seuil « ≥ 1 case ≠ ancre » n'est jamais atteint et le geste retombe en
+  clic simple — aucune surbrillance, aucune dialog.
+- **Correctif.** Refonte de la mécanique de survol sur le pattern FIABLE, **résolu au niveau DOCUMENT** : (1)
+  `pointerdown` pose l'ancre (aucun `setPointerCapture` — absent, vérifié). (2) Nouveau **port hexagonal**
+  `IEcouteurMouvementPointeur` (module JS `window.pdgPointeur.attacherMouvement`, `document.addEventListener('pointermove')`)
+  qui, à chaque déplacement **bouton primaire appuyé** (`e.buttons & 1`, aucune inondation d'interop hors geste),
+  résout la case sous le curseur par `document.elementFromPoint(clientX, clientY)` → plus proche
+  `[data-testid="jour-case"]` → lit son **`data-date`** (attribut ajouté sur chaque case) et le remonte à
+  `SurvolerCasePlageParDate` qui met à jour le curseur → surbrillance `[min..max]`. (3) Les `@onpointerover` par
+  case sont **retirés** (voie fragile écartée). `pointerup` document (port s49) finalise inchangé.
+- **Preuve.** Les tests d'acceptation Sc.3-8 exercent désormais la VRAIE voie : le survol passe par le **spy du port
+  document** (`EspionMouvementPointeur.DeplacerVersCase`) alimenté avec le `data-date` RÉEL lu sur la case cible
+  (exactement ce que `elementFromPoint` résoudrait), jamais un `@onpointerover` de case. Significativité prouvée par
+  mutation (neutraliser la mise à jour du curseur → 6/8 rouges). JS `pointermove`+`elementFromPoint` confirmé **servi
+  sur `5292`**. **Limite honnête (assumée)** : bUnit ne peut ni exécuter `elementFromPoint` ni rejouer le geste souris
+  natif — le fonctionnement effectif du drag reste **non couvrable par bUnit**, à **vérifier manuellement au gate PO**.
+
 ---
 
 # Retours produit (PO)

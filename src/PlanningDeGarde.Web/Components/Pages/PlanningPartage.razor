@@ -237,12 +237,12 @@
                     <div class="grille-horaire-col grille-plage-selectionnable @(Session.EstParent ? "grille-horaire-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-horaire-selectionnee" : null) @(EstDansPlageDrag(jourCase.Date) ? "grille-horaire-plage-drag" : null) @(EstAujourdhui(jourCase.Date) ? "grille-horaire-aujourdhui" : null)"
                          data-testid="jour-case"
                          data-couleur="@jourCase.CouleurResponsable"
+                         data-date="@jourCase.Date.ToString("yyyy-MM-dd")"
                          data-plage-drag="@(EstDansPlageDrag(jourCase.Date) ? "1" : null)"
                          data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
                          draggable="false"
                          @onpointerdown="@(() => DebutSelectionPlage(jourCase.Date))"
                          @onpointerdown:preventDefault="true"
-                         @onpointerover="@(() => SurvolerCasePlage(jourCase.Date))"
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
                         <div class="grille-horaire-entete">
                             <span class="grille-horaire-jour-nom">@nomJour</span>
@@ -311,12 +311,12 @@ else
                     <div class="grille-jour grille-plage-selectionnable @(Session.EstParent ? "grille-jour-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-jour-selectionnee" : null) @(EstDansPlageDrag(jourCase.Date) ? "grille-jour-plage-drag" : null) @(EstAujourdhui(jourCase.Date) ? "grille-jour-aujourdhui" : null)"
                          data-testid="jour-case"
                          data-couleur="@jourCase.CouleurResponsable"
+                         data-date="@jourCase.Date.ToString("yyyy-MM-dd")"
                          data-plage-drag="@(EstDansPlageDrag(jourCase.Date) ? "1" : null)"
                          data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
                          draggable="false"
                          @onpointerdown="@(() => DebutSelectionPlage(jourCase.Date))"
                          @onpointerdown:preventDefault="true"
-                         @onpointerover="@(() => SurvolerCasePlage(jourCase.Date))"
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
                         <div class="grille-jour-entete">
                             @* Transfert bicolore (s29, S13 — retour PO gate) : un jour portant un transfert

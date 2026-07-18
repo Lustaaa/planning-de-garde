@@ -27,14 +27,15 @@ public sealed class FrontWasmSelectionPlageDragGatingParentTempsReelTests : Test
         // Given — grille réelle câblée (store vierge). L'identité effective bascule en Invité (consultation seule).
         using var api = new ApiDistanteFactory();
         var relachement = GrilleRuntimeHarness.DoublerRelachementPointeur(this);
+        var mouvement = GrilleRuntimeHarness.DoublerMouvementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
         var session = Services.GetRequiredService<SessionPlanning>();
         session.Role = RoleAuteur.Invite;
         grille.Render();
 
-        // When — l'Invité presse J1 (09/06), survole jusqu'à J3 (11/06), puis relâche (pointerup document) : le geste complet.
+        // When — l'Invité presse J1 (09/06), déplace le pointeur (document) jusqu'à J3 (11/06), puis relâche (pointerup document) : le geste complet.
         this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
+        this.SurDispatcher(() => GrilleRuntimeHarness.SurvolerCaseParPointeurDocument(mouvement, grille, "11/06"));
         this.SurDispatcher(() => relachement.RelacherPointeurDocument().GetAwaiter().GetResult());
 
         // Then — AUCUNE surbrillance de plage, AUCUNE dialog, AUCUN menu (drag inerte) ; le store distant est VIDE.
@@ -49,11 +50,12 @@ public sealed class FrontWasmSelectionPlageDragGatingParentTempsReelTests : Test
     {
         // Given — même grille réelle câblée, mais l'utilisateur reste Parent (identité par défaut du harnais).
         using var api = new ApiDistanteFactory();
+        var mouvement = GrilleRuntimeHarness.DoublerMouvementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
 
-        // When — le Parent presse J1 (09/06) et survole J3 (11/06) : le gate laisse passer, l'ancre est armée.
+        // When — le Parent presse J1 (09/06) et déplace le pointeur (document) vers J3 (11/06) : le gate laisse passer, l'ancre est armée.
         this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
+        this.SurDispatcher(() => GrilleRuntimeHarness.SurvolerCaseParPointeurDocument(mouvement, grille, "11/06"));
 
         // Then — la surbrillance de plage apparaît (l'ancre a bien été posée) : seul un Parent sélectionne.
         grille.WaitForAssertion(

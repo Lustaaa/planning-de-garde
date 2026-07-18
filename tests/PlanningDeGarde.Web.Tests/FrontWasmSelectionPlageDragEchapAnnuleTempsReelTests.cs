@@ -58,12 +58,13 @@ public sealed class FrontWasmSelectionPlageDragEchapAnnuleTempsReelTests : TestC
         using var api = new ApiDistanteFactory();
         var espion = new EspionEchap();
         Services.AddSingleton<IEcouteurEchapModal>(espion);
+        var mouvement = GrilleRuntimeHarness.DoublerMouvementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
 
-        // When — pointerdown sur J1 (09/06), survol (pointerover) jusqu'à J3 (11/06) : la surbrillance de plage
-        // est visible et l'écoute Échap est armée PARESSEUSEMENT au premier drag (attache unique).
+        // When — pointerdown sur J1 (09/06), MOUVEMENT du pointeur (document, elementFromPoint) jusqu'à J3 (11/06) :
+        // la surbrillance de plage est visible et l'écoute Échap est armée PARESSEUSEMENT au premier drag (attache unique).
         this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
+        this.SurDispatcher(() => GrilleRuntimeHarness.SurvolerCaseParPointeurDocument(mouvement, grille, "11/06"));
         grille.WaitForAssertion(
             () =>
             {
@@ -94,11 +95,12 @@ public sealed class FrontWasmSelectionPlageDragEchapAnnuleTempsReelTests : TestC
         var espion = new EspionEchap();
         Services.AddSingleton<IEcouteurEchapModal>(espion);
         var relachement = GrilleRuntimeHarness.DoublerRelachementPointeur(this);
+        var mouvement = GrilleRuntimeHarness.DoublerMouvementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
 
-        // When — drag J1→J3 PUIS relâchement (pointerup document) : la dialog « Affecter une période » s'ouvre, pré-remplie.
+        // When — drag J1→J3 (mouvement document) PUIS relâchement (pointerup document) : la dialog « Affecter une période » s'ouvre, pré-remplie.
         this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
+        this.SurDispatcher(() => GrilleRuntimeHarness.SurvolerCaseParPointeurDocument(mouvement, grille, "11/06"));
         this.SurDispatcher(() => relachement.RelacherPointeurDocument().GetAwaiter().GetResult());
         grille.WaitForState(
             () => grille.FindAll("[data-testid='dialog-affecter-periode']").Count == 1,
