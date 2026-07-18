@@ -8,14 +8,14 @@
 > (journal `IJournalChangements`, cloche) + l'échange s47 (`Proposition`, `Accepter/RefuserProposition`,
 > diffusion porteuse de payload `INotificateurChangement`). **AUCUN modèle/store neuf.**
 
-## Avancement — 1/7
+## Avancement — 4/7
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | 1 | Proposer un échange EN RÉACTION à un imprévu journalisé → `Proposition` pending pré-remplie jour+enfant de l'imprévu, SANS écriture (store surcharges intact, imprévu reste au journal) | @back | ✅ |
-| 2 | ACCEPTER la proposition issue de l'imprévu compose la délégation s44 (surcharge + transfert dérivé s31) ; REFUSER sans écriture ; deux adaptateurs InMemory + Mongo durable | @back | ⏳ |
-| 3 | Cas limite : ré-proposition last-write-wins R11 sans doublon ; jour hors fenêtre chargée sans crash ; identique InMemory + Mongo durable | @back | ⏳ |
-| 4 | Cas erreur / invariant : soi-même / délégataire inconnu / orphelin refusés AVANT écriture (aucune écriture partielle) ; imprévu (fait) et proposition (échange) restent des modèles SÉPARÉS | @back | ⏳ |
+| 2 | ACCEPTER la proposition issue de l'imprévu compose la délégation s44 (surcharge + transfert dérivé s31) ; REFUSER sans écriture ; deux adaptateurs InMemory + Mongo durable | @back | ✅ |
+| 3 | Cas limite : ré-proposition last-write-wins R11 sans doublon ; jour hors fenêtre chargée sans crash ; identique InMemory + Mongo durable | @back | ✅ |
+| 4 | Cas erreur / invariant : soi-même / délégataire inconnu / orphelin refusés AVANT écriture (aucune écriture partielle) ; imprévu (fait) et proposition (échange) restent des modèles SÉPARÉS | @back | ✅ |
 | 5 | Entrée d'action « proposer un échange » DANS la notif d'imprévu de la cloche (contextualisée jour/enfant), Parent-gated (Invité inerte) → mini-dialog s47 pré-rempli, Échap = Annuler (port s33) | @ihm | ⏳ |
 | 6 | La proposition issue de l'imprévu apparaît ACTIONNABLE (Accepter/Refuser) chez le recevant dans SA cloche ; accepter compose la délégation, la case converge | @ihm | ⏳ |
 | 7 | Temps réel : diffusion porteuse de payload (INotificateurChangement s47) → cloche d'un 2ᵉ écran converge PAR REPROJECTION CLIENT, 0 GET sur push | @ihm | ⏳ |
@@ -97,7 +97,7 @@ Scénario Sc.1 — Proposer un échange en réaction à un imprévu crée une pr
   Et l'imprévu d'origine reste consigné au journal, INCHANGÉ (fait informatif non muté par la proposition)
   Et un événement de proposition distinct entre dans le flux notifications (proposition ≠ imprévu, deux événements)
 
-@back @pending
+@back @vert
 Scénario Sc.2 — Accepter compose la délégation s44 ; refuser sans écriture ; deux adaptateurs
   Étant donné une Proposition pending issue d'un imprévu (jour J, enfant E, versActeur B)
   Quand le recevant B ACCEPTE la proposition
@@ -106,7 +106,7 @@ Scénario Sc.2 — Accepter compose la délégation s44 ; refuser sans écriture
   Et si le recevant REFUSE à la place, la proposition passe à « refusé » SANS aucune écriture (store intact)
   Et le comportement est prouvé identique sur les deux adaptateurs (InMemory ET Mongo durable)
 
-@back @pending
+@back @vert
 Scénario Sc.3 — Cas limite : ré-proposition last-write-wins, jour hors fenêtre, deux adaptateurs
   Étant donné un imprévu sur un jour J pour un enfant E
   Quand un échange est proposé en réaction PUIS re-proposé (autre versActeur) sur le même jour/enfant
@@ -114,7 +114,7 @@ Scénario Sc.3 — Cas limite : ré-proposition last-write-wins, jour hors fenê
   Et un imprévu situé sur un jour J HORS de la fenêtre de grille chargée accepte une proposition greffée sans crash
   Et le comportement est prouvé identique sur les deux adaptateurs (InMemory ET Mongo durable)
 
-@back @pending
+@back @vert
 Scénario Sc.4 — Cas erreur / invariant : refus avant écriture, modèles imprévu/proposition séparés
   Étant donné un imprévu consigné et une demande de proposition greffée en réaction
   Quand le versActeur est SOI-MÊME, ou un délégataire INCONNU, ou un acteur ORPHELIN
