@@ -285,6 +285,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GrapheFoyerQuery>();
         services.AddScoped<PeriodesDuJourQuery>();
         services.AddScoped<SlotsDuJourQuery>();
+        services.AddScoped<DigestImmediatQuery>();
 
         // Cloche s47 : lecture du flux de notifications par utilisateur (+ compteur non-lus), marquer-lu,
         // et les use cases d'échange consenti (proposer / accepter / refuser).
