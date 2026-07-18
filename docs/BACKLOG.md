@@ -35,6 +35,29 @@
 > la cloche s'y ajoute comme surface transverse.** Backlog et spec (`saisie-et-grille.md`, `notifications-et-echange.md`)
 > alignés sur cet amendement — plus de contradiction « seule surface ».
 
+**s50 `cloche-immediat-digest` MERGÉ — DIGEST « immédiat » DANS LA CLOCHE (palier 2 « immédiat & rappels » de la vision / palier 14 roadmap COMPLÉTÉ).**
+Ramène **DANS la cloche s47** le contenu de lecture retiré s42/s43 en s44 — **(a) « qui récupère aujourd'hui / ce soir »** (responsable résolu
+**surcharge>fond>neutre** + où/slot s29 + transfert saisi OU dérivé s31) + **(b) « transferts à venir »** des N prochains jours de la fenêtre
+chargée (chrono croissant). **Query PURE de composition `DigestImmediatQuery`** réemployant `GrilleAgendaQuery` (records
+`ResponsableDuJour`/`TransfertDuJour`/`JourDigest`/`DigestImmediat`, **miroir** des ex-`CarteDuJourQuery` s42 / `AVenirQuery` s43 retirés s44) —
+**AUCUN store neuf, AUCUNE mutation**, identique InMemory + Mongo durable. Replis fidèles (personne assignée sans fantôme · orphelin neutre
+R6/`Resolvable` s13 · sans transfert · sans slot) ; fenêtre vide / jour courant hors-fenêtre = **section vide neutre sans crash**, **store des
+surcharges STRICTEMENT intact** (invariant 0-mutation prouvé 2 adaptateurs). **@ihm** : **section digest EN TÊTE du panneau cloche** (au-dessus du
+flux chrono lu/non-lu s47, inchangé), **lecture STRICTE** (aucun bouton/action/entrée cliquable) ; **état client partagé `EtatDigestPartage`**
+(la grille publie la fenêtre chargée → la cloche s'abonne) = **reprojection client depuis la fenêtre grille chargée, 0 GET dédié** ; **convergence
+temps réel** d'un 2ᵉ écran par reprojection depuis la diffusion `INotificateurChangement` s47 (**0 GET sur push**, garde anti-flake
+[[flake-signalr-blast-radius]] respectée) ; **Parent-gated** (Invité ne voit pas le digest, rien sur `/connexion`). **PORTE DE CONCEPTION SURFACE
+arbitrée AU CADRAGE** (section en tête du panneau cloche, **PAS de carte/panneau réintroduit sur la grille — anti-cliquet s44 tenu**) : **0 rework
+G3, 8/8 du 1ᵉʳ coup, gate G3 validé PO DU PREMIER COUP, AUCUN retour produit** (section « Retours produit » du sprint **vide**). Suite **857/857**
+verte. **LIMITATION assumée (héritage s42/s43, routée backlog, à faire)** : le digest se reprojette depuis la **fenêtre de grille chargée** —
+naviguer vers une semaine ne contenant PAS le jour courant fait **disparaître la section « aujourd'hui »** et borne les « à-venir » à la fenêtre ;
+l'arbitrage **persistance hors-fenêtre vs coût GET/flake N'EST PAS rouvert** ce sprint (aucun GET dédié sur navigation). **Palier 2 « immédiat &
+rappels » de la vision (cloche) COMPLÉTÉ** : le noyau « qui récupère » retiré s44 est **réintégré dans la cloche**, surface transverse assumée
+hors-grille. **Candidats de tête au prochain `/planning`** : **action de suivi sur imprévu** (proposer un échange en réaction à une notif
+malade/retard s48), **délégation récurrente/série** (D2), échange sur une **plage** / **multi-enfants**, **digest PERSISTANT hors fenêtre chargée**
+(limitation ci-dessus), reste Config foyer (édition depuis le graphe, graphe étendu, arbitrage inline vs modal, liste de slots par activité, lien
+adresse acteur↔lieu, suppression slot récurrent IHM, suppression d'un enfant) ; **P0 auth** (Google OAuth réel + écran définir-mot-de-passe).
+
 **s49 `selection-de-plage-grille` MERGÉ — SÉLECTION DE PLAGE PAR DRAG sur la grille (tranche 2 du palier 9, palier 9 désormais COMPLET).**
 Le hub `/planning` gagne la **sélection d'une plage de cases par DRAG** pour affecter une période sur l'**intervalle** choisi.
 **AUCUNE mécanique d'écriture / DTO / store neuf** (garde surface arbitrée AU CADRAGE, 0 rework de conception G3) : **réemploi STRICT**

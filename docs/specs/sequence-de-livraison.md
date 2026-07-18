@@ -32,7 +32,7 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
 | 11 | Survol → résumé de la journée | ⏳ skippé (faute de demande PO) | (ci-dessous) |
 | 12 | Config foyer durable — reste de la config | ⏳ non livré (technique) | (ci-dessous) |
 | 13 | Modèle d'acteurs & foyer | ⏳ non livré | (ci-dessous) |
-| 14 | Immédiat & événements à venir (panneau cloche) | ✅ livré s47 (cloche générale) | [`notifications-et-echange.md`](notifications-et-echange.md) |
+| 14 | Immédiat & événements à venir (panneau cloche) | ✅ **COMPLÉTÉ** : cloche générale s47 ; **digest « immédiat » (qui récupère ce soir + transferts à venir) réintégré DANS la cloche s50** | [`notifications-et-echange.md`](notifications-et-echange.md) |
 | 15 | Imprévu & échange | ✅ échange consenti livré s47 ; imprévu dédié (malade / retard, informatif) livré s48 | [`notifications-et-echange.md`](notifications-et-echange.md) |
 | 16 | Ouverture de l'accès — landing + auth réelle | ⏳ non livré | (ci-dessous) |
 | 17 | Persistance réelle — adaptateurs de droite (reste du domaine) | ⏳ non livré (technique) | (ci-dessous) |
@@ -190,13 +190,21 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
     de couleurs par défaut**. *Exploite la config persistée des paliers précédents ; prérequis de
     l'ouverture de l'accès.*
 
-14. **Immédiat & événements à venir** *(**cloche générale LIVRÉE s47**)* — transferts et changements
+14. **Immédiat & événements à venir** *(**cloche générale LIVRÉE s47** ; **digest « immédiat »
+    COMPLÉTÉ s50** — palier « immédiat & rappels » de la vision refermé)* — transferts et changements
     présentés comme **événements dans une CLOCHE** (barre du haut), plus comme un tableau permanent.
-    **Livré** : **journal de changements append-only** (`IJournalChangements`) alimenté par chaque
+    **Livré s47** : **journal de changements append-only** (`IJournalChangements`) alimenté par chaque
     handler d'écriture = **trace de lecture non-autorité** (jamais lue par la résolution), **lu/non-lu
     par utilisateur** + compteur, badge + panneau, gating connecté && Parent, **temps réel porteur de
-    payload** (`INotificateurChangement`, 0 GET). « Qui récupère ce soir » avait été livré s42 en
-    lecture (retiré s44). *Expose enfin les transferts, invisibles par construction jusque-là.* →
+    payload** (`INotificateurChangement`, 0 GET). **Complété s50** : un **digest « immédiat » en tête
+    du panneau cloche** — « qui récupère aujourd'hui / ce soir » (responsable résolu surcharge > fond >
+    neutre + où/slot + transfert) + « transferts à venir » de la fenêtre chargée — **query PURE de
+    composition** `DigestImmediatQuery` réemployant `GrilleAgendaQuery` (**0 store neuf, 0 mutation**),
+    reprojection client **0 GET** (fenêtre grille + diffusion), lecture stricte, Parent-gated. **Ramène
+    DANS la cloche** « qui récupère ce soir » (s42) et « à venir » (s43) **retirés de la grille s44**
+    (anti-cliquet s44 tenu : aucune carte/panneau réintroduit sur `/planning`). *Expose enfin les
+    transferts, invisibles par construction jusque-là.* **Limitation assumée (backlog)** : digest borné
+    à la fenêtre grille chargée (persistance hors-fenêtre non rouverte). →
     [`notifications-et-echange.md`](notifications-et-echange.md)
 
 15. **Imprévu & échange** *(**échange consenti LIVRÉ s47** ; **imprévu dédié LIVRÉ s48**)* — échange de
