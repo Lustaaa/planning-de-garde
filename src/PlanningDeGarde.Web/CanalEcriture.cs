@@ -205,6 +205,12 @@ public static class CanalEcriture
     /// actionnable de la cloche : la clé est l'identifiant stable de la proposition.</summary>
     public sealed record RepondrePropositionRequete(string PropositionId);
 
+    /// <summary>Corps de la requête « action de suivi : proposer un échange » (s51) émise depuis l'action de la
+    /// notif d'imprévu de la cloche : l'identifiant de l'ÉVÉNEMENT d'imprévu journalisé (s48) dont on hérite le
+    /// jour + l'enfant, et l'acteur RECEVANT choisi. COMPOSE ProposerEchange s47 (proposition pending, 0 surcharge) ;
+    /// refus métier (recevant inconnu / à soi-même) renvoyé — le mini-dialog reste ouvert.</summary>
+    public sealed record ProposerEchangeSuiteImprevuRequete(string ImprevuEvenementId, string VersActeurId);
+
     /// <summary>Corps de la requête SIGNALER un imprévu (s48) émise depuis l'entrée « signaler un imprévu » du
     /// menu clic-case : le jour visé, l'enfant, le TYPE (malade / retard), l'acteur SIGNALANT (identité de la
     /// session) et un motif OPTIONNEL. Purement INFORMATIF : consigne une trace au journal (cloche s47), n'écrit

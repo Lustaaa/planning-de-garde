@@ -8,7 +8,7 @@
 > (journal `IJournalChangements`, cloche) + l'échange s47 (`Proposition`, `Accepter/RefuserProposition`,
 > diffusion porteuse de payload `INotificateurChangement`). **AUCUN modèle/store neuf.**
 
-## Avancement — 4/7
+## Avancement — 5/7
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -16,7 +16,7 @@
 | 2 | ACCEPTER la proposition issue de l'imprévu compose la délégation s44 (surcharge + transfert dérivé s31) ; REFUSER sans écriture ; deux adaptateurs InMemory + Mongo durable | @back | ✅ |
 | 3 | Cas limite : ré-proposition last-write-wins R11 sans doublon ; jour hors fenêtre chargée sans crash ; identique InMemory + Mongo durable | @back | ✅ |
 | 4 | Cas erreur / invariant : soi-même / délégataire inconnu / orphelin refusés AVANT écriture (aucune écriture partielle) ; imprévu (fait) et proposition (échange) restent des modèles SÉPARÉS | @back | ✅ |
-| 5 | Entrée d'action « proposer un échange » DANS la notif d'imprévu de la cloche (contextualisée jour/enfant), Parent-gated (Invité inerte) → mini-dialog s47 pré-rempli, Échap = Annuler (port s33) | @ihm | ⏳ |
+| 5 | Entrée d'action « proposer un échange » DANS la notif d'imprévu de la cloche (contextualisée jour/enfant), Parent-gated (Invité inerte) → mini-dialog s47 pré-rempli, Échap = Annuler (port s33) | @ihm | ✅ |
 | 6 | La proposition issue de l'imprévu apparaît ACTIONNABLE (Accepter/Refuser) chez le recevant dans SA cloche ; accepter compose la délégation, la case converge | @ihm | ⏳ |
 | 7 | Temps réel : diffusion porteuse de payload (INotificateurChangement s47) → cloche d'un 2ᵉ écran converge PAR REPROJECTION CLIENT, 0 GET sur push | @ihm | ⏳ |
 
@@ -122,7 +122,7 @@ Scénario Sc.4 — Cas erreur / invariant : refus avant écriture, modèles impr
   Et dans tous les cas l'imprévu d'origine reste un FAIT informatif au journal, non muté, non « résolu » par la tentative
   Et la résolution ne consulte jamais le journal (imprévu s48 et proposition s47 restent des modèles SÉPARÉS)
 
-@ihm @pending
+@ihm @vert
 Scénario Sc.5 — Action « proposer un échange » dans la notif d'imprévu de la cloche, Parent-gated, Échap = Annuler
   Étant donné le panneau de la cloche s47 affichant une notif d'imprévu « X est malade le 12 » (jour J, enfant E)
   Quand un Parent active l'action « proposer un échange » attachée à cette notif d'imprévu

@@ -107,7 +107,22 @@
                                 data-testid="cloche-notif" data-type="@n.Type" data-lu="@(n.Lu ? "1" : "0")">
                                 <span class="pdg-cloche-notif-texte">@Libelle(n)</span>
 
-                                @if (n.Actionnable)
+                                @if (n.Type == "imprevu")
+                                {
+                                    @* Action de suivi s51 : « proposer un échange » GREFFÉE sur la notif d'imprévu
+                                       (contextualisée jour + enfant). L'imprévu reste INFORMATIF (marquer-lu conservé,
+                                       aucune mutation du fait) : l'action crée une proposition d'échange DISTINCTE. *@
+                                    <div class="pdg-cloche-actions">
+                                        <button type="button" class="btn btn-outline-primary btn-sm" data-testid="cloche-proposer-suite-imprevu"
+                                                @onclick="@(() => OuvrirProposerSuiteImprevu(n))">Proposer un échange</button>
+                                        @if (!n.Lu)
+                                        {
+                                            <button type="button" class="btn btn-link btn-sm p-0" data-testid="cloche-marquer-lu"
+                                                    @onclick="@(() => MarquerLu(n.Id))">Marquer lu</button>
+                                        }
+                                    </div>
+                                }
+                                else if (n.Actionnable)
                                 {
                                     @if (_confirmPropositionId == n.PropositionId)
                                     {
@@ -137,6 +152,16 @@
                             </li>
                         }
                     </ul>
+                }
+
+                @* Action de suivi s51 : mini-dialog « proposer un échange » s47 RÉUTILISÉE, PRÉ-REMPLIE avec le jour
+                   + l'enfant de l'imprévu. Le Parent ne choisit que le versActeur ; la commande transite par le CANAL
+                   D'ÉCRITURE (use case de composition), jamais la diffusion. Échap = Annuler (port s33, via ModalConfig). *@
+                @if (_proposerImprevu is { } imp)
+                {
+                    <ProposerEchangeDialog DateContexte="imp.Jour" EnfantId="@imp.EnfantId" ImprevuEvenementId="@imp.Id"
+                                           Acteurs="_acteurs" ActeursCharges="_charge"
+                                           OnValide="FermerProposerSuiteImprevu" OnAnnule="FermerProposerSuiteImprevu" />
                 }
             </div>
         }

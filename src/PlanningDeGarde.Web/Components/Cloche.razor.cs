@@ -42,6 +42,10 @@ public partial class Cloche : IAsyncDisposable
     private string? _confirmPropositionId;
     private bool _confirmAccepter;
 
+    // Action de suivi s51 : mini-dialog « proposer un échange » GREFFÉE sur une notif d'imprévu (pré-remplie
+    // jour + enfant de l'imprévu). null = fermée. La mini-dialog (ModalConfig) porte son propre écouteur Échap.
+    private NotificationCloche? _proposerImprevu;
+
     [Inject] private HttpClient Canal { get; set; } = default!;
     [Inject] private SessionPlanning Session { get; set; } = default!;
     [Inject] private OptionsConnexionHub OptionsHub { get; set; } = default!;
@@ -196,6 +200,7 @@ public partial class Cloche : IAsyncDisposable
         _nonLus = 0;
         _ouvert = false;
         _confirmPropositionId = null;
+        _proposerImprevu = null;
         _charge = false;
         _hubDemarrageDemande = false;
         await DetacherEchap();
@@ -296,6 +301,26 @@ public partial class Cloche : IAsyncDisposable
         // « Marquer tout lu » ne concerne que les événements du journal (les propositions restent actionnables).
         _notifications = _notifications.Select(n => n.Type == "echange" ? n : n with { Lu = true }).ToList();
         RecalculerNonLus();
+    }
+
+    /// <summary>Action de suivi s51 : ouvre la mini-dialog « proposer un échange » greffée sur une notif d'imprévu
+    /// (pré-remplie jour + enfant de l'imprévu). La mini-dialog (ModalConfig) attache SON PROPRE écouteur Échap
+    /// document (s33) ; on détache d'abord celui du panneau pour qu'UN SEUL écouteur soit actif — Échap ferme la
+    /// mini-dialog (Annuler), jamais deux gestes en un (parité double / adaptateur JS réel, anti vert-qui-ment).</summary>
+    private async Task OuvrirProposerSuiteImprevu(NotificationCloche n)
+    {
+        await DetacherEchap();
+        _proposerImprevu = n;
+    }
+
+    /// <summary>Ferme la mini-dialog de suivi (succès ou Annuler) : réattache l'écouteur Échap du panneau (toujours
+    /// ouvert) pour qu'Échap referme de nouveau le panneau. Aucune commande émise ici (l'écriture, si succès, a
+    /// transité par le canal d'écriture depuis la mini-dialog).</summary>
+    private async Task FermerProposerSuiteImprevu()
+    {
+        _proposerImprevu = null;
+        if (_ouvert && Echap is { } ecouteur)
+            _abonnementEchap = await ecouteur.EcouterAsync(SurEchap);
     }
 
     private void DemanderAccepter(string propositionId) => OuvrirConfirmation(propositionId, true);

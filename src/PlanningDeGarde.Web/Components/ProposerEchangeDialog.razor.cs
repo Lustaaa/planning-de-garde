@@ -45,6 +45,13 @@ public partial class ProposerEchangeDialog
     [Parameter, EditorRequired]
     public string EnfantId { get; set; } = "";
 
+    /// <summary>OPTIONNEL (s51) : identifiant de l'ÉVÉNEMENT d'imprévu journalisé (s48) quand la mini-dialog est
+    /// ouverte comme ACTION DE SUIVI depuis la notif d'imprévu de la cloche. Non-null → la proposition est émise
+    /// par le use case de COMPOSITION (POST /api/canal/proposer-echange-suite-imprevu), qui hérite le jour + l'enfant
+    /// de l'imprévu. Null / vide → proposition d'échange autonome s47 (POST /api/canal/proposer-echange).</summary>
+    [Parameter]
+    public string? ImprevuEvenementId { get; set; }
+
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog.</summary>
     [Parameter]
     public EventCallback OnValide { get; set; }
@@ -60,9 +67,16 @@ public partial class ProposerEchangeDialog
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/proposer-echange",
-                new ProposerEchangeRequete(DateContexte, EnfantId, _form.VersActeurId));
+            // Action de suivi s51 : quand la mini-dialog est greffée sur un imprévu (ImprevuEvenementId renseigné),
+            // la proposition transite par le use case de COMPOSITION (jour + enfant hérités de l'imprévu journalisé).
+            // Sinon, proposition d'échange autonome s47. Même canal d'écriture, jamais la diffusion.
+            reponse = string.IsNullOrEmpty(ImprevuEvenementId)
+                ? await Canal.PostAsJsonAsync(
+                    "api/canal/proposer-echange",
+                    new ProposerEchangeRequete(DateContexte, EnfantId, _form.VersActeurId))
+                : await Canal.PostAsJsonAsync(
+                    "api/canal/proposer-echange-suite-imprevu",
+                    new ProposerEchangeSuiteImprevuRequete(ImprevuEvenementId, _form.VersActeurId));
         }
         catch (HttpRequestException)
         {

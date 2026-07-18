@@ -294,6 +294,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ProposerEchangeHandler>();
         services.AddScoped<AccepterPropositionHandler>();
         services.AddScoped<RefuserPropositionHandler>();
+        // Action de suivi sur un imprévu (s51) : COMPOSE ProposerEchange s47 en réaction à un imprévu journalisé
+        // s48 (lit le jour + l'enfant de l'imprévu, greffe une proposition d'échange pending — 0 écriture).
+        services.AddScoped<ProposerEchangeSuiteImprevuHandler>();
 
         // Signalement d'imprévu (s48) : consigne une trace au journal (décoré diffusant → cloche des concernés,
         // 0 GET), SANS aucune écriture de surcharge (résolution jamais touchée). Le journal injecté est le port
