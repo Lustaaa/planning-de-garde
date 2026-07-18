@@ -227,11 +227,14 @@ public static class CanalEcriture
     /// lecture, jamais le planning ; ne déclenche pas la diffusion (état PAR utilisateur, privé).</summary>
     public sealed record MarquerNotificationsLuesRequete(string UtilisateurId, string? EvenementId = null);
 
-    /// <summary>Corps de la requête PROPOSER un échange (s47) émise via le canal d'écriture : le jour visé,
-    /// l'enfant, l'acteur RECEVANT. N'écrit AUCUNE surcharge (canal de consentement) ; refus métier (recevant
-    /// inconnu, à soi-même) renvoyé avec son motif. Sur succès, la proposition est diffusée (payload) à la cloche
-    /// du recevant.</summary>
-    public sealed record ProposerEchangeRequete(DateOnly Jour, string EnfantId, string VersActeurId);
+    /// <summary>Corps de la requête PROPOSER un échange sur une PLAGE (s47 → s52) émise via le canal d'écriture :
+    /// le jour de DÉBUT, l'enfant, l'acteur RECEVANT et le jour de FIN (INCLUS) <paramref name="JourFin"/> (champ
+    /// « jusqu'au »). <paramref name="JourFin"/> absent (null) = plage réduite à UN jour (fin = début) → parité
+    /// STRICTE s47. N'écrit AUCUNE surcharge (canal de consentement) ; refus métier (recevant inconnu, à soi-même,
+    /// fin &lt; début) renvoyé avec son motif. Sur succès, la proposition est diffusée (payload) à la cloche du
+    /// recevant.</summary>
+    public sealed record ProposerEchangeRequete(
+        DateOnly Jour, string EnfantId, string VersActeurId, DateOnly? JourFin = null);
 
     /// <summary>Corps de la requête ACCEPTER / REFUSER une proposition (s47) émise via le canal d'écriture : la clé
     /// est l'identifiant stable de la proposition. Accepter COMPOSE la délégation s44 (surcharge + transfert dérivé) ;
@@ -267,7 +270,7 @@ public static class CanalEcriture
         routes.MapPost("/api/canal/proposer-echange",
             (ProposerEchangeRequete requete, ProposerEchangeHandler handler, INotificateurChangement notificateur) =>
         {
-            var resultat = handler.Handle(new ProposerEchangeCommand(requete.Jour, requete.EnfantId, requete.VersActeurId));
+            var resultat = handler.Handle(new ProposerEchangeCommand(requete.Jour, requete.EnfantId, requete.VersActeurId, requete.JourFin));
 
             // PROPOSER n'écrit AUCUNE surcharge (canal de consentement). Refus métier (recevant inconnu, à
             // soi-même) renvoyé avec son motif — le mini-dialog reste ouvert côté front (Sc.5). Sur succès, la

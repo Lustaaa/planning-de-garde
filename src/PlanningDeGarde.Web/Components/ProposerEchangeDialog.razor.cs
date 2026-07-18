@@ -22,10 +22,18 @@ public partial class ProposerEchangeDialog
     private sealed class Formulaire
     {
         public string VersActeurId { get; set; } = "";
+
+        /// <summary>Borne de FIN (INCLUSE) de la plage proposée (champ « jusqu'au » du mini-dialog, s52, miroir
+        /// EXACT de la délégation s45). Défaut = le jour cliqué (fin = début) → l'échange d'UN jour (s47) inchangé.</summary>
+        public DateTime Jusqu { get; set; }
     }
 
     private readonly Formulaire _form = new();
     private string? _motifEchec;
+
+    // Défaut du champ « jusqu'au » = le jour cliqué (parité s47 : fin = début). Une plage postérieure n'est
+    // saisie que si l'utilisateur porte cette borne plus loin (miroir de la délégation-plage s45).
+    protected override void OnInitialized() => _form.Jusqu = DateContexte.ToDateTime(TimeOnly.MinValue);
 
     /// <summary>Acteurs éligibles du foyer (id stable + nom), fournis par le parent depuis le store vivant :
     /// le sélecteur ne propose que ces acteurs réels (jamais un libellé en dur).</summary>
@@ -73,7 +81,7 @@ public partial class ProposerEchangeDialog
             reponse = string.IsNullOrEmpty(ImprevuEvenementId)
                 ? await Canal.PostAsJsonAsync(
                     "api/canal/proposer-echange",
-                    new ProposerEchangeRequete(DateContexte, EnfantId, _form.VersActeurId))
+                    new ProposerEchangeRequete(DateContexte, EnfantId, _form.VersActeurId, DateOnly.FromDateTime(_form.Jusqu)))
                 : await Canal.PostAsJsonAsync(
                     "api/canal/proposer-echange-suite-imprevu",
                     new ProposerEchangeSuiteImprevuRequete(ImprevuEvenementId, _form.VersActeurId));

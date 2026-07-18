@@ -196,10 +196,13 @@ public static class CanalEcriture
     /// notifications lues. Idempotent côté handler ; mute uniquement l'état de lecture PAR utilisateur.</summary>
     public sealed record MarquerNotificationsLuesRequete(string UtilisateurId, string? EvenementId = null);
 
-    /// <summary>Corps de la requête PROPOSER un échange (s47) émise depuis l'entrée « proposer un échange » du
-    /// menu clic-case : le jour visé, l'enfant, l'acteur RECEVANT. N'écrit aucune surcharge (consentement) ;
-    /// refus métier (recevant inconnu / à soi-même) renvoyé — le mini-dialog reste ouvert.</summary>
-    public sealed record ProposerEchangeRequete(DateOnly Jour, string EnfantId, string VersActeurId);
+    /// <summary>Corps de la requête PROPOSER un échange sur une PLAGE (s47 → s52) émise depuis l'entrée « proposer
+    /// un échange » du menu clic-case : le jour de DÉBUT, l'enfant, l'acteur RECEVANT et le jour de FIN (INCLUS)
+    /// <paramref name="JourFin"/> (champ « jusqu'au »). <paramref name="JourFin"/> absent (null) = plage réduite à
+    /// UN jour (fin = début) → parité STRICTE s47. N'écrit aucune surcharge (consentement) ; refus métier (recevant
+    /// inconnu / à soi-même / fin &lt; début) renvoyé — le mini-dialog reste ouvert.</summary>
+    public sealed record ProposerEchangeRequete(
+        DateOnly Jour, string EnfantId, string VersActeurId, DateOnly? JourFin = null);
 
     /// <summary>Corps de la requête ACCEPTER / REFUSER une proposition (s47) émise depuis la notification
     /// actionnable de la cloche : la clé est l'identifiant stable de la proposition.</summary>

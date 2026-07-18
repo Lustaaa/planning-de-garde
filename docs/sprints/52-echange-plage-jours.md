@@ -5,7 +5,7 @@
 > consenti). **Miroir EXACT de la progression s44→s45** (la délégation directe est passée du jour
 > unique à la plage), transposée au **workflow d'échange consenti s47**.
 
-## Avancement — 6/10
+## Avancement — 7/10
 
 | # | Scénario | Type | Statut |
 |--:|---|---|:--:|
@@ -15,7 +15,7 @@
 | 4 | Refuser retire SANS écriture → `refusé`, store intact | @back | ✅ |
 | 5 | Bornes refusées AVANT écriture (fin<début / soi-même / délégataire inconnu-orphelin) | @back | ✅ |
 | 6 | Ré-proposition = last-write-wins R11 sans doublon · `fin` hors fenêtre sans crash | @back | ✅ |
-| 7 | Champ « jusqu'au » dans `ProposerEchangeDialog` (miroir s45), Parent-gated | @ihm | ⏳ |
+| 7 | Champ « jusqu'au » dans `ProposerEchangeDialog` (miroir s45), Parent-gated | @ihm | ✅ |
 | 8 | Notif d'échange de plage ACTIONNABLE dans la cloche (Accepter/Refuser) chez le recevant | @ihm | ⏳ |
 | 9 | Échap = Annuler (port s33) · refus domaine → dialog reste ouverte + motif + saisie conservée | @ihm | ⏳ |
 | 10 | Temps réel : accepter → 2ᵉ écran converge sur TOUTES les cases de la plage, 0 GET sur push | @ihm | ⏳ |
@@ -142,7 +142,7 @@ Scénario 6 — Ré-proposition last-write-wins R11 · fin hors fenêtre sans cr
 ### @ihm
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 7 — Champ « jusqu'au » dans ProposerEchangeDialog (miroir s45), Parent-gated
   Étant donné un Parent qui ouvre « proposer un échange » depuis le menu clic-case
   Alors la dialog ProposerEchangeDialog affiche un champ « jusqu'au », défaut = jour cliqué
