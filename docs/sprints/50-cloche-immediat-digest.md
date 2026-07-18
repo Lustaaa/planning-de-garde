@@ -32,13 +32,13 @@
 
 ---
 
-## Avancement — 2/8
+## Avancement — 3/8
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | 1 | Digest « qui récupère aujourd'hui / ce soir » composé depuis `GrilleAgendaQuery` (responsable résolu + où/slot + transfert) | @back | ✅ |
 | 2 | « Transferts à venir » des N prochains jours de la fenêtre chargée, chrono croissant | @back | ✅ |
-| 3 | Replis fidèles (personne assignée sans fantôme · orphelin neutre · sans transfert · sans slot) | @back | ⏳ |
+| 3 | Replis fidèles (personne assignée sans fantôme · orphelin neutre · sans transfert · sans slot) | @back | ✅ |
 | 4 | Fenêtre sans à-venir / jour courant hors-fenêtre = section vide neutre, sans crash ; invariant 0 mutation (2 adaptateurs) | @back | ⏳ |
 | 5 | Section digest en TÊTE du panneau cloche (au-dessus du flux chrono), lecture stricte, Parent-gated | @ihm | ⏳ |
 | 6 | Reprojection client depuis la fenêtre grille chargée (0 GET dédié) ; hors-fenêtre = digest vide neutre | @ihm | ⏳ |
@@ -86,7 +86,7 @@ Scénario: le digest liste les transferts des N prochains jours de la fenêtre d
 
 ### Sc.3 — Replis fidèles
 ```gherkin
-@back @pending
+@back @vert
 Scénario: chaque cas de repli est rendu fidèlement, sans fantôme
   Étant donné une fenêtre chargée mêlant des jours aux configurations variées
   Quand je compose le digest « immédiat » et « à venir »
