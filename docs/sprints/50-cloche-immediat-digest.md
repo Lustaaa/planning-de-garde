@@ -32,7 +32,7 @@
 
 ---
 
-## Avancement — 7/8
+## Avancement — 8/8
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -43,7 +43,7 @@
 | 5 | Section digest en TÊTE du panneau cloche (au-dessus du flux chrono), lecture stricte, Parent-gated | @ihm | ✅ |
 | 6 | Reprojection client depuis la fenêtre grille chargée (0 GET dédié) ; hors-fenêtre = digest vide neutre | @ihm | ✅ |
 | 7 | Convergence temps réel du digest d'un 2ᵉ écran par la diffusion `INotificateurChangement`, 0 GET sur push | @ihm | ✅ |
-| 8 | Gating & lecture stricte : Invité ne voit pas le digest · rien sur `/connexion` · aucune action/bouton | @ihm | ⏳ |
+| 8 | Gating & lecture stricte : Invité ne voit pas le digest · rien sur `/connexion` · aucune action/bouton | @ihm | ✅ |
 
 > **Note gate G3 (leçon s49)** : les scénarios @ihm de cloche = rendu navigateur + temps réel SignalR.
 > **Rebâtir le build SERVI** (conteneur `web`, jamais `--no-build` d'un artefact périmé) **avant de
@@ -150,7 +150,7 @@ Scénario: un changement diffusé fait converger le digest d'un 2ᵉ écran, 0 G
 
 ### Sc.8 — Gating & lecture stricte
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: le digest est Parent-gated et purement en lecture
   Étant donné un utilisateur Invité connecté
   Quand j'ouvre le panneau de la cloche
