@@ -5,14 +5,14 @@
 > consenti). **Miroir EXACT de la progression s44→s45** (la délégation directe est passée du jour
 > unique à la plage), transposée au **workflow d'échange consenti s47**.
 
-## Avancement — 3/10
+## Avancement — 4/10
 
 | # | Scénario | Type | Statut |
 |--:|---|---|:--:|
 | 1 | Proposer sur plage `[J1..J3]` = UNE Proposition `pending` SANS écriture (invariant s47 prouvé) | @back | ✅ |
 | 2 | Défaut `fin=début` = échange mono-jour s47 STRICTEMENT inchangé (non-régression) | @back | ✅ |
 | 3 | Accepter COMPOSE la délégation-plage s45 (surcharge multi-jours + transferts aux 2 frontières) | @back | ✅ |
-| 4 | Refuser retire SANS écriture → `refusé`, store intact | @back | ⏳ |
+| 4 | Refuser retire SANS écriture → `refusé`, store intact | @back | ✅ |
 | 5 | Bornes refusées AVANT écriture (fin<début / soi-même / délégataire inconnu-orphelin) | @back | ⏳ |
 | 6 | Ré-proposition = last-write-wins R11 sans doublon · `fin` hors fenêtre sans crash | @back | ⏳ |
 | 7 | Champ « jusqu'au » dans `ProposerEchangeDialog` (miroir s45), Parent-gated | @ihm | ⏳ |
@@ -107,7 +107,7 @@ Scénario 3 — Accepter COMPOSE la délégation-plage s45 (surcharge multi-jour
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 4 — Refuser retire SANS écriture
   Étant donné une Proposition pending sur la plage [J1..J3]
   Quand le recevant refuse la proposition
