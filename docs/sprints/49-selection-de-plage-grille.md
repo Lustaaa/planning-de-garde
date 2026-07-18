@@ -212,6 +212,39 @@ survol elle-même ne s'arme pas en navigateur réel (bUnit reste aveugle à ce g
   sur `5292`**. **Limite honnête (assumée)** : bUnit ne peut ni exécuter `elementFromPoint` ni rejouer le geste souris
   natif — le fonctionnement effectif du drag reste **non couvrable par bUnit**, à **vérifier manuellement au gate PO**.
 
+## 3ᵉ correctif du gate G3 — la CAUSE RÉELLE était un BUILD SERVI PÉRIMÉ (pas le code)
+
+Après 3 échecs au gate malgré des correctifs successifs (pointer events, `user-select`, `pointermove`
+document + `elementFromPoint` + `data-date`), mise en place d'un **harnais navigateur Playwright**
+(`tests/PlanningDeGarde.Web.E2E`, hors `.slnx`) pour piloter un **vrai Chromium** contre l'app servie
+et **observer** au lieu de coder à l'aveugle (bUnit ne sait pas rejouer le geste souris natif).
+
+- **Observation runtime (preuves).** Connecté en Parent sur `http://localhost:5292`, le drag J1→J3
+  ne surlignait **aucune** case (`data-plage-drag=1 : []`) et n'ouvrait **aucune** dialog. Or les
+  événements pointeur natifs arrivaient bien (`down/move buttons=1 … up`) et `window.pdgPointeur`
+  existait. Dump du DOM servi : la case rendue était `class="grille-jour grille-jour-cliquable  "`,
+  data-testid `jour-case`, data-couleur `bleu` — **SANS `data-date`, SANS `grille-plage-selectionnable`,
+  SANS `@onpointerdown`**. Le module JS lisait donc un `data-date` **vide** → `Survoler("")` →
+  `TryParseExact` échoue → curseur jamais mis à jour → zéro surbrillance, zéro dialog.
+- **Cause réelle.** Le **front servi était un build WASM périmé**, antérieur au câblage drag s49. Le
+  `docker-compose.yml` a un service `build` **one-shot** qui compile Api+Web dans le volume nommé
+  `build-artifacts` ; `web` sert ensuite `--no-build` **depuis ce volume**. Le conteneur `web` (créé
+  le 15/07, jamais recréé) resservait l'artefact du **17/07 21:18**, antérieur à la source courante
+  (18/07). Recharger l'onglet ne changeait rien : le conteneur resservait l'ancien WASM. **Les 3
+  correctifs précédents, corrects en source, n'ont donc JAMAIS atteint le navigateur du PO.**
+- **Correctif.** **Aucun changement de code de prod** : la source était déjà correcte. Rebuild du
+  stack — `docker compose up build --force-recreate` (recompile la source courante dans le volume)
+  puis `docker compose up -d --force-recreate web api` (ressert les binaires frais).
+- **Preuve (Playwright, red→green).** Sur le build **périmé** : `data-date` vide, surbrillance `[]`,
+  dialog `0`. Sur le build **ré-compilé** : `data-date=2026-07-20/21/22`, surbrillance progressive
+  `[20,21] → [20,21,22]`, dialog « Affecter une période » ouverte et **pré-remplie Début=J1 Fin=J3**.
+  Deux **smoke tests** navigateur figent ce contrat (`SmokeDragPlage`) : (a) drag J1→J3 surligne + ouvre
+  la dialog pré-remplie ; (b) clic simple ouvre le menu clic-case, **pas** la dialog plage. Lancement
+  et pré-requis : `tests/PlanningDeGarde.Web.E2E/README.md`.
+- **Anti-récidive.** Au prochain gate visuel, **recompiler le build servi** avant de tester
+  (`docker compose up build --force-recreate`) — un simple rechargement d'onglet ne reflète pas la
+  source. Le harnais Playwright reste disponible pour ré-observer tout symptôme au navigateur réel.
+
 ---
 
 # Retours produit (PO)

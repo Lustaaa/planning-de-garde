@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Harnais E2E NAVIGATEUR (Playwright/Chromium) — s49, sortie de la boucle du gate G3.
+    bUnit est structurellement AVEUGLE au geste souris natif (drag de sélection de plage) : il
+    invoque les handlers Blazor en C# sans reproduire pointerdown/pointermove/pointerup natifs,
+    elementFromPoint, ni l'exécution du module JS (window.pdgPointeur). Ce projet pilote un VRAI
+    Chromium contre l'app SERVIE (front 5292 / API 5180) pour observer et PROUVER le geste réel.
+
+    HORS de PlanningDeGarde.slnx à dessein : il exige un navigateur installé (playwright install
+    chromium) ET l'app en cours d'exécution. Il n'entre donc JAMAIS dans la suite de
+    non-régression (`dotnet test PlanningDeGarde.slnx`), qui reste hermétique et reproductible.
+    Lancement : voir README de ce dossier.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Playwright" Version="1.49.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Xunit" />
+  </ItemGroup>
+
+</Project>
