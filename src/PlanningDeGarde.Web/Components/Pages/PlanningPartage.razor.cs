@@ -158,6 +158,12 @@ public partial class PlanningPartage
     /// (tests de lecture pure qui ne l'enregistrent pas) la grille reste fonctionnelle sans écoute Échap.</summary>
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
+    /// <summary>État CLIENT partagé du digest « immédiat » de la cloche (s50) : la grille — seule à faire le GET
+    /// grille — y PUBLIE le digest reprojeté de la fenêtre chargée (composition pure), la cloche s'y abonne pour
+    /// le rendre SANS aucun GET (ni dédié, ni sur push). Canal de LECTURE stricte. Résolu PARESSEUSEMENT (comme le
+    /// port Échap) : un hôte de test qui ne l'enregistre pas ne casse pas le rendu de la grille (digest inerte).</summary>
+    private State.EtatDigestPartage? EtatDigest => Services.GetService(typeof(State.EtatDigestPartage)) as State.EtatDigestPartage;
+
     // Abonnement à l'écouteur Échap document (détaché à la fermeture de la page — aucune fuite).
     private IAsyncDisposable? _abonnementEchap;
 
@@ -372,6 +378,10 @@ public partial class PlanningPartage
                 $"api/grille/{ancre.Year}/{ancre.Month}/{ancre.Day}?vue={CodeVue(Session.Vue)}");
             if (grille is not null)
                 _grille = grille;
+            // REPROJECTION du digest cloche (s50) depuis la fenêtre TOUT JUSTE chargée : la grille est la seule à
+            // faire le GET grille, elle publie ici le digest composé (immédiat + à venir) pour que la cloche le
+            // rende sans aucun GET. Convergence temps réel incluse : ce ChargerAsync est aussi rappelé sur push.
+            EtatDigest?.Publier(DigestImmediat.Composer(_grille, Horloge.Aujourdhui, Session.EnfantId));
             return true;
         }
         catch (HttpRequestException)

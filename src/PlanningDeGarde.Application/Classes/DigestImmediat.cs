@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PlanningDeGarde.Application;
 
@@ -32,4 +33,41 @@ public sealed record JourDigest(
 /// <see cref="AVenir"/> des jours à venir de la fenêtre chargée, en ordre chronologique croissant. Lecture
 /// stricte, composée de <see cref="GrilleAgendaQuery"/> — aucune mutation, aucun store neuf.
 /// </summary>
-public sealed record DigestImmediat(JourDigest? Immediat, IReadOnlyList<JourDigest> AVenir);
+public sealed record DigestImmediat(JourDigest? Immediat, IReadOnlyList<JourDigest> AVenir)
+{
+    /// <summary>Digest vide neutre : jour courant hors-fenêtre (immédiat null) et aucun transfert à venir.</summary>
+    public static readonly DigestImmediat Vide = new(null, Array.Empty<JourDigest>());
+
+    /// <summary>
+    /// Compose le digest PUREMENT à partir d'une <see cref="GrilleAgenda"/> déjà projetée (la fenêtre de grille
+    /// chargée), pour l'<paramref name="enfantId"/> sélectionné et la date <paramref name="aujourdhui"/>.
+    /// Fonction PARTAGÉE entre le serveur (query qui projette d'abord) et la REPROJECTION CLIENT (s50 @ihm : le
+    /// front la ré-applique sur la grille déjà chargée — aucun GET dédié). La grille porte déjà les valeurs
+    /// résolues (id stable, nom, couleur, slots, transfert), donc la composition ne relit ni référentiel ni
+    /// palette : elle SÉLECTIONNE. Section « immédiat » null si le jour courant n'est pas dans la fenêtre chargée
+    /// (navigation hors-semaine — vide neutre) ; section « à venir » = jours &gt; aujourd'hui PORTANT un transfert,
+    /// chrono croissant.
+    /// </summary>
+    public static DigestImmediat Composer(GrilleAgenda grille, DateOnly aujourdhui, string enfantId)
+    {
+        var immediat = grille.Jours.FirstOrDefault(j => j.Date == aujourdhui);
+        var avenir = grille.Jours
+            .Where(jour => jour.Date > aujourdhui && jour.Transfert is not null)
+            .OrderBy(jour => jour.Date)
+            .Select(jour => ComposerJour(jour, enfantId))
+            .ToList();
+
+        return new DigestImmediat(
+            immediat is null ? null : ComposerJour(immediat, enfantId),
+            avenir);
+    }
+
+    private static JourDigest ComposerJour(JourCase jour, string enfantId)
+        => new(
+            jour.Date,
+            new ResponsableDuJour(jour.ResponsableId, jour.NomResponsable, jour.CouleurResponsable, jour.ResponsableId is not null),
+            jour.Slots.Where(slot => slot.EnfantId == enfantId).ToList(),
+            jour.Transfert is { } t
+                ? new TransfertDuJour(t.NomDepart, t.CouleurDepart, t.NomArrivee, t.CouleurArrivee)
+                : null);
+}

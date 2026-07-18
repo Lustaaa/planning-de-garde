@@ -29,30 +29,9 @@ public sealed class DigestImmediatQuery
     public DigestImmediat Composer(
         DateOnly ancre, DateOnly aujourdhui, string enfantId, VuePlanning vue = VuePlanning.QuatreSemaines)
     {
-        var jours = _grille.Projeter(ancre, vue).Jours;
-        var immediat = jours.FirstOrDefault(j => j.Date == aujourdhui);
-
-        // « À venir » = les jours STRICTEMENT APRÈS aujourd'hui de la fenêtre chargée qui PORTENT un transfert
-        // (saisi OU auto-dérivé s31 — la grille arbitre déjà la source), en ordre chronologique CROISSANT. Un
-        // jour à venir SANS transfert n'y figure pas (section « transferts à venir », Sc.2/Sc.3). Ne compose
-        // que la fenêtre déjà projetée : aucun GET dédié, aucune mutation.
-        var avenir = jours
-            .Where(jour => jour.Date > aujourdhui && jour.Transfert is not null)
-            .OrderBy(jour => jour.Date)
-            .Select(jour => ComposerJour(jour, enfantId))
-            .ToList();
-
-        return new DigestImmediat(
-            immediat is null ? null : ComposerJour(immediat, enfantId),
-            avenir);
+        // Projette la fenêtre chargée puis DÉLÈGUE à la composition PURE partagée avec la reprojection client
+        // (s50 @ihm) : « immédiat » = case du jour courant si présente dans la fenêtre (sinon null = hors-fenêtre),
+        // « à venir » = jours > aujourd'hui portant un transfert, chrono croissant. Aucune mutation, 0 store neuf.
+        return DigestImmediat.Composer(_grille.Projeter(ancre, vue), aujourdhui, enfantId);
     }
-
-    private static JourDigest ComposerJour(JourCase jour, string enfantId)
-        => new(
-            jour.Date,
-            new ResponsableDuJour(jour.ResponsableId, jour.NomResponsable, jour.CouleurResponsable, jour.ResponsableId is not null),
-            jour.Slots.Where(slot => slot.EnfantId == enfantId).ToList(),
-            jour.Transfert is { } t
-                ? new TransfertDuJour(t.NomDepart, t.CouleurDepart, t.NomArrivee, t.CouleurArrivee)
-                : null);
 }

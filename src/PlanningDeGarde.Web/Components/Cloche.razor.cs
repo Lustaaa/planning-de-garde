@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
+using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web.State;
 using static PlanningDeGarde.Web.CanalEcriture;
@@ -45,6 +46,17 @@ public partial class Cloche : IAsyncDisposable
     [Inject] private SessionPlanning Session { get; set; } = default!;
     [Inject] private OptionsConnexionHub OptionsHub { get; set; } = default!;
 
+    // Digest « immédiat » (s50) REPROJETÉ depuis la fenêtre de grille chargée (publié par PlanningPartage dans
+    // l'état partagé). La cloche ne fait AUCUN GET pour le digest : elle rend la dernière reprojection publiée et
+    // se re-rend à chaque changement (chargement / navigation / convergence temps réel de la grille). Vide neutre
+    // tant qu'aucune grille n'est chargée (ou jour courant hors-fenêtre → section « immédiat » absente).
+    private DigestImmediat _digest = DigestImmediat.Vide;
+
+    // État digest partagé résolu PARESSEUSEMENT (comme le port Échap) : la cloche est rendue en permanence dans
+    // le layout, on n'impose donc pas sa présence à tout hôte de test qui rend le layout sans l'enregistrer
+    // (l'app réelle l'enregistre — Program.cs). Absent → le digest reste vide neutre, la cloche reste fonctionnelle.
+    private EtatDigestPartage? _etatDigest;
+
     // Port Échap (s33) résolu PARESSEUSEMENT via le provider (jamais un [Inject] dur) : la cloche est rendue
     // en permanence dans la barre d'application, on n'impose donc pas sa présence à tout hôte qui rend le layout
     // (l'app réelle l'enregistre — Program.cs ; un contexte de test qui n'exerce pas Échap peut l'omettre sans
@@ -61,9 +73,27 @@ public partial class Cloche : IAsyncDisposable
     private string MonId => Session.IdentiteEffective.Id;
 
     protected override void OnInitialized()
+    {
         // Le layout persiste à travers la navigation (login → planning) : la cloche s'abonne à la session pour
         // (re)charger quand la connexion est déclenchée depuis un AUTRE composant (la page de connexion dédiée).
-        => Session.EtatConnexionChange += SurChangementConnexion;
+        Session.EtatConnexionChange += SurChangementConnexion;
+        // Digest (s50) : s'abonne à l'état partagé publié par la grille (reprojection depuis la fenêtre chargée),
+        // et adopte la dernière valeur déjà publiée si la grille a chargé avant le rendu de la cloche.
+        _etatDigest = Fournisseur.GetService(typeof(EtatDigestPartage)) as EtatDigestPartage;
+        if (_etatDigest is not null)
+        {
+            _etatDigest.Change += SurDigestChange;
+            _digest = _etatDigest.Digest;
+        }
+    }
+
+    /// <summary>Le digest publié par la grille a changé (chargement / navigation / convergence temps réel) :
+    /// adopte la nouvelle reprojection et re-rend — AUCUN GET (garde-fou anti-flake, canal de lecture).</summary>
+    private void SurDigestChange()
+    {
+        _digest = _etatDigest?.Digest ?? DigestImmediat.Vide;
+        InvokeAsync(StateHasChanged);
+    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -308,6 +338,8 @@ public partial class Cloche : IAsyncDisposable
     public async ValueTask DisposeAsync()
     {
         Session.EtatConnexionChange -= SurChangementConnexion;
+        if (_etatDigest is not null)
+            _etatDigest.Change -= SurDigestChange;
         await DetacherEchap();
         if (_hub is not null)
             await _hub.DisposeAsync();

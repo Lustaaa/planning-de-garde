@@ -32,7 +32,7 @@
 
 ---
 
-## Avancement — 4/8
+## Avancement — 5/8
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -40,7 +40,7 @@
 | 2 | « Transferts à venir » des N prochains jours de la fenêtre chargée, chrono croissant | @back | ✅ |
 | 3 | Replis fidèles (personne assignée sans fantôme · orphelin neutre · sans transfert · sans slot) | @back | ✅ |
 | 4 | Fenêtre sans à-venir / jour courant hors-fenêtre = section vide neutre, sans crash ; invariant 0 mutation (2 adaptateurs) | @back | ✅ |
-| 5 | Section digest en TÊTE du panneau cloche (au-dessus du flux chrono), lecture stricte, Parent-gated | @ihm | ⏳ |
+| 5 | Section digest en TÊTE du panneau cloche (au-dessus du flux chrono), lecture stricte, Parent-gated | @ihm | ✅ |
 | 6 | Reprojection client depuis la fenêtre grille chargée (0 GET dédié) ; hors-fenêtre = digest vide neutre | @ihm | ⏳ |
 | 7 | Convergence temps réel du digest d'un 2ᵉ écran par la diffusion `INotificateurChangement`, 0 GET sur push | @ihm | ⏳ |
 | 8 | Gating & lecture stricte : Invité ne voit pas le digest · rien sur `/connexion` · aucune action/bouton | @ihm | ⏳ |
@@ -112,7 +112,7 @@ Scénario: fenêtre sans à-venir et jour courant hors-fenêtre = digest vide ne
 
 ### Sc.5 — Section digest en tête du panneau cloche (IHM lecture)
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: le digest s'affiche EN TÊTE du panneau déroulant de la cloche, en lecture stricte
   Étant donné un utilisateur Parent connecté avec un enfant sélectionné et une grille chargée
   Quand j'ouvre le panneau déroulant de la cloche (barre du haut, MainLayout)
