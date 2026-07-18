@@ -15,9 +15,10 @@ public enum StatutProposition
     Refusee,
 }
 
-/// <summary>Snapshot immuable d'une proposition d'échange — frontière publique (assertions / persistance).</summary>
+/// <summary>Snapshot immuable d'une proposition d'échange — frontière publique (assertions / persistance).
+/// <c>Jour</c> = début de plage, <c>JourFin</c> = fin INCLUSE (s52) ; <c>JourFin == Jour</c> = échange d'UN jour (parité s47).</summary>
 public sealed record PropositionEchangeSnapshot(
-    string Id, DateOnly Jour, string EnfantId, string DeActeurId, string VersActeurId, StatutProposition Statut);
+    string Id, DateOnly Jour, string EnfantId, string DeActeurId, string VersActeurId, StatutProposition Statut, DateOnly JourFin);
 
 /// <summary>
 /// Agrégat « échange consenti » (s47) : un cédant PROPOSE de confier le jour <c>Jour</c> (enfant
@@ -30,10 +31,11 @@ public sealed record PropositionEchangeSnapshot(
 public sealed class PropositionEchange
 {
     private PropositionEchange(
-        string id, DateOnly jour, string enfantId, string deActeurId, string versActeurId, StatutProposition statut)
+        string id, DateOnly jour, DateOnly jourFin, string enfantId, string deActeurId, string versActeurId, StatutProposition statut)
     {
         Id = id;
         Jour = jour;
+        JourFin = jourFin;
         EnfantId = enfantId;
         DeActeurId = deActeurId;
         VersActeurId = versActeurId;
@@ -42,12 +44,19 @@ public sealed class PropositionEchange
 
     public string Id { get; }
     public DateOnly Jour { get; }
+
+    /// <summary>Fin de plage INCLUSE (s52). Égale à <see cref="Jour"/> pour un échange d'UN jour (parité s47).</summary>
+    public DateOnly JourFin { get; }
     public string EnfantId { get; }
     public string DeActeurId { get; }
     public string VersActeurId { get; }
     public StatutProposition Statut { get; private set; }
 
-    public static Result<PropositionEchange> Proposer(DateOnly jour, string enfantId, string deActeurId, string versActeurId)
+    /// <summary>Propose un échange sur la plage <c>[jour..jourFin]</c> (s52). <paramref name="jourFin"/> absent
+    /// (null) = plage réduite à UN jour (parité s47). La borne <c>fin &lt; début</c> (plage vide) est refusée
+    /// AVANT toute écriture (règle dans l'agrégat), au même titre que le recevant vide ou l'échange à soi-même.</summary>
+    public static Result<PropositionEchange> Proposer(
+        DateOnly jour, string enfantId, string deActeurId, string versActeurId, DateOnly? jourFin = null)
     {
         if (string.IsNullOrWhiteSpace(versActeurId))
             return Result<PropositionEchange>.Echec("Échange : le recevant est requis.");
@@ -55,13 +64,18 @@ public sealed class PropositionEchange
             return Result<PropositionEchange>.Echec(
                 "Échange à soi-même : cet acteur récupère déjà ce jour-là, aucun changement n'est nécessaire.");
 
+        var fin = jourFin ?? jour;
+        if (fin < jour)
+            return Result<PropositionEchange>.Echec(
+                "Échange : la fin de plage est antérieure au début (plage vide).");
+
         return Result<PropositionEchange>.Succes(
-            new PropositionEchange(Guid.NewGuid().ToString("N"), jour, enfantId, deActeurId, versActeurId, StatutProposition.Proposee));
+            new PropositionEchange(Guid.NewGuid().ToString("N"), jour, fin, enfantId, deActeurId, versActeurId, StatutProposition.Proposee));
     }
 
     /// <summary>Reconstitue un agrégat depuis son snapshot persisté (relecture store).</summary>
     public static PropositionEchange FromSnapshot(PropositionEchangeSnapshot s)
-        => new(s.Id, s.Jour, s.EnfantId, s.DeActeurId, s.VersActeurId, s.Statut);
+        => new(s.Id, s.Jour, s.JourFin, s.EnfantId, s.DeActeurId, s.VersActeurId, s.Statut);
 
     /// <summary>Le recevant CONSENT : la proposition passe à « accepté » (l'écriture s44 est composée côté use case).</summary>
     public void Accepter() => Statut = StatutProposition.Acceptee;
@@ -69,5 +83,5 @@ public sealed class PropositionEchange
     /// <summary>Le recevant décline : la proposition passe à « refusé », aucune écriture.</summary>
     public void Refuser() => Statut = StatutProposition.Refusee;
 
-    public PropositionEchangeSnapshot ToSnapshot() => new(Id, Jour, EnfantId, DeActeurId, VersActeurId, Statut);
+    public PropositionEchangeSnapshot ToSnapshot() => new(Id, Jour, EnfantId, DeActeurId, VersActeurId, Statut, JourFin);
 }
