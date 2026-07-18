@@ -524,15 +524,15 @@ else
     .barre-nav-temporelle .btn:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
     .barre-nav-temporelle .btn:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
     .barre-nav-temporelle .btn + .btn { margin-left: -1px; }
-    /* Surface de sélection de plage par DRAG (s49, correctif du gate G3 : le drag ne marchait pas en
-       navigateur réel). CAUSE : au glisser souris, le navigateur démarrait une SÉLECTION DE TEXTE native
-       (les cases portent du texte : jour, date, responsable) qui AVALAIT les pointerover/pointerup
-       intermédiaires → aucune case survolée n'était surlignée et le relâchement n'ouvrait pas la dialog.
-       REMÈDE : neutraliser la sélection native (user-select:none) + le drag natif d'image/élément
-       (touch-action:none complète le preventDefault du pointerdown côté événement). Les événements de
-       pointeur circulent alors normalement jusqu'aux cases intermédiaires pendant tout le geste. */
-    .grille-plage-selectionnable { user-select: none; -webkit-user-select: none; -ms-user-select: none;
-                                   -webkit-touch-callout: none; touch-action: none; }
+    /* Surface de sélection de plage par DRAG (s49, correctif du gate G3). La neutralisation de la
+       SÉLECTION DE TEXTE native (user-select:none sur le conteneur ET ses descendants texte) vit
+       désormais en CSS GLOBAL SERVI (wwwroot/app.css) — elle était auparavant ENFERMÉE dans ce
+       bloc de styles inline du composant, livré via la DLL WASM et absent de tout .css servi, donc
+       insuffisamment fiable ; la ceinture JS selectstart/dragstart (index.html, module pdgPointeur)
+       l'achève quand les événements souris de compatibilité la contournent pendant le geste.
+       Ici on ne conserve que touch-action:none, qui complète le preventDefault du pointerdown afin
+       que le geste de pointeur ne soit pas converti en défilement / zoom sur pointeur tactile. */
+    .grille-plage-selectionnable { touch-action: none; }
     /* Contrôle étiqueté cohérent (vue / incarnation / rôle) : label discret tokenisé, clair ET sombre. */
     .pdg-controle { display: inline-flex; align-items: center; gap: .4rem; margin: 0; }
     .pdg-controle-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em;

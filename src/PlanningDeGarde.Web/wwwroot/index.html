@@ -95,6 +95,25 @@
         window.pdgPointeur = (function () {
             var registre = new Map();
             var seq = 0;
+
+            // CEINTURE anti-sélection-native (s49, 2ᵉ passe du gate G3) : même quand user-select:none est
+            // posé en CSS, les événements SOURIS de compatibilité déclenchés pendant un geste de POINTEUR
+            // peuvent encore démarrer une sélection de texte / un drag natif sur les cases de la grille
+            // (le texte se surligne en bleu, les pointerover/pointerup intermédiaires sont avalés et le
+            // drag de plage ne s'installe pas). On empêche donc DÉFINITIVEMENT le démarrage de sélection
+            // (selectstart) et le drag natif (dragstart) — MAIS UNIQUEMENT lorsque l'événement part d'une
+            // surface de grille ([data-testid="grille-agenda"]) : la sélection de texte reste normale
+            // partout ailleurs (copier un libellé, une notification…). Attaché une seule fois au niveau
+            // document (le geste peut sortir d'une case), jamais retiré (coût nul hors grille).
+            var empecherSelectionSurGrille = function (e) {
+                var cible = e.target;
+                if (cible && cible.closest && cible.closest('[data-testid="grille-agenda"]')) {
+                    e.preventDefault();
+                }
+            };
+            document.addEventListener('selectstart', empecherSelectionSurGrille);
+            document.addEventListener('dragstart', empecherSelectionSurGrille);
+
             return {
                 attacher: function (dotNetRef) {
                     var id = ++seq;
