@@ -5,12 +5,12 @@
 > consenti). **Miroir EXACT de la progression s44→s45** (la délégation directe est passée du jour
 > unique à la plage), transposée au **workflow d'échange consenti s47**.
 
-## Avancement — 1/10
+## Avancement — 2/10
 
 | # | Scénario | Type | Statut |
 |--:|---|---|:--:|
 | 1 | Proposer sur plage `[J1..J3]` = UNE Proposition `pending` SANS écriture (invariant s47 prouvé) | @back | ✅ |
-| 2 | Défaut `fin=début` = échange mono-jour s47 STRICTEMENT inchangé (non-régression) | @back | ⏳ |
+| 2 | Défaut `fin=début` = échange mono-jour s47 STRICTEMENT inchangé (non-régression) | @back | ✅ |
 | 3 | Accepter COMPOSE la délégation-plage s45 (surcharge multi-jours + transferts aux 2 frontières) | @back | ⏳ |
 | 4 | Refuser retire SANS écriture → `refusé`, store intact | @back | ⏳ |
 | 5 | Bornes refusées AVANT écriture (fin<début / soi-même / délégataire inconnu-orphelin) | @back | ⏳ |
@@ -85,7 +85,7 @@ Scénario 1 — Proposer sur une plage crée UNE Proposition pending SANS aucune
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 2 — Défaut fin=début : échange mono-jour s47 STRICTEMENT inchangé (non-régression)
   Étant donné un enfant et un délégataire connus
   Quand un parent propose un échange sans borne de fin (fin = début = J1)
