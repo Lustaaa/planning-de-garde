@@ -5,7 +5,7 @@
 > consenti). **Miroir EXACT de la progression s44→s45** (la délégation directe est passée du jour
 > unique à la plage), transposée au **workflow d'échange consenti s47**.
 
-## Avancement — 9/10
+## Avancement — 10/10
 
 | # | Scénario | Type | Statut |
 |--:|---|---|:--:|
@@ -18,7 +18,7 @@
 | 7 | Champ « jusqu'au » dans `ProposerEchangeDialog` (miroir s45), Parent-gated | @ihm | ✅ |
 | 8 | Notif d'échange de plage ACTIONNABLE dans la cloche (Accepter/Refuser) chez le recevant | @ihm | ✅ |
 | 9 | Échap = Annuler (port s33) · refus domaine → dialog reste ouverte + motif + saisie conservée | @ihm | ✅ |
-| 10 | Temps réel : accepter → 2ᵉ écran converge sur TOUTES les cases de la plage, 0 GET sur push | @ihm | ⏳ |
+| 10 | Temps réel : accepter → 2ᵉ écran converge sur TOUTES les cases de la plage, 0 GET sur push | @ihm | ✅ |
 
 **back : 6 · ihm : 4 · total : 10.**
 
@@ -176,7 +176,7 @@ Scénario 9 — Échap = Annuler · refus domaine garde la dialog ouverte + sais
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 10 — Temps réel : accepter → 2ᵉ écran converge sur toute la plage, 0 GET sur push
   Étant donné deux écrans connectés sur le même foyer
   Quand le recevant accepte une proposition d'échange sur la plage [J1..J3] sur le 1ᵉʳ écran
