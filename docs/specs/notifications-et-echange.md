@@ -3,9 +3,10 @@
 > Sujet **créé s47** (paliers « Immédiat & événements à venir » / cloche **et** « Imprévu &
 > échange » / flux consenti). Source de vérité pour la **cloche générale de changements**
 > (journal, lu/non-lu, surface barre du haut, diffusion temps réel porteuse de payload), l'**échange
-> proposition → accord**, le **signalement d'imprévu informatif** (brique C, s48) et le **digest
-> « immédiat » dans la cloche** (brique D, s50 — qui récupère ce soir + transferts à venir). Édité en
-> diff, jamais réécrit en bloc.
+> proposition → accord**, le **signalement d'imprévu informatif** (brique C, s48), le **digest
+> « immédiat » dans la cloche** (brique D, s50 — qui récupère ce soir + transferts à venir) et l'**action
+> de suivi sur un imprévu** (brique E, s51 — proposer un échange en réaction). Édité en diff, jamais
+> réécrit en bloc.
 
 ## Contexte
 
@@ -139,9 +140,15 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
   à côté de « déléguer ce jour » s44 / « proposer un échange » s47) → **mini-dialog malade / retard +
   motif optionnel**, **Échap = Annuler** (port `IEcouteurEchapModal` s33), émission par le **canal
   d'écriture**. Restitution dans la **cloche s47** : notification **INFORMATIVE** (« X est malade le 12 »,
-  « Y sera en retard le 12 »), lu/non-lu + marquer-lu, **SANS aucune action de suivi** *(Sc.6)* — pas
-  d'accepter / refuser : l'imprévu informatif n'est **pas négociable** (c'est ce qui le distingue de
-  l'échange brique B).
+  « Y sera en retard le 12 »), lu/non-lu + marquer-lu. En s48 la notif était **SANS aucune action de
+  suivi** *(Sc.6)* — pas d'accepter / refuser : l'imprévu informatif n'est **pas négociable** (c'est ce
+  qui le distingue de l'échange brique B).
+  > **Amendement s51 (brique E ci-dessous).** La notif d'imprévu **porte désormais une action de suivi
+  > « proposer un échange »**. Cet ajout **NE contredit PAS** la borne s48 : l'imprévu **reste un FAIT
+  > informatif non-négocié** (le modèle `Imprevu` n'est ni muté, ni « résolu », ni rendu actionnable).
+  > On ne rend **pas l'imprévu négociable** ; on **greffe À CÔTÉ**, en réaction, une **proposition
+  > d'échange DISTINCTE** (brique B, modèle `Proposition` séparé). L'imprévu informe, la proposition
+  > négocie — deux modèles, deux événements.
 - **Temps réel** *(Sc.7)* : la cloche d'un 2ᵉ écran **converge par reprojection client depuis la diffusion
   porteuse de payload** (`INotificateurChangement`), **0 GET sur push** ; la diffusion porte une **donnée
   de lecture** (ne déclenche aucune écriture — séparation des canaux tenue).
@@ -186,6 +193,46 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
   **disparaître la section « aujourd'hui »** et borne les « à-venir » à la fenêtre. L'arbitrage
   **persistance hors-fenêtre vs coût GET/flake n'est PAS rouvert** (aucun GET dédié sur navigation).
 
+## Brique E — Action de suivi sur un imprévu : proposer un échange en réaction *(livré s51)*
+
+- **Ferme la boucle ouverte s48** : un imprévu (malade / retard, brique C) était **purement informatif** dans
+  la cloche, sans moyen d'y **réagir**. La brique E greffe une **action de suivi** sur la notif d'imprévu :
+  depuis « Léa est malade le 29/06 », un parent **propose direct un échange** à un autre acteur, sans quitter
+  la notification. Elle **raccorde deux flux déjà livrés mais cloisonnés** : signaler un fait (brique C, s48)
+  et négocier une réaffectation (brique B, s47).
+- **GARDE DE DISTINCTION (non négociable).** L'imprévu **LUI-MÊME reste un FAIT informatif non-négocié**
+  (modèle `Imprevu` s48 : consigné au journal, jamais lu par la résolution, **sans** état pending /
+  accepté / refusé). L'action de suivi est une **PROPOSITION D'ÉCHANGE DISTINCTE** (modèle `Proposition`
+  s47, brique B) **greffée en réaction** — elle **ne mute pas** l'imprévu, ne le « résout » pas, ne lui
+  ajoute aucun statut. **Les deux modèles restent séparés** : l'imprévu **informe**, la proposition
+  **négocie**. Signaler « malade » **puis** proposer un échange = **deux événements distincts** au journal.
+- **`ProposerEchangeSuiteImprevu` = use case de COMPOSITION** (`ProposerEchangeSuiteImprevuHandler`, endpoint
+  `/api/canal/proposer-echange-suite-imprevu`) : **lit l'imprévu au journal** (jour + enfant **hérités**),
+  puis **délègue à `ProposerEchange` s47** (brique B) avec le `versActeur` choisi. **AUCUN modèle / store
+  neuf** — réemploi INTÉGRAL de `Proposition` s47 (+ ses ports / store) et du journal s48.
+- **Invariants prouvés** *(Sc.1–Sc.4)* : proposer (même depuis un imprévu) crée un `pending` **SANS écriture**
+  (store des surcharges **INTACT**, case inchangée tant que non acceptée — invariant s47) ; l'imprévu
+  d'origine reste **consigné au journal, inchangé** ; **ACCEPTER compose la délégation s44** (surcharge +
+  transfert bicolore auto-dérivé s31, R24), **REFUSER sans écriture** ; **soi-même / délégataire inconnu /
+  orphelin refusés AVANT écriture** (aucune écriture partielle) ; **ré-proposition last-write-wins R11** sans
+  doublon ; **jour hors fenêtre chargée sans crash**. Identique **InMemory + Mongo durable**.
+- **Surface — AUCUNE surface neuve** *(PORTE DE CONCEPTION arbitrée AU CADRAGE)* : l'action **« proposer un
+  échange » vit DANS la notif d'imprévu de la cloche** (entrée **contextuelle** portant déjà le jour +
+  l'enfant), qui **pré-remplit** la mini-dialog « proposer un échange » s47 (`ProposerEchangeDialog`) — le
+  parent n'a plus qu'à choisir le `versActeur`. **Parent-gated** (Invité inerte, ne voit ni cloche ni
+  action) ; commande émise par le **canal d'écriture** ; **Échap = Annuler** (port `IEcouteurEchapModal`
+  s33). *(Alternatives écartées au cadrage : bouton sur la case de la grille — anti-cliquet s44 ; nouvelle
+  entrée du menu clic-case — redondante avec « proposer un échange » s47 et décorrélée du contexte imprévu ;
+  transformer la notif d'imprévu en notif actionnable — violerait la garde de distinction.)*
+- La **proposition greffée** est **ACTIONNABLE** (Accepter / Refuser) chez le recevant dans **sa** cloche
+  (brique B) ; Accepter compose la délégation → la case du jour converge. **Temps réel** *(Sc.7)* : la cloche
+  d'un 2ᵉ écran **converge par reprojection client** depuis la **diffusion porteuse de payload**
+  (`INotificateurChangement` s47), **0 GET sur push** (garde anti-flake [[flake-signalr-blast-radius]]).
+- **Hors scope s51** (backlog) : **réaction autre qu'un échange** (déléguer unilatéralement / « annuler ma
+  garde » depuis la notif) ; **imprévu / échange greffé sur PLAGE / série / multi-enfants** (borne s48 :
+  un imprévu = **un jour, un enfant** — la proposition hérite du jour+enfant unique) ; notifications **push /
+  e-mail externes**.
+
 ## Règles de gestion (catalogue : `regles-de-gestion.md`)
 
 - **Journal = trace de lecture non-autorité** : le journal de changements n'est **jamais** lu par la
@@ -211,8 +258,10 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
 - **Cloche in-app uniquement** : notifications **push / e-mail externes** hors scope (la diffusion est
   temps réel SignalR in-app).
 - **Signalement d'imprévu dédié** (malade / retard) distinct de l'échange : **livré s48** (brique C
-  ci-dessus, informatif, sans action de suivi). Reste ouverte l'**action de suivi** (proposer un échange
-  en réaction à un imprévu).
+  ci-dessus, informatif). L'**action de suivi** (proposer un échange en réaction à un imprévu) est
+  **livrée s51** (brique E ci-dessus, composition de la brique B ; l'imprévu reste informatif, la
+  proposition greffée est un modèle distinct). Reste ouverte la **réaction autre qu'un échange**
+  (déléguer / annuler depuis la notif) et l'imprévu / échange greffé sur **plage / série / multi-enfants**.
 - **Digest « immédiat » dans la cloche** (qui récupère ce soir + à venir) : **livré s50** (brique D
   ci-dessus). **Reste** : le digest **PERSISTANT hors de la fenêtre de grille chargée** (arbitrage
   persistance vs coût GET/flake non rouvert — limitation héritée s42/s43).

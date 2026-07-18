@@ -35,6 +35,29 @@
 > la cloche s'y ajoute comme surface transverse.** Backlog et spec (`saisie-et-grille.md`, `notifications-et-echange.md`)
 > alignés sur cet amendement — plus de contradiction « seule surface ».
 
+**s51 `action-suivi-imprevu-proposer-echange` MERGÉ — ACTION DE SUIVI sur un imprévu : RÉAGIR (malade/retard s48) en PROPOSANT UN ÉCHANGE (palier 15, ferme la boucle ouverte s48).**
+Depuis la **notification d'imprévu s48 dans la cloche**, une **entrée d'action contextuelle « proposer un échange »** (portant déjà le jour+enfant
+de l'imprévu) **compose `ProposerEchange` s47**. **AUCUN modèle/store neuf** : réemploi INTÉGRAL de `Proposition` s47 (pending → Accepter/Refuser) +
+journal s48. **@back** : use case de composition `ProposerEchangeSuiteImprevuHandler` (lit l'imprévu au journal → jour+enfant hérités → délègue à
+`ProposerEchange` s47), endpoint `/api/canal/proposer-echange-suite-imprevu` ; **Proposition pending pré-remplie SANS écriture** (store surcharges
+INTACT tant que non accepté, invariant s47 prouvé) ; **ACCEPTER compose la délégation s44** (surcharge + transfert dérivé s31, R24), **REFUSER sans
+écriture** ; soi-même / délégataire inconnu / orphelin **refusés AVANT écriture** ; ré-proposition **last-write-wins R11** sans doublon ; jour hors
+fenêtre sans crash ; deux adaptateurs InMemory + Mongo durable. **@ihm** : action « proposer un échange » DANS la notif d'imprévu de la cloche
+(réutilise `ProposerEchangeDialog` s47 **pré-remplie**, Échap=Annuler port s33, **Parent-gated**, Invité inerte) ; proposition **ACTIONNABLE**
+(Accepter/Refuser) chez le recevant ; **convergence temps réel 0-GET** par reprojection client depuis la diffusion porteuse de payload
+`INotificateurChangement` s47. **AMENDE la décision s48 « imprévu = informatif SANS action de suivi (non négociable) »** SANS la contredire : l'imprévu
+**reste un FAIT informatif non-négocié** (modèle `Imprevu` s48 inchangé, jamais muté ni « résolu ») ; on **greffe À CÔTÉ** une **proposition d'échange
+DISTINCTE** (modèle `Proposition` s47) déclenchée *par réaction* — les **deux modèles restent séparés** (l'imprévu informe, la proposition négocie).
+**PORTE DE CONCEPTION SURFACE arbitrée AU CADRAGE** (action dans la notif d'imprévu, alternatives bouton-case / entrée-menu / notif-actionnable
+écartées au cadrage — anti-rework G3) : **0 rework G3, 7/7 du 1ᵉʳ coup, gate G3 validé PO DU PREMIER COUP** (garde-fou s49 rebuild du build WASM
+servi appliqué), **AUCUN retour produit** (section « Retours produit » du sprint **vide**). Suite **872/872** verte. **Le candidat de tête « action
+de suivi sur imprévu » est LIVRÉ ; la boucle imprévu→réaction ouverte s48 est FERMÉE.** **Hors scope s51** (backlog, à faire) : **réaction autre qu'un
+échange** (déléguer unilatéralement / annuler ma garde depuis la notif) ; **imprévu / échange greffé sur PLAGE / série / multi-enfants** (borne s48 : un
+imprévu = un jour, un enfant) ; **notifications push / e-mail externes** (cloche in-app SignalR). **Candidats de tête au prochain `/planning`** :
+**délégation récurrente/série** (D2), échange sur une **plage** / **multi-enfants**, **digest PERSISTANT hors fenêtre chargée** (limitation s50), reste
+Config foyer (édition depuis le graphe, graphe étendu, arbitrage inline vs modal, liste de slots par activité, lien adresse acteur↔lieu, suppression
+slot récurrent IHM, suppression d'un enfant) ; **P0 auth** (Google OAuth réel + écran définir-mot-de-passe).
+
 **s50 `cloche-immediat-digest` MERGÉ — DIGEST « immédiat » DANS LA CLOCHE (palier 2 « immédiat & rappels » de la vision / palier 14 roadmap COMPLÉTÉ).**
 Ramène **DANS la cloche s47** le contenu de lecture retiré s42/s43 en s44 — **(a) « qui récupère aujourd'hui / ce soir »** (responsable résolu
 **surcharge>fond>neutre** + où/slot s29 + transfert saisi OU dérivé s31) + **(b) « transferts à venir »** des N prochains jours de la fenêtre

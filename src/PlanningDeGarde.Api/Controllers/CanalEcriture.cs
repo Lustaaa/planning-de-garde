@@ -238,6 +238,13 @@ public static class CanalEcriture
     /// refuser clôt sans aucune écriture.</summary>
     public sealed record RepondrePropositionRequete(string PropositionId);
 
+    /// <summary>Corps de la requête « action de suivi sur un imprévu : proposer un échange » (s51) émise via le canal
+    /// d'écriture : l'identifiant de l'ÉVÉNEMENT d'imprévu journalisé (s48) dont on hérite le jour + l'enfant, et
+    /// l'acteur RECEVANT choisi. COMPOSE ProposerEchange s47 (proposition pending, 0 surcharge). Sur succès, la
+    /// proposition est diffusée (payload) à la cloche du recevant. Refus métier (recevant inconnu / à soi-même)
+    /// renvoyé avec son motif — le mini-dialog reste ouvert côté front.</summary>
+    public sealed record ProposerEchangeSuiteImprevuRequete(string ImprevuEvenementId, string VersActeurId);
+
     /// <summary>Corps de la requête SIGNALER un imprévu (s48) émise via le canal d'écriture : le jour, l'enfant, le
     /// TYPE d'imprévu (malade / retard), l'acteur SIGNALANT, un motif OPTIONNEL. Purement INFORMATIF — consigne une
     /// trace au journal (cloche s47) DIFFUSÉE (payload), N'ÉCRIT AUCUNE surcharge (résolution jamais touchée, invariant
@@ -265,6 +272,22 @@ public static class CanalEcriture
             // PROPOSER n'écrit AUCUNE surcharge (canal de consentement). Refus métier (recevant inconnu, à
             // soi-même) renvoyé avec son motif — le mini-dialog reste ouvert côté front (Sc.5). Sur succès, la
             // proposition est DIFFUSÉE (payload) : la cloche du recevant reprojette la notif actionnable, 0 GET.
+            if (!resultat.EstSucces)
+                return Results.BadRequest(resultat.Motif);
+
+            notificateur.NotifierProposition(resultat.Valeur!);
+            return Results.Ok();
+        });
+
+        routes.MapPost("/api/canal/proposer-echange-suite-imprevu",
+            (ProposerEchangeSuiteImprevuRequete requete, ProposerEchangeSuiteImprevuHandler handler, INotificateurChangement notificateur) =>
+        {
+            // Action de suivi s51 : COMPOSE ProposerEchange s47 EN RÉACTION à un imprévu journalisé s48. Le jour +
+            // l'enfant sont HÉRITÉS de l'imprévu (le proposant n'a choisi que le recevant). N'écrit AUCUNE surcharge
+            // (canal de consentement). Refus métier (recevant inconnu, à soi-même) renvoyé avec son motif — le
+            // mini-dialog reste ouvert côté front. Sur succès, la proposition est DIFFUSÉE (payload) : la cloche du
+            // recevant reprojette la notif actionnable, 0 GET. L'imprévu reste au journal, inchangé (fait informatif).
+            var resultat = handler.Handle(new ProposerEchangeSuiteImprevuCommand(requete.ImprevuEvenementId, requete.VersActeurId));
             if (!resultat.EstSucces)
                 return Results.BadRequest(resultat.Motif);
 
