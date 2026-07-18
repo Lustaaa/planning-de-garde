@@ -23,11 +23,13 @@ public sealed class FrontWasmSelectionPlageClicSimpleInchangeTempsReelTests : Te
     {
         // Given — la grille réelle câblée à l'API distante, affichée pour un Parent, aujourd'hui = 29/06/2026.
         using var api = new ApiDistanteFactory();
+        var relachement = GrilleRuntimeHarness.DoublerRelachementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Aujourdhui);
 
-        // When — mousedown PUIS mouseup sur la MÊME case (29/06), sans aucun survol d'une autre case (pas de drag).
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").MouseDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").MouseUp());
+        // When — pointerdown PUIS relâchement (pointerup document) sur la MÊME case (29/06), sans aucun survol
+        // d'une autre case (pas de drag) : le curseur reste sur l'ancre → clic simple.
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "29/06").PointerDown());
+        this.SurDispatcher(() => relachement.RelacherPointeurDocument().GetAwaiter().GetResult());
 
         // Then — le menu clic-case EXISTANT s'ouvre (avec ses entrées), et la dialog de PLAGE n'est PAS ouverte.
         grille.WaitForAssertion(

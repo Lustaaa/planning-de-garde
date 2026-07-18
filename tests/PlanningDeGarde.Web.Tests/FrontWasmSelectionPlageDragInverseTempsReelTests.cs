@@ -26,12 +26,13 @@ public sealed class FrontWasmSelectionPlageDragInverseTempsReelTests : TestConte
         // Given — la grille réelle câblée à l'API distante (store vierge), Parent, aujourd'hui = 10/06/2026
         // (fenêtre 4 semaines démarrant au lundi 08/06).
         using var api = new ApiDistanteFactory();
+        var relachement = GrilleRuntimeHarness.DoublerRelachementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
 
-        // When — mousedown sur J3 (11/06), survol jusqu'à J1 (09/06) : SENS INVERSE. La surbrillance couvre
-        // néanmoins J1, J2, J3 (intervalle normalisé, identique au sens direct).
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").MouseDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").MouseOver());
+        // When — pointerdown sur J3 (11/06), survol (pointerover) jusqu'à J1 (09/06) : SENS INVERSE. La
+        // surbrillance couvre néanmoins J1, J2, J3 (intervalle normalisé, identique au sens direct).
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerDown());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerOver());
 
         grille.WaitForAssertion(
             () =>
@@ -42,8 +43,8 @@ public sealed class FrontWasmSelectionPlageDragInverseTempsReelTests : TestConte
             },
             TimeSpan.FromSeconds(10));
 
-        // … au relâchement (mouseup sur J1), la dialog s'ouvre pré-remplie sur l'intervalle normalisé [09/06, 11/06].
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").MouseUp());
+        // … au relâchement (pointerup document), la dialog s'ouvre pré-remplie sur l'intervalle normalisé [09/06, 11/06].
+        this.SurDispatcher(() => relachement.RelacherPointeurDocument().GetAwaiter().GetResult());
         grille.WaitForState(
             () => grille.FindAll("[data-testid='dialog-affecter-periode']").Count == 1,
             TimeSpan.FromSeconds(10));

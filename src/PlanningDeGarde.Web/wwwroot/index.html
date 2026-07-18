@@ -84,6 +84,36 @@
                 }
             };
         })();
+
+        // Module d'écoute du RELÂCHEMENT du pointeur au niveau DOCUMENT (s49, correctif du gate G3 : le drag
+        // multi-jours de la grille ne fonctionnait pas en navigateur réel), consommé par le port
+        // IEcouteurRelachementPointeur via JS interop. La capture est au niveau DOCUMENT (jamais un
+        // @onmouseup/@onpointerup sur la case seule : relâcher le bouton HORS d'une case — gouttière, au-delà
+        // du bord, sur le document — n'atteint pas le handler de la case, et la plage n'est jamais finalisée).
+        // attacher : pose un document.addEventListener('pointerup') rappelant .NET (Declencher → FinSelectionPlage,
+        // qui n'agit que si une sélection est armée) et renvoie un id opaque. detacher : retire CE listener (par id).
+        window.pdgPointeur = (function () {
+            var registre = new Map();
+            var seq = 0;
+            return {
+                attacher: function (dotNetRef) {
+                    var id = ++seq;
+                    var handler = function () {
+                        dotNetRef.invokeMethodAsync('Declencher');
+                    };
+                    document.addEventListener('pointerup', handler);
+                    registre.set(id, handler);
+                    return id;
+                },
+                detacher: function (id) {
+                    var handler = registre.get(id);
+                    if (handler) {
+                        document.removeEventListener('pointerup', handler);
+                        registre.delete(id);
+                    }
+                }
+            };
+        })();
     </script>
 </head>
 

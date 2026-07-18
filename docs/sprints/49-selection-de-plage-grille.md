@@ -162,6 +162,31 @@ Fonctionnalité: Sélection d'une plage de cases sur la grille agenda
   la grille** après écriture (Sc.3) repose sur les mécaniques SignalR déjà livrées (reprojection
   client, 0 GET sur push, garde anti-flake `SignalRTempsReelCollection` respectée).
 
+## Correctif du gate G3 — le drag ne fonctionnait pas en navigateur RÉEL
+
+Le PO a testé au navigateur (`http://localhost:5081`) : appuyer sur une case et glisser ne produisait NI la
+surbrillance des cases intermédiaires NI l'ouverture de la dialog au relâchement — alors que la suite bUnit
+était verte (elle invoque les handlers Blazor en C#, sans reproduire le comportement souris natif).
+
+- **Cause.** Le drag était câblé sur les **mouse events** (`@onmousedown`/`@onmouseover`/`@onmouseup` par
+  case) sans neutraliser la **sélection de texte native** du navigateur : au glisser, le navigateur démarrait
+  une sélection de texte (les cases portent du texte) qui **avalait** les `mouseover`/`mouseup` intermédiaires
+  → aucune case survolée n'était surlignée. De plus, un relâchement **hors d'une case** (gouttière, bord,
+  document) n'atteignait aucun `@onmouseup` de case → la plage n'était jamais finalisée.
+- **Correctif.** (1) **Pointer events** (`@onpointerdown`/`@onpointerover`) — voie fiable pour un drag
+  continu. (2) `@onpointerdown:preventDefault` + `user-select:none`/`touch-action:none` (classe
+  `grille-plage-selectionnable`) + `draggable="false"` : neutralisent la sélection/drag natifs, les
+  événements de pointeur circulent jusqu'aux cases intermédiaires. (3) Nouveau **port hexagonal**
+  `IEcouteurRelachementPointeur` (adaptateur JS `document.addEventListener('pointerup')`, module
+  `window.pdgPointeur`, attaché **eager** au 1ᵉʳ rendu, détaché au Dispose) : le relâchement est capté au
+  niveau **document**, donc la plage se finalise **où que le bouton soit lâché** — même hors case.
+- **Preuve.** Les tests d'acceptation runtime ont été **migrés sur la vraie voie d'événements** (pointer
+  events) et le relâchement passe désormais par le **port document doublé** (spy `EspionRelachementPointeur`),
+  jamais un `@onmouseup` de case. Un **rempart de non-régression** vérifie que les cases portent la classe qui
+  neutralise la sélection native. **Limite honnête (assumée)** : bUnit **ne peut pas** reproduire le geste
+  souris natif du navigateur ni exécuter le `addEventListener` JS — le fonctionnement effectif du drag reste
+  **non couvrable par bUnit**, à **vérifier manuellement au gate PO** (comme l'Échap document s33).
+
 ---
 
 # Retours produit (PO)

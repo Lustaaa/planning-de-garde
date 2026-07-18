@@ -35,13 +35,19 @@ public sealed class FrontWasmSelectionPlageDragNominalTempsReelTests : TestConte
         // Given — la grille réelle câblée à l'API distante (store vierge), affichée pour un Parent, aujourd'hui
         // = mercredi 10/06/2026 (fenêtre 4 semaines démarrant au lundi 08/06). Les cases J1..J3 sont neutres.
         using var api = new ApiDistanteFactory();
+        var relachement = GrilleRuntimeHarness.DoublerRelachementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
         Assert.Null(GrilleRuntimeHarness.CaseDuJour(grille, "09/06").QuerySelector("[data-testid='nom-responsable']"));
         Assert.Null(GrilleRuntimeHarness.CaseDuJour(grille, "11/06").QuerySelector("[data-testid='nom-responsable']"));
+        // Rempart de non-régression du correctif gate G3 : les cases portent la classe qui neutralise la
+        // SÉLECTION DE TEXTE native (user-select:none) — sans elle, le glisser souris est avalé en navigateur réel.
+        Assert.Contains("grille-plage-selectionnable", GrilleRuntimeHarness.CaseDuJour(grille, "09/06").ClassList);
 
-        // When — mousedown sur J1 (09/06), survol jusqu'à J3 (11/06) : les 3 cases sont en surbrillance.
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").MouseDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").MouseOver());
+        // When — pointerdown sur J1 (09/06), survol (pointerover) jusqu'à J3 (11/06) : les 3 cases sont en
+        // surbrillance. La voie d'événement est celle des POINTER EVENTS (fiable pour un drag continu), et non
+        // plus les mouse events (avalés par la sélection de texte native — cause du gate G3 échoué).
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
 
         grille.WaitForAssertion(
             () =>
@@ -52,9 +58,9 @@ public sealed class FrontWasmSelectionPlageDragNominalTempsReelTests : TestConte
             },
             TimeSpan.FromSeconds(10));
 
-        // … au relâchement (mouseup sur J3), la dialog « Affecter une période » EXISTANTE s'ouvre (pré-remplie
-        // sur l'intervalle) et la surbrillance disparaît.
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").MouseUp());
+        // … au relâchement (pointerup capté au niveau DOCUMENT, jamais sur la case seule), la dialog « Affecter
+        // une période » EXISTANTE s'ouvre (pré-remplie sur l'intervalle) et la surbrillance disparaît.
+        this.SurDispatcher(() => relachement.RelacherPointeurDocument().GetAwaiter().GetResult());
         grille.WaitForState(
             () => grille.FindAll("[data-testid='dialog-affecter-periode']").Count == 1,
             TimeSpan.FromSeconds(10));

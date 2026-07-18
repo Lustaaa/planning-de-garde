@@ -26,15 +26,16 @@ public sealed class FrontWasmSelectionPlageDragGatingParentTempsReelTests : Test
     {
         // Given — grille réelle câblée (store vierge). L'identité effective bascule en Invité (consultation seule).
         using var api = new ApiDistanteFactory();
+        var relachement = GrilleRuntimeHarness.DoublerRelachementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
         var session = Services.GetRequiredService<SessionPlanning>();
         session.Role = RoleAuteur.Invite;
         grille.Render();
 
-        // When — l'Invité presse J1 (09/06), survole jusqu'à J3 (11/06), puis relâche : le geste complet.
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").MouseDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").MouseOver());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").MouseUp());
+        // When — l'Invité presse J1 (09/06), survole jusqu'à J3 (11/06), puis relâche (pointerup document) : le geste complet.
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
+        this.SurDispatcher(() => relachement.RelacherPointeurDocument().GetAwaiter().GetResult());
 
         // Then — AUCUNE surbrillance de plage, AUCUNE dialog, AUCUN menu (drag inerte) ; le store distant est VIDE.
         Assert.Empty(grille.FindAll("[data-plage-drag='1']"));
@@ -51,8 +52,8 @@ public sealed class FrontWasmSelectionPlageDragGatingParentTempsReelTests : Test
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
 
         // When — le Parent presse J1 (09/06) et survole J3 (11/06) : le gate laisse passer, l'ancre est armée.
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").MouseDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").MouseOver());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
 
         // Then — la surbrillance de plage apparaît (l'ancre a bien été posée) : seul un Parent sélectionne.
         grille.WaitForAssertion(

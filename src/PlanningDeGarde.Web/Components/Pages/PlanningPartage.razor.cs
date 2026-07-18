@@ -159,6 +159,12 @@ public partial class PlanningPartage
     // Abonnement à l'écouteur Échap document (détaché à la fermeture de la page — aucune fuite).
     private IAsyncDisposable? _abonnementEchap;
 
+    // Abonnement à l'écouteur de RELÂCHEMENT du pointeur au niveau document (s49, correctif du gate G3) :
+    // attaché EAGER au premier rendu (pas lazy — pour éviter toute course où le TOUT PREMIER drag relâcherait
+    // avant l'attache et manquerait sa finalisation). Le callback FinSelectionPlage ne fait rien sans sélection
+    // armée. Détaché à la fermeture de la page (aucune fuite).
+    private IAsyncDisposable? _abonnementRelachement;
+
     protected override async Task OnInitializedAsync()
     {
         // Garde d'accès (s25, Sc.1) : aucune session ouverte → redirection vers /connexion, aucun contenu
@@ -255,6 +261,12 @@ public partial class PlanningPartage
         if (!firstRender || _redirigeVersConnexion)
             return;
 
+        // Écoute EAGER du relâchement du pointeur au niveau document (s49) : finalise la sélection de plage par
+        // drag même relâchée HORS d'une case. Attachée dès le premier rendu pour ne manquer aucun relâchement
+        // (y compris celui du tout premier geste). Résolution OPTIONNELLE du port (tests de lecture pure sans
+        // port restent fonctionnels).
+        await AssurerEcouteRelachementAsync();
+
         try
         {
             // Hub SignalR de l'API DISTANTE (même hôte que le canal d'écriture/lecture : Canal.BaseAddress).
@@ -307,6 +319,19 @@ public partial class PlanningPartage
         var ecouteur = Services.GetService<IEcouteurEchapModal>();
         if (ecouteur is not null)
             _abonnementEchap = await ecouteur.EcouterAsync(AnnulerSelectionPlage);
+    }
+
+    /// <summary>Attache l'écouteur de relâchement du pointeur au niveau <b>document</b> (port s49, correctif du
+    /// gate G3). Résolution OPTIONNELLE : absent (tests de lecture pure), la grille reste fonctionnelle sans
+    /// finalisation par relâchement document (les tests qui l'exercent doublent le port). Idempotent.</summary>
+    private async Task AssurerEcouteRelachementAsync()
+    {
+        if (_abonnementRelachement is not null)
+            return;
+
+        var ecouteur = Services.GetService<IEcouteurRelachementPointeur>();
+        if (ecouteur is not null)
+            _abonnementRelachement = await ecouteur.EcouterAsync(FinSelectionPlage);
     }
 
     // Date de référence = l'ANCRE DE NAVIGATION (en session/mémoire), décalée par les contrôles
@@ -530,16 +555,19 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// mouseup : fin du geste. Distingue <b>clic vs drag par les CASES</b> (jamais les pixels) : si le curseur
-    /// est resté sur l'ancre → CLIC SIMPLE → menu clic-case existant, INCHANGÉ (Sc.4) ; sinon → PLAGE → ouvre
-    /// la dialog « Affecter une période » EXISTANTE (s06) pré-remplie sur l'intervalle <b>NORMALISÉ</b>
-    /// <c>[min, max]</c> (début ≤ fin garanti, jamais vide/inversée — Sc.3/Sc.5). La surbrillance disparaît
-    /// (état d'ancre/curseur vidé). Aucune écriture ici : la dialog porte la commande (réemploi strict s06).
+    /// Relâchement du pointeur (<c>pointerup</c> capté au niveau <b>document</b>, port s49 — jamais un
+    /// <c>@onpointerup</c> sur la case, qui manquerait un relâchement HORS case en navigateur réel) : fin du
+    /// geste. Distingue <b>clic vs drag par les CASES</b> (jamais les pixels) : si le curseur est resté sur
+    /// l'ancre → CLIC SIMPLE → menu clic-case existant, INCHANGÉ (Sc.4) ; sinon → PLAGE → ouvre la dialog
+    /// « Affecter une période » EXISTANTE (s06) pré-remplie sur l'intervalle <b>NORMALISÉ</b> <c>[min, max]</c>
+    /// (début ≤ fin garanti, jamais vide/inversée — Sc.3/Sc.5). La surbrillance disparaît (état d'ancre/curseur
+    /// vidé). Sans sélection armée (relâchement hors geste), c'est un NO-OP (garde de portée). Aucune écriture
+    /// ici : la dialog porte la commande (réemploi strict s06). Le re-render est forcé (callback hors cycle Blazor).
     /// </summary>
-    private void FinSelectionPlage()
+    private async Task FinSelectionPlage()
     {
         if (_ancreDrag is not { } ancre)
-            return;
+            return; // relâchement document sans sélection armée : ne concerne pas la plage (no-op)
 
         var curseur = _curseurDrag ?? ancre;
         var debut = ancre < curseur ? ancre : curseur;
@@ -550,12 +578,15 @@ public partial class PlanningPartage
         if (debut == fin)
         {
             OuvrirMenu(debut); // clic simple (curseur resté sur l'ancre) : comportement inchangé (Sc.4)
-            return;
+        }
+        else
+        {
+            _plageDebut = debut;
+            _plageFin = fin;
+            _dateDialogAffecterPeriode = debut; // dialog EXISTANTE pré-remplie sur [début, fin] (borne fin = _plageFin)
         }
 
-        _plageDebut = debut;
-        _plageFin = fin;
-        _dateDialogAffecterPeriode = debut; // dialog EXISTANTE pré-remplie sur [début, fin] (borne fin = _plageFin)
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>Vrai si la case appartient à la <b>surbrillance de plage EN COURS</b> (drag armé) — recalculée
@@ -849,6 +880,8 @@ public partial class PlanningPartage
     {
         if (_abonnementEchap is not null)
             await _abonnementEchap.DisposeAsync();
+        if (_abonnementRelachement is not null)
+            await _abonnementRelachement.DisposeAsync();
         if (_hub is not null)
             await _hub.DisposeAsync();
     }

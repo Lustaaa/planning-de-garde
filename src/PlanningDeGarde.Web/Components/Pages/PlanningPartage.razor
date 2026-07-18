@@ -234,14 +234,15 @@
                 {
                     var jourCase = _grille.Jours[i];
                     var nomJour = JoursDeLaSemaine[i % 7];
-                    <div class="grille-horaire-col @(Session.EstParent ? "grille-horaire-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-horaire-selectionnee" : null) @(EstDansPlageDrag(jourCase.Date) ? "grille-horaire-plage-drag" : null) @(EstAujourdhui(jourCase.Date) ? "grille-horaire-aujourdhui" : null)"
+                    <div class="grille-horaire-col grille-plage-selectionnable @(Session.EstParent ? "grille-horaire-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-horaire-selectionnee" : null) @(EstDansPlageDrag(jourCase.Date) ? "grille-horaire-plage-drag" : null) @(EstAujourdhui(jourCase.Date) ? "grille-horaire-aujourdhui" : null)"
                          data-testid="jour-case"
                          data-couleur="@jourCase.CouleurResponsable"
                          data-plage-drag="@(EstDansPlageDrag(jourCase.Date) ? "1" : null)"
                          data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
-                         @onmousedown="@(() => DebutSelectionPlage(jourCase.Date))"
-                         @onmouseover="@(() => SurvolerCasePlage(jourCase.Date))"
-                         @onmouseup="FinSelectionPlage"
+                         draggable="false"
+                         @onpointerdown="@(() => DebutSelectionPlage(jourCase.Date))"
+                         @onpointerdown:preventDefault="true"
+                         @onpointerover="@(() => SurvolerCasePlage(jourCase.Date))"
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
                         <div class="grille-horaire-entete">
                             <span class="grille-horaire-jour-nom">@nomJour</span>
@@ -307,14 +308,15 @@ else
             <div class="grille-semaine">
                 @foreach (var jourCase in semaine.Jours)
                 {
-                    <div class="grille-jour @(Session.EstParent ? "grille-jour-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-jour-selectionnee" : null) @(EstDansPlageDrag(jourCase.Date) ? "grille-jour-plage-drag" : null) @(EstAujourdhui(jourCase.Date) ? "grille-jour-aujourdhui" : null)"
+                    <div class="grille-jour grille-plage-selectionnable @(Session.EstParent ? "grille-jour-cliquable" : null) @(EstDansSelectionPlage(jourCase.Date) ? "grille-jour-selectionnee" : null) @(EstDansPlageDrag(jourCase.Date) ? "grille-jour-plage-drag" : null) @(EstAujourdhui(jourCase.Date) ? "grille-jour-aujourdhui" : null)"
                          data-testid="jour-case"
                          data-couleur="@jourCase.CouleurResponsable"
                          data-plage-drag="@(EstDansPlageDrag(jourCase.Date) ? "1" : null)"
                          data-aujourdhui="@(EstAujourdhui(jourCase.Date) ? "1" : null)"
-                         @onmousedown="@(() => DebutSelectionPlage(jourCase.Date))"
-                         @onmouseover="@(() => SurvolerCasePlage(jourCase.Date))"
-                         @onmouseup="FinSelectionPlage"
+                         draggable="false"
+                         @onpointerdown="@(() => DebutSelectionPlage(jourCase.Date))"
+                         @onpointerdown:preventDefault="true"
+                         @onpointerover="@(() => SurvolerCasePlage(jourCase.Date))"
                          @onclick="@(() => OuvrirMenu(jourCase.Date))">
                         <div class="grille-jour-entete">
                             @* Transfert bicolore (s29, S13 — retour PO gate) : un jour portant un transfert
@@ -522,6 +524,15 @@ else
     .barre-nav-temporelle .btn:first-child { border-top-left-radius: 10px; border-bottom-left-radius: 10px; }
     .barre-nav-temporelle .btn:last-child { border-top-right-radius: 10px; border-bottom-right-radius: 10px; }
     .barre-nav-temporelle .btn + .btn { margin-left: -1px; }
+    /* Surface de sélection de plage par DRAG (s49, correctif du gate G3 : le drag ne marchait pas en
+       navigateur réel). CAUSE : au glisser souris, le navigateur démarrait une SÉLECTION DE TEXTE native
+       (les cases portent du texte : jour, date, responsable) qui AVALAIT les pointerover/pointerup
+       intermédiaires → aucune case survolée n'était surlignée et le relâchement n'ouvrait pas la dialog.
+       REMÈDE : neutraliser la sélection native (user-select:none) + le drag natif d'image/élément
+       (touch-action:none complète le preventDefault du pointerdown côté événement). Les événements de
+       pointeur circulent alors normalement jusqu'aux cases intermédiaires pendant tout le geste. */
+    .grille-plage-selectionnable { user-select: none; -webkit-user-select: none; -ms-user-select: none;
+                                   -webkit-touch-callout: none; touch-action: none; }
     /* Contrôle étiqueté cohérent (vue / incarnation / rôle) : label discret tokenisé, clair ET sombre. */
     .pdg-controle { display: inline-flex; align-items: center; gap: .4rem; margin: 0; }
     .pdg-controle-label { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em;

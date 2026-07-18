@@ -33,8 +33,8 @@ public sealed class FrontWasmSelectionPlageDragBornageVueTempsReelTests : TestCo
         // When — mousedown sur la 1ʳᵉ case interne (08/06, début de fenêtre), puis survol jusqu'à la DERNIÈRE
         // case rendue (05/07, bord de la vue) : impossible de tirer « au-delà » — aucune case hors-vue n'existe
         // dans le DOM, le curseur est donc clampé à la fenêtre chargée.
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "08/06").MouseDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "05/07").MouseOver());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "08/06").PointerDown());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "05/07").PointerOver());
 
         // Then — la surbrillance couvre l'intervalle jusqu'au bord, MAIS le geste n'a NI navigué (ancre
         // inchangée) NI chargé une autre fenêtre (toujours 28 cases projetées : aucune case hors-vue).

@@ -233,4 +233,48 @@ internal static class GrilleRuntimeHarness
     public static IElement CaseDuJour(IRenderedComponent<PlanningPartage> grille, string jjMM)
         => grille.FindAll("[data-testid='jour-case']")
             .Single(c => c.QuerySelector(".grille-jour-date")!.TextContent.Trim() == jjMM);
+
+    /// <summary>
+    /// Double à la main (spy) du port <see cref="IEcouteurRelachementPointeur"/> (s49, correctif du gate G3).
+    /// En navigateur RÉEL, le relâchement du pointeur est capté au niveau <b>document</b> (<c>pointerup</c>),
+    /// jamais par un <c>@onpointerup</c> posé sur la case (qui manquerait un relâchement HORS case). bUnit ne
+    /// peut pas rejouer ce chemin JS ; le spy capte le callback d'attache et le rejoue — reproduisant fidèlement
+    /// la VOIE d'événement réelle (relâchement délivré au document), à défaut du geste souris natif qu'aucun
+    /// harnais bUnit ne peut simuler (limite documentée au tableau du sprint : vérifié manuellement au gate).
+    /// </summary>
+    public sealed class EspionRelachementPointeur : IEcouteurRelachementPointeur
+    {
+        private Func<System.Threading.Tasks.Task>? _onRelache;
+        public int Attachements { get; private set; }
+
+        public System.Threading.Tasks.ValueTask<IAsyncDisposable> EcouterAsync(Func<System.Threading.Tasks.Task> onRelache)
+        {
+            Attachements++;
+            _onRelache = onRelache;
+            return System.Threading.Tasks.ValueTask.FromResult<IAsyncDisposable>(new Abonnement(this));
+        }
+
+        /// <summary>Rejoue un <c>pointerup</c> document (le relâchement réel du geste, capté au niveau document).</summary>
+        public System.Threading.Tasks.Task RelacherPointeurDocument()
+            => _onRelache?.Invoke() ?? System.Threading.Tasks.Task.CompletedTask;
+
+        private sealed class Abonnement : IAsyncDisposable
+        {
+            private readonly EspionRelachementPointeur _espion;
+            public Abonnement(EspionRelachementPointeur espion) => _espion = espion;
+            public System.Threading.Tasks.ValueTask DisposeAsync()
+            {
+                _espion._onRelache = null;
+                return System.Threading.Tasks.ValueTask.CompletedTask;
+            }
+        }
+    }
+
+    /// <summary>Enregistre le spy du port de relâchement document (à appeler AVANT <see cref="RendreGrille"/>).</summary>
+    public static EspionRelachementPointeur DoublerRelachementPointeur(Bunit.TestContext ctx)
+    {
+        var espion = new EspionRelachementPointeur();
+        ctx.Services.AddSingleton<IEcouteurRelachementPointeur>(espion);
+        return espion;
+    }
 }

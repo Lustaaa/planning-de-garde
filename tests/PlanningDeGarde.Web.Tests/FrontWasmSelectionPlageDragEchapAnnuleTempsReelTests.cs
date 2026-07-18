@@ -60,10 +60,10 @@ public sealed class FrontWasmSelectionPlageDragEchapAnnuleTempsReelTests : TestC
         Services.AddSingleton<IEcouteurEchapModal>(espion);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
 
-        // When — mousedown sur J1 (09/06), survol jusqu'à J3 (11/06) : la surbrillance de plage est visible et
-        // l'écoute Échap est armée PARESSEUSEMENT au premier drag (attache unique).
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").MouseDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").MouseOver());
+        // When — pointerdown sur J1 (09/06), survol (pointerover) jusqu'à J3 (11/06) : la surbrillance de plage
+        // est visible et l'écoute Échap est armée PARESSEUSEMENT au premier drag (attache unique).
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
         grille.WaitForAssertion(
             () =>
             {
@@ -89,16 +89,17 @@ public sealed class FrontWasmSelectionPlageDragEchapAnnuleTempsReelTests : TestC
     [Fact]
     public void Echap_sur_une_plage_relachee_ferme_la_dialog_avant_validation_sans_ecrire()
     {
-        // Given — grille réelle câblée (store vierge), Parent, port Échap DOUBLÉ (spy).
+        // Given — grille réelle câblée (store vierge), Parent, ports Échap ET relâchement document DOUBLÉS (spies).
         using var api = new ApiDistanteFactory();
         var espion = new EspionEchap();
         Services.AddSingleton<IEcouteurEchapModal>(espion);
+        var relachement = GrilleRuntimeHarness.DoublerRelachementPointeur(this);
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mercredi_10_06_2026);
 
-        // When — drag J1→J3 PUIS mouseup : la dialog « Affecter une période » s'ouvre, pré-remplie sur l'intervalle.
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").MouseDown());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").MouseOver());
-        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").MouseUp());
+        // When — drag J1→J3 PUIS relâchement (pointerup document) : la dialog « Affecter une période » s'ouvre, pré-remplie.
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "09/06").PointerDown());
+        this.SurDispatcher(() => GrilleRuntimeHarness.CaseDuJour(grille, "11/06").PointerOver());
+        this.SurDispatcher(() => relachement.RelacherPointeurDocument().GetAwaiter().GetResult());
         grille.WaitForState(
             () => grille.FindAll("[data-testid='dialog-affecter-periode']").Count == 1,
             TimeSpan.FromSeconds(10));
