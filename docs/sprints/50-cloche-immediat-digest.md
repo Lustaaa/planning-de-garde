@@ -32,14 +32,14 @@
 
 ---
 
-## Avancement — 3/8
+## Avancement — 4/8
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | 1 | Digest « qui récupère aujourd'hui / ce soir » composé depuis `GrilleAgendaQuery` (responsable résolu + où/slot + transfert) | @back | ✅ |
 | 2 | « Transferts à venir » des N prochains jours de la fenêtre chargée, chrono croissant | @back | ✅ |
 | 3 | Replis fidèles (personne assignée sans fantôme · orphelin neutre · sans transfert · sans slot) | @back | ✅ |
-| 4 | Fenêtre sans à-venir / jour courant hors-fenêtre = section vide neutre, sans crash ; invariant 0 mutation (2 adaptateurs) | @back | ⏳ |
+| 4 | Fenêtre sans à-venir / jour courant hors-fenêtre = section vide neutre, sans crash ; invariant 0 mutation (2 adaptateurs) | @back | ✅ |
 | 5 | Section digest en TÊTE du panneau cloche (au-dessus du flux chrono), lecture stricte, Parent-gated | @ihm | ⏳ |
 | 6 | Reprojection client depuis la fenêtre grille chargée (0 GET dédié) ; hors-fenêtre = digest vide neutre | @ihm | ⏳ |
 | 7 | Convergence temps réel du digest d'un 2ᵉ écran par la diffusion `INotificateurChangement`, 0 GET sur push | @ihm | ⏳ |
@@ -99,7 +99,7 @@ Scénario: chaque cas de repli est rendu fidèlement, sans fantôme
 
 ### Sc.4 — Fenêtre vide / hors-fenêtre + invariant zéro-mutation
 ```gherkin
-@back @pending
+@back @vert
 Scénario: fenêtre sans à-venir et jour courant hors-fenêtre = digest vide neutre, store intact
   Étant donné une fenêtre chargée ne contenant NI jour courant NI aucun transfert à venir
   Quand je compose le digest « immédiat » et « à venir »

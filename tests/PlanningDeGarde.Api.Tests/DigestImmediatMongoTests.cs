@@ -117,6 +117,28 @@ public sealed class DigestImmediatMongoTests : IDisposable
         Assert.NotNull(avenir[0].Transfert);
     }
 
+    // --- Sc.4 : fenêtre sans à-venir + jour courant hors-fenêtre = digest vide neutre, store Mongo intact ---
+    [MongoRequisFact]
+    public void Acceptation_Should_Rendre_un_digest_vide_neutre_et_laisser_le_store_Mongo_intact()
+    {
+        // --- Given : un acteur + une surcharge durable en juillet, AUCUN cycle → aucune bascule dérivée ---
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var parentA = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+
+        var periodes = new MongoPeriodeRepository(ConnectionString, _baseDeTest);
+        periodes.Enregistrer(PeriodeDeGarde.Affecter(parentA,
+            new DateTime(2026, 7, 20), new DateTime(2026, 7, 22)).Valeur!);
+        var avant = new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots().Count;
+
+        // --- When : fenêtre SEPTEMBRE (ne contient NI le 08/07 NI aucun transfert), jour courant = 08/07 ---
+        var digest = DigestSurBaseReelle().Composer(new DateOnly(2026, 9, 1), Mercredi_08_07_2026, "enfant-lea");
+
+        // --- Then : sections vides neutres, aucun crash, store des surcharges STRICTEMENT intact ---
+        Assert.Null(digest.Immediat);
+        Assert.Empty(digest.AVenir);
+        Assert.Equal(avant, new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots().Count);
+    }
+
     public void Dispose()
     {
         try
