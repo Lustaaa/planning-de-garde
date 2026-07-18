@@ -5,7 +5,7 @@
 > consenti). **Miroir EXACT de la progression s44→s45** (la délégation directe est passée du jour
 > unique à la plage), transposée au **workflow d'échange consenti s47**.
 
-## Avancement — 8/10
+## Avancement — 9/10
 
 | # | Scénario | Type | Statut |
 |--:|---|---|:--:|
@@ -17,7 +17,7 @@
 | 6 | Ré-proposition = last-write-wins R11 sans doublon · `fin` hors fenêtre sans crash | @back | ✅ |
 | 7 | Champ « jusqu'au » dans `ProposerEchangeDialog` (miroir s45), Parent-gated | @ihm | ✅ |
 | 8 | Notif d'échange de plage ACTIONNABLE dans la cloche (Accepter/Refuser) chez le recevant | @ihm | ✅ |
-| 9 | Échap = Annuler (port s33) · refus domaine → dialog reste ouverte + motif + saisie conservée | @ihm | ⏳ |
+| 9 | Échap = Annuler (port s33) · refus domaine → dialog reste ouverte + motif + saisie conservée | @ihm | ✅ |
 | 10 | Temps réel : accepter → 2ᵉ écran converge sur TOUTES les cases de la plage, 0 GET sur push | @ihm | ⏳ |
 
 **back : 6 · ihm : 4 · total : 10.**
@@ -164,7 +164,7 @@ Scénario 8 — Notif d'échange de plage ACTIONNABLE dans la cloche
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 9 — Échap = Annuler · refus domaine garde la dialog ouverte + saisie conservée
   Étant donné la dialog ProposerEchangeDialog ouverte avec une saisie (acteur + plage)
   Quand l'utilisateur presse Échap
