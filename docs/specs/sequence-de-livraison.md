@@ -27,7 +27,7 @@ livrée. *(Arbitre & corollaires : [`objectif-et-arbitrage.md`](objectif-et-arbi
 | 6 | Récurrence des périodes — cycle de fond | ✅ livré | [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md) |
 | 7 | Écriture en contexte — dialogs depuis le planning | ✅ livré (épic refermé) | [`ecriture-en-contexte.md`](ecriture-en-contexte.md) |
 | 8 | CRUD acteurs complet & impersonation bornée lecture | ✅ livré | [`acteurs-et-config-foyer.md`](acteurs-et-config-foyer.md) |
-| 9 | Calendrier navigable — navigation, vues, sélection de plage | 🟡 **navigation + vues LIVRÉES s15 ; sélection de plage restante (s49)** | [`calendrier-navigable.md`](calendrier-navigable.md) |
+| 9 | Calendrier navigable — navigation, vues, sélection de plage | ✅ **COMPLET : navigation + vues LIVRÉES s15 ; sélection de plage par DRAG LIVRÉE s49** | [`calendrier-navigable.md`](calendrier-navigable.md) |
 | 10 | Cycle de fond riche — ancre, frontière, plages, sur-cycles | ⏳ non livré | (ci-dessous) |
 | 11 | Survol → résumé de la journée | ⏳ skippé (faute de demande PO) | (ci-dessous) |
 | 12 | Config foyer durable — reste de la config | ⏳ non livré (technique) | (ci-dessous) |

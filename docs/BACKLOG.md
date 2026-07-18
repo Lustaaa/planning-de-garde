@@ -35,6 +35,32 @@
 > la cloche s'y ajoute comme surface transverse.** Backlog et spec (`saisie-et-grille.md`, `notifications-et-echange.md`)
 > alignés sur cet amendement — plus de contradiction « seule surface ».
 
+**s49 `selection-de-plage-grille` MERGÉ — SÉLECTION DE PLAGE PAR DRAG sur la grille (tranche 2 du palier 9, palier 9 désormais COMPLET).**
+Le hub `/planning` gagne la **sélection d'une plage de cases par DRAG** pour affecter une période sur l'**intervalle** choisi.
+**AUCUNE mécanique d'écriture / DTO / store neuf** (garde surface arbitrée AU CADRAGE, 0 rework de conception G3) : **réemploi STRICT**
+de la dialog « Affecter une période » (écriture-en-contexte s06), simplement **pré-remplie** avec l'intervalle ; la sélection est un **état
+d'interaction client VOLATILE** (borne anti-cliquet, aucune persistance). **@back** : 2 filets de non-régression du chemin d'écriture réutilisé
+— période sur `[J1..J3]` pose la surcharge sur CHAQUE jour (B prime sur le fond), intervalle `[J..J]` = période ponctuelle inchangée sans doublon
+(last-write-wins R11), **deux adaptateurs InMemory + Mongo durable**. **@ihm** (6, menés RED→GREEN runtime) : drag J1→J3 surligne les cases
+intermédiaires puis ouvre la dialog pré-remplie `début=J1 fin=J3` → valider écrit sur l'intervalle → grille converge ; **clic simple INCHANGÉ**
+(une seule case sans déplacement = menu clic-case, PAS la dialog plage — seuil clic vs plage) ; drag en **sens inverse** J3→J1 → intervalle
+**NORMALISÉ `[min..max]`** (`début ≤ fin` garanti) ; drag **débordant la vue** → sélection **BORNÉE à la vue chargée** (aucune case hors-vue,
+aucune navigation, aucune persistance) ; **Échap ANNULE** (surbrillance retirée, aucune dialog, store intact — port `IEcouteurEchapModal` s33
+au niveau document) ; **Parent-gated** (Invité = drag inerte). **Mécanique finale (3 correctifs au gate G3)** : `pointerdown` pose l'ancre,
+`pointermove` au niveau **DOCUMENT** (port neuf `IEcouteurMouvementPointeur`) + `document.elementFromPoint` → `data-date` de la case survolée
+→ surbrillance `[min..max]` ; `pointerup` **document** (port neuf `IEcouteurRelachementPointeur`) finalise **où que le bouton soit lâché** ;
+`user-select:none`/`touch-action:none`/`draggable=false` neutralisent la sélection de texte native. **CAUSE RÉELLE des 3 échecs G3 = un BUILD
+SERVI PÉRIMÉ** (le conteneur `web` resservait `--no-build` un artefact WASM antérieur au câblage drag ; les 3 correctifs, corrects en source,
+n'atteignaient jamais le navigateur du PO) — voir rétro méthode s49. **NOUVEAU projet E2E Playwright** `tests/PlanningDeGarde.Web.E2E`
+(**HORS `.slnx`**, lancé séparément, cf. son README) : 2 smoke tests navigateur figent le contrat du geste sur l'app **réellement servie**
+(Chromium réel) — bUnit reste **aveugle** au geste souris natif / `elementFromPoint` (limite honnête assumée, comme l'Échap document s33).
+**8/8 ✅**, suite **836/836** verte, **gate G3 validé PO**, **aucun retour produit** au gate. **Hors scope s49** (backlog, à faire) : **plage vide /
+chevauchement** riches, **plage à cheval sur plusieurs vues / mois** (navigation pendant le drag), **sélection persistée**. **Candidats de tête au
+prochain `/planning`** : **action de suivi sur imprévu** (proposer un échange en réaction à une notif malade/retard s48), **délégation
+récurrente/série** (D2), échange sur une **plage** / **multi-enfants**, reste Config foyer (édition depuis le graphe, graphe étendu, arbitrage
+inline vs modal, liste de slots par activité, lien adresse acteur↔lieu, suppression slot récurrent IHM, suppression d'un enfant) ; **P0 auth**
+(Google OAuth réel + écran définir-mot-de-passe).
+
 **s48 `imprevu-malade-retard` MERGÉ — SIGNALEMENT D'IMPRÉVU DÉDIÉ, cas NON-négocié / purement INFORMATIF (palier 15).**
 Complète l'échange consenti s47 (négocié, actionnable) par le cas **subi** : « l'enfant EST malade », « je serai en retard
 ce soir » — un **fait qu'on PRÉVIENT**, pas qu'on négocie. **AUCUNE surface neuve, AUCUN store neuf** (garde surface arbitrée
@@ -564,7 +590,7 @@ validé PO. Prochain = `/planning`.
   **seed « Léa »** ; (3) **vrai multi-enfants au sens spec R1 pas encore exercé** de bout en bout. — É1/É6.
 - **Cycle de fond riche réclamé** (É7) — au-delà du plus petit incrément livré s10 : ancre/début, frontière de jour, plage début/fin, sur-cycles vacances, WE-only. Sujet plein (+5).
 - **Vulnérabilités transitives du driver Mongo** (`SharpCompress` 0.30.1 NU1902 modéré, `Snappier` 1.0.0 NU1903 élevé) — warnings depuis le pivot Mongo généralisé (s15). À traiter par une montée de `MongoDB.Driver`. Non bloquant.
-- **Variantes de plage reportées tranche 2 (s15)** — drag riche, plage vide, chevauchement, plage à cheval sur vue/mois : seul le geste clic-début+clic-fin sur cases contiguës est livré.
+- **Variantes de plage reportées (s15 → tranche 2 LIVRÉE s49)** — la **sélection par DRAG** sur la grille (pointer document + `elementFromPoint`, surbrillance `[min..max]`, normalisation sens inverse, bornage à la vue, Échap, Parent-gated) ouvrant la dialog s06 pré-remplie est **LIVRÉE s49** (palier 9 complet). **Restent ouverts** : plage **vide / chevauchement** riches, plage **à cheval sur plusieurs vues / mois** (navigation pendant le drag = sélection reste bornée à la vue), **sélection persistée** (volontairement volatile s49).
 - **Cohérence config foyer → planning (retours s21)** — le PO demande que ce qui est configuré soit **effectif** pour le planning. Tenu : acteurs / rôles / cycle (store vivant), **couleurs** (config→grille/légende, filet non-régression s27), **lieux** (référentiel éditable + persisté pilotant validation de pose ET sélecteurs des dialogs, **s27**). À cadrer : réglages restants non propagés (set couleurs par défaut, cycle de fond riche).
 - **Rôle livré comme caractéristique sans droits attachés (s21)** — le modèle de rôles (référentiel + affectation) n'a pas encore de comportements/droits ; le couplage rôle → droits vit dans É10 (palier 13), après la prise en main de compte. Invariant tenu : le rôle **n'intervient pas** dans la résolution grille/légende.
 - **Asymétrie seed runtime/tests (s15)** — mode Mongo : **aucun seed** (app vide au 1er lancement, durable ensuite) ; InMemory : seed conservé pour la non-régression. Décision PO assumée. **Étendue aux lieux (s27)** : en mode Mongo le foyer **part sans lieux** (aucun seed), donc **aucun slot posable tant qu'un lieu n'est pas configuré** — parité stricte avec l'asymétrie seed acteurs.

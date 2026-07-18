@@ -124,6 +124,17 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   lecture **neuve/déplacée**, la remonter comme **point de conception explicite** (emplacement retenu + alternatives
   écartées) pour validation PO **avec/juste après G2**, et ne mener les scénarios @ihm en RED→GREEN **qu'une fois la
   surface arbitrée** (coût nul au cadrage vs @ihm refaits au gate).
+- 2026-07-18 — s49 : **3 échecs au gate G3 sur le drag alors que le CODE ÉTAIT CORRECT** — cause réelle
+  trouvée seulement au 4ᵉ tour (via un harnais Playwright) = le PO testait un **BUILD SERVI PÉRIMÉ**. Le
+  service `build` one-shot de `docker-compose` compile le Web dans le volume `build-artifacts` ; le conteneur
+  `web` sert `--no-build` **depuis ce volume** et n'ayant **pas été recréé**, resservait un artefact WASM
+  antérieur au câblage drag s49. Les hard refresh du PO ne changeaient rien (serveur = ancien WASM) → **3
+  diagnostics/correctifs de code inutiles** (la source était déjà correcte). Fix (2 volets) : `/sprint` étape
+  5.1 — (1) **GARANTIR que le build servi = source courante AVANT de solliciter le PO** (rebuild explicite du
+  stack : `docker compose up build --force-recreate` puis `up -d --force-recreate web api`) ; (2) **geste
+  navigateur (drag souris, `elementFromPoint`, interop JS) = HORS bUnit → prévoir un SMOKE Playwright**
+  (projet `tests/PlanningDeGarde.Web.E2E`, hors `.slnx`) pour observer sur l'app servie plutôt qu'itérer à
+  l'aveugle via le PO.
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake

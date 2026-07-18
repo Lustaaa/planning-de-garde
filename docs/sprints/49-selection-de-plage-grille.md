@@ -249,4 +249,6 @@ et **observer** au lieu de coder à l'aveugle (bUnit ne sait pas rejouer le gest
 
 # Retours produit (PO)
 
-_(vide — à remplir au gate G3)_
+_VIDE au gate G3 — livraison validée par le PO **sans aucun retour produit** (fusion backlog s49 : rien à
+reporter). Les 3 allers-retours du gate portaient sur un **build servi périmé** (bug d'environnement, pas de
+retour produit) — capturé en rétro méthode (`JOURNAL-METHODE.md` s49)._
