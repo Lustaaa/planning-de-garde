@@ -8,7 +8,7 @@
 > la sélection est un **état d'interaction client VOLATILE** (borne anti-cliquet). Enrichit la grille
 > **sans toucher aux dialogs déjà livrées**.
 
-## Avancement — 6/8
+## Avancement — 7/8
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -18,7 +18,7 @@
 | 4 | Limite : une seule case sans drag = **clic simple INCHANGÉ** (menu clic-case s'ouvre, PAS la dialog plage) | 🖥️ IHM | ✅ |
 | 5 | Limite : drag en **sens inverse** (J3→J1) → intervalle **NORMALISÉ** `[min..max]`, dialog `début ≤ fin` (jamais plage vide/inversée) | 🖥️ IHM | ✅ |
 | 6 | Limite : drag **débordant la fenêtre de vue** courante → sélection **BORNÉE à la vue chargée**, aucune case hors-vue, aucune navigation, aucune persistance | 🖥️ IHM | ✅ |
-| 7 | Erreur/annulation : **Échap** pendant/après la sélection **ANNULE** (aucune dialog, aucune écriture, surbrillance retirée) — port `IEcouteurEchapModal` s33 | 🖥️ IHM | ⏳ |
+| 7 | Erreur/annulation : **Échap** pendant/après la sélection **ANNULE** (aucune dialog, aucune écriture, surbrillance retirée) — port `IEcouteurEchapModal` s33 | 🖥️ IHM | ✅ |
 | 8 | Gating : **Invité** (non-Parent) ne peut PAS sélectionner (drag inerte, aucune dialog) ; **Parent** seul sélectionne | 🖥️ IHM | ⏳ |
 
 **Répartition** : 2 `@back` (filets de non-régression du chemin d'écriture réutilisé) · 6 `@ihm`
@@ -125,7 +125,7 @@ Fonctionnalité: Sélection d'une plage de cases sur la grille agenda
     Et un changement de vue ou un rechargement efface la sélection
 ```
 
-### Sc.7 — `@ihm @pending` Erreur/annulation : Échap annule la sélection
+### Sc.7 — `@ihm @vert` Erreur/annulation : Échap annule la sélection
 
 ```gherkin
   Scénario: Échap annule la sélection sans ouvrir de dialog ni écrire
