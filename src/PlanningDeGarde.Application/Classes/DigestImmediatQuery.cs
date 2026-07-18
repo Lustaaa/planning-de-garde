@@ -31,9 +31,20 @@ public sealed class DigestImmediatQuery
     {
         var jours = _grille.Projeter(ancre, vue).Jours;
         var immediat = jours.FirstOrDefault(j => j.Date == aujourdhui);
+
+        // « À venir » = les jours STRICTEMENT APRÈS aujourd'hui de la fenêtre chargée qui PORTENT un transfert
+        // (saisi OU auto-dérivé s31 — la grille arbitre déjà la source), en ordre chronologique CROISSANT. Un
+        // jour à venir SANS transfert n'y figure pas (section « transferts à venir », Sc.2/Sc.3). Ne compose
+        // que la fenêtre déjà projetée : aucun GET dédié, aucune mutation.
+        var avenir = jours
+            .Where(jour => jour.Date > aujourdhui && jour.Transfert is not null)
+            .OrderBy(jour => jour.Date)
+            .Select(jour => ComposerJour(jour, enfantId))
+            .ToList();
+
         return new DigestImmediat(
             immediat is null ? null : ComposerJour(immediat, enfantId),
-            Array.Empty<JourDigest>());
+            avenir);
     }
 
     private static JourDigest ComposerJour(JourCase jour, string enfantId)

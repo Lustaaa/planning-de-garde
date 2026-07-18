@@ -87,6 +87,36 @@ public sealed class DigestImmediatMongoTests : IDisposable
         Assert.Equal("Alice", fond.Responsable.Nom);
     }
 
+    // --- Sc.2 : la section « à venir » liste les jours à venir PORTANT un transfert, chrono croissant ---
+    [MongoRequisFact]
+    public void Acceptation_Should_Composer_les_transferts_a_venir_chrono_croissant_sur_Mongo_reel()
+    {
+        // --- Given : deux acteurs durables, un cycle N=1 (ParentA chaque jour), deux transferts à venir ---
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var parentA = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+        var parentB = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bruno")).Valeur!.ActeurId;
+
+        var cycle = new CycleDeFondMongo(ConnectionString, _baseDeTest);
+        cycle.DefinirCycle(new CycleDeFond(1, new Dictionary<int, string> { [0] = parentA }));
+
+        var transferts = new MongoTransfertRepository(ConnectionString, _baseDeTest);
+        transferts.Enregistrer(Transfert.Definir(parentA, parentB, "ecole",
+            new TimeSpan(8, 30, 0), new DateOnly(2026, 7, 10).ToDateTime(TimeOnly.MinValue)).Valeur!);
+        transferts.Enregistrer(Transfert.Definir(parentA, parentB, "ecole",
+            new TimeSpan(8, 30, 0), new DateOnly(2026, 7, 9).ToDateTime(TimeOnly.MinValue)).Valeur!);
+
+        // --- When : le digest câblé sur les stores durables réels, jour courant = 08/07 ---
+        var avenir = DigestSurBaseReelle().Composer(Mercredi_08_07_2026, Mercredi_08_07_2026, "enfant-lea").AVenir;
+
+        // --- Then : exactement les deux jours à venir portant un transfert, chrono CROISSANT, résolus ---
+        Assert.Equal(2, avenir.Count);
+        Assert.Equal(new DateOnly(2026, 7, 9), avenir[0].Date);
+        Assert.Equal(new DateOnly(2026, 7, 10), avenir[1].Date);
+        Assert.True(avenir[0].Responsable.EstAssigne);
+        Assert.Equal(parentA, avenir[0].Responsable.ActeurId);
+        Assert.NotNull(avenir[0].Transfert);
+    }
+
     public void Dispose()
     {
         try
