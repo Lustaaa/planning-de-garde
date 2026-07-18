@@ -8,7 +8,7 @@
 > (journal `IJournalChangements`, cloche) + l'échange s47 (`Proposition`, `Accepter/RefuserProposition`,
 > diffusion porteuse de payload `INotificateurChangement`). **AUCUN modèle/store neuf.**
 
-## Avancement — 5/7
+## Avancement — 7/7
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -17,8 +17,8 @@
 | 3 | Cas limite : ré-proposition last-write-wins R11 sans doublon ; jour hors fenêtre chargée sans crash ; identique InMemory + Mongo durable | @back | ✅ |
 | 4 | Cas erreur / invariant : soi-même / délégataire inconnu / orphelin refusés AVANT écriture (aucune écriture partielle) ; imprévu (fait) et proposition (échange) restent des modèles SÉPARÉS | @back | ✅ |
 | 5 | Entrée d'action « proposer un échange » DANS la notif d'imprévu de la cloche (contextualisée jour/enfant), Parent-gated (Invité inerte) → mini-dialog s47 pré-rempli, Échap = Annuler (port s33) | @ihm | ✅ |
-| 6 | La proposition issue de l'imprévu apparaît ACTIONNABLE (Accepter/Refuser) chez le recevant dans SA cloche ; accepter compose la délégation, la case converge | @ihm | ⏳ |
-| 7 | Temps réel : diffusion porteuse de payload (INotificateurChangement s47) → cloche d'un 2ᵉ écran converge PAR REPROJECTION CLIENT, 0 GET sur push | @ihm | ⏳ |
+| 6 | La proposition issue de l'imprévu apparaît ACTIONNABLE (Accepter/Refuser) chez le recevant dans SA cloche ; accepter compose la délégation, la case converge | @ihm | ✅ |
+| 7 | Temps réel : diffusion porteuse de payload (INotificateurChangement s47) → cloche d'un 2ᵉ écran converge PAR REPROJECTION CLIENT, 0 GET sur push | @ihm | ✅ |
 
 ## Goal & cadrage
 
@@ -131,7 +131,7 @@ Scénario Sc.5 — Action « proposer un échange » dans la notif d'imprévu de
   Et Échap annule et ferme la mini-dialog (port IEcouteurEchapModal s33), sans commande
   Et un Invité ne voit NI la cloche NI l'action (Parent-gated, cohérent s44/s47/s48) ; la notif d'imprévu reste informative
 
-@ihm @pending
+@ihm @vert
 Scénario Sc.6 — La proposition issue de l'imprévu est actionnable chez le recevant et la case converge
   Étant donné une proposition greffée sur un imprévu, émise vers le recevant B
   Quand B ouvre SA cloche
@@ -139,7 +139,7 @@ Scénario Sc.6 — La proposition issue de l'imprévu est actionnable chez le re
   Et Accepter compose la délégation s44 → la case du jour J bascule sur B (transfert bicolore dérivé s31)
   Et Refuser clôt la proposition sans aucune écriture ; l'imprévu d'origine reste, lui, une notif informative inchangée
 
-@ihm @pending
+@ihm @vert
 Scénario Sc.7 — Temps réel : la cloche d'un 2ᵉ écran converge par diffusion porteuse de payload, 0 GET
   Étant donné deux écrans connectés (le proposant et le recevant concernés par le jour/enfant)
   Quand une proposition est greffée sur un imprévu depuis le premier écran, puis acceptée depuis le second
