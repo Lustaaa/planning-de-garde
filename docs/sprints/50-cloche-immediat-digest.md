@@ -32,7 +32,7 @@
 
 ---
 
-## Avancement — 5/8
+## Avancement — 7/8
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -41,8 +41,8 @@
 | 3 | Replis fidèles (personne assignée sans fantôme · orphelin neutre · sans transfert · sans slot) | @back | ✅ |
 | 4 | Fenêtre sans à-venir / jour courant hors-fenêtre = section vide neutre, sans crash ; invariant 0 mutation (2 adaptateurs) | @back | ✅ |
 | 5 | Section digest en TÊTE du panneau cloche (au-dessus du flux chrono), lecture stricte, Parent-gated | @ihm | ✅ |
-| 6 | Reprojection client depuis la fenêtre grille chargée (0 GET dédié) ; hors-fenêtre = digest vide neutre | @ihm | ⏳ |
-| 7 | Convergence temps réel du digest d'un 2ᵉ écran par la diffusion `INotificateurChangement`, 0 GET sur push | @ihm | ⏳ |
+| 6 | Reprojection client depuis la fenêtre grille chargée (0 GET dédié) ; hors-fenêtre = digest vide neutre | @ihm | ✅ |
+| 7 | Convergence temps réel du digest d'un 2ᵉ écran par la diffusion `INotificateurChangement`, 0 GET sur push | @ihm | ✅ |
 | 8 | Gating & lecture stricte : Invité ne voit pas le digest · rien sur `/connexion` · aucune action/bouton | @ihm | ⏳ |
 
 > **Note gate G3 (leçon s49)** : les scénarios @ihm de cloche = rendu navigateur + temps réel SignalR.
@@ -125,7 +125,7 @@ Scénario: le digest s'affiche EN TÊTE du panneau déroulant de la cloche, en l
 
 ### Sc.6 — Reprojection client depuis la fenêtre grille (0 GET dédié)
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: le digest se reprojette depuis la fenêtre grille chargée, sans GET dédié
   Étant donné le planning chargé par l'unique GET grille pour une fenêtre donnée
   Quand le panneau cloche affiche la section digest
@@ -138,7 +138,7 @@ Scénario: le digest se reprojette depuis la fenêtre grille chargée, sans GET 
 
 ### Sc.7 — Convergence temps réel (diffusion porteuse de payload, 0 GET sur push)
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario: un changement diffusé fait converger le digest d'un 2ᵉ écran, 0 GET sur push
   Étant donné deux écrans Parent connectés sur la même fenêtre de grille chargée
   Quand un changement (délégation / plage / reprise / transfert) est écrit depuis le 1ᵉʳ écran
