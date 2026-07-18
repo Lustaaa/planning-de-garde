@@ -19,6 +19,75 @@
         @if (_ouvert)
         {
             <div class="pdg-cloche-panneau" data-testid="cloche-panneau" @onclick:stopPropagation="true">
+                @* Section DIGEST « immédiat » (s50), EN TÊTE, AU-DESSUS du flux chrono. Reprojection LECTURE
+                   stricte depuis la fenêtre grille chargée (aucun bouton, aucune action, aucune entrée cliquable). *@
+                <section class="pdg-cloche-digest" data-testid="digest-section">
+                    <div class="pdg-cloche-digest-bloc" data-testid="digest-immediat">
+                        <span class="pdg-cloche-digest-titre">Aujourd'hui</span>
+                        @if (_digest.Immediat is { } immediat)
+                        {
+                            <p class="pdg-cloche-digest-ligne m-0" data-testid="digest-immediat-responsable">
+                                @if (immediat.Responsable.EstAssigne)
+                                {
+                                    <span>Récupère : <strong>@immediat.Responsable.Nom</strong></span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Personne assignée</span>
+                                }
+                            </p>
+                            @if (immediat.Slots.Count > 0)
+                            {
+                                <p class="pdg-cloche-digest-lieu small text-muted m-0" data-testid="digest-immediat-lieu">
+                                    @string.Join(", ", immediat.Slots.Select(s => s.Libelle))
+                                </p>
+                            }
+                            @if (immediat.Transfert is { } t)
+                            {
+                                <p class="pdg-cloche-digest-transfert small m-0" data-testid="digest-immediat-transfert">
+                                    Transfert : @t.CedantNom &rarr; @t.RecevantNom
+                                </p>
+                            }
+                        }
+                        else
+                        {
+                            <p class="pdg-cloche-digest-ligne text-muted small m-0" data-testid="digest-immediat-vide">
+                                Aucun planning chargé pour aujourd'hui.
+                            </p>
+                        }
+                    </div>
+
+                    <div class="pdg-cloche-digest-bloc" data-testid="digest-avenir">
+                        <span class="pdg-cloche-digest-titre">Transferts à venir</span>
+                        @if (_digest.AVenir.Count == 0)
+                        {
+                            <p class="pdg-cloche-digest-ligne text-muted small m-0" data-testid="digest-avenir-vide">
+                                Aucun transfert à venir.
+                            </p>
+                        }
+                        else
+                        {
+                            <ul class="pdg-cloche-digest-liste list-unstyled m-0">
+                                @foreach (var jour in _digest.AVenir)
+                                {
+                                    <li class="pdg-cloche-digest-jour small m-0" data-testid="digest-avenir-jour"
+                                        data-jour="@jour.Date.ToString("yyyy-MM-dd")">
+                                        <span>@jour.Date.ToString("dd/MM")</span>
+                                        @if (jour.Transfert is { } tv)
+                                        {
+                                            <span> — @tv.CedantNom &rarr; @tv.RecevantNom</span>
+                                        }
+                                        @if (jour.Responsable.EstAssigne)
+                                        {
+                                            <span class="text-muted"> (@jour.Responsable.Nom)</span>
+                                        }
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </section>
+
                 <div class="pdg-cloche-entete">
                     <span class="pdg-cloche-titre">Notifications</span>
                     <button type="button" class="btn btn-link btn-sm p-0" data-testid="cloche-marquer-tout-lu"
@@ -88,4 +157,10 @@
     .pdg-cloche-notif.est-non-lu { border-left: 3px solid var(--pdg-accent); font-weight: 600; }
     .pdg-cloche-notif.est-lu { opacity: .72; }
     .pdg-cloche-actions, .pdg-cloche-confirm { display: flex; align-items: center; gap: 6px; }
+    .pdg-cloche-digest { display: flex; flex-direction: column; gap: 8px; padding-bottom: 10px; margin-bottom: 8px;
+                         border-bottom: 1px solid var(--pdg-border); }
+    .pdg-cloche-digest-bloc { display: flex; flex-direction: column; gap: 2px; }
+    .pdg-cloche-digest-titre { font-size: .72rem; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+                               color: var(--pdg-muted, #667085); }
+    .pdg-cloche-digest-liste { display: flex; flex-direction: column; gap: 2px; }
 </style>

@@ -27,6 +27,10 @@ builder.Services.AddScoped(_ =>
 // État de session de consultation (rôle, enfant affiché) — par client navigateur.
 builder.Services.AddScoped<SessionPlanning>();
 
+// État CLIENT partagé du digest cloche (s50) : la grille (seul GET grille) y publie le digest reprojeté de la
+// fenêtre chargée, la cloche s'y abonne et le rend SANS aucun GET (reprojection, garde-fou anti-flake).
+builder.Services.AddScoped<EtatDigestPartage>();
+
 // Horloge « du jour » : les formulaires d'écriture pré-remplissent leur date depuis ce port
 // (jamais une date figée ni DateTime.Today en dur dans la vue). L'implémentation système lit
 // l'horloge réelle du navigateur ; le double de test la fige pour le déterminisme. La grille de

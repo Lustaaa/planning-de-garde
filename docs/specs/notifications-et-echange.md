@@ -2,8 +2,10 @@
 
 > Sujet **créé s47** (paliers « Immédiat & événements à venir » / cloche **et** « Imprévu &
 > échange » / flux consenti). Source de vérité pour la **cloche générale de changements**
-> (journal, lu/non-lu, surface barre du haut, diffusion temps réel porteuse de payload) et pour
-> l'**échange proposition → accord**. Édité en diff, jamais réécrit en bloc.
+> (journal, lu/non-lu, surface barre du haut, diffusion temps réel porteuse de payload), l'**échange
+> proposition → accord**, le **signalement d'imprévu informatif** (brique C, s48) et le **digest
+> « immédiat » dans la cloche** (brique D, s50 — qui récupère ce soir + transferts à venir). Édité en
+> diff, jamais réécrit en bloc.
 
 ## Contexte
 
@@ -147,6 +149,43 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
   depuis la notif — dépend de l'échange brique B) ; **multi-enfants / plage / récurrence** (un imprévu =
   **un jour, un enfant**) ; notifications **push / e-mail externes**.
 
+## Brique D — Digest « immédiat » dans la cloche (qui récupère ce soir + à venir) *(livré s50)*
+
+- **Réintégration DANS la cloche** du contenu de LECTURE retiré en s44 — la carte « qui récupère ce
+  soir » (s42) et le panneau « À venir » (s43) — **sans le re-poser sur la grille**. Le digest est une
+  **SECTION de LECTURE permanente EN TÊTE du panneau déroulant de la cloche**, **au-dessus du flux
+  chrono lu/non-lu** (brique A), qui reste rendu **inchangé en dessous**. **Complète le palier
+  « Immédiat & événements à venir »** ([`sequence-de-livraison.md`](sequence-de-livraison.md)) : la
+  cloche porte désormais **et** les changements horodatés **et** l'état « immédiat + à-venir ».
+- **`DigestImmediatQuery` = query PURE de COMPOSITION** réemployant `GrilleAgendaQuery` (records
+  `ResponsableDuJour` / `TransfertDuJour` / `JourDigest` / `DigestImmediat`, **miroir** des
+  ex-`CarteDuJourQuery` s42 / `AVenirQuery` s43) : **(a)** « qui récupère aujourd'hui / ce soir » =
+  responsable résolu **surcharge > fond > neutre** + **où** (slot s29) + **transfert** éventuel (saisi
+  OU dérivé s31) ; **(b)** « transferts à venir » des **N prochains jours de la fenêtre chargée**, en
+  ordre **chronologique croissant**. **AUCUN store neuf, AUCUNE mutation** — de LECTURE pure, identique
+  **InMemory + Mongo durable**.
+- **Replis fidèles** *(Sc.3)* : jour sans responsable résolu = « personne assignée » (aucun nom
+  fantôme) ; responsable **orphelin** (id absent du référentiel) = repli **neutre** sans nom (R6 /
+  `Resolvable` s13) ; jour sans transfert **absent** de la liste (ni ligne vide) ; jour sans slot
+  restitué **sans lieu**. **Fenêtre vide / jour courant hors-fenêtre** *(Sc.4)* = section vide neutre,
+  **sans crash** ; **store des surcharges STRICTEMENT intact** (invariant 0-mutation prouvé sur les
+  deux adaptateurs) — la query est de LECTURE, aucune case altérée.
+- **Surface — section en tête du panneau cloche, lecture STRICTE** *(Sc.5, Sc.8)* : **aucun bouton,
+  aucune action, aucune entrée cliquable** ; **Parent-gated** (Invité ne voit pas le digest ; rien sur
+  `/connexion`). **Aucune carte / aucun panneau réintroduit sur la page `/planning`** —
+  **anti-cliquet s44 tenu** : la grille reste la **seule surface de lecture SUR la page**, le digest
+  vit **uniquement dans la cloche** (surface hors-grille assumée depuis s47).
+- **Reprojection client, 0 GET dédié** *(Sc.6)* : un **état client partagé** (`EtatDigestPartage` — la
+  grille publie la fenêtre chargée, la cloche s'y abonne) fait **reprojeter le digest depuis la donnée
+  déjà chargée par l'unique GET grille** ; **aucun GET « digest »**. **Convergence temps réel**
+  *(Sc.7)* d'un 2ᵉ écran par **reprojection client depuis la diffusion porteuse de payload**
+  `INotificateurChangement` (brique A), **0 GET sur push** (garde-fou anti-flake
+  [[flake-signalr-blast-radius]]).
+- **Limitation assumée (héritage s42/s43, routée backlog)** : le digest se reprojette depuis la
+  **fenêtre de grille chargée** — naviguer vers une semaine ne contenant PAS le jour courant fait
+  **disparaître la section « aujourd'hui »** et borne les « à-venir » à la fenêtre. L'arbitrage
+  **persistance hors-fenêtre vs coût GET/flake n'est PAS rouvert** (aucun GET dédié sur navigation).
+
 ## Règles de gestion (catalogue : `regles-de-gestion.md`)
 
 - **Journal = trace de lecture non-autorité** : le journal de changements n'est **jamais** lu par la
@@ -160,6 +199,10 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
 - **R11 (last-write-wins)** appliquée à la ré-proposition ; **R24 / R25** (transfert dérivé /
   ponctuel) réutilisées par l'accord — textes canoniques dans
   [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md).
+- **Digest « immédiat » = LECTURE pure** *(s50)* : `DigestImmediatQuery` **compose** `GrilleAgendaQuery`
+  **sans store neuf ni mutation** ; réintégré **dans la cloche**, jamais re-posé sur la grille
+  (**anti-cliquet s44** tenu). La reprojection client (fenêtre grille + diffusion porteuse de payload)
+  n'émet **aucun GET dédié**.
 
 ## Risques / hors-scope (backlog)
 
@@ -170,6 +213,9 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
 - **Signalement d'imprévu dédié** (malade / retard) distinct de l'échange : **livré s48** (brique C
   ci-dessus, informatif, sans action de suivi). Reste ouverte l'**action de suivi** (proposer un échange
   en réaction à un imprévu).
+- **Digest « immédiat » dans la cloche** (qui récupère ce soir + à venir) : **livré s50** (brique D
+  ci-dessus). **Reste** : le digest **PERSISTANT hors de la fenêtre de grille chargée** (arbitrage
+  persistance vs coût GET/flake non rouvert — limitation héritée s42/s43).
 
 Cf. [`risques-et-questions-ouvertes.md`](risques-et-questions-ouvertes.md) et le backlog
 [`../BACKLOG.md`](../BACKLOG.md) (Épics 9 & 11).
