@@ -52,7 +52,13 @@ public sealed class GrilleAgendaQuery
     /// choisie (span : Semaine 7 j / 4 semaines 28 j / Mois = semaines ISO du mois). Re-projection
     /// pure : chaque case se re-résout à sa propre date (surcharge &gt; fond &gt; neutre).
     /// </summary>
-    public GrilleAgenda Projeter(DateOnly ancre, VuePlanning vue)
+    /// <summary>
+    /// Projette la grille pour l'enfant <paramref name="enfantId"/> (s53) : la résolution ne voit que le
+    /// cycle de fond ET les surcharges (périodes) de CET enfant — ISOLATION STRICTE, aucune écriture d'un
+    /// autre enfant ne fuit dans cette grille. <paramref name="enfantId"/> absent (<c>null</c>) = comportement
+    /// mono-enfant antérieur (aucun filtrage : toutes les périodes, cycle partagé).
+    /// </summary>
+    public GrilleAgenda Projeter(DateOnly ancre, VuePlanning vue, string? enfantId)
     {
         if (vue == VuePlanning.Mois)
         {
@@ -60,17 +66,19 @@ public sealed class GrilleAgendaQuery
             var dernierDuMois = premierDuMois.AddMonths(1).AddDays(-1);
             var premierLundi = LundiDeLaSemaineDe(premierDuMois);
             var dernierDimanche = LundiDeLaSemaineDe(dernierDuMois).AddDays(6);
-            return ProjeterFenetre(premierLundi, dernierDimanche.DayNumber - premierLundi.DayNumber + 1);
+            return ProjeterFenetre(premierLundi, dernierDimanche.DayNumber - premierLundi.DayNumber + 1, enfantId);
         }
 
         var nbJours = vue == VuePlanning.Semaine ? 7 : 28;
-        return ProjeterFenetre(LundiDeLaSemaineDe(ancre), nbJours);
+        return ProjeterFenetre(LundiDeLaSemaineDe(ancre), nbJours, enfantId);
     }
+
+    public GrilleAgenda Projeter(DateOnly ancre, VuePlanning vue) => Projeter(ancre, vue, null);
 
     public GrilleAgenda Projeter(DateOnly dateReference)
         => Projeter(dateReference, VuePlanning.QuatreSemaines);
 
-    private GrilleAgenda ProjeterFenetre(DateOnly premierJour, int nbJours)
+    private GrilleAgenda ProjeterFenetre(DateOnly premierJour, int nbJours, string? enfantId = null)
     {
         // Un slot est rendu sur CHAQUE jour calendaire qu'il couvre : un slot franchissant minuit
         // (début un jour, fin le lendemain) apparaît donc dans la case de ses deux jours.
@@ -78,7 +86,9 @@ public sealed class GrilleAgendaQuery
             .SelectMany(snapshot => JoursCouverts(snapshot).Select(jour => (jour, snapshot)))
             .ToLookup(x => x.jour, x => x.snapshot);
 
-        var periodes = _periodes.AllSnapshots();
+        // ISOLATION s53 : quand un enfant est ciblé, la résolution ne voit QUE ses surcharges (les périodes
+        // d'un autre enfant sont exclues). enfantId null = mono-enfant antérieur (aucun filtrage).
+        var periodes = PeriodesDeLEnfant(enfantId);
 
         // Un slot RÉCURRENT hebdo se matérialise sur CHAQUE jour de la fenêtre dont le jour de semaine
         // correspond : chaque occurrence est un slot « virtuel » daté (date + plage horaire) qui rejoint
@@ -91,7 +101,7 @@ public sealed class GrilleAgendaQuery
 
         var jours = Enumerable.Range(0, nbJours)
             .Select(offset => premierJour.AddDays(offset))
-            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date, periodes)), transferts))
+            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date, periodes, enfantId)), transferts, enfantId))
             .ToList();
 
         var semaines = jours
@@ -99,16 +109,16 @@ public sealed class GrilleAgendaQuery
             .Select(septJours => new SemaineLigne(septJours.ToList()))
             .ToList();
 
-        var legende = LegendeDesPresents(periodes, premierJour, premierJour.AddDays(nbJours - 1));
-        var legendeMotifs = LegendeDesMotifs(transferts, periodes, premierJour, premierJour.AddDays(nbJours - 1));
+        var legende = LegendeDesPresents(periodes, premierJour, premierJour.AddDays(nbJours - 1), enfantId);
+        var legendeMotifs = LegendeDesMotifs(transferts, periodes, premierJour, premierJour.AddDays(nbJours - 1), enfantId);
 
         return new GrilleAgenda(jours, semaines, legende, legendeMotifs);
     }
 
     private JourCase CaseJourAu(
-        DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots, IReadOnlyList<TransfertSnapshot> transferts)
+        DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots, IReadOnlyList<TransfertSnapshot> transferts, string? enfantId = null)
     {
-        var responsableId = ResoudreResponsable(date, periodes);
+        var responsableId = ResoudreResponsable(date, periodes, enfantId);
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
         var nom = responsableId is null ? "" : _referentiel.NomDe(responsableId);
         // PorteSurcharge : une surcharge (période saisie) RÉSOLVABLE couvre ce jour → délégation active
@@ -117,7 +127,7 @@ public sealed class GrilleAgendaQuery
         var porteSurcharge = periodes.Any(p => CouvreLeJour(p, date) && Resolvable(p.ResponsableId) is not null);
         // ResponsableId (id stable résolu, ou null si neutre) surfacé pour la COMPOSITION en lecture (carte
         // « qui récupère ce soir », s42) : la carte compose la résolution ici même, sans la réimplémenter.
-        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date), responsableId, porteSurcharge);
+        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date, enfantId), responsableId, porteSurcharge);
     }
 
     /// <summary>
@@ -127,7 +137,7 @@ public sealed class GrilleAgendaQuery
     /// neutre (même contrat d'existence <see cref="Resolvable"/> que la responsabilité — pas de fantôme).
     /// </summary>
     private InfoTransfert? InfoTransfertDuJour(
-        IReadOnlyList<TransfertSnapshot> transferts, IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date)
+        IReadOnlyList<TransfertSnapshot> transferts, IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date, string? enfantId = null)
     {
         // Priorité SAISI > DÉRIVÉ : un transfert saisi ce jour-là prime et est seul retenu (Sc.6).
         var transfert = transferts.FirstOrDefault(t => DateOnly.FromDateTime(t.Date) == date);
@@ -142,7 +152,7 @@ public sealed class GrilleAgendaQuery
         //     les PÉRIODES saisies. INCHANGÉ — orphelin neutralisé par existence des périodes (Sc.9).
         //  2) chemin « cycle-résolu » (Sc.15) : bascule quand le responsable RÉSOLU (surcharge > fond) change
         //     d'un jour à l'autre du fait du CYCLE DE FOND, là où aucune période ne trace la succession.
-        return TransfertDeriveDuJour(periodes, date) ?? TransfertDeriveDuCycle(periodes, date);
+        return TransfertDeriveDuJour(periodes, date) ?? TransfertDeriveDuCycle(periodes, date, enfantId);
     }
 
     /// <summary>
@@ -156,10 +166,10 @@ public sealed class GrilleAgendaQuery
     /// fantôme, cohérent avec la retombée neutre Sc.7 / Sc.9). Distinct du chemin période : il n'est consulté
     /// qu'en second (le période-existence prime), donc aucun doublon.
     /// </summary>
-    private InfoTransfert? TransfertDeriveDuCycle(IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date)
+    private InfoTransfert? TransfertDeriveDuCycle(IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date, string? enfantId = null)
     {
-        var recevant = ResoudreResponsable(date, periodes);
-        var cedant = ResoudreResponsable(date.AddDays(-1), periodes);
+        var recevant = ResoudreResponsable(date, periodes, enfantId);
+        var cedant = ResoudreResponsable(date.AddDays(-1), periodes, enfantId);
         if (recevant is null || cedant is null || cedant == recevant)
             return null; // pas de bascule (un côté neutre, ou même responsable qu'la veille)
 
@@ -213,10 +223,10 @@ public sealed class GrilleAgendaQuery
     /// récurrence (comportement s29 strictement inchangé, Sc.13).</para>
     /// </summary>
     private IEnumerable<SlotSnapshot> OccurrencesRecurrentes(
-        IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes)
+        IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, string? enfantId = null)
         => recurrents
             .Where(r => r.JourDeSemaine == date.DayOfWeek)
-            .Where(r => !r.ConditionneGarde || ResoudreResponsable(date, periodes) == r.PoseurId)
+            .Where(r => !r.ConditionneGarde || ResoudreResponsable(date, periodes, enfantId) == r.PoseurId)
             .Select(r => new SlotSnapshot(
                 r.EnfantId, r.LieuId, date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureDebut)), date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureFin))));
 
@@ -228,13 +238,24 @@ public sealed class GrilleAgendaQuery
     /// retombe sur le fond ; un fond orphelin est traité comme un index non mappé → null → neutre, sans nom
     /// fantôme. Source unique de la responsabilité d'un jour (case ET conditionnement des slots D1).
     /// </summary>
-    private string? ResoudreResponsable(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes)
+    private string? ResoudreResponsable(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, string? enfantId = null)
     {
         var periode = periodes.FirstOrDefault(p => CouvreLeJour(p, date));
         var surcharge = Resolvable(periode?.ResponsableId);
-        var fond = Resolvable(_cycle?.CycleCourant()?.ResponsableDeFond(date));
+        var fond = Resolvable(_cycle?.CycleCourant(enfantId)?.ResponsableDeFond(date));
         return surcharge ?? fond;
     }
+
+    /// <summary>
+    /// Périodes (surcharges) visibles pour l'enfant <paramref name="enfantId"/> (s53) : quand un enfant est
+    /// ciblé, ISOLATION STRICTE — seules SES surcharges (<c>EnfantId == enfantId</c>) entrent dans la
+    /// résolution, celles d'un autre enfant sont exclues. <paramref name="enfantId"/> null = mono-enfant
+    /// antérieur (aucun filtrage : toutes les périodes du store).
+    /// </summary>
+    private IReadOnlyList<PeriodeSnapshot> PeriodesDeLEnfant(string? enfantId)
+        => enfantId is null
+            ? _periodes.AllSnapshots()
+            : _periodes.AllSnapshots().Where(p => p.EnfantId == enfantId).ToList();
 
     /// <summary>Jours calendaires couverts par un slot, du jour de son début à celui de sa fin (inclus).</summary>
     private static IEnumerable<DateOnly> JoursCouverts(SlotSnapshot slot)
@@ -266,13 +287,13 @@ public sealed class GrilleAgendaQuery
     /// fenêtre (« en case comme en légende »). Vide si aucun ne couvre la fenêtre.
     /// </summary>
     private IReadOnlyList<EntreeLegende> LegendeDesPresents(
-        IReadOnlyList<PeriodeSnapshot> periodes, DateOnly premierJour, DateOnly dernierJour)
+        IReadOnlyList<PeriodeSnapshot> periodes, DateOnly premierJour, DateOnly dernierJour, string? enfantId = null)
     {
         var idsPeriodes = periodes
             .Where(p => DateOnly.FromDateTime(p.Debut) <= dernierJour && DateOnly.FromDateTime(p.Fin) >= premierJour)
             .Select(p => p.ResponsableId);
 
-        var cycle = _cycle?.CycleCourant();
+        var cycle = _cycle?.CycleCourant(enfantId);
         var idsFond = cycle is null
             ? Enumerable.Empty<string>()
             : Enumerable.Range(0, 35)
@@ -299,14 +320,14 @@ public sealed class GrilleAgendaQuery
     /// </summary>
     private IReadOnlyList<EntreeLegendeMotif> LegendeDesMotifs(
         IReadOnlyList<TransfertSnapshot> transferts, IReadOnlyList<PeriodeSnapshot> periodes,
-        DateOnly premierJour, DateOnly dernierJour)
+        DateOnly premierJour, DateOnly dernierJour, string? enfantId = null)
     {
         // « En case comme en légende » : le motif est présent dès qu'une case de la fenêtre porte un transfert,
         // quelle qu'en soit l'origine (saisi, dérivé période OU dérivé cycle) — même source de vérité que la case
         // (InfoTransfertDuJour), pour ne pas laisser une pastille bicolore sans entrée de légende (Sc.15).
         var transfertDansLaFenetre = Enumerable.Range(0, dernierJour.DayNumber - premierJour.DayNumber + 1)
             .Select(offset => premierJour.AddDays(offset))
-            .Any(jour => InfoTransfertDuJour(transferts, periodes, jour) is not null);
+            .Any(jour => InfoTransfertDuJour(transferts, periodes, jour, enfantId) is not null);
 
         return transfertDansLaFenetre
             ? new[] { new EntreeLegendeMotif("Transfert") }

@@ -11,9 +11,13 @@ namespace PlanningDeGarde.Infrastructure;
 /// </summary>
 public sealed class CycleDeFondEnMemoire : IReferentielCycleDeFond
 {
-    private CycleDeFond? _cycle;
+    // Cycle partagé (clé "") + surcharges par enfant (s53) : un enfant sans cycle propre retombe sur le partagé.
+    private readonly System.Collections.Generic.Dictionary<string, CycleDeFond> _cycles = new();
 
-    public CycleDeFond? CycleCourant() => _cycle;
+    public CycleDeFond? CycleCourant(string? enfantId = null)
+        => _cycles.TryGetValue(enfantId ?? "", out var propre) ? propre
+            : _cycles.TryGetValue("", out var partage) ? partage
+            : null;
 
-    public void DefinirCycle(CycleDeFond cycle) => _cycle = cycle;
+    public void DefinirCycle(CycleDeFond cycle, string? enfantId = null) => _cycles[enfantId ?? ""] = cycle;
 }

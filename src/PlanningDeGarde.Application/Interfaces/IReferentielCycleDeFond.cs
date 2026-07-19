@@ -11,9 +11,16 @@ namespace PlanningDeGarde.Application;
 /// </summary>
 public interface IReferentielCycleDeFond
 {
-    /// <summary>Cycle de fond courant, ou <c>null</c> si aucun n'a été défini.</summary>
-    CycleDeFond? CycleCourant();
+    /// <summary>
+    /// Cycle de fond courant de l'enfant <paramref name="enfantId"/> (s53 : un cycle par enfant), ou
+    /// <c>null</c> si aucun n'a été défini. <paramref name="enfantId"/> absent (<c>null</c>) = cycle
+    /// partagé/legacy (mono-enfant antérieur). Un enfant sans cycle propre retombe sur le cycle partagé.
+    /// </summary>
+    CycleDeFond? CycleCourant(string? enfantId = null);
 
-    /// <summary>Remplace le cycle courant (dernière écriture gagne, sans version ni rejet).</summary>
-    void DefinirCycle(CycleDeFond cycle);
+    /// <summary>
+    /// Remplace le cycle courant de l'enfant <paramref name="enfantId"/> (dernière écriture gagne, sans
+    /// version ni rejet). <paramref name="enfantId"/> absent = cycle partagé/legacy.
+    /// </summary>
+    void DefinirCycle(CycleDeFond cycle, string? enfantId = null);
 }

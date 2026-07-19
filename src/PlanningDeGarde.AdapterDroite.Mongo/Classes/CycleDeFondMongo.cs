@@ -24,9 +24,12 @@ public sealed class CycleDeFondMongo : IReferentielCycleDeFond
     public CycleDeFondMongo(string connectionString, string baseDeDonnees)
         => _cycles = new MongoClient(connectionString).GetDatabase(baseDeDonnees).GetCollection<CycleDocument>("cycle_de_fond");
 
-    public CycleDeFond? CycleCourant()
+    public CycleDeFond? CycleCourant(string? enfantId = null)
     {
-        var doc = _cycles.Find(Builders<CycleDocument>.Filter.Empty).FirstOrDefault();
+        // s53 : cycle propre à l'enfant si défini, sinon repli sur le cycle partagé (clé "").
+        var cle = enfantId ?? "";
+        var doc = _cycles.Find(Builders<CycleDocument>.Filter.Eq(d => d.EnfantId, cle)).FirstOrDefault()
+            ?? _cycles.Find(Builders<CycleDocument>.Filter.Eq(d => d.EnfantId, "")).FirstOrDefault();
         if (doc is null)
             return null;
 
@@ -34,11 +37,12 @@ public sealed class CycleDeFondMongo : IReferentielCycleDeFond
         return new CycleDeFond(doc.NombreSemaines, affectations);
     }
 
-    public void DefinirCycle(CycleDeFond cycle)
+    public void DefinirCycle(CycleDeFond cycle, string? enfantId = null)
     {
-        // Dernière écriture gagne : on remplace l'unique document de cycle (pas de version ni rejet).
-        _cycles.DeleteMany(Builders<CycleDocument>.Filter.Empty);
-        _cycles.InsertOne(CycleDocument.De(cycle));
+        // Dernière écriture gagne : on remplace l'unique document de cycle DE CET ENFANT (pas de version ni rejet).
+        var cle = enfantId ?? "";
+        _cycles.DeleteMany(Builders<CycleDocument>.Filter.Eq(d => d.EnfantId, cle));
+        _cycles.InsertOne(CycleDocument.De(cycle, cle));
     }
 
     /// <summary>Document persisté du cycle : longueur + mapping index→responsable (clés BSON stables).</summary>
@@ -46,13 +50,16 @@ public sealed class CycleDeFondMongo : IReferentielCycleDeFond
     {
         [BsonId]
         public MongoDB.Bson.ObjectId Id { get; set; }
+        // s53 : "" = cycle partagé/legacy ; sinon cycle propre à l'enfant. Élément BSON absent → "" (rétro-compat).
+        public string EnfantId { get; set; } = "";
         public int NombreSemaines { get; set; }
         public List<AffectationDocument> Affectations { get; set; } = new();
 
-        public static CycleDocument De(CycleDeFond cycle)
+        public static CycleDocument De(CycleDeFond cycle, string enfantId = "")
             => new()
             {
                 Id = MongoDB.Bson.ObjectId.GenerateNewId(),
+                EnfantId = enfantId,
                 NombreSemaines = cycle.NombreSemaines,
                 // Mapping sérialisé en liste de paires (les clés de dictionnaire BSON doivent être des
                 // chaînes ; une liste de { Index, ResponsableId } préserve les index entiers tels quels).

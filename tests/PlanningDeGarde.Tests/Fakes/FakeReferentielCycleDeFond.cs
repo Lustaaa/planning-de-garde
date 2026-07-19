@@ -9,14 +9,19 @@ namespace PlanningDeGarde.Tests.Fakes;
 /// </summary>
 public sealed class FakeReferentielCycleDeFond : IReferentielCycleDeFond
 {
-    private CycleDeFond? _cycle;
+    // Cycle partagé (clé "") + surcharges par enfant (s53) : un enfant sans cycle propre retombe sur le partagé.
+    private readonly System.Collections.Generic.Dictionary<string, CycleDeFond> _cycles = new();
 
     public FakeReferentielCycleDeFond(CycleDeFond? cycle = null)
     {
-        _cycle = cycle;
+        if (cycle is not null)
+            _cycles[""] = cycle;
     }
 
-    public CycleDeFond? CycleCourant() => _cycle;
+    public CycleDeFond? CycleCourant(string? enfantId = null)
+        => _cycles.TryGetValue(enfantId ?? "", out var propre) ? propre
+            : _cycles.TryGetValue("", out var partage) ? partage
+            : null;
 
-    public void DefinirCycle(CycleDeFond cycle) => _cycle = cycle;
+    public void DefinirCycle(CycleDeFond cycle, string? enfantId = null) => _cycles[enfantId ?? ""] = cycle;
 }
