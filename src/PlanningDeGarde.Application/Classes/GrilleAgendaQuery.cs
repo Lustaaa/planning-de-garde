@@ -96,8 +96,10 @@ public sealed class GrilleAgendaQuery
         var recurrents = _slotsRecurrents?.AllSnapshots() ?? (IReadOnlyList<SlotRecurrentSnapshot>)Array.Empty<SlotRecurrentSnapshot>();
 
         // Transferts saisis : rendus en présentation bicolore sur la case de leur jour (aucun changement
-        // du modèle de transfert ni de la résolution de responsabilité — décision SM s29 volet 2).
-        var transferts = _transferts?.AllSnapshots() ?? (IReadOnlyList<TransfertSnapshot>)Array.Empty<TransfertSnapshot>();
+        // du modèle de transfert ni de la résolution de responsabilité — décision SM s29 volet 2). ISOLATION
+        // STRICTE s53 (gate G3) : quand un enfant est ciblé, seuls SES transferts saisis sont vus (les
+        // transferts DÉRIVÉS, eux, sortent déjà des périodes filtrées par enfant → scopés par construction).
+        var transferts = TransfertsDeLEnfant(enfantId);
 
         var jours = Enumerable.Range(0, nbJours)
             .Select(offset => premierJour.AddDays(offset))
@@ -258,6 +260,18 @@ public sealed class GrilleAgendaQuery
         => enfantId is null
             ? _periodes.AllSnapshots()
             : _periodes.AllSnapshots().Where(p => p.EnfantId == enfantId).ToList();
+
+    /// <summary>
+    /// Transferts SAISIS visibles pour l'enfant <paramref name="enfantId"/> (s53, gate G3) : ISOLATION STRICTE
+    /// — seuls SES transferts (<c>EnfantId == enfantId</c>), jamais ceux d'un AUTRE enfant OU sans enfant
+    /// (legacy "") — miroir EXACT du filtrage des périodes (aucun repli global "" : c'était la fuite du transfert
+    /// de « Mia » chez « Charlie »). <paramref name="enfantId"/> null = mono-enfant antérieur (aucun filtrage).
+    /// </summary>
+    private IReadOnlyList<TransfertSnapshot> TransfertsDeLEnfant(string? enfantId)
+    {
+        var tous = _transferts?.AllSnapshots() ?? (IReadOnlyList<TransfertSnapshot>)Array.Empty<TransfertSnapshot>();
+        return enfantId is null ? tous : tous.Where(t => t.EnfantId == enfantId).ToList();
+    }
 
     /// <summary>Jours calendaires couverts par un slot, du jour de son début à celui de sa fin (inclus).</summary>
     private static IEnumerable<DateOnly> JoursCouverts(SlotSnapshot slot)

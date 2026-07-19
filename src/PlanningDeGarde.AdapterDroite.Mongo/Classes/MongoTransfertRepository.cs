@@ -37,6 +37,8 @@ public sealed class MongoTransfertRepository : ITransfertRepository
         public string LieuId { get; set; } = default!;
         public long HeureTicks { get; set; }
         public DateTime Date { get; set; }
+        // s53 : "" = transfert partagé/legacy ; sinon scope à un enfant. Élément BSON absent → "" (rétro-compat).
+        public string EnfantId { get; set; } = "";
 
         public static TransfertDocument De(TransfertSnapshot t)
             => new()
@@ -46,9 +48,10 @@ public sealed class MongoTransfertRepository : ITransfertRepository
                 LieuId = t.LieuId,
                 HeureTicks = t.Heure.Ticks, // l'heure de bascule en ticks (round-trip exact, sans fuseau)
                 Date = DateTimeMongo.WallClock(t.Date), // date en wall-clock STABLE (cf. DateTimeMongo)
+                EnfantId = t.EnfantId,
             };
 
         public TransfertSnapshot VersSnapshot()
-            => new(DeposeParId, RecupereParId, LieuId, TimeSpan.FromTicks(HeureTicks), Date);
+            => new(DeposeParId, RecupereParId, LieuId, TimeSpan.FromTicks(HeureTicks), Date, EnfantId);
     }
 }

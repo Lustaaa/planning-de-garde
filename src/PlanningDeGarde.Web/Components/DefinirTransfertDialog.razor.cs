@@ -56,6 +56,16 @@ public partial class DefinirTransfertDialog
     [Parameter]
     public IReadOnlyList<ActiviteFoyer> Lieux { get; set; } = Array.Empty<ActiviteFoyer>();
 
+    /// <summary>Enfant COURANT (s53, Option A) : hérité du sélecteur de vue, le transfert saisi lui est SCOPÉ
+    /// (il n'apparaît que dans SA grille — gate G3 : « le transfert de Mia ne doit plus fuir chez Charlie »).
+    /// Aucun choix ici (cohérent avec la vue mono-enfant P1) — affiché en lecture seule.</summary>
+    [Parameter, EditorRequired]
+    public string EnfantId { get; set; } = "";
+
+    /// <summary>Prénom de l'enfant courant, pour l'affichage LECTURE SEULE « Pour : … (sélection courante) ».</summary>
+    [Parameter]
+    public string EnfantNom { get; set; } = "";
+
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et lève l'accusé
     /// « Transfert défini » à part, non bloquant.</summary>
     [Parameter]
@@ -78,7 +88,7 @@ public partial class DefinirTransfertDialog
         {
             reponse = await Canal.PostAsJsonAsync(
                 "api/canal/definir-transfert",
-                new DefinirTransfertRequete(_form.DeposeParId, _form.RecupereParId, _form.LieuId, heure, _form.Date));
+                new DefinirTransfertRequete(_form.DeposeParId, _form.RecupereParId, _form.LieuId, heure, _form.Date, EnfantId));
         }
         catch (HttpRequestException)
         {

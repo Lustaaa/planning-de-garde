@@ -227,6 +227,26 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         Assert.DoesNotContain(grille.Projeter(J, VuePlanning.Semaine, TomId).Jours, j => j.ResponsableId == carla);
     }
 
+    [MongoRequisFact]
+    public void Sc12_Transfert_saisi_en_vue_Lea_visible_de_Lea_seul_durable()
+    {
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var alice = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+        var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
+
+        // When — définir un transfert saisi EN VUE de Léa via le use case d'écriture RÉEL (Mongo durable).
+        new DefinirTransfertHandler(new MongoTransfertRepository(ConnectionString, _baseDeTest))
+            .Handle(new DefinirTransfertCommand(alice, bob, "ecole", new TimeSpan(8, 30, 0), J.ToDateTime(TimeOnly.MinValue), LeaId));
+
+        // Then — redémarrage : le transfert durable porte EnfantId = Léa (jamais partagé "").
+        Assert.Equal(LeaId, Assert.Single(new MongoTransfertRepository(ConnectionString, _baseDeTest).AllSnapshots()).EnfantId);
+
+        // Then — grille neuve : la case J de Léa porte le transfert bicolore ; celle de Tom NON (aucune fuite).
+        var grille = GrilleNeuve();
+        Assert.NotNull(Case(grille, LeaId).Transfert);
+        Assert.Null(Case(grille, TomId).Transfert);
+    }
+
     public void Dispose()
     {
         try { new MongoClient(ConnectionString).DropDatabase(_baseDeTest); }

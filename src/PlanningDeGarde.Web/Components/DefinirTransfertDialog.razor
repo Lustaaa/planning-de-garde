@@ -11,6 +11,9 @@
 <div class="dialog-backdrop" data-testid="dialog-definir-transfert">
     <div class="dialog-panneau">
         <h2 class="h4 mb-3">Définir un transfert</h2>
+        @* Enfant COURANT hérité du sélecteur de vue (s53, Option A) : affiché en LECTURE SEULE — le transfert
+           saisi est scopé à l'enfant de la vue (gate G3 : plus de fuite « Mia » → « Charlie »). *@
+        <p class="text-muted small mb-3" data-testid="definir-transfert-enfant-courant">Pour : @EnfantNom (sélection courante)</p>
         <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="definir-transfert-dialog">
             <div class="row">
                 <div class="col mb-3">

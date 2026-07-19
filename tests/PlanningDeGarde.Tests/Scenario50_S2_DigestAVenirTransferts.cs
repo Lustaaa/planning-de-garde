@@ -47,9 +47,9 @@ public class Scenario50_S2_DigestAVenirTransferts
         var transferts = new FakeTransfertRepository();
         // Ordre d'insertion volontairement DÉCROISSANT pour prouver le tri chrono CROISSANT en sortie.
         transferts.Enregistrer(Transfert.Definir(ParentA, ParentB, "ecole",
-            new TimeSpan(8, 30, 0), Vendredi_10_07_2026.ToDateTime(TimeOnly.MinValue)).Valeur!);
+            new TimeSpan(8, 30, 0), Vendredi_10_07_2026.ToDateTime(TimeOnly.MinValue), LeaId).Valeur!);
         transferts.Enregistrer(Transfert.Definir(ParentA, ParentB, "ecole",
-            new TimeSpan(8, 30, 0), Jeudi_09_07_2026.ToDateTime(TimeOnly.MinValue)).Valeur!);
+            new TimeSpan(8, 30, 0), Jeudi_09_07_2026.ToDateTime(TimeOnly.MinValue), LeaId).Valeur!);
         return transferts;
     }
 

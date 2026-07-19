@@ -47,7 +47,7 @@ public static class CanalEcriture
     public sealed record AnnulerDelegationRequete(DateOnly Jour, string EnfantId);
 
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
-    public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
+    public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date, string EnfantId = "");
 
     /// <summary>Corps de la requête d'ajout d'une activité au référentiel du foyer (s35, ex-« lieu » s27) : le
     /// front n'émet que le libellé ; l'identifiant stable est posé côté handler. Refus (libellé vide / doublon).</summary>

@@ -172,9 +172,9 @@ internal static class GrilleRuntimeHarness
     /// les couleurs départ/arrivée résolues sur le référentiel réel des acteurs. Sème EN DIRECT via le
     /// port (pas la commande), pour placer précisément déposant / récupérant / date.
     /// </summary>
-    public static void SemerTransfert(ApiDistanteFactory api, string deposeParId, string recupereParId, DateTime date)
+    public static void SemerTransfert(ApiDistanteFactory api, string deposeParId, string recupereParId, DateTime date, string enfantId = EnfantParDefaut)
         => api.Services.GetRequiredService<ITransfertRepository>()
-            .Enregistrer(Transfert.Definir(deposeParId, recupereParId, "école", TimeSpan.FromHours(8.5), date).Valeur!);
+            .Enregistrer(Transfert.Definir(deposeParId, recupereParId, "école", TimeSpan.FromHours(8.5), date, enfantId).Valeur!);
 
     /// <summary>
     /// Sème un cycle de fond dans le store réel de l'API distante (Given d'un scénario de navigation) —

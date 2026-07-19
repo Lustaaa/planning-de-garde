@@ -7,13 +7,18 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 11/11
+## Avancement — 13/13
 
 > **Gate G3 (1er passage) ÉCHOUÉ** : l'isolation n'était qu'en LECTURE ; le chemin d'ÉCRITURE
 > « Affecter une période » (s06) n'était pas scopé enfant → période au bucket partagé `''`, visible
-> pour TOUS les enfants. **Correctif appliqué** (scope enfant à l'écriture Option A + filtrage STRICT
-> sans repli `''`) + **Sc.10/Sc.11** ajoutés (le trou n'était pas couvert : Sc.1-6 seedaient des
-> périodes déjà estampillées, jamais le use case d'écriture réel).
+> pour TOUS les enfants. **Correctif** (scope enfant à l'écriture Option A + filtrage STRICT
+> sans repli `''`) + **Sc.10/Sc.11**.
+>
+> **Gate G3 (2e passage) ÉCHOUÉ** (navigateur 5292) : « le transfert de Mia apparaît toujours sur le
+> planning de Charlie ». Les **transferts SAISIS** (s29) n'étaient pas scopés (modèle sans `EnfantId`)
+> — les DÉRIVÉS l'étaient déjà (issus des périodes filtrées). **Correctif** : `EnfantId` de bout en
+> bout sur le transfert saisi (modèle/command/DTO/endpoint/dialog hérité de l'enfant courant) +
+> filtrage STRICT dans la projection + **Sc.12 @back / Sc.13 @ihm**.
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -28,6 +33,8 @@
 | 9 | Temps réel 0-GET : délégation enfant A converge sur A, laisse B inchangé | @ihm | ✅ |
 | 10 | Affecter une période EN VUE enfant A (write path réel) → visible A seul, jamais B | @back | ✅ |
 | 11 | Affecter avec Mia sélectionnée → visible grille Mia, absente grille Tom ; dialog affiche l'enfant courant (lecture seule) | @ihm | ✅ |
+| 12 | Transfert SAISI (s29) issu d'une action sur A n'apparaît QUE chez A, jamais chez B (write path réel) | @back | ✅ |
+| 13 | Définir un transfert avec enfant sélectionné → bicolore chez A, absent chez B après bascule ; dialog enfant lecture seule | @ihm | ✅ |
 
 ---
 
@@ -200,6 +207,30 @@ Scénario 11 — Affecter avec un enfant sélectionné : scopé à SA grille, di
   Alors la période s'affiche dans la grille de l'enfant courant
   Et en basculant sur un autre enfant elle est ABSENTE (la case retombe sur le fond)
   # runtime réel : écriture par le canal, résolution isolée par enfant réelle
+```
+
+### Correctif gate G3 (2e passage) — scope enfant aux TRANSFERTS SAISIS (« Mia » ne doit plus fuir chez « Charlie »)
+
+```gherkin
+@back @vert
+Scénario 12 — Un transfert SAISI (s29) issu d'une action sur l'enfant A n'apparaît QUE chez A
+  Étant donné deux enfants "Léa" et "Tom" et un transfert SAISI défini EN VUE de "Léa" le jour J
+  Quand je projette la grille pour "Léa" puis pour "Tom"
+  Alors la case J de "Léa" porte le transfert bicolore (+ motif de légende), celle de "Tom" NON
+  Et le transfert persisté porte EnfantId="Léa" (jamais le bucket partagé "")
+  Et les transferts DÉRIVÉS restent scopés par construction (issus des périodes déjà filtrées par enfant)
+  Et l'isolation est prouvée sur InMemory ET Mongo durable
+```
+
+```gherkin
+@ihm @vert
+Scénario 13 — Définir un transfert avec un enfant sélectionné : bicolore chez A, absent chez B
+  Étant donné la grille affichant l'enfant courant et la dialog « Définir un transfert » ouverte
+  Alors la dialog affiche l'enfant courant en LECTURE SEULE (« Pour : … (sélection courante) »)
+  Quand je saisis et valide le transfert
+  Alors la case du jour de l'enfant courant porte la pastille bicolore (convergence par diffusion SignalR)
+  Et en basculant sur un autre enfant la pastille est ABSENTE (plus de fuite du transfert)
+  # runtime réel navigateur-fidèle : écriture par le canal, projection isolée par enfant réelle
 ```
 
 ---

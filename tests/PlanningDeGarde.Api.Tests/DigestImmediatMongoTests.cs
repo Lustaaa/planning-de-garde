@@ -63,7 +63,7 @@ public sealed class DigestImmediatMongoTests : IDisposable
 
         var transferts = new MongoTransfertRepository(ConnectionString, _baseDeTest);
         transferts.Enregistrer(Transfert.Definir(parentA, parentB, "ecole",
-            new TimeSpan(8, 30, 0), Mercredi_08_07_2026.ToDateTime(TimeOnly.MinValue)).Valeur!);
+            new TimeSpan(8, 30, 0), Mercredi_08_07_2026.ToDateTime(TimeOnly.MinValue), "enfant-lea").Valeur!);
 
         // --- When : le digest câblé sur les stores durables réels (nouvelles instances) ---
         var digest = DigestSurBaseReelle().Composer(Mercredi_08_07_2026, Mercredi_08_07_2026, "enfant-lea");
@@ -101,9 +101,9 @@ public sealed class DigestImmediatMongoTests : IDisposable
 
         var transferts = new MongoTransfertRepository(ConnectionString, _baseDeTest);
         transferts.Enregistrer(Transfert.Definir(parentA, parentB, "ecole",
-            new TimeSpan(8, 30, 0), new DateOnly(2026, 7, 10).ToDateTime(TimeOnly.MinValue)).Valeur!);
+            new TimeSpan(8, 30, 0), new DateOnly(2026, 7, 10).ToDateTime(TimeOnly.MinValue), "enfant-lea").Valeur!);
         transferts.Enregistrer(Transfert.Definir(parentA, parentB, "ecole",
-            new TimeSpan(8, 30, 0), new DateOnly(2026, 7, 9).ToDateTime(TimeOnly.MinValue)).Valeur!);
+            new TimeSpan(8, 30, 0), new DateOnly(2026, 7, 9).ToDateTime(TimeOnly.MinValue), "enfant-lea").Valeur!);
 
         // --- When : le digest câblé sur les stores durables réels, jour courant = 08/07 ---
         var avenir = DigestSurBaseReelle().Composer(Mercredi_08_07_2026, Mercredi_08_07_2026, "enfant-lea").AVenir;

@@ -445,9 +445,11 @@ else
                            OnAnnule="FermerDialog" />
 }
 
-@if (_dateDialogDefinirTransfert is { } dateTransfert)
+@if (_dateDialogDefinirTransfert is { } dateTransfert && _enfantSelectionne is { } enfantTransfert)
 {
     <DefinirTransfertDialog DateContexte="dateTransfert"
+                            EnfantId="@enfantTransfert"
+                            EnfantNom="@PrenomEnfant(enfantTransfert)"
                             Acteurs="_acteursFoyer"
                             ActeursCharges="_acteursFoyerCharges"
                             Lieux="_lieuxFoyer"

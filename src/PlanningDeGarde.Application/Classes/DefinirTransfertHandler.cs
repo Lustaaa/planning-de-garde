@@ -3,8 +3,9 @@ using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application;
 
-/// <summary>Commande de définition d'un transfert de bascule entre deux parents.</summary>
-public sealed record DefinirTransfertCommand(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
+/// <summary>Commande de définition d'un transfert de bascule entre deux parents. <paramref name="EnfantId"/>
+/// (s53) SCOPE le transfert à l'enfant courant (hérité du sélecteur de vue, Option A).</summary>
+public sealed record DefinirTransfertCommand(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date, string EnfantId = "");
 
 /// <summary>Use case : définir un transfert de bascule (point A↔B) dans le planning partagé.</summary>
 public sealed class DefinirTransfertHandler
@@ -23,7 +24,7 @@ public sealed class DefinirTransfertHandler
 
     public Result<TransfertSnapshot> Handle(DefinirTransfertCommand commande)
     {
-        var definition = Transfert.Definir(commande.DeposeParId, commande.RecupereParId, commande.LieuId, commande.Heure, commande.Date);
+        var definition = Transfert.Definir(commande.DeposeParId, commande.RecupereParId, commande.LieuId, commande.Heure, commande.Date, commande.EnfantId);
         if (!definition.EstSucces)
             return Result<TransfertSnapshot>.Echec(definition.Motif!);
 
@@ -34,7 +35,7 @@ public sealed class DefinirTransfertHandler
         if (_journal is not null && _horloge is not null)
             _journal.Consigner(new EvenementChangementSnapshot(
                 Guid.NewGuid().ToString("N"), TypeChangement.Transfert, DateOnly.FromDateTime(commande.Date),
-                "", commande.DeposeParId, commande.RecupereParId, _horloge.Maintenant));
+                commande.EnfantId, commande.DeposeParId, commande.RecupereParId, _horloge.Maintenant));
 
         return Result<TransfertSnapshot>.Succes(transfert.ToSnapshot());
     }
