@@ -29,9 +29,10 @@ public sealed class DigestImmediatQuery
     public DigestImmediat Composer(
         DateOnly ancre, DateOnly aujourdhui, string enfantId, VuePlanning vue = VuePlanning.QuatreSemaines)
     {
-        // Projette la fenêtre chargée puis DÉLÈGUE à la composition PURE partagée avec la reprojection client
-        // (s50 @ihm) : « immédiat » = case du jour courant si présente dans la fenêtre (sinon null = hors-fenêtre),
-        // « à venir » = jours > aujourd'hui portant un transfert, chrono croissant. Aucune mutation, 0 store neuf.
-        return DigestImmediat.Composer(_grille.Projeter(ancre, vue), aujourdhui, enfantId);
+        // Projette la fenêtre chargée POUR CET ENFANT (s53 : résolution isolée — le digest LIT le planning d'un
+        // enfant) puis DÉLÈGUE à la composition PURE partagée avec la reprojection client (s50 @ihm) : « immédiat »
+        // = case du jour courant si présente dans la fenêtre (sinon null = hors-fenêtre), « à venir » = jours >
+        // aujourd'hui portant un transfert, chrono croissant. Aucune mutation, 0 store neuf.
+        return DigestImmediat.Composer(_grille.Projeter(ancre, vue, enfantId), aujourdhui, enfantId);
     }
 }

@@ -143,6 +143,35 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         Assert.Equal(david, Case(grille, TomId).ResponsableId);
     }
 
+    [MongoRequisFact]
+    public void Sc5_Digest_resolu_par_enfant_durable_et_pur()
+    {
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var alice = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+        var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
+        var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
+
+        new CycleDeFondMongo(ConnectionString, _baseDeTest)
+            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+
+        // Léa surchargée aujourd'hui (Carla), Tom résolu par le fond (Alice).
+        new MongoPeriodeRepository(ConnectionString, _baseDeTest).Enregistrer(
+            PeriodeDeGarde.Affecter(carla, J.ToDateTime(TimeOnly.MinValue), J.ToDateTime(TimeOnly.MinValue), LeaId).Valeur!);
+
+        var avant = new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots().Count;
+        var query = new DigestImmediatQuery(GrilleNeuve());
+
+        var digestLea = query.Composer(J, J, LeaId);
+        var digestTom = query.Composer(J, J, TomId);
+
+        Assert.Equal(carla, digestLea.Immediat!.Responsable.ActeurId);
+        Assert.Equal(alice, digestTom.Immediat!.Responsable.ActeurId);
+        Assert.DoesNotContain(digestTom.AVenir, j => j.Transfert!.CedantNom == "Carla" || j.Transfert.RecevantNom == "Carla");
+
+        // Query PURE : store durable inchangé.
+        Assert.Equal(avant, new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots().Count);
+    }
+
     public void Dispose()
     {
         try { new MongoClient(ConnectionString).DropDatabase(_baseDeTest); }

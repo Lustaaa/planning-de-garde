@@ -7,7 +7,7 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 4/9
+## Avancement — 5/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -15,7 +15,7 @@
 | 2 | Délégation ciblée enfant A n'écrit rien sur enfant B (2 adaptateurs) | @back | ✅ |
 | 3 | Échange accepté ciblé enfant A compose la délégation pour A seul | @back | ✅ |
 | 4 | Même jour, 2 enfants = 2 surcharges indépendantes (PAS de LWW entre enfants) | @back | ✅ |
-| 5 | Digest « qui récupère ce soir » résolu PAR enfant | @back | ⏳ |
+| 5 | Digest « qui récupère ce soir » résolu PAR enfant | @back | ✅ |
 | 6 | Suppression / orphelin d'un enfant laisse l'autre intact (Mongo durable) | @back | ⏳ |
 | 7 | Bascule du sélecteur recharge la grille du bon enfant (Parent-gated) | @ihm | ⏳ |
 | 8 | Le digest de la cloche suit l'enfant sélectionné (cloche transverse, digest filtré) | @ihm | ⏳ |
@@ -118,7 +118,7 @@ Scénario 4 — Même jour, deux enfants : deux surcharges INDÉPENDANTES (pas d
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 5 — Digest « qui récupère ce soir » résolu PAR enfant
   Étant donné deux enfants "Léa" et "Tom" avec des responsables du jour distincts
   Quand je compose le digest immédiat s50 pour "Léa" puis pour "Tom"
