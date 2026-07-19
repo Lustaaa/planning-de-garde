@@ -114,6 +114,35 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         Assert.Equal(carla, Case(grille, TomId).ResponsableId);
     }
 
+    [MongoRequisFact]
+    public void Sc4_Deux_delegations_le_meme_jour_coexistent_durable()
+    {
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var alice = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+        var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
+        var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
+        var david = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("David")).Valeur!.ActeurId;
+
+        new CycleDeFondMongo(ConnectionString, _baseDeTest)
+            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+
+        var delegation = new DeleguerRecuperationHandler(
+            GrilleNeuve(), new MongoPeriodeRepository(ConnectionString, _baseDeTest), new ConfigurationFoyerMongo(ConnectionString, _baseDeTest));
+
+        Assert.True(delegation.Handle(new DeleguerRecuperationCommand(J, LeaId, carla)).EstSucces);
+        Assert.True(delegation.Handle(new DeleguerRecuperationCommand(J, TomId, david)).EstSucces);
+
+        // Redémarrage : deux surcharges durables coexistent, aucune n'écrase l'autre.
+        var relues = new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots();
+        Assert.Equal(2, relues.Count);
+        Assert.Equal(carla, Assert.Single(relues, p => p.EnfantId == LeaId).ResponsableId);
+        Assert.Equal(david, Assert.Single(relues, p => p.EnfantId == TomId).ResponsableId);
+
+        var grille = GrilleNeuve();
+        Assert.Equal(carla, Case(grille, LeaId).ResponsableId);
+        Assert.Equal(david, Case(grille, TomId).ResponsableId);
+    }
+
     public void Dispose()
     {
         try { new MongoClient(ConnectionString).DropDatabase(_baseDeTest); }
