@@ -255,7 +255,9 @@ public sealed class GrilleAgendaQuery
     private IReadOnlyList<PeriodeSnapshot> PeriodesDeLEnfant(string? enfantId)
         => enfantId is null
             ? _periodes.AllSnapshots()
-            : _periodes.AllSnapshots().Where(p => p.EnfantId == enfantId).ToList();
+            // Surcharges de CET enfant + surcharges PARTAGÉES/legacy (EnfantId ""), jamais celles d'un AUTRE
+            // enfant (isolation stricte). Une surcharge legacy sans enfant s'applique à tous (rétro-compat s06).
+            : _periodes.AllSnapshots().Where(p => p.EnfantId == enfantId || p.EnfantId == "").ToList();
 
     /// <summary>Jours calendaires couverts par un slot, du jour de son début à celui de sa fin (inclus).</summary>
     private static IEnumerable<DateOnly> JoursCouverts(SlotSnapshot slot)
