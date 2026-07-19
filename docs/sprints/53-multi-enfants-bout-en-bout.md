@@ -7,7 +7,7 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 7/9
+## Avancement — 8/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -18,7 +18,7 @@
 | 5 | Digest « qui récupère ce soir » résolu PAR enfant | @back | ✅ |
 | 6 | Suppression / orphelin d'un enfant laisse l'autre intact (Mongo durable) | @back | ✅ |
 | 7 | Bascule du sélecteur recharge la grille du bon enfant (Parent-gated) | @ihm | ✅ |
-| 8 | Le digest de la cloche suit l'enfant sélectionné (cloche transverse, digest filtré) | @ihm | ⏳ |
+| 8 | Le digest de la cloche suit l'enfant sélectionné (cloche transverse, digest filtré) | @ihm | ✅ |
 | 9 | Temps réel 0-GET : délégation enfant A converge sur A, laisse B inchangé | @ihm | ⏳ |
 
 ---
@@ -150,7 +150,7 @@ Scénario 7 — Bascule du sélecteur recharge la grille du BON enfant
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 8 — Le digest de la cloche SUIT l'enfant sélectionné (cloche transverse, digest filtré)
   Étant donné le panneau cloche ouvert avec l'enfant "Léa" sélectionné
   Quand je bascule le sélecteur sur "Tom"
