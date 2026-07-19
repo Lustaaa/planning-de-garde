@@ -42,9 +42,10 @@ public sealed class ProposerEchangeHandler
             return Result<PropositionEchangeSnapshot>.Echec(
                 "Recevant inconnu : cet acteur n'existe pas (ou plus) dans le foyer.");
 
-        // Cédant = responsable RÉSOLU du jour (surcharge > fond) — LU sans le modifier. Proposer à soi-même
-        // (recevant = résolu) est refusé par l'agrégat, AVANT toute écriture.
-        var cedant = _grille.Projeter(commande.Jour, VuePlanning.Semaine)
+        // Cédant = responsable RÉSOLU du jour (surcharge > fond) DE L'ENFANT ciblé (s53 : jamais pollué par la
+        // surcharge d'un autre enfant) — LU sans le modifier. Proposer à soi-même (recevant = résolu) est refusé
+        // par l'agrégat, AVANT toute écriture.
+        var cedant = _grille.Projeter(commande.Jour, VuePlanning.Semaine, commande.EnfantId)
             .Jours.Single(j => j.Date == commande.Jour).ResponsableId ?? "";
         var proposition = PropositionEchange.Proposer(
             commande.Jour, commande.EnfantId, cedant, commande.VersActeurId, commande.JourFin);

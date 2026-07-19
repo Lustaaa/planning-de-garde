@@ -7,13 +7,13 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 2/9
+## Avancement — 3/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
 | 1 | Résolution isolée par enfant (2 enfants, chacun son cycle/surcharges) | @back | ✅ |
 | 2 | Délégation ciblée enfant A n'écrit rien sur enfant B (2 adaptateurs) | @back | ✅ |
-| 3 | Échange accepté ciblé enfant A compose la délégation pour A seul | @back | ⏳ |
+| 3 | Échange accepté ciblé enfant A compose la délégation pour A seul | @back | ✅ |
 | 4 | Même jour, 2 enfants = 2 surcharges indépendantes (PAS de LWW entre enfants) | @back | ⏳ |
 | 5 | Digest « qui récupère ce soir » résolu PAR enfant | @back | ⏳ |
 | 6 | Suppression / orphelin d'un enfant laisse l'autre intact (Mongo durable) | @back | ⏳ |
@@ -96,7 +96,7 @@ Scénario 2 — Délégation ciblée "Léa" n'écrit RIEN sur "Tom"
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 3 — Échange accepté ciblé "Léa" compose la délégation pour "Léa" seul
   Étant donné une proposition d'échange pending sur (Léa, J) — store des surcharges intact
   Quand la proposition est acceptée
