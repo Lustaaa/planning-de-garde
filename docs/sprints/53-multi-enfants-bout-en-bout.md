@@ -7,7 +7,7 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 5/9
+## Avancement — 6/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -16,7 +16,7 @@
 | 3 | Échange accepté ciblé enfant A compose la délégation pour A seul | @back | ✅ |
 | 4 | Même jour, 2 enfants = 2 surcharges indépendantes (PAS de LWW entre enfants) | @back | ✅ |
 | 5 | Digest « qui récupère ce soir » résolu PAR enfant | @back | ✅ |
-| 6 | Suppression / orphelin d'un enfant laisse l'autre intact (Mongo durable) | @back | ⏳ |
+| 6 | Suppression / orphelin d'un enfant laisse l'autre intact (Mongo durable) | @back | ✅ |
 | 7 | Bascule du sélecteur recharge la grille du bon enfant (Parent-gated) | @ihm | ⏳ |
 | 8 | Le digest de la cloche suit l'enfant sélectionné (cloche transverse, digest filtré) | @ihm | ⏳ |
 | 9 | Temps réel 0-GET : délégation enfant A converge sur A, laisse B inchangé | @ihm | ⏳ |
@@ -128,7 +128,7 @@ Scénario 5 — Digest « qui récupère ce soir » résolu PAR enfant
 ```
 
 ```gherkin
-@back @pending
+@back @vert
 Scénario 6 — Suppression / orphelin d'un enfant laisse l'AUTRE intact
   Étant donné deux enfants "Léa" et "Tom" avec leurs surcharges
   Quand un enfant devient orphelin (ou est retiré du référentiel)

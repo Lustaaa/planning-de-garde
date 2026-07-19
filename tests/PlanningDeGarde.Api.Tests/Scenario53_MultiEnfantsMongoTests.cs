@@ -172,6 +172,34 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         Assert.Equal(avant, new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots().Count);
     }
 
+    [MongoRequisFact]
+    public void Sc6_Orphelin_dun_enfant_laisse_lautre_intact_durable_sans_crash()
+    {
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var david = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("David")).Valeur!.ActeurId;
+        var carlaOrpheline = "acteur-absent-" + Guid.NewGuid().ToString("N");
+
+        // Léa orpheline : son responsable n'existe pas (jamais ajouté) — surcharge orpheline durable (Resolvable).
+        var periodes = new MongoPeriodeRepository(ConnectionString, _baseDeTest);
+        periodes.Enregistrer(PeriodeDeGarde.Affecter(carlaOrpheline, J.ToDateTime(TimeOnly.MinValue), J.ToDateTime(TimeOnly.MinValue), LeaId).Valeur!);
+        periodes.Enregistrer(PeriodeDeGarde.Affecter(david, J.ToDateTime(TimeOnly.MinValue), J.ToDateTime(TimeOnly.MinValue), TomId).Valeur!);
+
+        // Redémarrage : store durable relu.
+        var grille = GrilleNeuve();
+
+        // L'autre enfant (Tom) intact : David, surcharge durable préservée.
+        var caseTom = Case(grille, TomId);
+        Assert.Equal(david, caseTom.ResponsableId);
+        Assert.Equal(david, Assert.Single(new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots(), p => p.EnfantId == TomId).ResponsableId);
+
+        // Enfant orphelin : lecture sans crash, repli neutre (responsable absent, aucun fond).
+        var configLecture = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var caseLea = Case(grille, LeaId);
+        Assert.Null(caseLea.ResponsableId);
+        Assert.Equal("", caseLea.NomResponsable);
+        Assert.Equal(configLecture.CouleurNeutre, caseLea.CouleurResponsable);
+    }
+
     public void Dispose()
     {
         try { new MongoClient(ConnectionString).DropDatabase(_baseDeTest); }
