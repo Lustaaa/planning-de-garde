@@ -4,9 +4,10 @@
 > échange » / flux consenti). Source de vérité pour la **cloche générale de changements**
 > (journal, lu/non-lu, surface barre du haut, diffusion temps réel porteuse de payload), l'**échange
 > proposition → accord**, le **signalement d'imprévu informatif** (brique C, s48), le **digest
-> « immédiat » dans la cloche** (brique D, s50 — qui récupère ce soir + transferts à venir) et l'**action
-> de suivi sur un imprévu** (brique E, s51 — proposer un échange en réaction). Édité en diff, jamais
-> réécrit en bloc.
+> « immédiat » dans la cloche** (brique D, s50 — qui récupère ce soir + transferts à venir), l'**action
+> de suivi sur un imprévu** (brique E, s51 — proposer un échange en réaction) et l'**échange sur une
+> PLAGE `[J1..J2]`** (brique F, s52 — le flux proposition → accord étendu du jour unique à un intervalle,
+> borné mono-enfant). Édité en diff, jamais réécrit en bloc.
 
 ## Contexte
 
@@ -88,6 +89,11 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
   Parent-gating et le lu/non-lu par utilisateur).
 
 ## Brique B — Échange proposition → accord (consenti)
+
+> **Extension s52 (brique F ci-dessous).** `ProposerEchange` porte désormais un **intervalle
+> `[début..fin]`** (défaut **`fin = début`** → échange d'**UN jour**, comportement s47 **strictement
+> inchangé**). Tout ce qui suit décrit le **cas mono-jour** (le socle) ; la plage le **compose** sans
+> le contredire (cf. brique F).
 
 - **`ProposerEchange(jour, enfant, versActeur)`** crée une **Proposition `pending`** (notification
   chez le recevant) **SANS AUCUNE écriture de surcharge** : le store des surcharges reste **intact**
@@ -233,6 +239,43 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
   un imprévu = **un jour, un enfant** — la proposition hérite du jour+enfant unique) ; notifications **push /
   e-mail externes**.
 
+## Brique F — Échange sur une PLAGE `[J1..J2]` *(livré s52)*
+
+- **Étend le flux proposition → accord (brique B) du JOUR UNIQUE à une PLAGE `[J1..J2]`** — le vœu
+  « échangeons toute la semaine de vacances », consenti. **Miroir EXACT de la progression délégation
+  s44 → s45** (la délégation directe est passée du jour unique à la plage) transposée au **workflow
+  d'échange consenti** s47. **BORNÉ MONO-ENFANT** (un enfant, plusieurs jours contigus) ; le
+  **multi-enfants** et la **série récurrente** restent hors scope (backlog).
+- **AUCUN store / modèle / commande neuf.** Le modèle `Proposition` s47 est enrichi d'un **`JourFin`**
+  (défaut **`fin = début`** → une **Proposition ponctuelle `[J1..J1]`**, parité s47 **stricte** ;
+  **`fin < début` (plage vide) refusé dans l'agrégat**, AVANT écriture). `ProposerEchange` accepte
+  l'**intervalle `[début..fin]`**.
+- **`AccepterProposition` COMPOSE la délégation-PLAGE s45** *(Sc.3)* : une **surcharge est posée sur
+  CHAQUE jour `[J1..J2]`** (le recevant prime, surcharge > fond) via le chemin période s06, et un
+  **transfert bicolore AUTO-DÉRIVÉ s31** apparaît aux **DEUX frontières** (entrée J1, sortie J2+1),
+  jamais réécrit. **`RefuserProposition`** clôt sans aucune écriture (store intact).
+- **Invariant anti-vert-qui-ment explicitement prouvé** *(Sc.1)* : une Proposition `pending` sur une
+  plage **n'écrit RIEN** — **0 surcharge posée**, store des surcharges **STRICTEMENT intact**, **aucune
+  case de l'intervalle changée** tant que non acceptée. **Aucune écriture partielle** : tout refus
+  (`fin < début`, soi-même, délégataire inconnu / orphelin) tombe **AVANT** toute écriture, **aucun
+  jour** de la plage écrit *(Sc.4, Sc.5)*. **Ré-proposition = last-write-wins R11** sans doublon ;
+  **`fin` hors fenêtre chargée** enregistrée puis acceptée sans crash *(Sc.6)*. Identique **InMemory +
+  Mongo durable**.
+- **Surface — AUCUNE surface neuve** *(PORTE DE CONCEPTION arbitrée AU CADRAGE, anti-rework G3)* : on
+  **enrichit `ProposerEchangeDialog` s47** d'un **champ « jusqu'au »** (date de fin, **miroir EXACT** du
+  champ ajouté à la dialog de délégation en s45), défaut = **jour cliqué** → proposer d'UN jour
+  **strictement inchangé**. **Parent-gated** (Invité inerte) ; **Échap = Annuler** (port
+  `IEcouteurEchapModal` s33) ; **refus domaine → la dialog RESTE ouverte** + motif + **saisie (acteur ET
+  plage) conservée**. La notif d'échange de plage reste **ACTIONNABLE dans la cloche** (Accepter /
+  Refuser), inchangée.
+- **Temps réel** *(Sc.10)* : à l'accord, **TOUTES les cases de la plage `[J1..J2]`** d'un 2ᵉ écran
+  **convergent** (nouveau responsable + transferts dérivés aux deux frontières) par **reprojection
+  client depuis la diffusion porteuse de payload** `INotificateurChangement` s47, **0 GET sur push**
+  (garde anti-flake [[flake-signalr-blast-radius]]).
+- **Hors scope s52** (backlog) : **échange MULTI-ENFANTS** (borné — le vrai multi-enfants au sens R1
+  n'est pas encore exercé de bout en bout, reliquat s30 ; à cadrer quand R1 sera exercé) ; **échange
+  récurrent / série** (D2, distinct d'une plage contiguë) ; notifications **push / e-mail externes**.
+
 ## Règles de gestion (catalogue : `regles-de-gestion.md`)
 
 - **Journal = trace de lecture non-autorité** : le journal de changements n'est **jamais** lu par la
@@ -253,8 +296,9 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
 
 ## Risques / hors-scope (backlog)
 
-- **Échange borné à UN jour ponctuel** : plage `[J1..J2]` (s45), récurrence / série (D2) et
-  **multi-enfants** restent ouverts.
+- **Échange sur une PLAGE `[J1..J2]`** : **livré s52** (brique F ci-dessus, **borné mono-enfant** —
+  compose la délégation-plage s45). Restent ouverts : **récurrence / série** (D2) et **multi-enfants**
+  (le vrai multi-enfants R1 pas encore exercé de bout en bout — reliquat s30).
 - **Cloche in-app uniquement** : notifications **push / e-mail externes** hors scope (la diffusion est
   temps réel SignalR in-app).
 - **Signalement d'imprévu dédié** (malade / retard) distinct de l'échange : **livré s48** (brique C

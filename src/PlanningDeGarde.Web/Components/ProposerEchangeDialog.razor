@@ -26,6 +26,12 @@
                 <div class="form-text text-warning" data-testid="aucun-acteur-invite">Aucun acteur, ajoutez-en.</div>
             }
         </div>
+        @* Champ « jusqu'au » (s52) : date de fin INCLUSE de la plage proposée. Défaut = jour cliqué (fin =
+           début) → échange d'UN jour (s47) inchangé. Une seule proposition [début..fin] est émise (miroir s45). *@
+        <div class="mb-3">
+            <label class="form-label">Jusqu'au</label>
+            <InputDate class="form-control" data-testid="champ-jusqu-au" @bind-Value="_form.Jusqu" />
+        </div>
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-primary">Proposer l'échange</button>
             <button type="button" class="btn btn-link" data-testid="dialog-proposer-annuler" @onclick="Annuler">Annuler</button>

@@ -11,7 +11,8 @@ namespace PlanningDeGarde.Application;
 /// proposition n'écrit RIEN et ne change pas la résolution : seul le consentement du recevant (Accepter)
 /// déclenchera l'écriture.
 /// </summary>
-public sealed record ProposerEchangeCommand(DateOnly Jour, string EnfantId, string VersActeurId);
+public sealed record ProposerEchangeCommand(
+    DateOnly Jour, string EnfantId, string VersActeurId, DateOnly? JourFin = null);
 
 /// <summary>
 /// Use case de PROPOSITION : enregistre une <see cref="PropositionEchange"/> <c>pending</c> notifiée au
@@ -45,7 +46,8 @@ public sealed class ProposerEchangeHandler
         // (recevant = résolu) est refusé par l'agrégat, AVANT toute écriture.
         var cedant = _grille.Projeter(commande.Jour, VuePlanning.Semaine)
             .Jours.Single(j => j.Date == commande.Jour).ResponsableId ?? "";
-        var proposition = PropositionEchange.Proposer(commande.Jour, commande.EnfantId, cedant, commande.VersActeurId);
+        var proposition = PropositionEchange.Proposer(
+            commande.Jour, commande.EnfantId, cedant, commande.VersActeurId, commande.JourFin);
         if (!proposition.EstSucces)
             return Result<PropositionEchangeSnapshot>.Echec(proposition.Motif!);
 

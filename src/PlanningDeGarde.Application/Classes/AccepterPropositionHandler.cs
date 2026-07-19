@@ -7,9 +7,10 @@ namespace PlanningDeGarde.Application;
 public sealed record AccepterPropositionCommand(string PropositionId);
 
 /// <summary>
-/// Use case de CONSENTEMENT : ACCEPTER une proposition <c>pending</c> COMPOSE la délégation EXISTANTE s44
-/// (<see cref="DeleguerRecuperationHandler"/>) — surcharge du jour écrite via le chemin s06, le recevant
-/// prime (surcharge &gt; fond), le transfert bicolore cédant → recevant sort AUTO-DÉRIVÉ de s31 (R24). La
+/// Use case de CONSENTEMENT : ACCEPTER une proposition <c>pending</c> COMPOSE la délégation EXISTANTE s44/s45
+/// (<see cref="DeleguerRecuperationHandler"/>) sur la PLAGE <c>[Jour..JourFin]</c> portée par la proposition —
+/// surcharge multi-jours écrite via le chemin s06, le recevant prime (surcharge &gt; fond), les transferts
+/// bicolores cédant → recevant sortent AUTO-DÉRIVÉS de s31 (R24) aux deux frontières de la plage. La
 /// proposition passe alors à <see cref="StatutProposition.Acceptee"/>. Aucune nouvelle écriture ni dérivation :
 /// l'accord n'est que le déclencheur de la délégation déjà éprouvée.
 /// </summary>
@@ -33,7 +34,8 @@ public sealed class AccepterPropositionHandler
         // COMPOSITION s44 : le consentement déclenche l'écriture de la délégation EXISTANTE (surcharge + transfert
         // dérivé s31). Si la délégation échoue (ex. recevant devenu orphelin), on ne change PAS le statut — refus
         // ATOMIQUE, aucune écriture partielle.
-        var delegation = _delegation.Handle(new DeleguerRecuperationCommand(snapshot.Jour, snapshot.EnfantId, snapshot.VersActeurId));
+        var delegation = _delegation.Handle(
+            new DeleguerRecuperationCommand(snapshot.Jour, snapshot.EnfantId, snapshot.VersActeurId, snapshot.JourFin));
         if (!delegation.EstSucces)
             return Result<PropositionEchangeSnapshot>.Echec(delegation.Motif!);
 

@@ -35,6 +35,30 @@
 > la cloche s'y ajoute comme surface transverse.** Backlog et spec (`saisie-et-grille.md`, `notifications-et-echange.md`)
 > alignés sur cet amendement — plus de contradiction « seule surface ».
 
+**s52 `echange-plage-jours` MERGÉ — ÉCHANGE consenti s47 ÉTENDU du JOUR UNIQUE à la PLAGE `[J1..J2]` (miroir exact de la progression délégation s44→s45), BORNÉ MONO-ENFANT.**
+Le vœu « échangeons toute la semaine de vacances » (consenti). **AUCUN store/modèle/commande neuf** : le modèle `Proposition` s47 est enrichi d'un
+**`JourFin`** (défaut **fin=début** → parité s47 STRICTE ; règle **`fin<début` refusée dans l'agrégat**) ; `ProposerEchange` accepte l'**intervalle
+`[début..fin]`** ; **`AccepterProposition` COMPOSE la délégation-PLAGE s45** (surcharge multi-jours via s06 + **transferts bicolores auto-dérivés s31 aux
+DEUX frontières** — entrée J1, sortie J2+1) ; **`RefuserProposition` sans écriture**. **@back** (Sc.1-6) : proposer sur `[J1..J3]` = UNE Proposition
+`pending` **SANS écriture** (invariant anti-vert-qui-ment s47 prouvé — 0 surcharge, store STRICTEMENT intact, cases inchangées), défaut mono-jour s47
+**strictement inchangé** (non-régression), accepter compose la plage, refuser sans écriture, **bornes refusées AVANT écriture** (`fin<début` / soi-même /
+délégataire inconnu-orphelin, aucune écriture partielle), **ré-proposition last-write-wins R11** sans doublon, `fin` hors fenêtre sans crash — deux
+adaptateurs **InMemory + Mongo durable**. **@ihm** (Sc.7-10) : **AUCUNE surface neuve** — champ **« jusqu'au »** ajouté à `ProposerEchangeDialog` s47
+(**miroir EXACT du champ délégation s45**, défaut = jour cliqué), **Parent-gated** (Invité inerte) ; notif d'échange de plage **ACTIONNABLE** dans la cloche
+(Accepter/Refuser) ; **Échap=Annuler** (port `IEcouteurEchapModal` s33) + **refus domaine → dialog reste ouverte + motif + saisie (acteur ET plage)
+conservée** ; **convergence temps réel de TOUTE la plage** (nouveau responsable + transferts frontières) sur 2ᵉ écran par **reprojection client depuis la
+diffusion porteuse de payload `INotificateurChangement` s47, 0 GET sur push** (garde anti-flake [[flake-signalr-blast-radius]] respectée). **PORTES DE
+CONCEPTION arbitrées AU CADRAGE** (anti-rework G3) : (1) **MULTI-ENFANTS borné hors s52** — routé backlog (Épic 11), le vrai multi-enfants R1 pas encore
+exercé de bout en bout (reliquat s30), à cadrer quand R1 sera exercé ; (2) **AUCUNE surface neuve** (miroir dialog s45). Fichiers `src/` touchés :
+`PropositionEchange.cs` (`JourFin`), `ProposerEchangeHandler.cs`, `AccepterPropositionHandler.cs`, `MongoPropositionEchangeRepository.cs`,
+`CanalEcriture.cs` (Web+Api), `ProposerEchangeDialog.razor(.cs)`. **10/10 ✅**, suite **889/889** verte, **gate G3 validé PO DU PREMIER COUP** (garde-fou
+s49 build WASM servi à jour appliqué), **AUCUN retour produit** (section « Retours produit » du sprint **vide**). **Miroir délégation s44→s45 transposé à
+l'échange consenti s47 : livré.** **Hors scope s52** (backlog, à faire) : **échange MULTI-ENFANTS** (borné, R1 non exercé), **échange récurrent/série**
+(D2), **notifications push / e-mail externes** (cloche in-app SignalR). **Candidats de tête au prochain `/planning`** : **échange multi-enfants** (une fois
+R1 exercé de bout en bout), **délégation récurrente/série** (D2), **digest PERSISTANT hors fenêtre chargée** (limitation s50), reste Config foyer (édition
+depuis le graphe, graphe étendu, arbitrage inline vs modal, liste de slots par activité, lien adresse acteur↔lieu, suppression slot récurrent IHM,
+suppression d'un enfant) ; **P0 auth** (Google OAuth réel + écran définir-mot-de-passe).
+
 **s51 `action-suivi-imprevu-proposer-echange` MERGÉ — ACTION DE SUIVI sur un imprévu : RÉAGIR (malade/retard s48) en PROPOSANT UN ÉCHANGE (palier 15, ferme la boucle ouverte s48).**
 Depuis la **notification d'imprévu s48 dans la cloche**, une **entrée d'action contextuelle « proposer un échange »** (portant déjà le jour+enfant
 de l'imprévu) **compose `ProposerEchange` s47**. **AUCUN modèle/store neuf** : réemploi INTÉGRAL de `Proposition` s47 (pending → Accepter/Refuser) +
@@ -584,7 +608,8 @@ validé PO. Prochain = `/planning`.
 |--------|:------:|--------|---------|
 | **Signalement d'imprévu (malade, retard…) + notification immédiate** — le **mécanisme de notification** (cloche + journal + temps réel) est **livré s47** ; reste une **entrée dédiée « signaler un imprévu »** (malade/retard) distincte de l'échange (candidat goal prochain). | 🟡 | Palier 12 | spec p7 · **mécanisme s47** |
 | ~~Échange de dernière minute *(proposition + accord requis)*~~ **livré s47 (flux PROPOSITION → ACCORD consenti)** : `ProposerEchange` crée une **Proposition `pending`** (notif chez le recevant) **SANS écrire de surcharge ni changer la résolution** (anti vert-qui-ment prouvé) ; **`AccepterProposition` COMPOSE la délégation s44** (surcharge + transfert dérivé s31) → `accepté` ; **`RefuserProposition` retire SANS écriture** → `refusé`. Cas limite/erreur (soi-même, inconnu/orphelin refusé avant écriture, last-write-wins R11, jour hors fenêtre sans crash), 2 adaptateurs InMemory + Mongo. **IHM** : notif **ACTIONNABLE dans la cloche** (Accepter/Refuser) + entrée « proposer un échange » du menu clic-case, temps réel 0 GET. Complète la **délégation directe** s44 par le **workflow de consentement**. | ✅ | s47 | spec p7 · **s47** (partiel s44) |
-| **Échange sur une PLAGE `[J1..J2]`** (s45) & échange **récurrent/série** (D2) & **multi-enfants** — s47 borné à **UN jour ponctuel** ; étendre le flux proposition→accord à une plage / série / plusieurs enfants. | ⬜ | Palier 12 | hors scope s47 |
+| ~~**Échange sur une PLAGE `[J1..J2]`** (s45)~~ **livré s52** : le flux proposition→accord s47 est étendu du **jour unique** à une **PLAGE `[J1..J2]`** (miroir exact de la progression délégation s44→s45), **BORNÉ MONO-ENFANT**. `Proposition` s47 enrichie d'un `JourFin` (défaut fin=début → parité s47 stricte, `fin<début` refusé dans l'agrégat) ; `ProposerEchange` accepte l'intervalle ; `AccepterProposition` **COMPOSE la délégation-plage s45** (surcharge multi-jours via s06 + transferts bicolores dérivés s31 aux DEUX frontières) ; `RefuserProposition` sans écriture. **AUCUN store/commande neuf** ; invariant anti-vert-qui-ment prouvé (pending = 0 surcharge, store intact) sur InMemory + Mongo durable ; last-write-wins R11. **IHM** : champ « jusqu'au » ajouté à `ProposerEchangeDialog` s47 (miroir s45), notif de plage actionnable, Échap=Annuler (port s33), refus domaine garde la dialog ouverte + saisie conservée, convergence temps réel de toute la plage par reprojection client 0 GET. | ✅ | s52 | hors scope s47 · **s52** |
+| **Échange MULTI-ENFANTS & échange récurrent/série** (D2) — s52 borné à un **échange plage MONO-ENFANT** ; le vrai multi-enfants (au sens R1, non encore exercé de bout en bout — reliquat s30) et la série « tous les mardis » restent ouverts, à cadrer quand R1 sera exercé. | ⬜ | Palier 12 | hors scope s47/s52 |
 | **Notifications push / e-mail externes** — la cloche s47 est **in-app** (temps réel SignalR) ; notifier hors de l'app (push mobile, e-mail) reste ouvert. | ⬜ | Palier 12/13 | hors scope s47 · spec p7 |
 | ~~**Transferts temporaires** (exception, non récurrents)~~ **livré s44** : **délégation de la récupération d'UN jour** — use case `DeleguerRecuperation` composant l'écriture surcharge ponctuelle (s06), transfert **auto-dérivé s31**, entrée du menu clic-case Parent-gated, refus (soi-même / délégataire inconnu) sans écriture, convergence temps réel de la case (0 GET). **Reste ⬜** : délégation **récurrente/série** (D2). | ✅ | s44 | spec règles 17-18 · **s44** |
 
