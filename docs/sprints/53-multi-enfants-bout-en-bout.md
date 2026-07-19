@@ -7,7 +7,7 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 9/11
+## Avancement — 11/11
 
 > **Gate G3 (1er passage) ÉCHOUÉ** : l'isolation n'était qu'en LECTURE ; le chemin d'ÉCRITURE
 > « Affecter une période » (s06) n'était pas scopé enfant → période au bucket partagé `''`, visible
@@ -26,8 +26,8 @@
 | 7 | Bascule du sélecteur recharge la grille du bon enfant (Parent-gated) | @ihm | ✅ |
 | 8 | Le digest de la cloche suit l'enfant sélectionné (cloche transverse, digest filtré) | @ihm | ✅ |
 | 9 | Temps réel 0-GET : délégation enfant A converge sur A, laisse B inchangé | @ihm | ✅ |
-| 10 | Affecter une période EN VUE enfant A (write path réel) → visible A seul, jamais B | @back | ⏳ |
-| 11 | Affecter avec Mia sélectionnée → visible grille Mia, absente grille Tom ; dialog affiche l'enfant courant (lecture seule) | @ihm | ⏳ |
+| 10 | Affecter une période EN VUE enfant A (write path réel) → visible A seul, jamais B | @back | ✅ |
+| 11 | Affecter avec Mia sélectionnée → visible grille Mia, absente grille Tom ; dialog affiche l'enfant courant (lecture seule) | @ihm | ✅ |
 
 ---
 
@@ -176,6 +176,30 @@ Scénario 9 — Temps réel 0-GET : délégation enfant A converge sur A, laisse
   Et la vue affichée (Tom) reste INCHANGÉE tant que "Tom" est sélectionné (isolation temps réel par enfant)
   Et en basculant sur "Léa" la case déléguée apparaît déjà à jour
   # garde flake-signalr-blast-radius respectée (SignalRTempsReelCollection sérialisée)
+```
+
+### Correctif gate G3 — scope enfant à l'ÉCRITURE (le trou : Sc.1-6 seedaient des périodes déjà estampillées)
+
+```gherkin
+@back @vert
+Scénario 10 — Affecter une période EN VUE enfant A (chemin d'écriture RÉEL) est visible de A seul
+  Étant donné deux enfants "Léa" et "Tom" et l'enfant "Léa" courant (vue)
+  Quand j'affecte une période via AffecterPeriodeHandler (use case s06, pas un seed) EN VUE de "Léa"
+  Alors la période persistée porte EnfantId="Léa" (jamais le bucket partagé "")
+  Et elle n'apparaît QUE dans la grille de "Léa", jamais chez "Tom" (qui garde son fond)
+  Et l'isolation est prouvée sur InMemory ET Mongo durable
+```
+
+```gherkin
+@ihm @vert
+Scénario 11 — Affecter avec un enfant sélectionné : scopé à SA grille, dialog enfant en lecture seule
+  Étant donné la grille affichant l'enfant courant (sélection du sélecteur de vue)
+  Et la dialog « Affecter une période » ouverte depuis le menu clic-case
+  Alors elle affiche l'enfant courant en LECTURE SEULE (« Pour : … (sélection courante) »), sans sélecteur d'enfant
+  Quand je choisis un responsable et je valide
+  Alors la période s'affiche dans la grille de l'enfant courant
+  Et en basculant sur un autre enfant elle est ABSENTE (la case retombe sur le fond)
+  # runtime réel : écriture par le canal, résolution isolée par enfant réelle
 ```
 
 ---

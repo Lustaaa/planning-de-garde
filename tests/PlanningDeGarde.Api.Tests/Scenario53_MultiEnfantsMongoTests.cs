@@ -200,6 +200,33 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         Assert.Equal(configLecture.CouleurNeutre, caseLea.CouleurResponsable);
     }
 
+    [MongoRequisFact]
+    public void Sc10_Affecter_periode_en_vue_Lea_visible_de_Lea_seul_durable()
+    {
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var alice = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+        var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
+        var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
+
+        new CycleDeFondMongo(ConnectionString, _baseDeTest)
+            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+
+        // When — affecter une période (Carla) le jour J EN VUE de Léa via le use case d'écriture RÉEL (Mongo).
+        var resultat = new AffecterPeriodeHandler(
+                new MongoPeriodeRepository(ConnectionString, _baseDeTest), new FoyerResponsableRepository())
+            .Handle(new AffecterPeriodeCommand(carla, J.ToDateTime(TimeOnly.MinValue), J.ToDateTime(TimeOnly.MinValue), LeaId));
+        Assert.True(resultat.EstSucces);
+
+        // Then — redémarrage : la période durable porte EnfantId = Léa (jamais le bucket partagé "").
+        Assert.Equal(LeaId, Assert.Single(new MongoPeriodeRepository(ConnectionString, _baseDeTest).AllSnapshots()).EnfantId);
+
+        // Then — grille neuve : Carla prime pour Léa ; Tom résout SON fond (Alice), jamais Carla.
+        var grille = GrilleNeuve();
+        Assert.Equal(carla, Case(grille, LeaId).ResponsableId);
+        Assert.Equal(alice, Case(grille, TomId).ResponsableId);
+        Assert.DoesNotContain(grille.Projeter(J, VuePlanning.Semaine, TomId).Jours, j => j.ResponsableId == carla);
+    }
+
     public void Dispose()
     {
         try { new MongoClient(ConnectionString).DropDatabase(_baseDeTest); }
