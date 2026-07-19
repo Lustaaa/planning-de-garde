@@ -215,10 +215,14 @@ public static class CanalLecture
         // (span : semaine / 4semaines / mois) sur le canal de LECTURE (CQRS — ne déclenche jamais la
         // diffusion, Sc.1/Sc.2). Compatibilité ascendante : sans vue → défaut 4 semaines glissantes
         // (Sc.3). Renvoie le read model GrilleAgenda (records framework-free de l'Application) en JSON.
+        // Paramètre optionnel « enfant » (s53) : ISOLATION multi-enfants — la grille est projetée POUR l'enfant
+        // sélectionné (résolution cycle + surcharges de CET enfant seul). Absent (null/vide) = comportement
+        // mono-enfant antérieur (aucun filtrage, compatibilité ascendante).
         routes.MapGet("/api/grille/{annee:int}/{mois:int}/{jour:int}",
-            (int annee, int mois, int jour, string? vue, GrilleAgendaQuery projection) =>
+            (int annee, int mois, int jour, string? vue, string? enfant, GrilleAgendaQuery projection) =>
             {
-                var grille = projection.Projeter(new DateOnly(annee, mois, jour), VueDepuis(vue));
+                var grille = projection.Projeter(
+                    new DateOnly(annee, mois, jour), VueDepuis(vue), string.IsNullOrWhiteSpace(enfant) ? null : enfant);
                 return Results.Ok(grille);
             });
 

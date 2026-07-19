@@ -374,14 +374,18 @@ public partial class PlanningPartage
         var ancre = Session.Ancre;
         try
         {
+            // ISOLATION multi-enfants (s53) : la grille est lue POUR l'enfant sélectionné (paramètre enfant) —
+            // sa résolution (cycle + surcharges) n'entre que pour cet enfant. Sélecteur non chargé (null) = lecture
+            // mono-enfant antérieure (segment enfant omis, compatibilité ascendante).
+            var segmentEnfant = string.IsNullOrEmpty(_enfantSelectionne) ? "" : $"&enfant={Uri.EscapeDataString(_enfantSelectionne)}";
             var grille = await Canal.GetFromJsonAsync<GrilleAgenda>(
-                $"api/grille/{ancre.Year}/{ancre.Month}/{ancre.Day}?vue={CodeVue(Session.Vue)}");
+                $"api/grille/{ancre.Year}/{ancre.Month}/{ancre.Day}?vue={CodeVue(Session.Vue)}{segmentEnfant}");
             if (grille is not null)
                 _grille = grille;
             // REPROJECTION du digest cloche (s50) depuis la fenêtre TOUT JUSTE chargée : la grille est la seule à
             // faire le GET grille, elle publie ici le digest composé (immédiat + à venir) pour que la cloche le
-            // rende sans aucun GET. Convergence temps réel incluse : ce ChargerAsync est aussi rappelé sur push.
-            EtatDigest?.Publier(DigestImmediat.Composer(_grille, Horloge.Aujourdhui, Session.EnfantId));
+            // rende sans aucun GET. Digest FILTRÉ par l'enfant sélectionné (s53, P3) — cohérent avec la vue mono-enfant.
+            EtatDigest?.Publier(DigestImmediat.Composer(_grille, Horloge.Aujourdhui, _enfantSelectionne ?? Session.EnfantId));
             return true;
         }
         catch (HttpRequestException)
@@ -390,6 +394,18 @@ public partial class PlanningPartage
             // (vue consultable). L'appelant (navigation) décide quoi faire de l'échec — voir NaviguerAsync.
             return false;
         }
+    }
+
+    /// <summary>
+    /// Bascule du sélecteur d'enfant (s53, Sc.7) : RELIT la grille du BON enfant via le canal de lecture (le
+    /// paramètre enfant isole la résolution — aucune case ne conserve la résolution de l'autre enfant) et
+    /// republie le digest cloche filtré. Parent-gated par la visibilité du sélecteur (Invité ne le voit pas).
+    /// Lecture seule : la sélection n'écrit rien, elle re-projette.
+    /// </summary>
+    private async Task RechargerPourEnfantSelectionneAsync()
+    {
+        await ChargerAsync();
+        await InvokeAsync(StateHasChanged);
     }
 
     /// <summary>Code de la vue prédéfinie passé en paramètre de lecture (CQRS) : <c>semaine</c> /

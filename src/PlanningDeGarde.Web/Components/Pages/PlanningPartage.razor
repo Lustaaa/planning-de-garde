@@ -43,7 +43,7 @@
                 @* Classe propre (PAS form-select) pour rester distinct du sélecteur de rôle/vue : le
                    gating runtime cible « select.form-select » (le rôle) — même précaution que l'incarnation. *@
                 <select class="selecteur-enfant-carte form-select-sm w-auto" data-testid="selecteur-enfant-carte"
-                        @bind="_enfantSelectionne" @bind:after="StateHasChanged">
+                        @bind="_enfantSelectionne" @bind:after="RechargerPourEnfantSelectionneAsync">
                     @foreach (var enfant in _enfantsFoyer)
                     {
                         <option value="@enfant.Id">@enfant.Prenom</option>
@@ -477,7 +477,7 @@ else
 @if (_dateDialogDeleguer is { } dateDeleguer && _enfantSelectionne is { } enfantDeleguer)
 {
     <DeleguerRecuperationDialog DateContexte="dateDeleguer"
-                                EnfantId="enfantDeleguer"
+                                EnfantId="@enfantDeleguer"
                                 Acteurs="_acteursFoyer"
                                 ActeursCharges="_acteursFoyerCharges"
                                 OnValide="FermerDialogEtRecharger"
@@ -495,7 +495,7 @@ else
 @if (_dateDialogProposer is { } dateProposer && _enfantSelectionne is { } enfantProposer)
 {
     <ProposerEchangeDialog DateContexte="dateProposer"
-                           EnfantId="enfantProposer"
+                           EnfantId="@enfantProposer"
                            Acteurs="_acteursFoyer"
                            ActeursCharges="_acteursFoyerCharges"
                            OnValide="FermerDialog"
@@ -505,7 +505,7 @@ else
 @if (_dateDialogSignalerImprevu is { } dateImprevu && _enfantSelectionne is { } enfantImprevu)
 {
     <SignalerImprevuDialog DateContexte="dateImprevu"
-                           EnfantId="enfantImprevu"
+                           EnfantId="@enfantImprevu"
                            OnValide="FermerDialog"
                            OnAnnule="FermerDialog" />
 }

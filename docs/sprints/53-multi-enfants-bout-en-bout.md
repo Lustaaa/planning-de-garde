@@ -7,7 +7,7 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 6/9
+## Avancement — 7/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -17,7 +17,7 @@
 | 4 | Même jour, 2 enfants = 2 surcharges indépendantes (PAS de LWW entre enfants) | @back | ✅ |
 | 5 | Digest « qui récupère ce soir » résolu PAR enfant | @back | ✅ |
 | 6 | Suppression / orphelin d'un enfant laisse l'autre intact (Mongo durable) | @back | ✅ |
-| 7 | Bascule du sélecteur recharge la grille du bon enfant (Parent-gated) | @ihm | ⏳ |
+| 7 | Bascule du sélecteur recharge la grille du bon enfant (Parent-gated) | @ihm | ✅ |
 | 8 | Le digest de la cloche suit l'enfant sélectionné (cloche transverse, digest filtré) | @ihm | ⏳ |
 | 9 | Temps réel 0-GET : délégation enfant A converge sur A, laisse B inchangé | @ihm | ⏳ |
 
@@ -140,7 +140,7 @@ Scénario 6 — Suppression / orphelin d'un enfant laisse l'AUTRE intact
 ### @ihm — Sélecteur d'enfant, menés RED→GREEN runtime (build WASM servi rebâti avant PO)
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 7 — Bascule du sélecteur recharge la grille du BON enfant
   Étant donné la grille affichant l'enfant "Léa" (sélection volatile, défaut de session)
   Quand je sélectionne "Tom" dans le sélecteur d'enfant
