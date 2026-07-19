@@ -68,6 +68,7 @@ public sealed class FrontWasmAjoutActeurReelPropageTempsReelTests : TestContext
             ResponsableId = carlaId,
             Debut = new DateTime(2026, 7, 15),
             Fin = new DateTime(2026, 7, 15),
+            EnfantId = GrilleRuntimeHarness.EnfantParDefaut, // s53 : scopée à l'enfant affiché (défaut du front)
         });
         Assert.True(affectation.IsSuccessStatusCode);
 

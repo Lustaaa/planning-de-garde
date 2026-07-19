@@ -143,13 +143,19 @@ internal static class GrilleRuntimeHarness
         }
     }
 
+    /// <summary>Enfant SEEDÉ par défaut du foyer (composition root) et sélection PAR DÉFAUT du sélecteur de vue
+    /// du front (s53) : les périodes semées lui sont estampillées pour être visibles dans la grille par défaut.</summary>
+    public const string EnfantParDefaut = "Léa";
+
     /// <summary>
     /// Sème une période dans le store réel de l'API distante (Given d'un scénario de lecture) — la
-    /// projection réelle la relira et le référentiel réel résoudra le nom du responsable.
+    /// projection réelle la relira et le référentiel réel résoudra le nom du responsable. La période est
+    /// ESTAMPILLÉE de l'enfant <paramref name="enfantId"/> (défaut = enfant seedé/sélectionné du front, s53) :
+    /// depuis le gate G3, la grille est scopée par enfant (une période sans enfant n'apparaît dans aucune vue).
     /// </summary>
-    public static void SemerPeriode(ApiDistanteFactory api, string responsableId, DateTime debut, DateTime fin)
+    public static void SemerPeriode(ApiDistanteFactory api, string responsableId, DateTime debut, DateTime fin, string enfantId = EnfantParDefaut)
         => api.Services.GetRequiredService<IPeriodeRepository>()
-            .Enregistrer(PeriodeDeGarde.Affecter(responsableId, debut, fin).Valeur!);
+            .Enregistrer(PeriodeDeGarde.Affecter(responsableId, debut, fin, enfantId).Valeur!);
 
     /// <summary>
     /// Sème un slot de localisation dans le store réel de l'API distante (Given d'un scénario de

@@ -7,7 +7,13 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 9/9
+## Avancement — 9/11
+
+> **Gate G3 (1er passage) ÉCHOUÉ** : l'isolation n'était qu'en LECTURE ; le chemin d'ÉCRITURE
+> « Affecter une période » (s06) n'était pas scopé enfant → période au bucket partagé `''`, visible
+> pour TOUS les enfants. **Correctif appliqué** (scope enfant à l'écriture Option A + filtrage STRICT
+> sans repli `''`) + **Sc.10/Sc.11** ajoutés (le trou n'était pas couvert : Sc.1-6 seedaient des
+> périodes déjà estampillées, jamais le use case d'écriture réel).
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -20,6 +26,8 @@
 | 7 | Bascule du sélecteur recharge la grille du bon enfant (Parent-gated) | @ihm | ✅ |
 | 8 | Le digest de la cloche suit l'enfant sélectionné (cloche transverse, digest filtré) | @ihm | ✅ |
 | 9 | Temps réel 0-GET : délégation enfant A converge sur A, laisse B inchangé | @ihm | ✅ |
+| 10 | Affecter une période EN VUE enfant A (write path réel) → visible A seul, jamais B | @back | ⏳ |
+| 11 | Affecter avec Mia sélectionnée → visible grille Mia, absente grille Tom ; dialog affiche l'enfant courant (lecture seule) | @ihm | ⏳ |
 
 ---
 

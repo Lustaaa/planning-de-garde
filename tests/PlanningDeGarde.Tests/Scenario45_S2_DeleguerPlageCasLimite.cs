@@ -51,7 +51,7 @@ public class Scenario45_S2_DeleguerPlageCasLimite
         var periodes = new FakePeriodeRepository();
         // Une surcharge existante (Parent C) sur un jour AU MILIEU de la plage.
         var debutC = Mercredi_08.ToDateTime(TimeOnly.MinValue);
-        periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentC, debutC, debutC).Valeur!);
+        periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentC, debutC, debutC, LeaId).Valeur!);
 
         var resultat = Handler(periodes)
             .Handle(new DeleguerRecuperationCommand(Mardi_07, LeaId, ParentB, Jeudi_09));

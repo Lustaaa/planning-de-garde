@@ -53,7 +53,7 @@ public sealed class DigestImmediatMongoTests : IDisposable
 
         var periodes = new MongoPeriodeRepository(ConnectionString, _baseDeTest);
         periodes.Enregistrer(PeriodeDeGarde.Affecter(parentB,
-            new DateTime(2026, 7, 8), new DateTime(2026, 7, 8)).Valeur!);
+            new DateTime(2026, 7, 8), new DateTime(2026, 7, 8), "enfant-lea").Valeur!);
 
         var slots = new MongoSlotRepository(ConnectionString, _baseDeTest);
         slots.Enregistrer(SlotDeLocalisation.Poser("enfant-lea", "ecole",

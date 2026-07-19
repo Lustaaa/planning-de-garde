@@ -433,10 +433,12 @@ else
                      OnAnnule="FermerDialog" />
 }
 
-@if (_dateDialogAffecterPeriode is { } dateAffecter)
+@if (_dateDialogAffecterPeriode is { } dateAffecter && _enfantSelectionne is { } enfantAffecter)
 {
     <AffecterPeriodeDialog DateContexte="dateAffecter"
                            DateFinContexte="_plageFin"
+                           EnfantId="@enfantAffecter"
+                           EnfantNom="@PrenomEnfant(enfantAffecter)"
                            Acteurs="_acteursFoyer"
                            ActeursCharges="_acteursFoyerCharges"
                            OnValide="FermerDialogEtRecharger"

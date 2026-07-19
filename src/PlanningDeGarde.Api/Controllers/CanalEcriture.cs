@@ -34,7 +34,7 @@ public static class CanalEcriture
     public sealed record SupprimerSlotRecurrentRequete(string SlotId);
 
     /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
-    public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
+    public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin, string EnfantId = "");
 
     /// <summary>Corps de la requête de délégation de la récupération d'une PLAGE (s44 → s45) émise via le canal
     /// requête/réponse : le jour de DÉBUT, l'enfant sélectionné, l'identifiant stable de l'acteur RECEVANT et le
@@ -389,7 +389,7 @@ public static class CanalEcriture
         routes.MapPost("/api/canal/affecter-periode", (AffecterPeriodeRequete requete, AffecterPeriodeHandler handler) =>
         {
             var resultat = handler.Handle(new AffecterPeriodeCommand(
-                requete.ResponsableId, requete.Debut, requete.Fin));
+                requete.ResponsableId, requete.Debut, requete.Fin, requete.EnfantId));
 
             // Même convention que la pose : succès acquitté, refus métier renvoyé avec son motif.
             return resultat.EstSucces

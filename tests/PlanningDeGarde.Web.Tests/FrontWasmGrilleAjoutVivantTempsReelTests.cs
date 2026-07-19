@@ -47,6 +47,7 @@ public sealed class FrontWasmGrilleAjoutVivantTempsReelTests : TestContext
             ResponsableId = "parent-b",
             Debut = new DateTime(2026, 7, 2),
             Fin = new DateTime(2026, 7, 2),
+            EnfantId = GrilleRuntimeHarness.EnfantParDefaut, // s53 : scopée à l'enfant affiché (défaut du front)
         });
         Assert.True(reponse.IsSuccessStatusCode);
 

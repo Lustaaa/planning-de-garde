@@ -57,6 +57,15 @@ public partial class AffecterPeriodeDialog
     [Parameter]
     public DateOnly? DateFinContexte { get; set; }
 
+    /// <summary>Enfant COURANT (s53, Option A) : hérité du sélecteur de vue, la période affectée lui est SCOPÉE.
+    /// Aucun choix ici (cohérent avec la vue mono-enfant P1) — la dialog l'affiche seulement en lecture seule.</summary>
+    [Parameter, EditorRequired]
+    public string EnfantId { get; set; } = "";
+
+    /// <summary>Prénom de l'enfant courant, pour l'affichage LECTURE SEULE « Pour : … (sélection courante) ».</summary>
+    [Parameter]
+    public string EnfantNom { get; set; } = "";
+
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et relit la grille.</summary>
     [Parameter]
     public EventCallback OnValide { get; set; }
@@ -81,7 +90,7 @@ public partial class AffecterPeriodeDialog
         {
             reponse = await Canal.PostAsJsonAsync(
                 "api/canal/affecter-periode",
-                new AffecterPeriodeRequete(_form.ResponsableId, _form.Debut, _form.Fin));
+                new AffecterPeriodeRequete(_form.ResponsableId, _form.Debut, _form.Fin, EnfantId));
         }
         catch (HttpRequestException)
         {

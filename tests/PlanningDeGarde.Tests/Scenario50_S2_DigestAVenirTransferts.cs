@@ -105,9 +105,9 @@ public class Scenario50_S2_DigestAVenirTransferts
         // Périodes en succession : ParentA finit le 09/07, ParentB débute le 10/07 → transfert dérivé le 10/07.
         var periodes = new FakePeriodeRepository();
         periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentA,
-            new DateTime(2026, 7, 6), new DateTime(2026, 7, 9)).Valeur!);
+            new DateTime(2026, 7, 6), new DateTime(2026, 7, 9), LeaId).Valeur!);
         periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentB,
-            new DateTime(2026, 7, 10), new DateTime(2026, 7, 13)).Valeur!);
+            new DateTime(2026, 7, 10), new DateTime(2026, 7, 13), LeaId).Valeur!);
 
         var query = new DigestImmediatQuery(new GrilleAgendaQuery(
             new FakeSlotRepository(), periodes,

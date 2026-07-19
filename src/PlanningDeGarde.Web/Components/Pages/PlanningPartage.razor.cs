@@ -408,6 +408,12 @@ public partial class PlanningPartage
         await InvokeAsync(StateHasChanged);
     }
 
+    /// <summary>Prénom d'affichage de l'enfant d'identifiant stable <paramref name="enfantId"/> (référentiel
+    /// chargé), pour l'affichage LECTURE SEULE « Pour : … » de la dialog d'affectation (s53). Repli sur l'id
+    /// si absent (jamais de fantôme).</summary>
+    private string PrenomEnfant(string enfantId)
+        => _enfantsFoyer.FirstOrDefault(e => e.Id == enfantId)?.Prenom ?? enfantId;
+
     /// <summary>Code de la vue prédéfinie passé en paramètre de lecture (CQRS) : <c>semaine</c> /
     /// <c>4semaines</c> (défaut) / <c>mois</c>. Le défaut couvre la compatibilité ascendante de
     /// l'endpoint (sans vue → 4 semaines glissantes, Sc.3).</summary>

@@ -68,11 +68,12 @@ public sealed class DeleguerRecuperationHandler
             return Result<PeriodeSnapshot>.Echec(
                 "Délégation à soi-même : cet acteur récupère déjà ces jours-là, aucun changement n'est nécessaire.");
 
-        // Last-write-wins R11 : toute surcharge existante DE CET ENFANT (ou partagée/legacy "") chevauchant la
-        // plage est RÉAFFECTÉE (retirée avant ré-écriture), jamais dupliquée. SCOPÉE à l'enfant (s53) : la
-        // surcharge d'un AUTRE enfant sur le même jour COEXISTE (pas de last-write-wins ENTRE enfants).
+        // Last-write-wins R11 : toute surcharge existante DE CET ENFANT chevauchant la plage est RÉAFFECTÉE
+        // (retirée avant ré-écriture), jamais dupliquée. SCOPÉE STRICTEMENT à l'enfant (s53, gate G3) : la
+        // surcharge d'un AUTRE enfant sur le même jour COEXISTE (pas de last-write-wins ENTRE enfants) ; les
+        // écritures estampillent désormais toujours l'enfant (aucune période "" partagée créée).
         foreach (var existante in _periodes.AllSnapshots()
-            .Where(p => (p.EnfantId == commande.EnfantId || p.EnfantId == "") && Chevauche(p, debutJour, finJour)).ToList())
+            .Where(p => p.EnfantId == commande.EnfantId && Chevauche(p, debutJour, finJour)).ToList())
             _periodes.Supprimer(existante.Id);
 
         // Cédant = responsable RÉSOLU du jour AVANT écriture (celui qui devait récupérer) — lu pour la trace,

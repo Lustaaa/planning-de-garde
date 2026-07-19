@@ -249,15 +249,15 @@ public sealed class GrilleAgendaQuery
     /// <summary>
     /// Périodes (surcharges) visibles pour l'enfant <paramref name="enfantId"/> (s53) : quand un enfant est
     /// ciblé, ISOLATION STRICTE — seules SES surcharges (<c>EnfantId == enfantId</c>) entrent dans la
-    /// résolution, celles d'un autre enfant sont exclues. <paramref name="enfantId"/> null = mono-enfant
-    /// antérieur (aucun filtrage : toutes les périodes du store).
+    /// résolution, celles d'un AUTRE enfant OU sans enfant (legacy "") sont exclues (gate G3 s53 : le repli
+    /// sur le bucket partagé "" était une FUITE — une période sans enfant n'apparaît dans AUCUNE vue enfant).
+    /// Le chemin d'écriture estampille désormais toujours l'enfant, donc aucune période "" n'est plus créée.
+    /// <paramref name="enfantId"/> null = mono-enfant antérieur (aucun filtrage : toutes les périodes du store).
     /// </summary>
     private IReadOnlyList<PeriodeSnapshot> PeriodesDeLEnfant(string? enfantId)
         => enfantId is null
             ? _periodes.AllSnapshots()
-            // Surcharges de CET enfant + surcharges PARTAGÉES/legacy (EnfantId ""), jamais celles d'un AUTRE
-            // enfant (isolation stricte). Une surcharge legacy sans enfant s'applique à tous (rétro-compat s06).
-            : _periodes.AllSnapshots().Where(p => p.EnfantId == enfantId || p.EnfantId == "").ToList();
+            : _periodes.AllSnapshots().Where(p => p.EnfantId == enfantId).ToList();
 
     /// <summary>Jours calendaires couverts par un slot, du jour de son début à celui de sa fin (inclus).</summary>
     private static IEnumerable<DateOnly> JoursCouverts(SlotSnapshot slot)
