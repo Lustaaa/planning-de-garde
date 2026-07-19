@@ -7,7 +7,7 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 8/9
+## Avancement — 9/9
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -19,7 +19,7 @@
 | 6 | Suppression / orphelin d'un enfant laisse l'autre intact (Mongo durable) | @back | ✅ |
 | 7 | Bascule du sélecteur recharge la grille du bon enfant (Parent-gated) | @ihm | ✅ |
 | 8 | Le digest de la cloche suit l'enfant sélectionné (cloche transverse, digest filtré) | @ihm | ✅ |
-| 9 | Temps réel 0-GET : délégation enfant A converge sur A, laisse B inchangé | @ihm | ⏳ |
+| 9 | Temps réel 0-GET : délégation enfant A converge sur A, laisse B inchangé | @ihm | ✅ |
 
 ---
 
@@ -160,7 +160,7 @@ Scénario 8 — Le digest de la cloche SUIT l'enfant sélectionné (cloche trans
 ```
 
 ```gherkin
-@ihm @pending
+@ihm @vert
 Scénario 9 — Temps réel 0-GET : délégation enfant A converge sur A, laisse B inchangé
   Étant donné deux écrans connectés Parent, le 1er affichant "Tom", le 2e délègue (Léa, J)
   Quand la diffusion porteuse de payload arrive au 1er écran
