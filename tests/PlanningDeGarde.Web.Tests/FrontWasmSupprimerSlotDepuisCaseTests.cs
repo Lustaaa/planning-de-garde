@@ -37,8 +37,8 @@ public sealed class FrontWasmSupprimerSlotDepuisCaseTests : TestContext
         // Given — la grille réellement câblée à l'API distante, pour un Parent. Deux slots de Léa le
         // mardi 16/06/2026 : « École » 08h30-12h00 et « Piscine » 14h00-15h30.
         using var api = new ApiDistanteFactory();
-        GrilleRuntimeHarness.SemerSlot(api, "lea", "École", new DateTime(2026, 6, 16, 8, 30, 0), new DateTime(2026, 6, 16, 12, 0, 0));
-        GrilleRuntimeHarness.SemerSlot(api, "lea", "Piscine", new DateTime(2026, 6, 16, 14, 0, 0), new DateTime(2026, 6, 16, 15, 30, 0));
+        GrilleRuntimeHarness.SemerSlot(api, GrilleRuntimeHarness.EnfantParDefaut, "École", new DateTime(2026, 6, 16, 8, 30, 0), new DateTime(2026, 6, 16, 12, 0, 0));
+        GrilleRuntimeHarness.SemerSlot(api, GrilleRuntimeHarness.EnfantParDefaut, "Piscine", new DateTime(2026, 6, 16, 14, 0, 0), new DateTime(2026, 6, 16, 15, 30, 0));
 
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mardi_16_06_2026);
 

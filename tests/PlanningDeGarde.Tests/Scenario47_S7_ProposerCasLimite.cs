@@ -33,7 +33,7 @@ public class Scenario47_S7_ProposerCasLimite
             new FakeSlotRepository(), periodes,
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = "bleu", [ParentB] = "orange", [ParentC] = "vert" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = "Alice", [ParentB] = "Bruno", [ParentC] = "Chloe" }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB())),
+            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB()), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB, ParentC));
 
     private static ProposerEchangeHandler Handler(IPeriodeRepository periodes, IPropositionEchangeRepository propositions)

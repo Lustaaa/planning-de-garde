@@ -36,7 +36,7 @@ public class Scenario51_S4_CasErreurInvariantSuiteImprevu
         var aliceId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
         var brunoId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bruno")).Valeur!.ActeurId;
         var cycle = new CycleDeFondEnMemoire();
-        cycle.DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = aliceId, [1] = brunoId }));
+        var cycleDef = new CycleDeFond(2, new Dictionary<int, string> { [0] = aliceId, [1] = brunoId }); cycle.DefinirCycle(cycleDef); cycle.DefinirCycle(cycleDef, LeaId);
 
         var periodes = new InMemoryPeriodeRepository();
         var transferts = new InMemoryTransfertRepository();

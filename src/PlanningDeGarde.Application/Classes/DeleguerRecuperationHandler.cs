@@ -55,24 +55,30 @@ public sealed class DeleguerRecuperationHandler
         // rejetée AVANT écriture par l'agrégat (bornes invalides) — refus ATOMIQUE, aucun jour écrit.
         var debutJour = commande.Jour;
         var finJour = commande.JourFin ?? commande.Jour;
+        // ISOLATION s53 : la surcharge est SCOPÉE à l'enfant délégué — elle n'entre que dans SA résolution,
+        // jamais dans celle d'un autre enfant.
         var affectation = PeriodeDeGarde.Affecter(
-            commande.VersActeurId, debutJour.ToDateTime(TimeOnly.MinValue), finJour.ToDateTime(TimeOnly.MinValue));
+            commande.VersActeurId, debutJour.ToDateTime(TimeOnly.MinValue), finJour.ToDateTime(TimeOnly.MinValue), commande.EnfantId);
         if (!affectation.EstSucces)
             return Result<PeriodeSnapshot>.Echec(affectation.Motif!);
 
         // Refus de la délégation à soi-même : le délégataire est DÉJÀ le responsable RÉSOLU de CHAQUE jour
         // de la plage (surcharge > fond) — la délégation n'apporterait aucun changement utile, aucune écriture.
-        if (TouteLaPlageResoutDeja(debutJour, finJour, commande.VersActeurId))
+        if (TouteLaPlageResoutDeja(debutJour, finJour, commande.VersActeurId, commande.EnfantId))
             return Result<PeriodeSnapshot>.Echec(
                 "Délégation à soi-même : cet acteur récupère déjà ces jours-là, aucun changement n'est nécessaire.");
 
-        // Last-write-wins R11 : toute surcharge existante CHEVAUCHANT la plage est RÉAFFECTÉE (retirée avant
-        // ré-écriture), jamais dupliquée — la plage n'est couverte que par la dernière écriture.
-        foreach (var existante in _periodes.AllSnapshots().Where(p => Chevauche(p, debutJour, finJour)).ToList())
+        // Last-write-wins R11 : toute surcharge existante DE CET ENFANT chevauchant la plage est RÉAFFECTÉE
+        // (retirée avant ré-écriture), jamais dupliquée. SCOPÉE STRICTEMENT à l'enfant (s53, gate G3) : la
+        // surcharge d'un AUTRE enfant sur le même jour COEXISTE (pas de last-write-wins ENTRE enfants) ; les
+        // écritures estampillent désormais toujours l'enfant (aucune période "" partagée créée).
+        foreach (var existante in _periodes.AllSnapshots()
+            .Where(p => p.EnfantId == commande.EnfantId && Chevauche(p, debutJour, finJour)).ToList())
             _periodes.Supprimer(existante.Id);
 
-        // Cédant = responsable RÉSOLU du jour AVANT écriture (celui qui devait récupérer) — lu pour la trace.
-        var cedant = _grille.Projeter(debutJour, VuePlanning.Semaine)
+        // Cédant = responsable RÉSOLU du jour AVANT écriture (celui qui devait récupérer) — lu pour la trace,
+        // sur la résolution DE CET ENFANT.
+        var cedant = _grille.Projeter(debutJour, VuePlanning.Semaine, commande.EnfantId)
             .Jours.Single(j => j.Date == debutJour).ResponsableId ?? "";
 
         var periode = affectation.Valeur!;
@@ -93,11 +99,11 @@ public sealed class DeleguerRecuperationHandler
             Guid.NewGuid().ToString("N"), type, jour, enfantId, cedantId, recevantId, _horloge.Maintenant));
     }
 
-    private bool TouteLaPlageResoutDeja(DateOnly debut, DateOnly fin, string acteurId)
+    private bool TouteLaPlageResoutDeja(DateOnly debut, DateOnly fin, string acteurId, string enfantId)
     {
         for (var jour = debut; jour <= fin; jour = jour.AddDays(1))
         {
-            var resolu = _grille.Projeter(jour, VuePlanning.Semaine)
+            var resolu = _grille.Projeter(jour, VuePlanning.Semaine, enfantId)
                 .Jours.Single(j => j.Date == jour).ResponsableId;
             if (resolu != acteurId)
                 return false;

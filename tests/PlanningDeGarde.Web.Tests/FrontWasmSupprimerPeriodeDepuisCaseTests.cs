@@ -38,7 +38,7 @@ public sealed class FrontWasmSupprimerPeriodeDepuisCaseTests : TestContext
         // nounou » surcharge le mardi 16/06/2026 (prime sur le fond).
         using var api = new ApiDistanteFactory();
         api.Services.GetRequiredService<IReferentielCycleDeFond>()
-            .DefinirCycle(new CycleDeFond(1, new Dictionary<int, string> { [0] = "parent-a" }));
+            .DefinirCycle(new CycleDeFond(1, new Dictionary<int, string> { [0] = "parent-a" }), GrilleRuntimeHarness.EnfantParDefaut);
         GrilleRuntimeHarness.SemerPeriode(api, "nounou", Mardi_16_06_2026, Mardi_16_06_2026);
 
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mardi_16_06_2026);

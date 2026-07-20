@@ -37,7 +37,7 @@ public class Scenario50_S2_DigestAVenirTransferts
             slots, new FakePeriodeRepository(),
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = "bleu", [ParentB] = "orange", ["ecole"] = "vert" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = Alice, [ParentB] = Bruno }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(1, new Dictionary<int, string> { [0] = ParentA })),
+            new FakeReferentielCycleDeFond(new CycleDeFond(1, new Dictionary<int, string> { [0] = ParentA }), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB),
             null,
             transferts));
@@ -47,9 +47,9 @@ public class Scenario50_S2_DigestAVenirTransferts
         var transferts = new FakeTransfertRepository();
         // Ordre d'insertion volontairement DÉCROISSANT pour prouver le tri chrono CROISSANT en sortie.
         transferts.Enregistrer(Transfert.Definir(ParentA, ParentB, "ecole",
-            new TimeSpan(8, 30, 0), Vendredi_10_07_2026.ToDateTime(TimeOnly.MinValue)).Valeur!);
+            new TimeSpan(8, 30, 0), Vendredi_10_07_2026.ToDateTime(TimeOnly.MinValue), LeaId).Valeur!);
         transferts.Enregistrer(Transfert.Definir(ParentA, ParentB, "ecole",
-            new TimeSpan(8, 30, 0), Jeudi_09_07_2026.ToDateTime(TimeOnly.MinValue)).Valeur!);
+            new TimeSpan(8, 30, 0), Jeudi_09_07_2026.ToDateTime(TimeOnly.MinValue), LeaId).Valeur!);
         return transferts;
     }
 
@@ -105,15 +105,15 @@ public class Scenario50_S2_DigestAVenirTransferts
         // Périodes en succession : ParentA finit le 09/07, ParentB débute le 10/07 → transfert dérivé le 10/07.
         var periodes = new FakePeriodeRepository();
         periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentA,
-            new DateTime(2026, 7, 6), new DateTime(2026, 7, 9)).Valeur!);
+            new DateTime(2026, 7, 6), new DateTime(2026, 7, 9), LeaId).Valeur!);
         periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentB,
-            new DateTime(2026, 7, 10), new DateTime(2026, 7, 13)).Valeur!);
+            new DateTime(2026, 7, 10), new DateTime(2026, 7, 13), LeaId).Valeur!);
 
         var query = new DigestImmediatQuery(new GrilleAgendaQuery(
             new FakeSlotRepository(), periodes,
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = "bleu", [ParentB] = "orange" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = Alice, [ParentB] = Bruno }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(1, new Dictionary<int, string> { [0] = ParentA })),
+            new FakeReferentielCycleDeFond(new CycleDeFond(1, new Dictionary<int, string> { [0] = ParentA }), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB),
             null,
             new FakeTransfertRepository()));

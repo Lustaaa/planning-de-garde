@@ -44,7 +44,7 @@ public sealed class FrontWasmConfigCycleTableCrayonModalTests : TestContext
 
     private static void SemerCycle(ApiDistanteFactory api)
         => api.Services.GetRequiredService<IReferentielCycleDeFond>()
-            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }));
+            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }), GrilleRuntimeHarness.EnfantParDefaut);
 
     [Fact]
     public void Le_tableau_rend_visibles_les_affectations_declarees_avec_un_crayon_editer_l_inline_est_retire()

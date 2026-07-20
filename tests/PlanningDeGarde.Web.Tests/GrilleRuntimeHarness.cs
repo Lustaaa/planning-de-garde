@@ -143,13 +143,19 @@ internal static class GrilleRuntimeHarness
         }
     }
 
+    /// <summary>Enfant SEEDÉ par défaut du foyer (composition root) et sélection PAR DÉFAUT du sélecteur de vue
+    /// du front (s53) : les périodes semées lui sont estampillées pour être visibles dans la grille par défaut.</summary>
+    public const string EnfantParDefaut = "Léa";
+
     /// <summary>
     /// Sème une période dans le store réel de l'API distante (Given d'un scénario de lecture) — la
-    /// projection réelle la relira et le référentiel réel résoudra le nom du responsable.
+    /// projection réelle la relira et le référentiel réel résoudra le nom du responsable. La période est
+    /// ESTAMPILLÉE de l'enfant <paramref name="enfantId"/> (défaut = enfant seedé/sélectionné du front, s53) :
+    /// depuis le gate G3, la grille est scopée par enfant (une période sans enfant n'apparaît dans aucune vue).
     /// </summary>
-    public static void SemerPeriode(ApiDistanteFactory api, string responsableId, DateTime debut, DateTime fin)
+    public static void SemerPeriode(ApiDistanteFactory api, string responsableId, DateTime debut, DateTime fin, string enfantId = EnfantParDefaut)
         => api.Services.GetRequiredService<IPeriodeRepository>()
-            .Enregistrer(PeriodeDeGarde.Affecter(responsableId, debut, fin).Valeur!);
+            .Enregistrer(PeriodeDeGarde.Affecter(responsableId, debut, fin, enfantId).Valeur!);
 
     /// <summary>
     /// Sème un slot de localisation dans le store réel de l'API distante (Given d'un scénario de
@@ -166,9 +172,9 @@ internal static class GrilleRuntimeHarness
     /// les couleurs départ/arrivée résolues sur le référentiel réel des acteurs. Sème EN DIRECT via le
     /// port (pas la commande), pour placer précisément déposant / récupérant / date.
     /// </summary>
-    public static void SemerTransfert(ApiDistanteFactory api, string deposeParId, string recupereParId, DateTime date)
+    public static void SemerTransfert(ApiDistanteFactory api, string deposeParId, string recupereParId, DateTime date, string enfantId = EnfantParDefaut)
         => api.Services.GetRequiredService<ITransfertRepository>()
-            .Enregistrer(Transfert.Definir(deposeParId, recupereParId, "école", TimeSpan.FromHours(8.5), date).Valeur!);
+            .Enregistrer(Transfert.Definir(deposeParId, recupereParId, "école", TimeSpan.FromHours(8.5), date, enfantId).Valeur!);
 
     /// <summary>
     /// Sème un cycle de fond dans le store réel de l'API distante (Given d'un scénario de navigation) —
@@ -176,8 +182,11 @@ internal static class GrilleRuntimeHarness
     /// référentiel réel résolvant nom et couleur. Permet d'observer la re-résolution du fond à la date
     /// naviguée sans aucune saisie de période (Sc.1).
     /// </summary>
-    public static void SemerCycle(ApiDistanteFactory api, CycleDeFond cycle)
-        => api.Services.GetRequiredService<IReferentielCycleDeFond>().DefinirCycle(cycle);
+    /// <summary>Sème un cycle de fond ESTAMPILLÉ de l'enfant <paramref name="enfantId"/> (défaut = enfant seedé /
+    /// sélectionné du front, s53). Depuis le gate G3 (4e passage), la résolution d'un enfant ne retombe PLUS sur
+    /// le cycle partagé "" : un cycle doit être semé POUR chaque enfant à observer (helper appelé une fois par enfant).</summary>
+    public static void SemerCycle(ApiDistanteFactory api, CycleDeFond cycle, string enfantId = EnfantParDefaut)
+        => api.Services.GetRequiredService<IReferentielCycleDeFond>().DefinirCycle(cycle, enfantId);
 
     /// <summary>
     /// Rend la grille réelle câblée à l'API distante, à la date de référence injectée. Le hub SignalR

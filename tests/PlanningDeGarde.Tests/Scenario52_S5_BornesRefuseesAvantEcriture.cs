@@ -31,7 +31,7 @@ public class Scenario52_S5_BornesRefuseesAvantEcriture
             new FakeSlotRepository(), periodes,
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = "bleu", [ParentB] = "orange" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = "Alice", [ParentB] = "Bruno" }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB())),
+            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB()), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB));
 
     private static ProposerEchangeHandler Handler(IPeriodeRepository periodes, IPropositionEchangeRepository propositions)

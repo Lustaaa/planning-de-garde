@@ -52,7 +52,7 @@ public class Scenario50_S3_DigestReplisFideles
             new DateTime(2026, 7, 7), new DateTime(2026, 7, 7)).Valeur!);
         var transferts = new FakeTransfertRepository();
         transferts.Enregistrer(Transfert.Definir(ParentA, ParentB, "ecole",
-            new TimeSpan(8, 30, 0), Jeudi_09_07_2026.ToDateTime(TimeOnly.MinValue)).Valeur!);
+            new TimeSpan(8, 30, 0), Jeudi_09_07_2026.ToDateTime(TimeOnly.MinValue), LeaId).Valeur!);
         var query = Query(periodes, transferts);
 
         // Then — jour NEUTRE (06/07) : personne assignée, aucun nom fantôme, aucun lieu

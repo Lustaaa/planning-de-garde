@@ -25,7 +25,7 @@ public sealed class FrontWasmConfigCycleInvariantsModalTests : TestContext
 {
     private static void SemerCycle(ApiDistanteFactory api)
         => api.Services.GetRequiredService<IReferentielCycleDeFond>()
-            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }));
+            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }), GrilleRuntimeHarness.EnfantParDefaut);
 
     private IRenderedComponent<ConfigurationFoyer> RendreConfig(ApiDistanteFactory api, SessionPlanning? session = null, System.Net.Http.HttpClient? client = null)
     {

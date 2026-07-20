@@ -44,7 +44,7 @@ public sealed class FrontWasmSupprimerSlotTempsReelTests : TestContext
         // Given — UNE seule API distante réelle (store singleton partagé). Un slot « École » 08h30-16h30
         // pour Léa le mardi 16/06/2026.
         using var api = new ApiDistanteFactory();
-        GrilleRuntimeHarness.SemerSlot(api, "lea", "École", new DateTime(2026, 6, 16, 8, 30, 0), new DateTime(2026, 6, 16, 16, 30, 0));
+        GrilleRuntimeHarness.SemerSlot(api, GrilleRuntimeHarness.EnfantParDefaut, "École", new DateTime(2026, 6, 16, 8, 30, 0), new DateTime(2026, 6, 16, 16, 30, 0));
 
         // Écran 2 (le « second écran ») = la grille réellement câblée à l'API, dans un TestContext distinct
         // (navigateur / DI séparés, client SignalR propre).

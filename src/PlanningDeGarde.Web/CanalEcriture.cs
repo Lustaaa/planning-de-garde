@@ -29,7 +29,7 @@ public static class CanalEcriture
     public sealed record SupprimerSlotRecurrentRequete(string SlotId);
 
     /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
-    public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
+    public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin, string EnfantId = "");
 
     /// <summary>Corps de la requête de délégation de la récupération d'une PLAGE (s44 → s45) : le jour de
     /// DÉBUT, l'enfant sélectionné, l'identifiant stable de l'acteur RECEVANT et le jour de FIN (INCLUS)
@@ -47,7 +47,7 @@ public static class CanalEcriture
     public sealed record AnnulerDelegationRequete(DateOnly Jour, string EnfantId);
 
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
-    public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
+    public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date, string EnfantId = "");
 
     /// <summary>Corps de la requête d'ajout d'une activité au référentiel du foyer (s35, ex-« lieu » s27) : le
     /// front n'émet que le libellé ; l'identifiant stable est posé côté handler. Refus (libellé vide / doublon).</summary>
@@ -106,7 +106,7 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition / ré-édition du cycle de fond (palier 6) émise via le
     /// canal d'écriture : le nombre de semaines + le mapping index→responsable (identifiant stable bindé
     /// par le sélecteur, jamais le libellé). Une nouvelle définition remplace le cycle courant.</summary>
-    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations);
+    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations, string EnfantId = "");
 
     /// <summary>Corps de la requête de suppression d'une période émise via le canal d'écriture. La clé est
     /// l'<b>identifiant stable</b> de la période (jamais un libellé) ; la suppression est idempotente côté

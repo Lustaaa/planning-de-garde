@@ -9,6 +9,9 @@
 <div class="dialog-backdrop" data-testid="dialog-affecter-periode">
     <div class="dialog-panneau">
         <h2 class="h4 mb-3">Affecter une période</h2>
+        @* Enfant COURANT hérité du sélecteur de vue (s53, Option A) : affiché en LECTURE SEULE — on ne choisit
+           pas d'enfant ici, la période est scopée à l'enfant de la vue (cohérent avec la vue mono-enfant). *@
+        <p class="text-muted small mb-3" data-testid="affecter-periode-enfant-courant">Pour : @EnfantNom (sélection courante)</p>
         <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="affecter-periode-dialog">
             <div class="mb-3">
                 <label class="form-label">Responsable</label>

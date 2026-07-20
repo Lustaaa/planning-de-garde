@@ -31,7 +31,7 @@ public class Scenario44_S2_DeleguerCasLimite
             new FakeSlotRepository(), periodes,
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = "bleu", [ParentB] = "orange", [ParentC] = "vert" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = "Alice", [ParentB] = "Bruno", [ParentC] = "Chloe" }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB())),
+            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB()), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB, ParentC));
 
     private static DeleguerRecuperationHandler Handler(IPeriodeRepository periodes)
@@ -47,7 +47,7 @@ public class Scenario44_S2_DeleguerCasLimite
     {
         var periodes = new FakePeriodeRepository();
         var debut = Mercredi_08_07_2026.ToDateTime(TimeOnly.MinValue);
-        periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentC, debut, debut).Valeur!);
+        periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentC, debut, debut, LeaId).Valeur!);
 
         var resultat = Handler(periodes).Handle(new DeleguerRecuperationCommand(Mercredi_08_07_2026, LeaId, ParentB));
 
@@ -77,7 +77,7 @@ public class Scenario44_S2_DeleguerCasLimite
     {
         var periodes = new FakePeriodeRepository();
         var debut = Mercredi_08_07_2026.ToDateTime(TimeOnly.MinValue);
-        periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentC, debut, debut).Valeur!);
+        periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentC, debut, debut, LeaId).Valeur!);
 
         // Le responsable RÉSOLU du jour est déjà C (surcharge). Déléguer à C = soi-même → refus, store intact.
         var resultat = Handler(periodes).Handle(new DeleguerRecuperationCommand(Mercredi_08_07_2026, LeaId, ParentC));

@@ -34,7 +34,7 @@ public static class CanalEcriture
     public sealed record SupprimerSlotRecurrentRequete(string SlotId);
 
     /// <summary>Corps de la requête d'affectation de période émise via le canal requête/réponse.</summary>
-    public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin);
+    public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin, string EnfantId = "");
 
     /// <summary>Corps de la requête de délégation de la récupération d'une PLAGE (s44 → s45) émise via le canal
     /// requête/réponse : le jour de DÉBUT, l'enfant sélectionné, l'identifiant stable de l'acteur RECEVANT et le
@@ -51,7 +51,7 @@ public static class CanalEcriture
     public sealed record AnnulerDelegationRequete(DateOnly Jour, string EnfantId);
 
     /// <summary>Corps de la requête de définition d'un transfert de bascule émise via le canal.</summary>
-    public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date);
+    public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date, string EnfantId = "");
 
     /// <summary>Corps de la requête d'ajout d'une activité au référentiel du foyer (s35, ex-« lieu » s27) émise
     /// via le canal d'écriture : le front ne fournit que le libellé (l'identifiant stable est posé côté handler).
@@ -117,7 +117,7 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition / ré-édition du cycle de fond (palier 6) émise via le
     /// canal d'écriture : le nombre de semaines + le mapping index→responsable (identifiant stable, jamais
     /// le libellé). Une nouvelle définition remplace intégralement le cycle courant (dernière écriture gagne).</summary>
-    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations);
+    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations, string EnfantId = "");
 
     /// <summary>Corps de la requête de suppression d'une période émise via le canal d'écriture. La clé est
     /// l'<b>identifiant stable</b> de la période (jamais un libellé) ; la suppression est idempotente côté
@@ -389,7 +389,7 @@ public static class CanalEcriture
         routes.MapPost("/api/canal/affecter-periode", (AffecterPeriodeRequete requete, AffecterPeriodeHandler handler) =>
         {
             var resultat = handler.Handle(new AffecterPeriodeCommand(
-                requete.ResponsableId, requete.Debut, requete.Fin));
+                requete.ResponsableId, requete.Debut, requete.Fin, requete.EnfantId));
 
             // Même convention que la pose : succès acquitté, refus métier renvoyé avec son motif.
             return resultat.EstSucces
@@ -435,7 +435,7 @@ public static class CanalEcriture
         routes.MapPost("/api/canal/definir-transfert", (DefinirTransfertRequete requete, DefinirTransfertHandler handler) =>
         {
             var resultat = handler.Handle(new DefinirTransfertCommand(
-                requete.DeposeParId, requete.RecupereParId, requete.LieuId, requete.Heure, requete.Date));
+                requete.DeposeParId, requete.RecupereParId, requete.LieuId, requete.Heure, requete.Date, requete.EnfantId));
 
             // Même convention que les autres écritures : succès acquitté, refus métier renvoyé avec son motif.
             return resultat.EstSucces
@@ -668,7 +668,7 @@ public static class CanalEcriture
 
         routes.MapPost("/api/canal/definir-cycle", (DefinirCycleRequete requete, DefinirCycleHandler handler) =>
         {
-            var resultat = handler.Handle(new DefinirCycleCommand(requete.NombreSemaines, requete.Affectations));
+            var resultat = handler.Handle(new DefinirCycleCommand(requete.NombreSemaines, requete.Affectations, requete.EnfantId));
 
             // Même convention que les autres écritures : succès acquitté (le cycle est défini, les grilles
             // suivent via la diffusion temps réel déclenchée par le handler), refus métier renvoyé avec son

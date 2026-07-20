@@ -36,7 +36,7 @@ public class Scenario45_S2_DeleguerPlageCasLimite
             new FakeSlotRepository(), periodes,
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = "bleu", [ParentB] = "orange", [ParentC] = "vert" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = "Alice", [ParentB] = "Bruno", [ParentC] = "Chloe" }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB())),
+            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB()), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB, ParentC));
 
     private static DeleguerRecuperationHandler Handler(IPeriodeRepository periodes)
@@ -51,7 +51,7 @@ public class Scenario45_S2_DeleguerPlageCasLimite
         var periodes = new FakePeriodeRepository();
         // Une surcharge existante (Parent C) sur un jour AU MILIEU de la plage.
         var debutC = Mercredi_08.ToDateTime(TimeOnly.MinValue);
-        periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentC, debutC, debutC).Valeur!);
+        periodes.Enregistrer(PeriodeDeGarde.Affecter(ParentC, debutC, debutC, LeaId).Valeur!);
 
         var resultat = Handler(periodes)
             .Handle(new DeleguerRecuperationCommand(Mardi_07, LeaId, ParentB, Jeudi_09));

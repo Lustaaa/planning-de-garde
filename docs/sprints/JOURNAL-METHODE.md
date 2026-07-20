@@ -135,6 +135,17 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   navigateur (drag souris, `elementFromPoint`, interop JS) = HORS bUnit → prévoir un SMOKE Playwright**
   (projet `tests/PlanningDeGarde.Web.E2E`, hors `.slnx`) pour observer sur l'app servie plutôt qu'itérer à
   l'aveugle via le PO.
+- 2026-07-20 — s53 : **gate G3 échoué 4 FOIS d'affilée sur un INVARIANT TRANSVERSE mal audité** — le sprint
+  introduisait l'**isolation par enfant** (R1) mais l'implémentation initiale ne l'a appliquée qu'à la **LECTURE
+  + quelques chemins** ; les autres chemins d'écriture (période via dialog s06, transfert SAISI s29, cycle de fond
+  `DefinirCycle`, slots « où », reprise `AnnulerDelegation`) et le **repli de résolution `''`** ont été découverts
+  **UN PAR UN au gate PO**, chacun = un aller-retour. L'**audit exhaustif** des chemins (qui a tout trouvé d'un
+  coup) n'est venu qu'au **3ᵉ gate** — trop tard. Fix : garde de l'**INVARIANT TRANSVERSE → AUDIT EXHAUSTIF DES
+  CHEMINS DÈS LE CADRAGE** dans le chapeau PLANNING du `scrum-master` (dresser l'inventaire explicite de TOUS les
+  handlers/queries touchant la dimension d'isolation, l'inscrire au fichier de sprint, écrire un scénario `@back`
+  « isolation prouvée sur CHAQUE chemin d'écriture » plutôt qu'un seul chemin ; acter ce qui est transverse par
+  design — cloche/journal). *(NB : le flake P1 SignalR TempsReel réapparu ce sprint est déjà catalogué — triage x3,
+  vert isolé — pas une nouvelle friction.)*
 - 2026-06-30 — s18 Sc.7 : flake P2 `FrontWasmInvitePlageIndisponibleTempsReel` rouge **2/3 runs
   full-suite** (vert isolé + re-run), visibilité en hausse sous charge SignalR → risque de blocage du
   gate de non-régression ou de mauvais diagnostic « régression ». Fix : garde-fou de **triage du flake
