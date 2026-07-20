@@ -81,8 +81,13 @@ public sealed class GrilleAgendaQuery
     private GrilleAgenda ProjeterFenetre(DateOnly premierJour, int nbJours, string? enfantId = null)
     {
         // Un slot est rendu sur CHAQUE jour calendaire qu'il couvre : un slot franchissant minuit
-        // (début un jour, fin le lendemain) apparaît donc dans la case de ses deux jours.
-        var slotsParJour = _slots.AllSnapshots()
+        // (début un jour, fin le lendemain) apparaît donc dans la case de ses deux jours. ISOLATION STRICTE
+        // s53 (gate G3) : quand un enfant est ciblé, seuls SES slots (« où ») sont rendus — un slot d'un AUTRE
+        // enfant ne fuit pas dans sa grille.
+        var slotsEnfant = enfantId is null
+            ? _slots.AllSnapshots()
+            : _slots.AllSnapshots().Where(s => s.EnfantId == enfantId).ToList();
+        var slotsParJour = slotsEnfant
             .SelectMany(snapshot => JoursCouverts(snapshot).Select(jour => (jour, snapshot)))
             .ToLookup(x => x.jour, x => x.snapshot);
 
@@ -93,7 +98,9 @@ public sealed class GrilleAgendaQuery
         // Un slot RÉCURRENT hebdo se matérialise sur CHAQUE jour de la fenêtre dont le jour de semaine
         // correspond : chaque occurrence est un slot « virtuel » daté (date + plage horaire) qui rejoint
         // le flux des slots ponctuels de sa case (empilement en ordre horaire assuré par SlotsCasePour).
-        var recurrents = _slotsRecurrents?.AllSnapshots() ?? (IReadOnlyList<SlotRecurrentSnapshot>)Array.Empty<SlotRecurrentSnapshot>();
+        // ISOLATION STRICTE s53 : filtré par enfant comme les slots ponctuels (un récurrent d'un autre enfant ne fuit pas).
+        var tousRecurrents = _slotsRecurrents?.AllSnapshots() ?? (IReadOnlyList<SlotRecurrentSnapshot>)Array.Empty<SlotRecurrentSnapshot>();
+        var recurrents = enfantId is null ? tousRecurrents : tousRecurrents.Where(r => r.EnfantId == enfantId).ToList();
 
         // Transferts saisis : rendus en présentation bicolore sur la case de leur jour (aucun changement
         // du modèle de transfert ni de la résolution de responsabilité — décision SM s29 volet 2). ISOLATION

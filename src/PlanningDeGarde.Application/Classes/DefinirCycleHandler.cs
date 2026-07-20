@@ -8,7 +8,7 @@ namespace PlanningDeGarde.Application;
 /// le nombre de semaines et le mapping index→responsable (identifiant stable). Une nouvelle
 /// définition remplace intégralement le cycle courant (dernière écriture gagne).
 /// </summary>
-public sealed record DefinirCycleCommand(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations);
+public sealed record DefinirCycleCommand(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations, string EnfantId = "");
 
 /// <summary>
 /// Use case : définir le cycle de fond. Persiste le cycle via le port d'écriture puis déclenche
@@ -34,7 +34,9 @@ public sealed class DefinirCycleHandler
             return Result<CycleDeFond>.Echec("le cycle doit compter au moins une semaine");
 
         var cycle = new CycleDeFond(commande.NombreSemaines, commande.Affectations);
-        _cycle.DefinirCycle(cycle);
+        // ISOLATION s53 (gate G3) : le cycle est SCOPÉ à l'enfant courant (Option A) — éditer en vue Mia ne
+        // change QUE le cycle de Mia. EnfantId absent ("") = cycle partagé/legacy (mono-enfant antérieur).
+        _cycle.DefinirCycle(cycle, string.IsNullOrEmpty(commande.EnfantId) ? null : commande.EnfantId);
         _notificateur.NotifierMiseAJour(); // diffusion temps réel sur écriture aboutie
         return Result<CycleDeFond>.Succes(cycle);
     }

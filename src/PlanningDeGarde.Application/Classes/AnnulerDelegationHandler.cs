@@ -39,7 +39,10 @@ public sealed class AnnulerDelegationHandler
     public Result<AnnulerDelegationResultat> Handle(AnnulerDelegationCommand commande)
     {
         var jour = commande.Jour;
-        var couvrantes = _periodes.AllSnapshots().Where(p => Couvre(p, jour)).ToList();
+        // ISOLATION STRICTE s53 (gate G3) : ne reprend QUE les surcharges DE CET ENFANT couvrant le jour —
+        // reprendre le jour de Léa ne retire jamais la surcharge de Tom (pas de suppression inter-enfants).
+        var couvrantes = _periodes.AllSnapshots()
+            .Where(p => p.EnfantId == commande.EnfantId && Couvre(p, jour)).ToList();
 
         foreach (var surcharge in couvrantes)
         {
@@ -52,10 +55,12 @@ public sealed class AnnulerDelegationHandler
             _periodes.Supprimer(surcharge.Id);
             var debut = DateOnly.FromDateTime(surcharge.Debut);
             var fin = DateOnly.FromDateTime(surcharge.Fin);
+            // Segments restants RÉÉCRITS en conservant l'EnfantId de la surcharge (s53) : la reprise d'un jour
+            // au milieu d'une plage ne « dé-scope » pas les jours restants (ils resteraient sinon en bucket "").
             if (debut < jour)
-                ReecrireSegment(surcharge.ResponsableId, debut, jour.AddDays(-1));
+                ReecrireSegment(surcharge.ResponsableId, debut, jour.AddDays(-1), surcharge.EnfantId);
             if (fin > jour)
-                ReecrireSegment(surcharge.ResponsableId, jour.AddDays(1), fin);
+                ReecrireSegment(surcharge.ResponsableId, jour.AddDays(1), fin, surcharge.EnfantId);
         }
 
         return Result<AnnulerDelegationResultat>.Succes(new AnnulerDelegationResultat(couvrantes.Count > 0));
@@ -69,9 +74,9 @@ public sealed class AnnulerDelegationHandler
             Guid.NewGuid().ToString("N"), type, jour, enfantId, cedantId, recevantId, _horloge.Maintenant));
     }
 
-    private void ReecrireSegment(string responsableId, DateOnly debut, DateOnly fin)
+    private void ReecrireSegment(string responsableId, DateOnly debut, DateOnly fin, string enfantId)
         => _periodes.Enregistrer(PeriodeDeGarde.Affecter(
-            responsableId, debut.ToDateTime(TimeOnly.MinValue), fin.ToDateTime(TimeOnly.MinValue)).Valeur!);
+            responsableId, debut.ToDateTime(TimeOnly.MinValue), fin.ToDateTime(TimeOnly.MinValue), enfantId).Valeur!);
 
     private static bool Couvre(PeriodeSnapshot periode, DateOnly jour)
         => DateOnly.FromDateTime(periode.Debut) <= jour && DateOnly.FromDateTime(periode.Fin) >= jour;

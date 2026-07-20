@@ -138,10 +138,12 @@ public static class CanalLecture
         // l'écran config la lit pour lister TOUS les cycles settés/actifs — corrige le trou (des cycles
         // déclarés n'apparaissaient pas dans la config, retour PO gate s32). Lecture seule, jamais de
         // diffusion. Un foyer sans cycle déclaré renvoie une liste vide (pas d'erreur).
+        // Paramètre optionnel « enfant » (s53) : le cycle DÉCLARÉ est lu PAR ENFANT (chaque enfant a son cycle
+        // propre) — absent = cycle partagé/legacy (compatibilité ascendante).
         routes.MapGet("/api/foyer/cycles",
-            (CyclesFoyerQuery query) =>
+            (string? enfant, CyclesFoyerQuery query) =>
             {
-                var vues = query.Lire()
+                var vues = query.Lire(string.IsNullOrWhiteSpace(enfant) ? null : enfant)
                     .Select(c => new CycleFoyerVue(c.IndexSemaine, c.ResponsableId))
                     .ToList();
                 return Results.Ok(vues);

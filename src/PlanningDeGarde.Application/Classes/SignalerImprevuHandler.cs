@@ -41,7 +41,7 @@ public sealed class SignalerImprevuHandler
 
         // Acteur CONCERNÉ (au-delà du signalant) = responsable RÉSOLU du jour (celui qui a l'enfant ce jour-là).
         // Il est LU sans être modifié — la résolution n'est jamais altérée par le signalement (invariant s48).
-        var responsableDuJour = _grille?.Projeter(commande.Jour, VuePlanning.Semaine)
+        var responsableDuJour = _grille?.Projeter(commande.Jour, VuePlanning.Semaine, commande.EnfantId)
             .Jours.Single(j => j.Date == commande.Jour).ResponsableId ?? "";
 
         var evenement = imprevu.Valeur!.VersEvenement(responsableDuJour, _horloge.Maintenant);

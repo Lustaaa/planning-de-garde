@@ -106,7 +106,7 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition / ré-édition du cycle de fond (palier 6) émise via le
     /// canal d'écriture : le nombre de semaines + le mapping index→responsable (identifiant stable bindé
     /// par le sélecteur, jamais le libellé). Une nouvelle définition remplace le cycle courant.</summary>
-    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations);
+    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations, string EnfantId = "");
 
     /// <summary>Corps de la requête de suppression d'une période émise via le canal d'écriture. La clé est
     /// l'<b>identifiant stable</b> de la période (jamais un libellé) ; la suppression est idempotente côté

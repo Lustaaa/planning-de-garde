@@ -71,8 +71,10 @@ public sealed class FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests : TestCo
         config.WaitForElement("[data-testid='confirmation-cycle']", TimeSpan.FromSeconds(10));
 
         // … le store cycle réel porte bien le cycle N = 2 (baseline du « cycle précédent »).
+        // s53 : le cycle est édité EN VUE de l'enfant courant du config (défaut = enfant seedé) — on le relit
+        // donc pour cet enfant (CycleCourant(enfant)), pas sur le bucket partagé.
         var storeCycle = api.Services.GetRequiredService<IReferentielCycleDeFond>();
-        Assert.Equal(2, storeCycle.CycleCourant()!.NombreSemaines);
+        Assert.Equal(2, storeCycle.CycleCourant(GrilleRuntimeHarness.EnfantParDefaut)!.NombreSemaines);
 
         // When — le parent RÉ-OUVRE la modal d'édition (le succès précédent l'avait fermée, refonte s33 Sc.10)
         // et tente d'enregistrer un cycle de ZÉRO semaine : il porte le nombre de semaines à 0 (le min HTML est
@@ -90,7 +92,7 @@ public sealed class FrontWasmConfigCycleZeroSemaineRefuseTempsReelTests : TestCo
 
         // … le cycle de 2 semaines précédent reste inchangé dans le store réel : aucun écrasement par N = 0,
         // le cycle résout encore l'alternance A/B (ISO 28 paire → parent-a, ISO 27 impaire → parent-b).
-        var cycle = storeCycle.CycleCourant();
+        var cycle = storeCycle.CycleCourant(GrilleRuntimeHarness.EnfantParDefaut);
         Assert.NotNull(cycle);
         Assert.Equal(2, cycle!.NombreSemaines);
         Assert.Equal("parent-a", cycle.ResponsableDeFond(new DateOnly(2026, 7, 6)));   // ISO 28 (paire)

@@ -7,7 +7,7 @@
 > **jamais** la résolution ni les cases de l'enfant B. Débloque l'échange/délégation
 > multi-enfants borné hors s52.
 
-## Avancement — 13/13
+## Avancement — 16/16
 
 > **Gate G3 (1er passage) ÉCHOUÉ** : l'isolation n'était qu'en LECTURE ; le chemin d'ÉCRITURE
 > « Affecter une période » (s06) n'était pas scopé enfant → période au bucket partagé `''`, visible
@@ -19,6 +19,27 @@
 > — les DÉRIVÉS l'étaient déjà (issus des périodes filtrées). **Correctif** : `EnfantId` de bout en
 > bout sur le transfert saisi (modèle/command/DTO/endpoint/dialog hérité de l'enfant courant) +
 > filtrage STRICT dans la projection + **Sc.12 @back / Sc.13 @ihm**.
+>
+> **Gate G3 (3e passage) ÉCHOUÉ** (navigateur 5292) : « Éditer le cycle de fond ne prend pas en compte
+> l'enfant ». L'**ÉCRITURE du cycle** (`DefinirCycle`) n'était pas scopée (la LECTURE l'était). **AUDIT
+> EXHAUSTIF** de tous les chemins d'écriture (voir « Audit » ci-dessous) → 4 fuites restantes corrigées :
+> **cycle de fond** (write), **slots « où »** (read filter), **reprise/annuler-délégation** (scope +
+> segments), **imprévu** (lecture scopée). Config : l'onglet Cycle porte un **sélecteur d'enfant**
+> (Option A, cycle par enfant — familles recomposées). **Sc.14/15 @back + Sc.16 @ihm**.
+
+### Audit exhaustif des chemins d'écriture (gate G3 3e passage)
+
+| Chemin d'écriture | Statut avant | Action |
+|---|---|---|
+| Affecter une période (surcharge s06) | scopé (Sc.10/11) | — |
+| Déléguer une récupération (compose surcharge) | scopé (Sc.2, `commande.EnfantId`) | — |
+| Échange accepté / Proposer / Suite-imprévu (compose délégation) | scopé (Sc.3, hérite l'enfant) | — |
+| Définir un transfert SAISI (s29) | scopé (Sc.12/13) | — |
+| **Éditer le cycle de fond (`DefinirCycle`)** | **FUITE** (écrivait bucket partagé) | corrigé — `EnfantId` bout-en-bout + sélecteur config (Sc.14/16) |
+| **Slots « où » (`PoserSlot`/récurrents) — RENDU grille** | **FUITE** (grille non filtrée) | corrigé — filtrage STRICT slots par enfant (Sc.15) |
+| **Reprise / annuler-délégation (`AnnulerDelegation`)** | **FUITE** (supprimait inter-enfants + segments dé-scopés) | corrigé — filtre + réécriture scopée (Sc.15) |
+| Signaler un imprévu (`SignalerImprevu`) | correct (journal transverse) mais lecture non scopée | corrigé — résolution lue par enfant (pas de fuite grille) |
+| Éditer/Modifier/Supprimer période (par Id) | scopé (préserve l'`EnfantId` via `with`) | — |
 
 | # | Scénario | Type | Statut |
 |---|----------|------|--------|
@@ -35,6 +56,9 @@
 | 11 | Affecter avec Mia sélectionnée → visible grille Mia, absente grille Tom ; dialog affiche l'enfant courant (lecture seule) | @ihm | ✅ |
 | 12 | Transfert SAISI (s29) issu d'une action sur A n'apparaît QUE chez A, jamais chez B (write path réel) | @back | ✅ |
 | 13 | Définir un transfert avec enfant sélectionné → bicolore chez A, absent chez B après bascule ; dialog enfant lecture seule | @ihm | ✅ |
+| 14 | Éditer le cycle de fond EN VUE enfant A (write path réel) ne change QUE le cycle de A | @back | ✅ |
+| 15 | Slot « où » posé pour A visible de A seul + reprise/annuler-délégation de A laisse B intact | @back | ✅ |
+| 16 | Config : sélecteur d'enfant sur l'onglet Cycle → éditer en vue A change la grille de A seul ; dialog enfant lecture seule | @ihm | ✅ |
 
 ---
 
@@ -231,6 +255,36 @@ Scénario 13 — Définir un transfert avec un enfant sélectionné : bicolore c
   Alors la case du jour de l'enfant courant porte la pastille bicolore (convergence par diffusion SignalR)
   Et en basculant sur un autre enfant la pastille est ABSENTE (plus de fuite du transfert)
   # runtime réel navigateur-fidèle : écriture par le canal, projection isolée par enfant réelle
+```
+
+### Correctif gate G3 (3e passage) — cycle de fond + slots + reprise scopés par enfant (audit exhaustif)
+
+```gherkin
+@back @vert
+Scénario 14 — Éditer le cycle de fond EN VUE enfant A ne change QUE le cycle de A
+  Étant donné deux enfants "Léa" et "Tom" chacun avec son cycle de fond propre
+  Quand j'édite le cycle de "Léa" via DefinirCycleHandler (use case d'écriture réel) EN VUE de "Léa"
+  Alors seule la résolution de "Léa" change ; celle de "Tom" reste STRICTEMENT inchangée
+  Et l'isolation est prouvée sur InMemory ET Mongo durable
+```
+
+```gherkin
+@back @vert
+Scénario 15 — Slot « où » posé pour A + reprise (annuler délégation) sur A : isolés de B
+  Étant donné un slot de localisation posé pour "Léa" et des surcharges de "Léa" et "Tom" le même jour
+  Quand je projette la grille et quand j'annule la délégation du jour pour "Léa" seule
+  Alors le slot de "Léa" n'apparaît QUE chez "Léa" (jamais chez "Tom")
+  Et la reprise retire la surcharge de "Léa" mais laisse celle de "Tom" STRICTEMENT intacte
+```
+
+```gherkin
+@ihm @vert
+Scénario 16 — Config : sélecteur d'enfant sur l'onglet Cycle, édition scopée
+  Étant donné l'écran de configuration, onglet Cycle, avec un sélecteur d'enfant
+  Quand j'édite le cycle EN VUE de "Léa" (Alice) puis EN VUE de "Tom" (Bruno)
+  Alors la modal affiche l'enfant courant en LECTURE SEULE (« Pour : … (sélection courante) »)
+  Et la grille câblée à la même API résout le cycle PROPRE de chaque enfant (Léa→Alice, Tom→Bruno)
+  # runtime réel : chaque enfant a son cycle de fond propre (familles recomposées)
 ```
 
 ---

@@ -513,6 +513,23 @@
                 <p class="text-muted">Les semaines du cycle et leur responsable de fond. Les jours sans période
                     explicite suivent ce cycle ; la grille se met à jour sans recharger la page.</p>
 
+                @* Sélecteur d'enfant (s53, gate G3) : chaque enfant a SON cycle de fond propre (familles
+                   recomposées). Le tableau + l'éditeur ci-dessous sont scopés à l'enfant sélectionné ici ;
+                   éditer en vue X ne change QUE le cycle de X. *@
+                @if (_enfants.Count > 0)
+                {
+                    <label class="pdg-controle mb-3 d-inline-flex align-items-center gap-2">
+                        <span class="pdg-controle-label">Enfant</span>
+                        <select class="form-select form-select-sm w-auto" data-testid="selecteur-enfant-cycle"
+                                @onchange="ChangerCycleEnfant" value="@_cycleEnfantSelectionne">
+                            @foreach (var enfant in _enfants)
+                            {
+                                <option value="@enfant.Id">@enfant.Prenom</option>
+                            }
+                        </select>
+                    </label>
+                }
+
                 <div class="acteurs-defilement">
                     <table class="acteurs-table" data-testid="liste-cycles">
                         <thead>
@@ -550,6 +567,10 @@
                     {
                         <ModalConfig TestId="dialog-cycle" OnFermer="FermerModalCycle">
                                 <h2 class="h4 mb-3">Éditer le cycle de fond</h2>
+                                @* Enfant COURANT hérité du sélecteur de l'onglet (s53, Option A) : affiché en
+                                   LECTURE SEULE — on ne choisit pas l'enfant dans la modal, le cycle édité est
+                                   celui de l'enfant de la vue (gate G3 : « prend enfin en compte l'enfant »). *@
+                                <p class="text-muted small mb-3" data-testid="cycle-enfant-courant">Pour : @PrenomCycleEnfant (sélection courante)</p>
                                 <EditForm Model="_cycle" OnValidSubmit="DefinirCycle" FormName="definir-cycle" id="form-cycle">
                                     <div class="mb-3">
                                         <label class="form-label">Nombre de semaines du cycle</label>

@@ -569,9 +569,30 @@ public partial class ConfigurationFoyer
     /// ouverte, synchronise aussi l'éditeur <see cref="_cycle"/> sur le cycle courant (N dérivé de la plus
     /// grande semaine affectée + 1, cas nominal « un responsable par semaine »), pour qu'un clic « Éditer le
     /// cycle » l'ouvre pré-rempli — sans écraser une saisie en cours si la modal est ouverte.</summary>
+    /// <summary>Enfant COURANT de l'onglet Cycle (s53, gate G3) : chaque enfant a SON cycle de fond propre
+    /// (familles recomposées). Le tableau + l'éditeur du cycle sont scopés à cet enfant, hérité du sélecteur de
+    /// l'onglet (Option A) ; éditer en vue X ne change QUE le cycle de X. null tant qu'aucun enfant n'est chargé.</summary>
+    private string? _cycleEnfantSelectionne;
+
+    /// <summary>Prénom d'affichage de l'enfant courant du cycle (« Pour : … » lecture seule dans la modal).</summary>
+    private string PrenomCycleEnfant
+        => _enfants.FirstOrDefault(e => e.Id == _cycleEnfantSelectionne)?.Prenom ?? _cycleEnfantSelectionne ?? "";
+
+    /// <summary>Bascule de l'enfant courant de l'onglet Cycle : relit SON cycle et re-synchronise l'éditeur.</summary>
+    private async Task ChangerCycleEnfant(ChangeEventArgs e)
+    {
+        _cycleEnfantSelectionne = e.Value?.ToString();
+        await RechargerCycles();
+    }
+
     private async Task RechargerCycles()
     {
-        _cyclesDeclares = await Canal.GetFromJsonAsync<List<CycleFoyer>>("api/foyer/cycles")
+        // Défaut = 1er enfant du référentiel (l'enfant seedé). Le cycle est lu PAR ENFANT (s53).
+        if (_cycleEnfantSelectionne is null || _enfants.All(en => en.Id != _cycleEnfantSelectionne))
+            _cycleEnfantSelectionne = _enfants.FirstOrDefault()?.Id;
+        var segmentEnfant = string.IsNullOrEmpty(_cycleEnfantSelectionne)
+            ? "" : $"?enfant={Uri.EscapeDataString(_cycleEnfantSelectionne)}";
+        _cyclesDeclares = await Canal.GetFromJsonAsync<List<CycleFoyer>>($"api/foyer/cycles{segmentEnfant}")
             ?? new List<CycleFoyer>();
 
         if (!_modalCycleOuverte)
@@ -1066,7 +1087,7 @@ public partial class ConfigurationFoyer
         {
             reponse = await Canal.PostAsJsonAsync(
                 "api/canal/definir-cycle",
-                new DefinirCycleRequete(_cycle.NombreSemaines, _cycle.Affectations));
+                new DefinirCycleRequete(_cycle.NombreSemaines, _cycle.Affectations, _cycleEnfantSelectionne ?? ""));
         }
         catch (HttpRequestException)
         {

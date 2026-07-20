@@ -27,9 +27,11 @@ public sealed class CyclesFoyerQuery
         _cycle = cycle;
     }
 
-    public IReadOnlyList<CycleDeclareVue> Lire()
+    /// <summary>Lit le cycle DÉCLARÉ de l'enfant <paramref name="enfantId"/> (s53) — cycle propre à l'enfant si
+    /// défini, sinon repli sur le cycle partagé. <c>null</c> (défaut) = mono-enfant antérieur (cycle partagé).</summary>
+    public IReadOnlyList<CycleDeclareVue> Lire(string? enfantId = null)
     {
-        var cycle = _cycle.CycleCourant();
+        var cycle = _cycle.CycleCourant(enfantId);
         if (cycle is null)
             return Array.Empty<CycleDeclareVue>(); // foyer sans cycle déclaré → liste vide, pas d'erreur
 

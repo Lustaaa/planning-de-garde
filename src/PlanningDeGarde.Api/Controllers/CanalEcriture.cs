@@ -117,7 +117,7 @@ public static class CanalEcriture
     /// <summary>Corps de la requête de définition / ré-édition du cycle de fond (palier 6) émise via le
     /// canal d'écriture : le nombre de semaines + le mapping index→responsable (identifiant stable, jamais
     /// le libellé). Une nouvelle définition remplace intégralement le cycle courant (dernière écriture gagne).</summary>
-    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations);
+    public sealed record DefinirCycleRequete(int NombreSemaines, IReadOnlyDictionary<int, string> Affectations, string EnfantId = "");
 
     /// <summary>Corps de la requête de suppression d'une période émise via le canal d'écriture. La clé est
     /// l'<b>identifiant stable</b> de la période (jamais un libellé) ; la suppression est idempotente côté
@@ -668,7 +668,7 @@ public static class CanalEcriture
 
         routes.MapPost("/api/canal/definir-cycle", (DefinirCycleRequete requete, DefinirCycleHandler handler) =>
         {
-            var resultat = handler.Handle(new DefinirCycleCommand(requete.NombreSemaines, requete.Affectations));
+            var resultat = handler.Handle(new DefinirCycleCommand(requete.NombreSemaines, requete.Affectations, requete.EnfantId));
 
             // Même convention que les autres écritures : succès acquitté (le cycle est défini, les grilles
             // suivent via la diffusion temps réel déclenchée par le handler), refus métier renvoyé avec son

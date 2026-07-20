@@ -247,6 +247,33 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         Assert.Null(Case(grille, TomId).Transfert);
     }
 
+    [MongoRequisFact]
+    public void Sc14_Editer_le_cycle_de_Lea_ne_change_pas_celui_de_Tom_durable()
+    {
+        var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
+        var alice = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
+        var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
+        var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
+
+        var handler = new DefinirCycleHandler(new CycleDeFondMongo(ConnectionString, _baseDeTest), new FakeNotificateurPlanningApi());
+        handler.Handle(new DefinirCycleCommand(1, new Dictionary<int, string> { [0] = alice }, LeaId));
+        handler.Handle(new DefinirCycleCommand(1, new Dictionary<int, string> { [0] = bob }, TomId));
+
+        // When — ré-éditer le cycle de Léa (Alice → Carla) EN VUE de Léa (Mongo réel).
+        handler.Handle(new DefinirCycleCommand(1, new Dictionary<int, string> { [0] = carla }, LeaId));
+
+        // Then — redémarrage : Léa résout Carla ; Tom reste STRICTEMENT sur Bob.
+        var grille = GrilleNeuve();
+        Assert.Equal(carla, grille.Projeter(J, VuePlanning.Semaine, LeaId).Jours.Single(j => j.Date == J).ResponsableId);
+        Assert.Equal(bob, grille.Projeter(J, VuePlanning.Semaine, TomId).Jours.Single(j => j.Date == J).ResponsableId);
+    }
+
+    /// <summary>Doublure à la main du notificateur (le use case cycle diffuse sur succès ; ici on ne teste pas la diffusion).</summary>
+    private sealed class FakeNotificateurPlanningApi : INotificateurPlanning
+    {
+        public void NotifierMiseAJour() { }
+    }
+
     public void Dispose()
     {
         try { new MongoClient(ConnectionString).DropDatabase(_baseDeTest); }
