@@ -28,11 +28,23 @@ et permettre de **défaire** une surcharge depuis l'IHM. Arbitrages actés :
 
 ## Séquence (résolution d'une case)
 
-1. Une **surcharge** couvre la date → la case affiche son responsable et sa couleur.
-2. Sinon, le **cycle de fond** résout l'index (`semaine ISO % N`) → responsable mappé sur cet
-   index, s'il existe.
-3. Sinon (index non mappé, ou acteur du fond supprimé) → **neutre** : teinte neutre, **aucun
-   nom** (pas de nom fantôme).
+> **Résolution SCOPÉE PAR ENFANT — STRICTE *(dé-risqué de bout en bout s53, R1)*.** Toute résolution
+> se fait **pour un enfant donné** : `GrilleAgendaQuery.Projeter(ancre, vue, enfantId)` ne restitue
+> **QUE** les périodes, surcharges, transferts (saisis ET dérivés), slots et le cycle de fond de
+> **CET** enfant — **aucun repli global / bucket partagé `''`**. Le **cycle de fond est PAR enfant** :
+> `CycleCourant(enfant)` d'un enfant **non-null** lit **UNIQUEMENT son cycle** ; **sans cycle propre →
+> NEUTRE** (repli du point 3), **jamais** le cycle d'un autre enfant ni un cycle legacy partagé `''`.
+> Les données legacy de cycle `EnfantId=''`/`undefined` (pré-scoping) sont désormais **INERTES** —
+> jamais lues pour un enfant précis (l'app passe toujours un enfant). Corollaire : **pas de
+> last-write-wins ENTRE enfants** — deux enfants, même jour = **deux surcharges qui coexistent** (le
+> LWW R11 ne joue que par `(enfant, jour)`). Le chemin legacy `enfantId = null` (lit `''`) reste pour
+> les tests mono-enfant explicites.
+
+1. Une **surcharge** couvre la date **pour cet enfant** → la case affiche son responsable et sa couleur.
+2. Sinon, le **cycle de fond de cet enfant** résout l'index (`semaine ISO % N`) → responsable mappé sur
+   cet index, s'il existe.
+3. Sinon (index non mappé, acteur du fond supprimé, **ou enfant sans cycle propre**) → **neutre** :
+   teinte neutre, **aucun nom** (pas de nom fantôme).
 
 Supprimer une surcharge fait **re-jouer cette séquence** : la case retombe sur le fond si le
 cycle le résout, sinon sur le neutre. **Re-borner** une surcharge re-joue la séquence sur **les
@@ -91,7 +103,22 @@ la portion **encore couverte** affiche le responsable (ré)affecté.
   édition concurrente → **dernière écriture gagne**. Une dialog d'écriture ouverte **n'interfère
   pas** avec le rafraîchissement de fond. *Suppression d'un acteur mappé → index non mappé →
   neutre, sans nom fantôme (R6). Ancre/début explicite, frontière de jour, plages, sur-cycles,
-  WE-only = palier « cycle de fond riche » (rouvre l'ancrage ISO).*
+  WE-only = palier « cycle de fond riche » (rouvre l'ancrage ISO).* **Cycle PAR ENFANT *(s53)*** :
+  `DefinirCycle` écrit le cycle de **l'enfant courant** (Option A, hérité du sélecteur) ; un enfant
+  **non-null** ne lit **QUE** son cycle (`CycleCourant(enfant)`), **sans cycle propre → NEUTRE**
+  (jamais le cycle d'un autre ni le legacy partagé `''`, désormais inerte). L'onglet Cycle de la config
+  porte un **sélecteur d'enfant** (familles recomposées : chaque enfant a son cycle).
+
+- **Chemins d'écriture SCOPÉS PAR ENFANT *(dé-risqué de bout en bout s53, R1, Option A)*.** **TOUS** les
+  chemins d'écriture portent et propagent l'`EnfantId` **hérité de l'enfant courant du sélecteur**
+  (s30), **affiché en LECTURE SEULE** dans les dialogs (« Pour : X (sélection courante) »), **jamais un
+  champ de choix** : affecter une période (`PeriodeSnapshot.EnfantId`), **transfert SAISI**
+  (`Transfert.EnfantId`, s29 — était dé-scopé, corrigé s53), **cycle de fond** (`DefinirCycle`), **slots
+  « où »**, **reprise / annulation de délégation** (`AnnulerDelegation` — filtre + segments réécrits
+  scopés). Une écriture ciblée enfant A **ne touche jamais** la résolution ni les cases de l'enfant B.
+  La **cloche et le journal de changements restent TRANSVERSES par design** (P3 : ils signalent QU'un
+  changement a eu lieu, tous enfants) ; le **digest s50 est FILTRÉ** par l'enfant sélectionné (il LIT le
+  planning d'un enfant). Isolation prouvée **store réel** sur **deux adaptateurs InMemory + Mongo durable**.
 - **R12 — Exception ponctuelle prime sur le fond.** Une **période saisie prime** sur le fond
   (surcharge > fond > neutre) ; le cycle **reprend ensuite** autour de la surcharge. *Une
   surcharge **orpheline** (acteur supprimé, R6) cesse de primer → case retombe sur fond ou

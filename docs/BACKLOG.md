@@ -35,6 +35,39 @@
 > la cloche s'y ajoute comme surface transverse.** Backlog et spec (`saisie-et-grille.md`, `notifications-et-echange.md`)
 > alignés sur cet amendement — plus de contradiction « seule surface ».
 
+**s53 `multi-enfants-bout-en-bout` MERGÉ — RISQUE FONDATEUR R1 « N enfants ≥1 » DÉ-RISQUÉ DE BOUT EN BOUT : ISOLATION STRICTE par enfant sur TOUS les chemins d'écriture ET de lecture.**
+Toute la série récente (délégation s44/s45, échange s47/s52, imprévu s48, digest s50) était en réalité **MONO-ENFANT** : R1 n'avait jamais été exercé de bout en bout (reliquat s30). Le store est
+peuplé de **≥2 enfants** et l'**isolation stricte** prouvée : une écriture ciblée enfant A ne touche **jamais** la résolution ni les cases de l'enfant B. **`EnfantId` porté et propagé de bout en bout**
+sur **TOUS** les chemins d'écriture — l'agrégat période (`PeriodeSnapshot.EnfantId`), le **transfert SAISI** (`Transfert.EnfantId`, s29, était dé-scopé), le **cycle de fond** (`DefinirCycle` par enfant),
+les **slots « où »**, la **reprise / annulation** (`AnnulerDelegation`) — **Option A** : l'`EnfantId` est **hérité de l'enfant courant du sélecteur** (s30), affiché **en LECTURE SEULE** dans les dialogs
+(« Pour : X (sélection courante) »), **jamais un champ de choix**. **Résolution STRICTEMENT filtrée par enfant** : `GrilleAgendaQuery.Projeter(ancre, vue, enfantId)` ne restitue QUE l'enfant demandé
+(**aucun repli global/`''`**) ; `CycleCourant(enfant)` d'un enfant NON-NULL lit **UNIQUEMENT son cycle**, **sans cycle propre → NEUTRE** (repli s13, plus jamais le cycle partagé legacy `''`). La **cloche
+et le journal restent transverses par design** (P3 : la cloche signale QU'un changement a eu lieu, tous enfants ; le digest s50 LIT le planning d'un enfant → **filtré**). Le **sélecteur d'enfant s30** est
+**câblé** (réemploi, aucune surface de lecture neuve) ; l'**onglet Cycle de la config a son propre sélecteur d'enfant** (cycle par enfant, familles recomposées). **@back** (Sc.1-6, 10, 12, 14-15, 17) :
+résolution isolée, délégation/échange ciblés n'écrivant rien sur l'autre, pas de LWW **entre** enfants (2 surcharges même jour coexistent), digest par enfant, suppression/orphelin laissant l'autre intact,
+écriture période/transfert/cycle/slot/reprise scopées, enfant sans cycle → NEUTRE — **deux adaptateurs InMemory + Mongo durable**. **@ihm** (Sc.7-9, 11, 13, 16) : bascule sélecteur recharge le bon enfant,
+digest suivant l'enfant / cloche transverse, temps réel 0-GET convergeant sur A sans toucher B, dialogs affichant l'enfant courant en lecture seule. **17/17 ✅**, suite **920/920** verte. **PORTES DE
+CONCEPTION arbitrées AU CADRAGE** (P1 vue MONO-enfant existante ; P2 sélection volatile ; P3 cloche transverse / digest filtré). **Gate G3 validé PO au 4ᵉ passage** : les 3 premiers échecs ont découvert
+**UN PAR UN** au gate des chemins d'écriture non scopés (période via dialog s06, transfert saisi s29, cycle de fond `DefinirCycle`, slots, reprise) + le repli de résolution `''` — d'où l'**audit exhaustif**
+(mené trop tard, au 3ᵉ gate) qui a tout trouvé d'un coup (voir rétro méthode s53). **R1 multi-enfants de bout en bout : LIVRÉ.** **CONSÉQUENCE UX actée** : les docs Mongo cycle legacy `EnfantId=''`/`undefined`
+sont désormais **INERTES** (jamais lus pour un enfant précis) ; **un enfant dont le cycle n'a jamais été configuré par enfant affiche NEUTRE → le PO doit configurer le cycle de CHAQUE enfant**. **Retours
+produit** au gate : **section « Retours produit » du sprint VIDE** (aucun retour textuel PO ; le gate G3 a été validé au 4ᵉ passage sur correctifs d'isolation, pas sur demandes d'évolution). **Hors scope s53,
+routé backlog (à faire, cf. bloc ci-dessous)** : (1) **VUE multi-enfants simultanée** (lanes/colonnes, surface de LECTURE neuve — décision PO au coût gate) ; (2) **imprévu MULTI-ENFANT** (`SignalerImprevu` :
+journal/cloche transverse par design P3, à border si besoin) ; (3) **nettoyage optionnel** des données legacy cycle `''`/`undefined` (`db.cycle_de_fond.deleteMany` — **donnée PO, non touchée sans validation**) ;
+(4) **libellé « Parent responsable » plus explicite** dans la dialog (tweak wording). **Candidats de tête au prochain `/planning`** : **échange / imprévu MULTI-ENFANTS** (R1 désormais exercé → débloqué),
+**VUE multi-enfants simultanée** (surface neuve), **délégation récurrente/série** (D2), **digest PERSISTANT hors fenêtre chargée** (limitation s50), reste Config foyer (édition depuis le graphe, graphe étendu,
+arbitrage inline vs modal, liste de slots par activité, lien adresse acteur↔lieu, suppression slot récurrent IHM, **suppression d'un enfant** + borne défensive R1 au Delete) ; **P0 auth** (Google OAuth réel +
+écran définir-mot-de-passe).
+
+**Hors scope s53 — routé backlog (à faire) :**
+- ⬜ **VUE multi-enfants SIMULTANÉE** (lanes / colonnes sur la grille) — *origine : porte de conception P1 s53 (bornée), retours s53*. Surface de LECTURE **neuve** (décision PO au coût gate). s53 a livré la
+  vue **MONO-enfant** (sélecteur s30) ; voir plusieurs enfants d'un coup est un incrément séparable.
+- ⬜ **Imprévu / échange MULTI-ENFANT** (au-delà d'un jour, un enfant) — *origine : retours s53, borne s48/s52*. `SignalerImprevu` : le **journal / la cloche sont transverses par design (P3)** ; à **border**
+  si un besoin d'imprévu ciblant plusieurs enfants émerge. R1 exercé de bout en bout **débloque** l'échange/délégation multi-enfants (borné hors s52).
+- ⬜ **Nettoyage optionnel des données legacy cycle** `EnfantId=''`/`undefined` — *origine : conséquence UX s53*. Ces docs sont **inertes** (jamais lus pour un enfant précis) mais restent dans le store ; un
+  `db.cycle_de_fond.deleteMany({EnfantId: {$in: ['', null]}})` les purgerait. **Donnée PO — NON exécuté sans validation** (pas touché au store PO). Optionnel, sans impact fonctionnel.
+- ⬜ **Libellé « Parent responsable » plus explicite dans la dialog** (tweak wording) — *origine : retours s53*. Petit ajustement de formulation dans les dialogs d'écriture scopées.
+
 **s52 `echange-plage-jours` MERGÉ — ÉCHANGE consenti s47 ÉTENDU du JOUR UNIQUE à la PLAGE `[J1..J2]` (miroir exact de la progression délégation s44→s45), BORNÉ MONO-ENFANT.**
 Le vœu « échangeons toute la semaine de vacances » (consenti). **AUCUN store/modèle/commande neuf** : le modèle `Proposition` s47 est enrichi d'un
 **`JourFin`** (défaut **fin=début** → parité s47 STRICTE ; règle **`fin<début` refusée dans l'agrégat**) ; `ProposerEchange` accepte l'**intervalle

@@ -580,9 +580,29 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   `Resolvable()` s13 ; lien sans rôle-du-lien = « parent-libre »), rendu en **badge lecture seule** sur le graphe
   (Parent-gated, convergence SignalR par reprojection client, 0 GET), désormais dans un **onglet « Foyer » (1ᵉʳ, actif
   par défaut)**. **R3 SIGNALÉE, JAMAIS IMPOSÉE** : aucun blocage d'écriture ajouté — `LierEnfantParent` accepte
-  toujours 0/1/2 parents (la **contrainte « exactement 2 » reste NON imposée**, choix produit). **Reste ouvert** :
-  contrainte R3 imposée à l'écriture (non traitée), **graphe ÉTENDU** (grands-parents, parents liés entre eux via
-  leurs enfants) et **édition depuis le graphe**.
+  toujours 0/1/2 parents (la **contrainte « exactement 2 » reste NON imposée**, choix produit).
+  **R1 MULTI-ENFANTS exercé de BOUT EN BOUT — ISOLATION STRICTE livrée s53** : R1 était jusque-là exercé
+  en LECTURE (graphe s38) mais **jamais de bout en bout à l'écriture** — toute la série s44→s52 (délégation,
+  échange, imprévu, digest) était **MONO-ENFANT** (reliquat s30). s53 peuple le store de **≥2 enfants** et
+  prouve l'**isolation stricte** sur **TOUS** les chemins d'écriture ET de lecture. **`EnfantId` porté et
+  propagé de bout en bout** — période (`PeriodeSnapshot.EnfantId`), **transfert SAISI** (`Transfert.EnfantId`,
+  s29, était dé-scopé), **cycle de fond** (`DefinirCycle` par enfant), **slots « où »**, **reprise/annulation**
+  (`AnnulerDelegation`) — via **Option A** : l'`EnfantId` est **hérité de l'enfant courant du sélecteur** (s30),
+  **affiché en LECTURE SEULE** dans les dialogs (« Pour : X (sélection courante) »), **jamais un champ de choix**.
+  **Résolution STRICTEMENT filtrée par enfant** : `GrilleAgendaQuery.Projeter(ancre, vue, enfantId)` — aucun
+  repli global/`''` ; un enfant **sans cycle propre → NEUTRE** (repli s13, plus jamais le cycle partagé legacy
+  `''`, désormais **inerte**). La **cloche et le journal restent TRANSVERSES par design** (P3 : ils signalent
+  QU'un changement a eu lieu, tous enfants) ; le **digest s50 est FILTRÉ** par l'enfant sélectionné. Le
+  **sélecteur d'enfant s30 est câblé** (réemploi, **aucune surface de lecture neuve**) ; l'**onglet Cycle de la
+  config a son propre sélecteur d'enfant** (cycle par enfant, familles recomposées). Prouvé **store réel** sur
+  **deux adaptateurs InMemory + Mongo durable** *(détail cycle/résolution :
+  [`periodes-et-cycle-de-fond.md`](periodes-et-cycle-de-fond.md))*. **CONSÉQUENCE UX** : les docs Mongo cycle
+  `EnfantId=''`/`undefined` sont **inertes** ; un enfant dont le cycle n'a jamais été configuré **par enfant**
+  affiche NEUTRE → le foyer doit configurer le cycle de **CHAQUE** enfant. **Reste ouvert** : contrainte R3
+  imposée à l'écriture (non traitée), **VUE multi-enfants SIMULTANÉE** (lanes/colonnes, surface de lecture
+  neuve), **imprévu/échange multi-enfant**, **nettoyage optionnel** des données legacy cycle `''`/`undefined`,
+  **graphe ÉTENDU** (grands-parents, parents liés entre eux via leurs enfants) et **édition depuis le graphe**,
+  **suppression d'un enfant** + borne défensive R1 au Delete.
 - **R4 — Acteurs « autres » ajoutables, éditables et supprimables.**
 - **R5 — Édition des acteurs (noms + couleurs)** : grille relue immédiatement, store vivant partout,
   type surfacé lecture seule. Distincte de la durabilité (R30). **Précisé s19** : sélecteurs des

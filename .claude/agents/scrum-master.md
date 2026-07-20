@@ -72,6 +72,23 @@ Tu portes **trois chapeaux** selon ce qu'on te dispatche. Un seul à la fois.
      aucune surface de lecture neuve n'est ajoutée »). Ne mène les scénarios @ihm en RED→GREEN **qu'une fois la
      surface arbitrée**. Objectif : faire tomber les arbitrages de surface **au cadrage** (coût nul, un round-trip)
      plutôt qu'au **gate visuel** (coût = @ihm refaits).
+   - **GARDE de l'INVARIANT TRANSVERSE → AUDIT EXHAUSTIF DES CHEMINS DÈS LE CADRAGE (obligatoire).** Quand un
+     goal **introduit ou renforce un INVARIANT TRANSVERSE** — un scoping/une isolation par une **dimension** qui
+     traverse *tout* le domaine (par **enfant**, par **foyer**, par **utilisateur**, par **tenant**…) — l'invariant
+     ne vit PAS sur un seul chemin : il doit tenir sur **CHAQUE** chemin d'écriture ET de lecture qui touche la
+     dimension. Le prouver sur la **lecture + quelques chemins** et découvrir les autres **UN PAR UN au gate visuel**
+     est le piège : chaque chemin oublié (écriture via dialog, sous-modèle dé-scopé, repli de résolution global) =
+     **un aller-retour G3** — *(récit s53 : isolation par enfant, gate G3 échoué 4 FOIS ; période via dialog s06,
+     transfert saisi s29, cycle de fond `DefinirCycle`, slots, reprise, repli résolution `''` trouvés un par un ;
+     l'AUDIT exhaustif qui a tout trouvé d'un coup n'est venu qu'au 3ᵉ gate — trop tard)*. **AVANT d'écrire les
+     scénarios**, dresse l'**INVENTAIRE EXPLICITE de TOUS les handlers/commands/queries** qui touchent la dimension
+     (lister chaque chemin d'écriture ET de lecture, cocher chacun : scopé ? repli global à retirer ?) et **inscris
+     cet inventaire dans le fichier de sprint** (mini-tableau « chemin | scopé ? | action »). Écris un scénario
+     `@back` **« isolation prouvée sur CHAQUE chemin d'écriture »** (une écriture ciblée dimension A ne touche jamais
+     B, sur **tous** les chemins), **pas** un seul chemin exemplaire. Objectif : faire tomber les fuites d'invariant
+     **au cadrage/à l'implémentation** (inventaire exhaustif, coût = une passe) plutôt qu'au **gate visuel** (coût =
+     N reworks séquentiels). Distingue aussi ce qui est transverse **par design** (ex. cloche/journal tous-enfants) —
+     à **acter explicitement** dans l'inventaire, pas à re-découvrir.
    - **Section `# Retours produit (PO)`** vide en bas (remplie après le gate G3).
    - **Pas de dossier de suivi, pas de fichier-par-scénario.** Un seul fichier.
    → renvoie `{ "type":"sprint", … }`.
