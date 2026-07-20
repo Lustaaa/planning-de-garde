@@ -49,8 +49,7 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
         var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
 
-        new CycleDeFondMongo(ConnectionString, _baseDeTest)
-            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+        SemerCyclePartage(alice, bob);
 
         // Given — Tom a sa propre surcharge (Carla) le jour J, durable.
         new MongoPeriodeRepository(ConnectionString, _baseDeTest).Enregistrer(
@@ -85,8 +84,7 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
         var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
 
-        new CycleDeFondMongo(ConnectionString, _baseDeTest)
-            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+        SemerCyclePartage(alice, bob);
 
         // Tom a sa surcharge (Carla) le jour J.
         new MongoPeriodeRepository(ConnectionString, _baseDeTest).Enregistrer(
@@ -123,8 +121,7 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
         var david = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("David")).Valeur!.ActeurId;
 
-        new CycleDeFondMongo(ConnectionString, _baseDeTest)
-            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+        SemerCyclePartage(alice, bob);
 
         var delegation = new DeleguerRecuperationHandler(
             GrilleNeuve(), new MongoPeriodeRepository(ConnectionString, _baseDeTest), new ConfigurationFoyerMongo(ConnectionString, _baseDeTest));
@@ -151,8 +148,7 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
         var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
 
-        new CycleDeFondMongo(ConnectionString, _baseDeTest)
-            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+        SemerCyclePartage(alice, bob);
 
         // Léa surchargée aujourd'hui (Carla), Tom résolu par le fond (Alice).
         new MongoPeriodeRepository(ConnectionString, _baseDeTest).Enregistrer(
@@ -208,8 +204,7 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
         var bob = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bob")).Valeur!.ActeurId;
         var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
 
-        new CycleDeFondMongo(ConnectionString, _baseDeTest)
-            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+        SemerCyclePartage(alice, bob);
 
         // When — affecter une période (Carla) le jour J EN VUE de Léa via le use case d'écriture RÉEL (Mongo).
         var resultat = new AffecterPeriodeHandler(
@@ -272,6 +267,16 @@ public sealed class Scenario53_MultiEnfantsMongoTests : IDisposable
     private sealed class FakeNotificateurPlanningApi : INotificateurPlanning
     {
         public void NotifierMiseAJour() { }
+    }
+
+    /// <summary>Sème le MÊME cycle de fond pour Léa ET Tom (s53 : chaque enfant a son cycle propre ; depuis le
+    /// gate G3 4e passage la résolution ne retombe plus sur le bucket partagé "" — on sème donc par enfant).</summary>
+    private void SemerCyclePartage(string index0, string index1)
+    {
+        var cycle = new CycleDeFond(2, new Dictionary<int, string> { [0] = index0, [1] = index1 });
+        var repo = new CycleDeFondMongo(ConnectionString, _baseDeTest);
+        repo.DefinirCycle(cycle, LeaId);
+        repo.DefinirCycle(cycle, TomId);
     }
 
     public void Dispose()

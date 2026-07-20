@@ -61,7 +61,7 @@ public sealed class FrontWasmDigestClocheSuitEnfantRuntimeTests : TestContext
         using var api = new ApiDistanteFactory();
         // Given — 2e enfant + cycle partagé N=2 (Alice/Bruno) + surcharge Léa aujourd'hui (Alice, alors que le fond est Bruno).
         api.Services.GetRequiredService<IEditeurEnfants>().Ajouter(TomId, "Tom");
-        GrilleRuntimeHarness.SemerCycle(api, new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }));
+        var _cyc = new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }); GrilleRuntimeHarness.SemerCycle(api, _cyc); GrilleRuntimeHarness.SemerCycle(api, _cyc, TomId);
         api.Services.GetRequiredService<IPeriodeRepository>().Enregistrer(
             PeriodeDeGarde.Affecter("parent-a", Lundi_29_06_2026, Lundi_29_06_2026, LeaId).Valeur!);
         // Une notification TRANSVERSE (délégation concernant parent-a, à propos de Léa) : elle doit rester visible

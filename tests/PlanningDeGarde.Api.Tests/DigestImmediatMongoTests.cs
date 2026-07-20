@@ -49,7 +49,7 @@ public sealed class DigestImmediatMongoTests : IDisposable
         var parentB = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bruno")).Valeur!.ActeurId;
 
         var cycle = new CycleDeFondMongo(ConnectionString, _baseDeTest);
-        cycle.DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = parentA, [1] = parentB }));
+        var _cd = new CycleDeFond(2, new Dictionary<int, string> { [0] = parentA, [1] = parentB }); cycle.DefinirCycle(_cd); cycle.DefinirCycle(_cd, "enfant-lea");
 
         var periodes = new MongoPeriodeRepository(ConnectionString, _baseDeTest);
         periodes.Enregistrer(PeriodeDeGarde.Affecter(parentB,
@@ -97,7 +97,7 @@ public sealed class DigestImmediatMongoTests : IDisposable
         var parentB = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bruno")).Valeur!.ActeurId;
 
         var cycle = new CycleDeFondMongo(ConnectionString, _baseDeTest);
-        cycle.DefinirCycle(new CycleDeFond(1, new Dictionary<int, string> { [0] = parentA }));
+        var _cd1 = new CycleDeFond(1, new Dictionary<int, string> { [0] = parentA }); cycle.DefinirCycle(_cd1); cycle.DefinirCycle(_cd1, "enfant-lea");
 
         var transferts = new MongoTransfertRepository(ConnectionString, _baseDeTest);
         transferts.Enregistrer(Transfert.Definir(parentA, parentB, "ecole",

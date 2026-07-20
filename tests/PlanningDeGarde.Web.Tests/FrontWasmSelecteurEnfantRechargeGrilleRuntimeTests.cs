@@ -65,7 +65,7 @@ public sealed class FrontWasmSelecteurEnfantRechargeGrilleRuntimeTests : TestCon
         using var api = new ApiDistanteFactory();
         // Given — un 2e enfant (Tom) dans le référentiel réel + un cycle de fond partagé N=2 (Alice/Bruno).
         api.Services.GetRequiredService<IEditeurEnfants>().Ajouter(TomId, "Tom");
-        GrilleRuntimeHarness.SemerCycle(api, new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }));
+        var _cyc = new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }); GrilleRuntimeHarness.SemerCycle(api, _cyc); GrilleRuntimeHarness.SemerCycle(api, _cyc, TomId);
         // Léa surchargée le 01/07 (Alice) alors que le FOND ce jour-là est Bruno → les deux enfants divergent.
         api.Services.GetRequiredService<IPeriodeRepository>().Enregistrer(
             PeriodeDeGarde.Affecter("parent-a", Mercredi_01_07_2026, Mercredi_01_07_2026, LeaId).Valeur!);

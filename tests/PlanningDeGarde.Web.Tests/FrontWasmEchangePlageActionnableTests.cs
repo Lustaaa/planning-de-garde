@@ -105,8 +105,8 @@ public sealed class FrontWasmEchangePlageActionnableTests : TestContext
         using var scope = api.Services.CreateScope();
         var projection = scope.ServiceProvider.GetRequiredService<GrilleAgendaQuery>();
         foreach (var d in new[] { J1, J2, J3 })
-            Assert.Equal("Alice", projection.Projeter(d).Jours.Single(j => j.Date == d).NomResponsable);
-        Assert.NotNull(projection.Projeter(J1).Jours.Single(j => j.Date == J1).Transfert);
-        Assert.NotNull(projection.Projeter(J3Plus1).Jours.Single(j => j.Date == J3Plus1).Transfert);
+            Assert.Equal("Alice", projection.Projeter(d, VuePlanning.QuatreSemaines, GrilleRuntimeHarness.EnfantParDefaut).Jours.Single(j => j.Date == d).NomResponsable);
+        Assert.NotNull(projection.Projeter(J1, VuePlanning.QuatreSemaines, GrilleRuntimeHarness.EnfantParDefaut).Jours.Single(j => j.Date == J1).Transfert);
+        Assert.NotNull(projection.Projeter(J3Plus1, VuePlanning.QuatreSemaines, GrilleRuntimeHarness.EnfantParDefaut).Jours.Single(j => j.Date == J3Plus1).Transfert);
     }
 }

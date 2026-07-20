@@ -32,7 +32,7 @@ public class Scenario53_S2_DelegationCibleeNEcritRienSurLautre
             new FakeSlotRepository(), periodes,
             new FakePaletteCouleurs(new Dictionary<string, string> { [PA] = "bleu", [PB] = "orange", [PC] = "vert" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [PA] = "Alice", [PB] = "Bob", [PC] = "Carla" }),
-            new FakeReferentielCycleDeFond(CyclePartage),
+            new FakeReferentielCycleDeFond(CyclePartage, LeaId, TomId),
             new FakeEnumerationActeursFoyer(PA, PB, PC));
 
     private static JourCase Case(GrilleAgendaQuery grille, string enfantId)
@@ -85,7 +85,7 @@ public class Scenario53_S2_DelegationCibleeNEcritRienSurLautre
         var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
 
         var cycle = new CycleDeFondEnMemoire();
-        cycle.DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+        var cycleDef = new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }); cycle.DefinirCycle(cycleDef, "enfant-lea"); cycle.DefinirCycle(cycleDef, "enfant-tom");
 
         var periodes = new InMemoryPeriodeRepository();
         var grille = new GrilleAgendaQuery(

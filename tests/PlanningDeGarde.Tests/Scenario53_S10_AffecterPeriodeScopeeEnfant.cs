@@ -32,7 +32,7 @@ public class Scenario53_S10_AffecterPeriodeScopeeEnfant
         var carla = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Carla")).Valeur!.ActeurId;
 
         var cycle = new CycleDeFondEnMemoire();
-        cycle.DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }));
+        var cycleDef = new CycleDeFond(2, new Dictionary<int, string> { [0] = alice, [1] = bob }); cycle.DefinirCycle(cycleDef, "enfant-lea"); cycle.DefinirCycle(cycleDef, "enfant-tom");
 
         var periodes = new InMemoryPeriodeRepository();
         var grille = new GrilleAgendaQuery(

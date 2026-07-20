@@ -33,7 +33,7 @@ public class Scenario47_S5_ProposerEchangeSansEcriture
             new FakeSlotRepository(), periodes,
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = "bleu", [ParentB] = "orange" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = "Alice", [ParentB] = "Bruno" }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB())),
+            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB()), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB));
 
     private static JourCase CaseDuJour(GrilleAgendaQuery grille, DateOnly jour)
@@ -83,7 +83,7 @@ public class Scenario47_S5_ProposerEchangeSansEcriture
         var brunoId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bruno")).Valeur!.ActeurId;
 
         var cycle = new CycleDeFondEnMemoire();
-        cycle.DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = aliceId, [1] = brunoId }));
+        var cycleDef = new CycleDeFond(2, new Dictionary<int, string> { [0] = aliceId, [1] = brunoId }); cycle.DefinirCycle(cycleDef); cycle.DefinirCycle(cycleDef, LeaId);
 
         var periodes = new InMemoryPeriodeRepository();
         var propositions = new InMemoryPropositionEchangeRepository();

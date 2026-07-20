@@ -52,7 +52,7 @@ public sealed class FrontWasmGrilleSuppressionTempsReelTests : TestContext
         using var api = new ApiDistanteFactory();
         GrilleRuntimeHarness.SemerPeriode(api, "grand-pere", Mardi_16_06_2026, Mardi_16_06_2026);
         api.Services.GetRequiredService<IReferentielCycleDeFond>()
-            .DefinirCycle(new CycleDeFond(1, new Dictionary<int, string> { [0] = "parent-a" }));
+            .DefinirCycle(new CycleDeFond(1, new Dictionary<int, string> { [0] = "parent-a" }), GrilleRuntimeHarness.EnfantParDefaut);
 
         // Écran 2 (le « second écran ») = la grille réellement câblée à l'API, dans un TestContext distinct
         // (navigateur / DI séparés, client SignalR propre).

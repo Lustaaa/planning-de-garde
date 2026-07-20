@@ -44,8 +44,9 @@ public sealed class ProposerEchangeMongoTests : IDisposable
         var config = new ConfigurationFoyerMongo(ConnectionString, _baseDeTest);
         var parentA = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
         var parentB = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bruno")).Valeur!.ActeurId;
-        new CycleDeFondMongo(ConnectionString, _baseDeTest)
-            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = parentA, [1] = parentB }));
+        var _cyRepo = new CycleDeFondMongo(ConnectionString, _baseDeTest);
+        var _cy = new CycleDeFond(2, new Dictionary<int, string> { [0] = parentA, [1] = parentB });
+        _cyRepo.DefinirCycle(_cy); _cyRepo.DefinirCycle(_cy, "enfant-lea");
 
         // Précondition : le jour J est résolu par le fond (Alice), aucune surcharge.
         Assert.Equal(parentA, CaseDuJour(GrilleNeuve(), Mercredi_08_07_2026).ResponsableId);

@@ -148,7 +148,7 @@ public sealed class FrontWasmConfigModalsEchapFermeSansMutationTests : TestConte
         // je réaffecte la semaine 1 dans la saisie (non enregistrée).
         using var api = new ApiDistanteFactory();
         api.Services.GetRequiredService<IReferentielCycleDeFond>()
-            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }));
+            .DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }), GrilleRuntimeHarness.EnfantParDefaut);
         var (config, espion) = RendreConfig(api);
         config.WaitForState(() => config.FindAll("[data-testid='cycle-foyer']").Count == 2, TimeSpan.FromSeconds(10));
 
@@ -168,7 +168,7 @@ public sealed class FrontWasmConfigModalsEchapFermeSansMutationTests : TestConte
                 Assert.Equal(1, espion.Detachements);
             },
             TimeSpan.FromSeconds(10));
-        var cycle = api.Services.GetRequiredService<IReferentielCycleDeFond>().CycleCourant()!;
+        var cycle = api.Services.GetRequiredService<IReferentielCycleDeFond>().CycleCourant(GrilleRuntimeHarness.EnfantParDefaut)!;
         Assert.Equal("parent-b", cycle.Affectations[1]);
     }
 

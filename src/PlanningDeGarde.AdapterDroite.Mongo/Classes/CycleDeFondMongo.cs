@@ -26,10 +26,11 @@ public sealed class CycleDeFondMongo : IReferentielCycleDeFond
 
     public CycleDeFond? CycleCourant(string? enfantId = null)
     {
-        // s53 : cycle propre à l'enfant si défini, sinon repli sur le cycle partagé (clé "").
+        // ISOLATION STRICTE s53 (gate G3 4e passage) : la résolution d'un enfant NON-NULL ne lit QUE SON cycle
+        // (EnfantId == enfantId) — AUCUN repli sur le bucket partagé "" (c'était la fuite : « Charlie » sans cycle
+        // propre affichait le cycle global). Un enfant sans cycle propre → null → NEUTRE. enfantId null = legacy "".
         var cle = enfantId ?? "";
-        var doc = _cycles.Find(Builders<CycleDocument>.Filter.Eq(d => d.EnfantId, cle)).FirstOrDefault()
-            ?? _cycles.Find(Builders<CycleDocument>.Filter.Eq(d => d.EnfantId, "")).FirstOrDefault();
+        var doc = _cycles.Find(Builders<CycleDocument>.Filter.Eq(d => d.EnfantId, cle)).FirstOrDefault();
         if (doc is null)
             return null;
 

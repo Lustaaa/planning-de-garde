@@ -37,7 +37,7 @@ public class Scenario50_S2_DigestAVenirTransferts
             slots, new FakePeriodeRepository(),
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = "bleu", [ParentB] = "orange", ["ecole"] = "vert" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = Alice, [ParentB] = Bruno }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(1, new Dictionary<int, string> { [0] = ParentA })),
+            new FakeReferentielCycleDeFond(new CycleDeFond(1, new Dictionary<int, string> { [0] = ParentA }), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB),
             null,
             transferts));
@@ -113,7 +113,7 @@ public class Scenario50_S2_DigestAVenirTransferts
             new FakeSlotRepository(), periodes,
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = "bleu", [ParentB] = "orange" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = Alice, [ParentB] = Bruno }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(1, new Dictionary<int, string> { [0] = ParentA })),
+            new FakeReferentielCycleDeFond(new CycleDeFond(1, new Dictionary<int, string> { [0] = ParentA }), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB),
             null,
             new FakeTransfertRepository()));

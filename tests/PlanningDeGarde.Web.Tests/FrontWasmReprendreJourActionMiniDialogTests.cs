@@ -75,7 +75,7 @@ public sealed class FrontWasmReprendreJourActionMiniDialogTests : TestContext
         Assert.Empty(api.Services.GetRequiredService<IPeriodeRepository>().AllSnapshots());
         using var scope = api.Services.CreateScope();
         var projection = scope.ServiceProvider.GetRequiredService<GrilleAgendaQuery>();
-        var caseStore = projection.Projeter(Mercredi_08_07_2026).Jours.Single(j => j.Date == Mercredi_08_07_2026);
+        var caseStore = projection.Projeter(Mercredi_08_07_2026, VuePlanning.QuatreSemaines, GrilleRuntimeHarness.EnfantParDefaut).Jours.Single(j => j.Date == Mercredi_08_07_2026);
         Assert.Equal("Alice", caseStore.NomResponsable);
         Assert.Null(caseStore.Transfert);
     }

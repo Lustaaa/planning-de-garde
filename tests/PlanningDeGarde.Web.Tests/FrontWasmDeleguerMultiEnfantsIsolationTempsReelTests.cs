@@ -72,7 +72,7 @@ public sealed class FrontWasmDeleguerMultiEnfantsIsolationTempsReelTests : TestC
     {
         using var api = new ApiDistanteFactory();
         api.Services.GetRequiredService<IEditeurEnfants>().Ajouter(TomId, "Tom");
-        GrilleRuntimeHarness.SemerCycle(api, new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }));
+        var _cyc = new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }); GrilleRuntimeHarness.SemerCycle(api, _cyc); GrilleRuntimeHarness.SemerCycle(api, _cyc, TomId);
 
         var ecran1 = RendreEcran(api);
         var ecran2 = RendreEcran(api);

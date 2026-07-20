@@ -182,8 +182,11 @@ internal static class GrilleRuntimeHarness
     /// référentiel réel résolvant nom et couleur. Permet d'observer la re-résolution du fond à la date
     /// naviguée sans aucune saisie de période (Sc.1).
     /// </summary>
-    public static void SemerCycle(ApiDistanteFactory api, CycleDeFond cycle)
-        => api.Services.GetRequiredService<IReferentielCycleDeFond>().DefinirCycle(cycle);
+    /// <summary>Sème un cycle de fond ESTAMPILLÉ de l'enfant <paramref name="enfantId"/> (défaut = enfant seedé /
+    /// sélectionné du front, s53). Depuis le gate G3 (4e passage), la résolution d'un enfant ne retombe PLUS sur
+    /// le cycle partagé "" : un cycle doit être semé POUR chaque enfant à observer (helper appelé une fois par enfant).</summary>
+    public static void SemerCycle(ApiDistanteFactory api, CycleDeFond cycle, string enfantId = EnfantParDefaut)
+        => api.Services.GetRequiredService<IReferentielCycleDeFond>().DefinirCycle(cycle, enfantId);
 
     /// <summary>
     /// Rend la grille réelle câblée à l'API distante, à la date de référence injectée. Le hub SignalR

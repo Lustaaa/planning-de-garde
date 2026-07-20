@@ -30,7 +30,7 @@ public class Scenario48_S2_ImprevuDansLeFlux
         var aliceId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Alice")).Valeur!.ActeurId;
         var brunoId = new AjouterActeurHandler(config).Handle(new AjouterActeurCommand("Bruno")).Valeur!.ActeurId;
         var cycle = new CycleDeFondEnMemoire();
-        cycle.DefinirCycle(new CycleDeFond(2, new Dictionary<int, string> { [0] = aliceId, [1] = brunoId }));
+        var cycleDef = new CycleDeFond(2, new Dictionary<int, string> { [0] = aliceId, [1] = brunoId }); cycle.DefinirCycle(cycleDef); cycle.DefinirCycle(cycleDef, LeaId);
 
         var journal = new InMemoryJournalChangements();
         var horloge = new HorlogeFigee(new DateTime(2026, 7, 1, 8, 0, 0));

@@ -58,7 +58,7 @@ public sealed class FrontWasmAffecterPeriodeScopeeEnfantRuntimeTests : TestConte
         using var api = new ApiDistanteFactory();
         api.Services.GetRequiredService<IEditeurEnfants>().Ajouter(TomId, "Tom");
         // Cycle partagé N=2 (Alice/Bruno) : le 29/06 (ISO 27 → index 1) résout Bruno par le fond pour les deux enfants.
-        GrilleRuntimeHarness.SemerCycle(api, new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }));
+        var _cyc = new CycleDeFond(2, new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" }); GrilleRuntimeHarness.SemerCycle(api, _cyc); GrilleRuntimeHarness.SemerCycle(api, _cyc, TomId);
 
         var grille = RendreGrille(api);
         grille.WaitForElement("[data-testid='selecteur-enfant-carte']", TimeSpan.FromSeconds(10));

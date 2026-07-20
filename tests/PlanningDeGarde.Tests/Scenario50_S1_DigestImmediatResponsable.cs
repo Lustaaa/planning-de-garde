@@ -41,7 +41,7 @@ public class Scenario50_S1_DigestImmediatResponsable
             slots ?? new FakeSlotRepository(), periodes,
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = Bleu, [ParentB] = Orange, ["ecole"] = "vert" }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = Alice, [ParentB] = Bruno }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB())),
+            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB()), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB),
             null,
             transferts));
@@ -99,7 +99,7 @@ public class Scenario50_S1_DigestImmediatResponsable
             new FakeSlotRepository(), SurchargeParentBLe08(),
             new FakePaletteCouleurs(new Dictionary<string, string> { [ParentA] = Bleu, [ParentB] = Orange }),
             new FakeReferentielResponsables(new Dictionary<string, string> { [ParentA] = Alice, [ParentB] = Bruno }),
-            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB())),
+            new FakeReferentielCycleDeFond(new CycleDeFond(2, MappingPairAImpairB()), LeaId),
             new FakeEnumerationActeursFoyer(ParentA, ParentB));
         var caseGrille = grille.Projeter(Mercredi_08_07_2026, VuePlanning.QuatreSemaines)
             .Jours.Single(j => j.Date == Mercredi_08_07_2026);
