@@ -1,7 +1,7 @@
 using System.Linq;
 using Xunit;
 using FoyerWeb = PlanningDeGarde.Web.Foyer;
-using FoyerDomaine = PlanningDeGarde.Infrastructure.Foyer;
+using FoyerDomaine = PlanningDeGarde.Application.Foyer.Seed.Foyer;
 
 namespace PlanningDeGarde.Web.Tests;
 

@@ -82,7 +82,7 @@ public static class CanalEcriture
 
     /// <summary>Corps de la requête de liaison d'un enfant à un parent-acteur (s34) : l'id stable de l'enfant
     /// et l'id stable de l'acteur. Refus métier (inexistant / non-parent / 2 parents max) renvoyé ; déjà lié = neutre.</summary>
-    public sealed record LierEnfantParentRequete(string EnfantId, string ActeurId, PlanningDeGarde.Application.RoleDuLien Role = PlanningDeGarde.Application.RoleDuLien.ParentLibre);
+    public sealed record LierEnfantParentRequete(string EnfantId, string ActeurId, PlanningDeGarde.Application.Foyer.Models.RoleDuLien Role = PlanningDeGarde.Application.Foyer.Models.RoleDuLien.ParentLibre);
 
     /// <summary>Corps de la requête de retrait du lien d'un enfant vers un parent-acteur (s34) : l'id stable de
     /// l'enfant et l'id stable de l'acteur. Idempotent côté handler (parent déjà non lié = no-op qui réussit).</summary>
@@ -189,7 +189,7 @@ public static class CanalEcriture
     /// l'acteur lié au compte connecté, son nom d'affichage résolu côté serveur (« Connecté : &lt;Nom&gt; »
     /// sans recalcul côté UI), et son <b>type</b> (Admin / Parent / Autre) résolu côté serveur — le front
     /// ancre l'identité réelle de la session sur CET acteur et son type (gating suivant le type réel).</summary>
-    public sealed record SeConnecterReponse(string ActeurId, string Nom, PlanningDeGarde.Application.TypeActeur Type);
+    public sealed record SeConnecterReponse(string ActeurId, string Nom, PlanningDeGarde.Application.Foyer.Models.TypeActeur Type);
 
     /// <summary>Corps de la requête « marquer lu » de la cloche (s47) : l'utilisateur courant (id d'acteur =
     /// IdentiteEffective.Id) + l'événement à marquer, ou <c>EvenementId</c> null = marquer TOUTES ses

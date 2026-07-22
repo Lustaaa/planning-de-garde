@@ -91,8 +91,8 @@ public sealed class FrontWasmConfigGrapheFoyerEnfantRacineTests : TestContext
 
         private sealed class EnfantsVides : IEnumerationEnfants
         {
-            public System.Collections.Generic.IReadOnlyCollection<PlanningDeGarde.Application.EnfantFoyer> EnumererEnfants()
-                => System.Array.Empty<PlanningDeGarde.Application.EnfantFoyer>();
+            public System.Collections.Generic.IReadOnlyCollection<PlanningDeGarde.Application.Enfants.Ports.EnfantFoyer> EnumererEnfants()
+                => System.Array.Empty<PlanningDeGarde.Application.Enfants.Ports.EnfantFoyer>();
         }
     }
 }

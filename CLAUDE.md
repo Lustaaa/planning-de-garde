@@ -13,7 +13,7 @@ App de planning de garde d'enfants partagé entre parents/intervenants. Pilotée
 Solution `PlanningDeGarde.slnx` — 8 projets `src/` + 3 projets `tests/`.
 
 - **Domain** — modèle métier pur, aucune dépendance techno.
-- **Application** — use cases (canal requête/réponse), ports gauche/droite.
+- **Application** — use cases (canal requête/réponse), ports gauche/droite. Organisée par **`[BoundedContext]/[Technical]`** (dossiers `Handlers`/`Queries`/`Ports`/`Models`, + `Services`/`Seed` ponctuels ; **plus de dossiers `Classes/` ni `Interfaces/`**), namespaces alignés `PlanningDeGarde.Application.<BC>.<Technical>`. Carte des BC figée dans `docs/briefs/technical-changes-plan.md`. Chaque projet consommateur porte un `GlobalUsings.cs` ré-exposant ces sous-namespaces (Web/Web.Tests excluent `Foyer.Seed`).
 - **AdapterDroite.InMemory** / **AdapterDroite.Mongo** — adaptateurs de droite par techno (dépôts ; config foyer persistée Mongo).
 - **SignalR** — adaptateur de **gauche** (diffusion temps réel, lecture seule).
 - **Api** — hôte d'API **détaché** (démarre seul, expose OpenAPI + UI explorable, CORS).

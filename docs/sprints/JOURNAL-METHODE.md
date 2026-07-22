@@ -152,3 +152,13 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   *TempsReel* catalogué** dans `dev-team` (re-run ciblé pour confirmer le vert, consigne dans `notes`
   sans investiguer `src/`, ni RED ni vert-qui-ment, et signale la **montée de sévérité** au
   `scrum-master` pour prioriser le rétrofit P2). Dette + candidat +2 du backlog mis à jour.
+- 2026-07-22 — **Refonte technique hors-sprint (architecte, bypass BDD), lot 1/8** :
+  réorganisation de `PlanningDeGarde.Application` en `[BoundedContext]/[Technical]` (suppression
+  des dossiers `Classes/`+`Interfaces/`, namespaces alignés `Application.<BC>.<Technical>`, ~96
+  fichiers déplacés). Anti-churn : un `GlobalUsings.cs` par projet consommateur (ré-export des
+  sous-namespaces) plutôt qu'édition fichier par fichier. Points durs résolus : segment BC
+  `CyclesDeFond` (pluriel) pour ne pas masquer le type Domain `CycleDeFond` ; seed `Foyer`
+  (ex-namespace `Infrastructure` anormal) recalé en `Application.Foyer.Seed`, exclu des global
+  usings Web (collision `Web.Foyer`). **Impact** : carte des BC figée
+  (`docs/briefs/technical-changes-plan.md`, réutilisée par les lots Mongo/InMemory/Web), CLAUDE.md
+  « Architecture » actualisé. **920/920 vert.** Aucune règle de gestion touchée.
