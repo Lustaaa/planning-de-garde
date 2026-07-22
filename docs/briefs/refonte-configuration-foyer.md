@@ -54,6 +54,10 @@ Je pense que le lieux se rapproche d'un acteur sans role (ex : ecole, piscine, f
 
 J'aimerai que quand on arrive sur la configuration du foyer, un vue en lecture seul soit affiché comme un graph avec comme racine l'enfant.
 
+## Général
+
+Pour toutes les valeurs affiché qui sont affiché en lecture doivent permettre l'édition fantome. Au clique sur la valeur = edition du champ.
+
 ## Bonus (second sprint)
 
 - Pouvoir configurer plusieurs enfants.

@@ -37,6 +37,9 @@ desktop.ini
 # Éditeurs / IDE
 .idea/
 .vscode/
+.vs/
+*.csproj.user
+*.user
 *.swp
 *~
 
