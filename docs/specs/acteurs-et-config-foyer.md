@@ -79,7 +79,7 @@ acteur désassocie** ses comptes (repli propre, `ActeurId = null`, **jamais de c
 un acteur absent) ; la **désassociation est idempotente** (deux fois = no-op qui réussit).
 
 Une **connexion locale réelle** est **livrée** *(s23, auth tranche 2a)* : une **commande applicative**
-(canal requête/réponse, `SeConnecterCommand` / `SeConnecterHandler`, canal `POST /api/canal/se-connecter`)
+(canal requête/réponse, `SeConnecterCommand` / `SeConnecterHandler`, canal `POST /api/session`)
 ouvre une **session serveur** par **email** d'un `CompteUtilisateur` **Actif** ; le **nom / l'acteur est
 résolu côté serveur** (l'appelant ne fournit que l'email). **Gardes de refus (aucune session, motif
 clair)** : **email inconnu** (aucun compte) ; **compte non activé** (statut `Inactif`, défaut de création
@@ -95,7 +95,7 @@ l'acteur d'un compte) — **aucune régression** du chemin non connecté ni de l
 
 L'**activation de compte** (`Inactif → Actif`) est **livrée** *(s24, auth tranche 2 — prise en main)*,
 levant le **prérequis d'usabilité** : une **commande applicative** (`ActiverCompteCommand` /
-`ActiverCompteHandler`, canal `POST /api/canal/activer-compte`) cible un compte par son **id stable
+`ActiverCompteHandler`, canal `POST /api/foyer/comptes/{id}/activation`) cible un compte par son **id stable
 opaque** (s22) et fait passer le statut `Inactif → Actif` ; la mutation est portée par l'agrégat
 **`CompteUtilisateur.Activer()`** *(Domain pur, no-op idempotent si déjà Actif)* et réutilise le port
 d'écriture **`IEditeurComptes`** (s22, InMemory + Mongo) — **aucun nouvel agrégat, aucun store neuf**.
@@ -646,7 +646,7 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 
 - **R12 — Connexion locale, session serveur & acteur par défaut = utilisateur connecté** *(livré s23,
   auth tranche 2a)* : **connexion** par **email** d'un `CompteUtilisateur` **Actif** via commande
-  applicative (`SeConnecterCommand` / `SeConnecterHandler`, canal `POST /api/canal/se-connecter`) ; le
+  applicative (`SeConnecterCommand` / `SeConnecterHandler`, canal `POST /api/session`) ; le
   **nom / l'acteur est résolu côté serveur** (l'appelant ne fournit que l'email). **Refus (aucune session,
   motif clair)** : **email inconnu** ; **compte non activé** (statut `Inactif`). La **session serveur**
   (`SessionOuverte`, état d'**hôte / requête**, **pas** un agrégat durable) ancre l'**identité réelle** sur
@@ -664,7 +664,7 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
 
 - **R13 — Activation de compte, page de connexion dédiée & menu utilisateur** *(livré s24, auth tranche 2 —
   prise en main + UX)* : **activation** `Inactif → Actif` par **commande applicative** (`ActiverCompteCommand`
-  / `ActiverCompteHandler`, canal `POST /api/canal/activer-compte`) ciblant un compte par **id stable opaque**
+  / `ActiverCompteHandler`, canal `POST /api/foyer/comptes/{id}/activation`) ciblant un compte par **id stable opaque**
   (s22) ; mutation portée par **`CompteUtilisateur.Activer()`** (Domain pur, **no-op idempotent** si déjà
   Actif), réutilisant le port **`IEditeurComptes`** (s22, InMemory + Mongo) — **aucun agrégat ni store neuf**.
   **Gardes** : compte **inconnu** → refus motif clair, **aucune mutation** ; **déjà Actif** → **no-op qui

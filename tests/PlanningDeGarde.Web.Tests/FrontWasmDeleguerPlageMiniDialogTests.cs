@@ -3,7 +3,6 @@ using System.Linq;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Web.Components.Pages;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
@@ -13,7 +12,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// (ouvert depuis l'entrée <c>action-deleguer</c> du <c>menu-actions-case</c>, s44) est ENRICHI d'un champ
 /// « jusqu'au » (date de fin de plage). Son DÉFAUT = le jour cliqué (fin = début) → la délégation d'UN jour
 /// (s44) reste STRICTEMENT inchangée. Choisir un acteur recevant + une date de fin postérieure puis valider
-/// émet la commande de délégation <c>[début..fin]</c> via le CANAL D'ÉCRITURE (POST /api/canal/deleguer-recuperation)
+/// émet la commande de délégation <c>[début..fin]</c> via le CANAL D'ÉCRITURE (POST /api/delegations)
 /// qui COMPOSE l'écriture surcharge MULTI-JOURS (s06) : CHAQUE case de la plage converge vers le délégataire.
 ///
 /// Anti « vert qui ment » : la grille est câblée à l'API distante RÉELLE (store réel, projection réelle,

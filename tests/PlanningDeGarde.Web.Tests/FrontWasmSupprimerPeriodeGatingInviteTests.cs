@@ -14,7 +14,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// « Supprimer une période » du menu clic-case est gardée par le déclencheur d'écriture <b>mutualisé</b>
 /// (<see cref="SessionPlanning.EstParent"/>) : en consultation seule, le clic n'ouvre aucun menu, donc
 /// aucune entrée de suppression ni commande possible. On rend la <b>vraie</b> grille
-/// <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
+/// <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
 /// (<see cref="ApiDistanteFactory"/>, store réel).
 ///
 /// Anti « vert vacuous » : <b>contrôle positif en regard</b> dans le même test — on prouve d'abord qu'un

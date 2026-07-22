@@ -42,33 +42,11 @@ public class Sprint41Sc2_BorneDernierAdmin
         Assert.Contains(ParentA, administration.Admins);         // demeure admin, aucune mutation
     }
 
-    // ---------- Test #2 — Domain : dé-désigner l'un de DEUX admins réussit (il en reste un) ----------
-    [Fact]
-    public void Domain_Should_Reussir_When_il_reste_au_moins_un_admin_apres_le_retrait()
-    {
-        var administration = AdministrationFoyer.FromSnapshot(new[] { ParentA, ParentB });
-
-        var resultat = administration.DeDesignerAdmin(ParentA);
-
-        Assert.True(resultat.EstSucces);
-        Assert.DoesNotContain(ParentA, administration.Admins);
-        Assert.Contains(ParentB, administration.Admins); // il reste un admin
-    }
-
-    // ---------- Test #3 — Domain : le no-op idempotent ne déclenche PAS la borne ----------
-    // Un acteur DÉJÀ non-admin, même s'il ne reste qu'un seul autre admin, reste un no-op qui réussit
-    // (la borne ne s'applique qu'à un RETRAIT effectif du dernier admin, pas à une absence).
-    [Fact]
-    public void Domain_Should_Rester_no_op_When_l_acteur_deja_non_admin_et_un_seul_autre_admin_subsiste()
-    {
-        var administration = AdministrationFoyer.FromSnapshot(new[] { ParentB });
-
-        var resultat = administration.DeDesignerAdmin(ParentA); // non-admin
-
-        Assert.True(resultat.EstSucces);
-        Assert.Single(administration.Admins);
-        Assert.Contains(ParentB, administration.Admins);
-    }
+    // NOTE (Lot 7 — audit doublons) : les cas « dé-désigner l'un de DEUX admins réussit » et
+    // « no-op idempotent (acteur déjà non-admin) » étaient prouvés ICI par des faits STRICTEMENT
+    // identiques (setup + act + assertions) à Sprint41Sc1_DeDesignerAdmin (Domain_Should_Retirer_
+    // l_admin_cible / Domain_Should_Reussir_en_no_op_sans_mutation). Retirés d'ici : Sc1 en reste
+    // le gardien (dé-désignation nominale + idempotence). Ce fichier se concentre sur la BORNE.
 
     // ================= Frontière Application (handler + ports + store) =================
 
@@ -88,19 +66,7 @@ public class Sprint41Sc2_BorneDernierAdmin
         Assert.Single(admins.EnumererAdmins());
     }
 
-    // ---------- Acceptation — dé-désigner l'un de deux admins réussit et persiste ----------
-    [Fact]
-    public void Acceptation_Should_Reussir_When_on_de_designe_l_un_de_deux_admins()
-    {
-        var admins = new AdminsFoyerEnMemoire();
-        admins.DesignerAdmin(ParentA);
-        admins.DesignerAdmin(ParentB);
-        var handler = new DeDesignerAdminHandler(admins, admins, Acteurs());
-
-        var resultat = handler.Handle(new DeDesignerAdminCommand(ParentA));
-
-        Assert.True(resultat.EstSucces);
-        Assert.DoesNotContain(ParentA, admins.EnumererAdmins());
-        Assert.Contains(ParentB, admins.EnumererAdmins());
-    }
+    // NOTE (Lot 7 — audit doublons) : l'acceptation « dé-désigner l'un de deux admins réussit et
+    // persiste » était un fait STRICTEMENT identique à Sprint41Sc1_DeDesignerAdmin
+    // (Acceptation_Should_Retirer_l_admin_et_persister). Retiré d'ici : Sc1 en reste le gardien.
 }

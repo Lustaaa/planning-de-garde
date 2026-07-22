@@ -63,7 +63,7 @@ public sealed class CorsOrigineFrontTests
         using var hote = new ApiCorsFrontFactory();
         var client = hote.CreateClient();
 
-        var requete = new HttpRequestMessage(HttpMethod.Post, "/api/canal/poser-slot")
+        var requete = new HttpRequestMessage(HttpMethod.Post, "/api/slots")
         {
             Content = JsonContent.Create(PoseLea),
         };
@@ -88,7 +88,7 @@ public sealed class CorsOrigineFrontTests
         using var hote = new ApiCorsFrontFactory();
         var client = hote.CreateClient();
 
-        var requete = new HttpRequestMessage(HttpMethod.Post, "/api/canal/poser-slot")
+        var requete = new HttpRequestMessage(HttpMethod.Post, "/api/slots")
         {
             Content = JsonContent.Create(PoseLea),
         };

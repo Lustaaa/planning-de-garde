@@ -40,7 +40,7 @@ rechargés → plus rapide et moins cher.
 |---|---|
 | Product backlog | `docs/BACKLOG.md` (vivant : retours persistants, source des goals) |
 | Sprint Planning | `/planning` — 3-4 goals candidats (G2) + fichier de sprint léger |
-| Sprint goal | le **goal** tranché par le PO en G2 (~1h IA, tranche verticale) |
+| Sprint goal | le **goal** tranché par le PO en G2 (~2h IA, tranche verticale) |
 | Sprint (dev) | `/sprint` — `dev-team` implémente tous les scénarios |
 | Increment + DoD | le **gate visuel G3** de `/sprint` (back + IHM up, testé par le PO) |
 | Sprint Review | la validation PO du gate G3 |

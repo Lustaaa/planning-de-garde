@@ -18,7 +18,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// un <b>accusé non bloquant « Période modifiée »</b> et fait <b>re-résoudre la case + la légende</b> à la
 /// relecture de la grille distante.
 ///
-/// On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à
+/// On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à
 /// une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel, projection + référentiel
 /// réels). Anti « vert qui ment » : le baseline « Nina la nounou » est asserté avant ; si le formulaire ne
 /// se pré-remplit pas, si l'édition ne transite pas jusqu'au store distant, ou si la grille ne se re-résout

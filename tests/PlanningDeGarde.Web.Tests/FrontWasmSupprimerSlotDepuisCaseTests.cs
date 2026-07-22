@@ -15,7 +15,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// (<c>POST /api/canal/supprimer-slot</c>), lève un <b>accusé non bloquant « Slot supprimé »</b> et fait
 /// <b>disparaître le slot de la case</b> à la relecture de la grille distante — les autres slots restent.
 ///
-/// On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à
+/// On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à
 /// une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel, projection réelle). Anti
 /// « vert qui ment » : le baseline (les deux slots rendus) est asserté avant ; si la dialog ne liste pas,
 /// si la suppression ne transite pas jusqu'au store distant, ou si la grille ne se relit pas, l'observable

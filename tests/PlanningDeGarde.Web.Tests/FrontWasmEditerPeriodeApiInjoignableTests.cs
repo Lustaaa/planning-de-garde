@@ -16,7 +16,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// clair <b>dans</b> la dialog, <b>laisser la dialog ouverte</b>, ne <b>rien</b> appliquer (la période reste
 /// « Nina la nounou », la case et la légende inchangées), et n'effectuer <b>aucune mise en file ni rejeu</b>.
 ///
-/// On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à
+/// On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à
 /// l'<b>API distante réelle</b> ; seule l'écriture d'édition est coupée au transport (la lecture des
 /// périodes et des acteurs de la dialog transite normalement, comme en condition réelle). Anti « vert qui
 /// ment » : la période est observée toujours affectée à « nounou » dans le store distant après l'échec.
@@ -32,7 +32,7 @@ public sealed class FrontWasmEditerPeriodeApiInjoignableTests : TestContext
         // transport) ; une période « Nina la nounou » attribue le mardi 16/06/2026.
         using var api = new ApiDistanteFactory();
         GrilleRuntimeHarness.SemerPeriode(api, "nounou", Mardi_16_06_2026, Mardi_16_06_2026);
-        var client = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "editer-periode");
+        var client = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/periodes/");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mardi_16_06_2026, client);
 
         // … baseline : la case du 16/06 porte « Nina la nounou ».

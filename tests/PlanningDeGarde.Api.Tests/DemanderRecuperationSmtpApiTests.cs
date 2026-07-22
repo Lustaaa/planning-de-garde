@@ -11,7 +11,7 @@ namespace PlanningDeGarde.Api.Tests;
 /// Sprint 28 — S1 — Reset mot de passe, volet 1 (@back, <b>preuve runtime réelle</b>). L'adaptateur
 /// SMTP concret (<c>EnvoiMailSmtp</c>) est câblé en DI derrière le port <see cref="IEnvoiMail"/> et
 /// remplace la doublure s25 : une demande de récupération émise via le canal d'écriture
-/// (<c>POST /api/canal/demander-recuperation</c>) doit provoquer la remise d'un <b>vrai mail</b> capté
+/// (<c>POST /api/comptes/recuperation</c>) doit provoquer la remise d'un <b>vrai mail</b> capté
 /// par le serveur SMTP de développement (Smtp4dev, Docker), adressé au compte et porteur d'un jeton de
 /// réinitialisation — tandis que la <b>réponse au client reste NEUTRE</b> (aucun jeton, aucun indice
 /// d'existence : anti-énumération). Aucune doublure sur le chemin observé (le canal mail est réel).
@@ -46,7 +46,7 @@ public sealed class DemanderRecuperationSmtpApiTests
             .Creer("compte-papa", Email, StatutCompte.Actif, "acteur-papa");
 
         // When — la demande de récupération est émise via le canal d'écriture.
-        var reponse = await client.PostAsJsonAsync("/api/canal/demander-recuperation", new { Email });
+        var reponse = await client.PostAsJsonAsync("/api/comptes/recuperation", new { Email });
 
         // Then #3 — réponse NEUTRE : succès sec, sans jeton ni indice d'existence dans le corps.
         Assert.True(reponse.IsSuccessStatusCode, $"statut de succès attendu, obtenu {(int)reponse.StatusCode}.");

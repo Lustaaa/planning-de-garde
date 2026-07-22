@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Adaptateur de droite — SÉCURITÉ : hachage de mot de passe (PBKDF2, BCL) réalisant
+       IHacheurMotDePasse, et fournisseur OAuth (placeholder Google non câblé — dette de câblage
+       assumée) réalisant IFournisseurOAuth. Organisé en sous-dossiers MotDePasse/ et OAuth/, sous
+       le namespace unique PlanningDeGarde.AdapterDroite.Securite. DI-agnostique : le câblage vit
+       dans la composition root (PlanningDeGarde.Infrastructure). Issu de la scission d'Infrastructure. -->
+  <ItemGroup>
+    <ProjectReference Include="..\PlanningDeGarde.Application\PlanningDeGarde.Application.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 namespace PlanningDeGarde.Web;
 
 /// <summary>
-/// Port d'ergonomie de surface (finition PO s33) — écoute la touche <b>Échap</b> au niveau <b>document</b>
+/// Port d'ergonomie de surface (finition PO) — écoute la touche <b>Échap</b> au niveau <b>document</b>
 /// (jamais un div qui devrait être focus : un <c>@onkeydown</c> sur un élément non focus ne reçoit rien en
 /// navigateur réel — c'est le piège du vert-qui-ment). Une modal ouverte <see cref="EcouterAsync"/> et
 /// <b>dispose</b> l'abonnement à sa fermeture pour détacher l'écouteur (aucune fuite, aucun double abonnement).
@@ -21,7 +21,7 @@ public interface IEcouteurEchapModal
 
 /// <summary>
 /// Adaptateur JS interop du port : délègue au module <c>window.pdgModal</c> défini inline dans index.html.
-/// <c>attacher</c> pose un <c>document.addEventListener('keydown', …)</c> filtrant Échap et rappelant .NET ;
+/// <c>attacher</c> pose un <c>document.addEventListener('keydown', …)</c> filtrant Échap et rappelant.NET ;
 /// <c>detacher</c> retire l'écouteur. Adaptateur de bord : jamais doublé côté test (on double le port).
 /// </summary>
 public sealed class EcouteurEchapModalJs : IEcouteurEchapModal
@@ -39,7 +39,7 @@ public sealed class EcouteurEchapModalJs : IEcouteurEchapModal
         return new Abonnement(_js, reference, id);
     }
 
-    /// <summary>Pont .NET rappelé depuis le listener document JS : chaque appui Échap invoque le callback fourni.</summary>
+    /// <summary>Pont.NET rappelé depuis le listener document JS : chaque appui Échap invoque le callback fourni.</summary>
     private sealed class PontEchap
     {
         private readonly Func<Task> _onEchap;

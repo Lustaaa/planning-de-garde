@@ -58,21 +58,21 @@ public sealed class SupprimerActeurMongoIntegrationTests : IDisposable
             await AjouterActeur(c1, "Parent A", "bleu");
             await AjouterActeur(c1, "Parent B", "orange");
 
-            var ajout = await c1.PostAsJsonAsync("/api/canal/ajouter-acteur", new { Nom = "Nounou", Couleur = "vert" });
+            var ajout = await c1.PostAsJsonAsync("/api/foyer/acteurs", new { Nom = "Nounou", Couleur = "vert" });
             Assert.True(ajout.IsSuccessStatusCode, $"l'ajout de Nounou doit aboutir, statut {(int)ajout.StatusCode}.");
 
             // Les ids stables sont générés côté serveur : on les relit via l'énumération du store.
-            var apresAjout = await c1.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+            var apresAjout = await c1.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
             Assert.NotNull(apresAjout);
             nounouId = apresAjout.Single(a => a.Nom == "Nounou").Id;
             parentAId = apresAjout.Single(a => a.Nom == "Parent A").Id;
             parentBId = apresAjout.Single(a => a.Nom == "Parent B").Id;
 
-            var suppression = await c1.PostAsJsonAsync("/api/canal/supprimer-acteur", new { ActeurId = nounouId });
+            var suppression = await c1.DeleteAsync($"/api/foyer/acteurs/{nounouId}");
             Assert.True(suppression.IsSuccessStatusCode, $"la suppression de Nounou doit aboutir, statut {(int)suppression.StatusCode}.");
 
             // En session : Nounou a déjà quitté le store relu.
-            var apresSuppression = await c1.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+            var apresSuppression = await c1.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
             Assert.DoesNotContain(apresSuppression!, a => a.Id == nounouId);
         }
 
@@ -82,7 +82,7 @@ public sealed class SupprimerActeurMongoIntegrationTests : IDisposable
 
         // Then — après redémarrage, le store durable relu ne comporte toujours pas Nounou,
         // mais les acteurs témoins (Parent A, Parent B) sont toujours présents.
-        var acteurs = await c2.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+        var acteurs = await c2.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
         Assert.DoesNotContain(acteurs!, a => a.Id == nounouId);
         Assert.DoesNotContain(acteurs!, a => a.Nom == "Nounou");
         Assert.Contains(acteurs!, a => a.Id == parentAId);
@@ -92,7 +92,7 @@ public sealed class SupprimerActeurMongoIntegrationTests : IDisposable
     /// <summary>Ajoute un acteur du foyer via le canal d'écriture et vérifie l'aboutissement.</summary>
     private static async Task AjouterActeur(HttpClient client, string nom, string couleur)
     {
-        var reponse = await client.PostAsJsonAsync("/api/canal/ajouter-acteur", new { Nom = nom, Couleur = couleur });
+        var reponse = await client.PostAsJsonAsync("/api/foyer/acteurs", new { Nom = nom, Couleur = couleur });
         Assert.True(reponse.IsSuccessStatusCode, $"l'ajout de {nom} doit aboutir, statut {(int)reponse.StatusCode}.");
     }
 

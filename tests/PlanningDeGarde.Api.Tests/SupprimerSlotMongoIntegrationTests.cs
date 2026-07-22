@@ -49,7 +49,7 @@ public sealed class SupprimerSlotMongoIntegrationTests : IDisposable
             // avant la pose (la pose valide désormais l'existence de l'enfant, s30 S7).
             serveur1.Services.GetRequiredService<IEditeurActivites>().Ajouter("école", "école");
             serveur1.Services.GetRequiredService<IEditeurEnfants>().Ajouter("Léa", "Léa");
-            var pose = await c1.PostAsJsonAsync("/api/canal/poser-slot",
+            var pose = await c1.PostAsJsonAsync("/api/slots",
                 new { EnfantId = "Léa", LieuId = "école", Debut = debut, Fin = fin });
             Assert.True(pose.IsSuccessStatusCode, $"la pose du slot doit aboutir, statut {(int)pose.StatusCode}.");
 

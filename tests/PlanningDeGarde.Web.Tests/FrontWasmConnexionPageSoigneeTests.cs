@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -56,7 +55,7 @@ public sealed class FrontWasmConnexionPageSoigneeTests : TestContext
 
         Assert.NotNull(dir);
         var razor = File.ReadAllText(Path.Combine(
-            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Pages", "Connexion.razor"));
+            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Comptes", "Connexion.razor"));
 
         Assert.Contains(".connexion-carte", razor, StringComparison.Ordinal);
         Assert.Contains("var(--pdg-card)", razor, StringComparison.Ordinal);

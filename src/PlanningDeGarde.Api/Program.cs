@@ -7,7 +7,17 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// API explorable/documentée — OpenAPI natif .NET sur le canal d'écriture.
+// Controllers MVC REST (lot 5, refacto hors-sprint) : un XxxController par ressource / bounded context
+// (attribute-routed). Remplace les minimal-APIs groupées en classes statiques (MapperCanal*). La DI, les
+// handlers/queries invoqués et la diffusion SignalR restent STRICTEMENT inchangés.
+// On retire le StringOutputFormatter : un motif de refus renvoyé en `BadRequest(string)` doit être
+// sérialisé en JSON (« "motif" », application/json) comme le faisaient les minimal-APIs
+// (Results.BadRequest(string)) — sinon MVC l'écrirait en text/plain et le front (qui lit le motif via
+// ReadFromJsonAsync<string>) ne le décoderait plus. Contrat de réponse strictement préservé.
+builder.Services.AddControllers(options =>
+    options.OutputFormatters.RemoveType<Microsoft.AspNetCore.Mvc.Formatters.StringOutputFormatter>());
+
+// API explorable/documentée — OpenAPI natif .NET (découvre les controllers).
 builder.Services.AddOpenApi();
 
 // Diffusion temps réel (canal de lecture seule). L'hôte d'API héberge le hub : une écriture
@@ -34,16 +44,10 @@ var app = builder.Build();
 
 app.UseCors();
 
-// Canal d'écriture requête/réponse (adaptateur de gauche) — commandes d'écriture en HTTP.
-app.MapperCanalEcriture();
-
-// Canal de lecture (adaptateur de droite, CQRS) — la grille agenda projetée, lue à distance par
-// le front WASM (le navigateur n'a pas la projection en DI directe : il lit la grille via HTTP).
-app.MapperCanalLecture();
-
-// Flux OAuth externe (s28, volet 3) — démarrage (redirection authorize Google) + callback routé vers
-// ConnexionOAuthHandler. Provider Google réel = dette de câblage (G3) ; logique prouvée par doublure (S9).
-app.MapperOAuth();
+// Controllers MVC REST (adaptateurs de gauche/lecture) — écriture (canal requête/réponse), lecture (CQRS)
+// et flux OAuth externe portés par les XxxController attribute-routed découverts dans cet assembly. Le
+// front WASM émet ses commandes / lit la grille via ces routes ressource à distance.
+app.MapControllers();
 
 // Canal de diffusion (lecture seule) — le front WASM s'y abonne dans le navigateur ; déclenché
 // par une écriture aboutie, jamais l'inverse.

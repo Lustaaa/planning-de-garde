@@ -14,10 +14,10 @@ namespace PlanningDeGarde.Web.Tests;
 /// 3ᵉ « Définir un transfert » ouvre la dialog <see cref="Web.Components.DefinirTransfertDialog"/>
 /// pré-remplie sur la date de la case ; la validation <b>ferme la dialog</b>, lève un <b>accusé
 /// « Transfert défini » à part, non bloquant</b>, et le transfert transite réellement jusqu'au store de
-/// l'API distante. On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/>
+/// l'API distante. On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/>
 /// (front WASM) câblée à une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel,
 /// canal HTTP réel). Aucun handler ni règle backend neuf : réutilisation de la commande
-/// <c>DefinirTransfert</c> et de l'endpoint <c>POST /api/canal/definir-transfert</c> (s01→s05).
+/// <c>DefinirTransfert</c> et de l'endpoint <c>POST /api/transferts</c> (s01→s05).
 ///
 /// Anti « vert qui ment » : si le clic n'ouvre pas le menu, si la 3ᵉ entrée manque, si la validation ne
 /// transite pas jusqu'au store distant, ou si le transfert retombe à une autre date, l'observable distant

@@ -11,9 +11,9 @@ namespace PlanningDeGarde.Web;
 public static class CouleursTheme
 {
     /// <summary>
-    /// Set de couleurs proposé par le <b>picker minimal</b> de la modal acteur (s33, Sc.6) : réutilise
+    /// Set de couleurs proposé par le <b>picker minimal</b> de la modal acteur : réutilise
     /// exactement les jetons métier connus (miroir de <see cref="Pleine"/>), sans gestion de palette
-    /// custom (HORS scope Sc.6). Ordre stable pour un rendu déterministe des pastilles.
+    /// custom (HORS scope). Ordre stable pour un rendu déterministe des pastilles.
     /// </summary>
     public static readonly System.Collections.Generic.IReadOnlyList<string> Palette =
         new[] { "bleu", "orange", "vert", "violet", "rose", "gris" };

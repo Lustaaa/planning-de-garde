@@ -11,7 +11,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// Acceptation de NIVEAU RUNTIME du Sc.2 (🖥️ scénario IHM, <c>@limite</c> — palier 7, 3ᵉ dialog) :
 /// <b>caractérisation early-green</b> de l'ancrage de la date de contexte (règle 17 composée). La date de
 /// la <b>case cliquée prime</b> sur le défaut horloge « aujourd'hui ». On rend la <b>vraie</b> grille
-/// <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
+/// <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
 /// (<see cref="ApiDistanteFactory"/>, store réel, canal HTTP réel), avec « aujourd'hui » figé au
 /// <b>lundi 15/06/2026</b> (<see cref="DateTimeProviderFige"/>), puis on ouvre la dialog depuis la case du
 /// <b>jeudi 25/06/2026</b> (différente d'aujourd'hui pour que la contradiction soit non-vacuous).

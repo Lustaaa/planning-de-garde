@@ -46,15 +46,15 @@ public sealed class ItemDomaineSurvitRedemarrageMongoTests : IDisposable
     /// côté serveur, relu via l'énumération du store).</summary>
     private static async Task<string> AjouterAlice(HttpClient client)
     {
-        var ajout = await client.PostAsJsonAsync("/api/canal/ajouter-acteur", new { Nom = "Alice", Couleur = "bleu" });
+        var ajout = await client.PostAsJsonAsync("/api/foyer/acteurs", new { Nom = "Alice", Couleur = "bleu" });
         Assert.True(ajout.IsSuccessStatusCode, $"l'ajout d'Alice doit aboutir, statut {(int)ajout.StatusCode}.");
-        var acteurs = await client.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+        var acteurs = await client.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
         return acteurs!.Single(a => a.Nom == "Alice").Id;
     }
 
     private static async Task<bool> AliceEstListee(HttpClient client)
     {
-        var acteurs = await client.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+        var acteurs = await client.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
         return acteurs!.Any(a => a.Nom == "Alice");
     }
 
@@ -72,7 +72,7 @@ public sealed class ItemDomaineSurvitRedemarrageMongoTests : IDisposable
             // déjà pratiqué ici. La pose valide désormais l'existence de l'enfant (s30 S7), plus un fantôme.
             serveur1.Services.GetRequiredService<IEditeurActivites>().Ajouter("école", "école");
             serveur1.Services.GetRequiredService<IEditeurEnfants>().Ajouter("Léa", "Léa");
-            var pose = await c1.PostAsJsonAsync("/api/canal/poser-slot",
+            var pose = await c1.PostAsJsonAsync("/api/slots",
                 new { EnfantId = "Léa", LieuId = "école", Debut = new DateTime(2026, 6, 10, 8, 0, 0), Fin = new DateTime(2026, 6, 10, 17, 0, 0) });
             Assert.True(pose.IsSuccessStatusCode, $"la pose du slot doit aboutir, statut {(int)pose.StatusCode}.");
         }
@@ -99,7 +99,7 @@ public sealed class ItemDomaineSurvitRedemarrageMongoTests : IDisposable
         {
             var c1 = serveur1.CreateClient();
             aliceId = await AjouterAlice(c1);
-            var periode = await c1.PostAsJsonAsync("/api/canal/affecter-periode",
+            var periode = await c1.PostAsJsonAsync("/api/periodes",
                 new { ResponsableId = aliceId, Debut = new DateTime(2026, 6, 10), Fin = new DateTime(2026, 6, 11) });
             Assert.True(periode.IsSuccessStatusCode, $"l'affectation de la période doit aboutir, statut {(int)periode.StatusCode}.");
         }
@@ -128,7 +128,7 @@ public sealed class ItemDomaineSurvitRedemarrageMongoTests : IDisposable
         using (var serveur1 = NouveauServeur())
         {
             var c1 = serveur1.CreateClient();
-            var transfert = await c1.PostAsJsonAsync("/api/canal/definir-transfert",
+            var transfert = await c1.PostAsJsonAsync("/api/transferts",
                 new { DeposeParId = "parent-a", RecupereParId = "parent-b", LieuId = "école", Heure = TimeSpan.FromHours(8.5), Date = new DateTime(2026, 6, 10) });
             Assert.True(transfert.IsSuccessStatusCode, $"la définition du transfert doit aboutir, statut {(int)transfert.StatusCode}.");
         }
@@ -155,7 +155,7 @@ public sealed class ItemDomaineSurvitRedemarrageMongoTests : IDisposable
         {
             var c1 = serveur1.CreateClient();
             aliceId = await AjouterAlice(c1);
-            var cycle = await c1.PostAsJsonAsync("/api/canal/definir-cycle",
+            var cycle = await c1.PutAsJsonAsync("/api/foyer/cycles",
                 new { NombreSemaines = 2, Affectations = new Dictionary<int, string> { [0] = aliceId } });
             Assert.True(cycle.IsSuccessStatusCode, $"la définition du cycle doit aboutir, statut {(int)cycle.StatusCode}.");
         }

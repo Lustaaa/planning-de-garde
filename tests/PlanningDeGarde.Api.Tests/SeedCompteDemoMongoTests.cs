@@ -44,12 +44,12 @@ public sealed class SeedCompteDemoMongoTests : IDisposable
 
         // Bon couple → connexion réussie (session ouverte) : le compte de démo est actif et porte le MDP.
         var bon = await client.PostAsJsonAsync(
-            "/api/canal/se-connecter", new { Email = EmailDemo, MotDePasse = MotDePasseDemo });
+            "/api/session", new { Email = EmailDemo, MotDePasse = MotDePasseDemo });
         Assert.True(bon.IsSuccessStatusCode, $"la connexion du compte de démo doit réussir, statut {(int)bon.StatusCode}.");
 
         // Mauvais mot de passe → refus (motif neutre) : le condensat posé est bien vérifié.
         var mauvais = await client.PostAsJsonAsync(
-            "/api/canal/se-connecter", new { Email = EmailDemo, MotDePasse = "mauvais-mot-de-passe" });
+            "/api/session", new { Email = EmailDemo, MotDePasse = "mauvais-mot-de-passe" });
         Assert.False(mauvais.IsSuccessStatusCode, "un mauvais mot de passe doit être refusé.");
     }
 
@@ -68,12 +68,12 @@ public sealed class SeedCompteDemoMongoTests : IDisposable
 
         // Bon couple → connexion réussie : le condensat cible a bien été posé sur le compte préexistant.
         var bon = await client.PostAsJsonAsync(
-            "/api/canal/se-connecter", new { Email = EmailDemo, MotDePasse = MotDePasseDemo });
+            "/api/session", new { Email = EmailDemo, MotDePasse = MotDePasseDemo });
         Assert.True(bon.IsSuccessStatusCode, $"la connexion du compte de démo doit réussir, statut {(int)bon.StatusCode}.");
 
         // Mauvais mot de passe → refus : le login n'est plus permissif (le mot de passe est désormais vérifié).
         var mauvais = await client.PostAsJsonAsync(
-            "/api/canal/se-connecter", new { Email = EmailDemo, MotDePasse = "mauvais-mot-de-passe" });
+            "/api/session", new { Email = EmailDemo, MotDePasse = "mauvais-mot-de-passe" });
         Assert.False(mauvais.IsSuccessStatusCode, "un mauvais mot de passe doit être refusé (login non permissif).");
     }
 

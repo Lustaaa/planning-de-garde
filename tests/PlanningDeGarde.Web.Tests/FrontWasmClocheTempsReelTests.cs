@@ -83,7 +83,7 @@ public sealed class FrontWasmClocheTempsReelTests : TestContext
         // délégation de 29/06 (résout parent-b) à parent-a → journal consigné + DIFFUSÉ (payload).
         var autreEcran = GrilleRuntimeHarness.ClientVers(api);
         (await autreEcran.PostAsJsonAsync(
-            "api/canal/deleguer-recuperation",
+            "api/delegations",
             new DeleguerRecuperationRequete(new DateOnly(2026, 6, 29), "Léa", "parent-a"))).EnsureSuccessStatusCode();
 
         // La diffusion RÉELLE de l'événement est repoussée en boucle de fond (idempotente côté client : dédup par

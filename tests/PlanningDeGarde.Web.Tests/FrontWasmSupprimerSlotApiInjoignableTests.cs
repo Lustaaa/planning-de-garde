@@ -15,7 +15,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// clair <b>dans</b> la dialog, <b>laisser la dialog ouverte</b>, ne <b>rien</b> appliquer (le slot reste,
 /// la case inchangée), et n'effectuer <b>aucune mise en file ni rejeu</b>.
 ///
-/// On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à
+/// On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à
 /// l'<b>API distante réelle</b> ; seule l'écriture de suppression est coupée au transport (la lecture des
 /// slots de la dialog transite normalement, comme en condition réelle). Anti « vert qui ment » : le slot
 /// est observé toujours présent dans le store distant après l'échec.
@@ -35,7 +35,7 @@ public sealed class FrontWasmSupprimerSlotApiInjoignableTests : TestContext
         // transport) ; un slot « École » 08h30-16h30 pour Léa le mardi 16/06/2026.
         using var api = new ApiDistanteFactory();
         GrilleRuntimeHarness.SemerSlot(api, GrilleRuntimeHarness.EnfantParDefaut, "École", new DateTime(2026, 6, 16, 8, 30, 0), new DateTime(2026, 6, 16, 16, 30, 0));
-        var client = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "supprimer-slot");
+        var client = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/slots/");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mardi_16_06_2026, client);
 
         // … baseline : la case du 16/06 rend le slot « École ».

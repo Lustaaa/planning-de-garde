@@ -13,7 +13,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// Acceptation de NIVEAU RUNTIME du Sc.7 (🖥️ IHM, <c>@limite</c> — annulation). Ouvrir la dialog de
 /// suppression puis la <b>fermer sans supprimer</b> ne doit émettre <b>aucune</b> commande d'écriture :
 /// la période reste présente et la case reste inchangée. On rend la <b>vraie</b> grille
-/// <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
+/// <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
 /// (<see cref="ApiDistanteFactory"/>, store réel). Le bouton « Fermer » (<c>OnAnnule</c> → <c>FermerDialog</c>)
 /// ne passe jamais par le canal d'écriture : preuve observable = aucun accusé « Période supprimée », la
 /// période toujours relue depuis le store distant, la case toujours « Nina la nounou ».

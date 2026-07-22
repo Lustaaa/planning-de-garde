@@ -3,7 +3,6 @@ using System.Linq;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -45,7 +44,7 @@ public sealed class FrontWasmConfigSupprimerApiInjoignableTempsReelTests : TestC
         // (échec de transport déterministe sur le POST /api/canal/supprimer-acteur).
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(
-            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "supprimer-acteur"));
+            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/foyer/acteurs/"));
         Services.AddSingleton(new SessionPlanning()); // contexte rôle réel (Parent par défaut) — le bouton est rendu
 
         var config = RenderComponent<ConfigurationFoyer>();

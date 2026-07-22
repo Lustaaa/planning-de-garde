@@ -1,0 +1,62 @@
+@* Composant Légende du planning : une entrée nom↔couleur par responsable présent dans la fenêtre
+   affichée, dérivée du read model GrilleAgenda.Légende (déjà dédoublonné côté projection). Lecture
+   seule, aucune règle métier. *@
+
+@* Masquage (Sc.3) : légende vide ⇒ aucun bloc rendu (absent du DOM, pas un conteneur vide) —
+   une fenêtre sans responsable ne doit pas suggérer une légende. *@
+@if (Entrees is { Count: > 0 } || Motifs is { Count: > 0 })
+{
+    <section class="legende" data-testid="legende">
+        <h2 class="legende-titre">Légende</h2>
+        <ul class="legende-liste">
+            @foreach (var entree in Entrees)
+            {
+                <li class="legende-entree" data-testid="legende-entree" data-couleur="@entree.Couleur">
+                    <span class="legende-pastille" style="background-color:@CouleursTheme.Pleine(entree.Couleur);"></span>
+                    <span class="legende-nom">@entree.Nom</span>
+                </li>
+            }
+            @* Entrées de MOTIF (s29) : le motif bicolore = transfert, signalé par une pastille en diagonale
+               (départ neutre / arrivée accent) suivie de son libellé. Distinct des responsables (le motif
+               n'est pas une personne) mais présenté côte à côte pour la découvrabilité. *@
+            @foreach (var motif in Motifs)
+            {
+                <li class="legende-entree legende-entree-motif" data-testid="legende-motif">
+                    <span class="legende-pastille legende-pastille-diagonale"></span>
+                    <span class="legende-nom">@motif.Libelle</span>
+                </li>
+            }
+        </ul>
+    </section>
+}
+
+@code {
+    /// <summary>Les entrées de légende dérivées de la fenêtre affichée (déjà dédoublonnées).</summary>
+    [Parameter]
+    public IReadOnlyList<EntreeLegende> Entrees { get; set; } = Array.Empty<EntreeLegende>();
+
+    /// <summary>Les entrées de légende de MOTIF : le motif bicolore = transfert, présent uniquement
+    /// quand un transfert couvre la fenêtre affichée (dérivé de <c>GrilleAgenda.LégendeMotifs</c>).</summary>
+    [Parameter]
+    public IReadOnlyList<EntreeLegendeMotif> Motifs { get; set; } = Array.Empty<EntreeLegendeMotif>();
+}
+
+<style>
+    /* Légende « Cocon élevé » (Sc.12) : découvrable et cohérente avec les couleurs de responsabilité.
+       Surface/bordure/titre tokenisés via app.css (.content .legende / .legende-titre). Ici : entrées en
+       CHIPS repérables (pastille de couleur + nom), tokenisées, lisibles en clair ET en sombre. La pastille
+       garde sa couleur de responsabilité INLINE (CouleursTheme.Pleine) — inchangée. */
+    .legende { margin-top: 12px; padding: 10px 14px; }
+    .legende-titre { margin: 0 0 8px; }
+    .legende-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+    .legende-entree { display: inline-flex; align-items: center; gap: 8px; font-size: .82rem;
+                      background: var(--pdg-bg); border: 1px solid var(--pdg-border);
+                      border-radius: 999px; padding: 3px 12px 3px 8px; }
+    .legende-pastille { width: 15px; height: 15px; border-radius: 5px; display: inline-block; flex: none;
+                        border: 1px solid rgba(0, 0, 0, .15); box-shadow: 0 1px 2px rgba(16, 24, 40, .12); }
+    /* Pastille de MOTIF bicolore = transfert : coupée en diagonale (deux teintes accent), écho visuel du
+       rendu diagonal des cases de transfert — reconnaissable d'un coup d'œil, clair ET sombre. */
+    .legende-pastille-diagonale { background: linear-gradient(135deg,
+                        var(--pdg-accent) 0 48%, var(--pdg-accent-soft, #c7d2fe) 52% 100%); }
+    .legende-nom { color: var(--pdg-ink); font-weight: 600; }
+</style>

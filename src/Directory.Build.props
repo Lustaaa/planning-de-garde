@@ -1,0 +1,27 @@
+<Project>
+
+  <!--
+    Émission des fichiers XML de documentation pour TOUS les projets `src/` (lot 8, refacto
+    hors-sprint). Placé dans `src/` (et non à la racine) pour ne s'appliquer QU'AUX projets de
+    production : les projets `tests/` ne remontent pas jusqu'ici en cherchant un Directory.Build.props
+    (ils s'arrêtent faute d'en trouver un plus haut), donc leur build reste inchangé et non pollué.
+
+    Ces fichiers `.xml` (à côté des assemblies) sont la matière première de la doc technique
+    auto-générée par DocFX (cf. `docfx/docfx.json`, `docs/documentation-technique.md`) à partir
+    des commentaires `///`. Comportement d'exécution strictement inchangé : seule l'émission de la
+    doc XML est activée.
+  -->
+  <PropertyGroup>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <!--
+      Activer la doc XML fait remonter CS1591 (« membre visible publiquement sans commentaire `///` »)
+      sur chaque membre public non documenté. Aucun projet `src/` n'active TreatWarningsAsErrors
+      aujourd'hui (le build ne casserait donc pas), mais on masque CS1591 pour garder une sortie de
+      build propre et rester robuste si un projet passait un jour les warnings en erreurs. La doc XML
+      reste produite pour tout ce qui EST commenté.
+    -->
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+</Project>

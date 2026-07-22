@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Web.Components.Pages;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
@@ -43,9 +42,8 @@ public sealed class FrontWasmConfigNomLongEditeTempsReelTests : TestContext
         GrilleRuntimeHarness.SemerPeriode(api, "parent-c", new DateTime(2026, 7, 16), new DateTime(2026, 7, 16));
 
         using var clientSetup = GrilleRuntimeHarness.ClientVers(api);
-        var reponseBaseline = await clientSetup.PostAsJsonAsync("api/canal/editer-acteur", new
+        var reponseBaseline = await clientSetup.PutAsJsonAsync("api/foyer/acteurs/parent-c", new
         {
-            ActeurId = "parent-c",
             Nom = NomCourt,
         });
         Assert.True(reponseBaseline.IsSuccessStatusCode);

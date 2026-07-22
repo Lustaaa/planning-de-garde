@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -16,7 +15,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// Sprint 48 — Sc.5 (🖥️ @ihm) — acceptation de NIVEAU RUNTIME : l'entrée « signaler un imprévu » du MENU
 /// CLIC-CASE de la grille agenda (à côté de « déléguer ce jour » s44 / « proposer un échange » s47), Parent-gated.
 /// L'entrée ouvre un mini-dialog de choix du type (malade / retard) + un champ motif OPTIONNEL ; valider émet la
-/// commande via le CANAL D'ÉCRITURE (POST /api/canal/signaler-imprevu) qui consigne une trace au JOURNAL DE
+/// commande via le CANAL D'ÉCRITURE (POST /api/imprevus) qui consigne une trace au JOURNAL DE
 /// CHANGEMENTS existant (s47) — purement INFORMATIF : le signalement N'ÉCRIT AUCUNE surcharge (la résolution du
 /// planning reste STRICTEMENT inchangée, invariant s48). Échap FERME sans émettre (port IEcouteurEchapModal s33) ;
 /// l'Invité ne voit ni le menu ni l'entrée (Parent-gated). La grille est réellement câblée à l'API distante

@@ -1,6 +1,5 @@
 using System;
 using Bunit;
-using PlanningDeGarde.Web.Components.Pages;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;

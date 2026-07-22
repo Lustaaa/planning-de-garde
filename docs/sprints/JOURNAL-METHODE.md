@@ -152,3 +152,80 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   *TempsReel* catalogué** dans `dev-team` (re-run ciblé pour confirmer le vert, consigne dans `notes`
   sans investiguer `src/`, ni RED ni vert-qui-ment, et signale la **montée de sévérité** au
   `scrum-master` pour prioriser le rétrofit P2). Dette + candidat +2 du backlog mis à jour.
+- 2026-07-22 — **Refonte technique hors-sprint (architecte, bypass BDD), lot 1/8** :
+  réorganisation de `PlanningDeGarde.Application` en `[BoundedContext]/[Technical]` (suppression
+  des dossiers `Classes/`+`Interfaces/`, namespaces alignés `Application.<BC>.<Technical>`, ~96
+  fichiers déplacés). Anti-churn : un `GlobalUsings.cs` par projet consommateur (ré-export des
+  sous-namespaces) plutôt qu'édition fichier par fichier. Points durs résolus : segment BC
+  `CyclesDeFond` (pluriel) pour ne pas masquer le type Domain `CycleDeFond` ; seed `Foyer`
+  (ex-namespace `Infrastructure` anormal) recalé en `Application.Foyer.Seed`, exclu des global
+  usings Web (collision `Web.Foyer`). **Impact** : carte des BC figée
+  (`docs/briefs/technical-changes-plan.md`, réutilisée par les lots Mongo/InMemory/Web), CLAUDE.md
+  « Architecture » actualisé. **920/920 vert.** Aucune règle de gestion touchée.
+
+- **2026-07-22 — Refonte technique hors-sprint (architecte), lot 2/InMemory.** Réorganisation de
+  `PlanningDeGarde.AdapterDroite.InMemory` en `[BoundedContext]/[Technical]` (dossier `Classes/`
+  supprimé, namespaces `...InMemory.<BC>.Repositories`, horloge en `Commun/Services`) alignée sur
+  la carte des BC figée au lot 1. 19 fichiers déplacés, comportement inchangé. Points durs : ces
+  adaptateurs vivaient en `namespace Infrastructure` (anomalie, recalés) ; masquage de la classe
+  seed `Foyer` par le segment `.Foyer` → alias `using Foyer = ...Seed.Foyer;` **scopé dans le
+  namespace** (le global using alias perd face au membre de namespace externe), 7 fichiers.
+  **Impact** : plan lot 5 coché + note transverse « masquage Foyer » (à rejouer lot Mongo) ;
+  ripple absorbé par global usings (Infrastructure + Tests + Api.Tests). **920/920 vert.** Aucune
+  règle de gestion touchée.
+- 2026-07-22 — Refonte technique hors-sprint, **lot 3 exécuté** (architecte, bypass BDD) :
+  `PlanningDeGarde.AdapterDroite.Mongo` réorganisé en `[BoundedContext]/[Technical]` (dossier
+  `Classes/` supprimé, namespaces `...Mongo.<BC>.<Technical>` alignés sur la carte figée, dont
+  `CyclesDeFond` au pluriel). Modélisation NoSQL réelle : les **15 documents embarqués** (`private
+  sealed` en fin de fichier de repo) SORTIS en fichiers dédiés sous `<BC>/DbModels/`, passés
+  `internal sealed` — attributs BSON / noms de collection INCHANGÉS (invariant compat données).
+  17 dépôts sous `<BC>/Repositories/` ; `DateTimeMongo` → `Commun/Serialization/` ; migration
+  `MigrationRetroAffectationEnfantsMongo` → `Enfants/Migrations/`. Masquage `Foyer` rejoué (alias
+  scopé sur le seul `ConfigurationFoyerMongo`). **Impact** : plan lot 4 coché + note transverse
+  mise à jour ; ripple absorbé par global usings (Infrastructure + Api.Tests) et par le
+  `GlobalUsings.cs` du projet Mongo (DbModels + Commun.Serialization intra-assembly). **920/920
+  vert** (dont 108 Api.Tests sur Mongo RÉEL = compat données prouvée). Aucune règle de gestion touchée.
+
+- **2026-07-22 — architecte (hors-sprint, bypass BDD) — Lot 4/refonte technique : scission de
+  `PlanningDeGarde.Infrastructure`.** `EnvoiMailSmtp` → nouveau projet `PlanningDeGarde.AdapterDroite.Smtp`
+  (namespace idem, `System.Net.Mail` BCL, aucun package) ; `HacheurMotDePassePbkdf2` + `FournisseurOAuthGoogleNonCable`
+  → nouveau projet `PlanningDeGarde.AdapterDroite.Securite` (sous-dossiers `MotDePasse/`/`OAuth/`, namespace unique).
+  `Infrastructure` **conservé comme composition root** (garde `ServiceCollectionExtensions`, référence désormais
+  Smtp+Securite). **Impact** : 2 projets ajoutés à `slnx` (src passe de 8 à **10**) ; `using ...Application` →
+  `...Application.Comptes.Ports` dans les 3 fichiers déplacés (hors des global usings d'Infra) ; ripple absorbé par
+  global usings (Infrastructure + PlanningDeGarde.Tests + Api.Tests), assemblies atteintes en **transitif** (aucune
+  ProjectReference ajoutée aux tests, pattern lots Mongo/InMemory). Placeholder OAuth **inchangé** (dette assumée).
+  Plan lot 3/Infrastructure coché ; CLAUDE.md architecture (10 projets + rôle composition root) resynchronisé.
+  **920/920 vert**. Aucune règle de gestion touchée.
+- 2026-07-22 — Refonte technique **lot 5 / Api → REST + controllers MVC** (architecte, hors sprint, décision PO
+  « REST complet »). Minimal-APIs `MapPost` groupées (`CanalEcriture`/`CanalLecture`/`OAuthEndpoints` supprimés)
+  → **18 controllers `[ApiController]` attribute-routed** (un `.cs` par ressource/BC, DTO sous `Dtos/`), routes
+  ressource + verbes HTTP (POST create/action, PUT/DELETE id-en-chemin, DELETE délégation en query). Handlers,
+  diffusion SignalR, DI **inchangés** ; front (`PlanningDeGarde.Web`) et tests (Api.Tests + Web.Tests) rebranchés
+  sur les nouvelles routes/verbes. **2 pièges tranchés** : (1) `[ApiController]` `BadRequest(string)` sort en
+  `text/plain` via `StringOutputFormatter` → contrat cassé (le front lit `ReadFromJsonAsync<string>`) : retiré le
+  `StringOutputFormatter` pour rester `application/json` (`"motif"`) comme `Results.BadRequest(string)` ; (2) audit
+  endpoint par endpoint des appels `NotifierMiseAJour()` (un oubli sur `DELETE /api/slots/{id}` cassait la diffusion
+  temps réel du 2e écran). Plan lot 2 coché + **table de mapping des routes** ajoutée ; CLAUDE.md (architecture Api)
+  resynchronisé. **920/920 vert** (dont 108 Api.Tests sur Mongo réel). Aucune règle de gestion touchée.
+- 2026-07-22 — Lot 6 refonte technique (architecte, hors-sprint) : `PlanningDeGarde.Web` — composants Blazor
+  réorganisés **par bounded context** sous `Components/<BC>/` (+ `Shared/` et `Shared/Layout/`), namespaces
+  alignés, **PAS de RCL** (décision PO). Anti-churn : nouveaux `@using ...Components.<BC>` au `_Imports.razor`
+  (tags) + `GlobalUsings.cs` de test (bUnit), stale `...Components.Pages`/`.Layout` recalés, 10 gardes d'asset
+  (habillage) rebranchées sur les chemins `Components/<BC>/…`. Routes `@page` inchangées. Read-models front
+  dupliqués (Web/Api déployables séparés) NON unifiés — dette assumée. Plan lot 6 coché ; CLAUDE.md (archi Web)
+  resynchronisé. **920/920 vert** (dont 347 Web.Tests). Aucune règle de gestion touchée.
+- 2026-07-22 — Lot 7 refonte technique (architecte, hors-sprint) : **audit doublons de tests**. Audit
+  conservateur des 3 projets (899 faits, similarité nom + fichier-entier + fait-par-fait). **3 doublons
+  confirmés** (byte-identiques, même couche) supprimés de `Sprint41Sc2_BorneDernierAdmin` — gardien
+  `Sprint41Sc1_DeDesignerAdmin` (dé-désignation nominale + idempotence) ; Sc2 recentré sur la BORNE
+  « dernier admin ». Reste = `INTENTIONNEL_COUCHES` (domaine/API/Mongo/IHM) et `PROCHE_MAIS_DISTINCT`
+  (fond/neutre, nominal/plage) → gardés (conservatisme strict, zéro couverture perdue). Table d'audit
+  dans le plan lot 7. **920 → 917 vert** (462 + 108 + 347). Aucune règle de gestion touchée.
+
+- **2026-07-22 — refonte technique lot 8 (architecte, hors-sprint) : doc technique auto-générée** —
+  **DocFX** en tool local épinglé (`.config/dotnet-tools.json`) génère la référence API depuis les
+  commentaires `///` (émission XML activée via `src/Directory.Build.props`, ciblant les seuls projets
+  `src/`, `CS1591` masqué). Config sous `docfx/`, sortie git-ignorée. `Web` (Blazor) écarté de
+  l'extraction (Razor SG non exécuté par Roslyn) ; OpenAPI intégré sur chemin documenté (exposé au
+  runtime via Scalar). Génération prouvée (377 pages). **Programme de refonte COMPLET 8/8**, 917/917 vert.

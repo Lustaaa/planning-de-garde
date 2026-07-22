@@ -13,7 +13,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// un acteur (« Aucun acteur, ajoutez-en. »), la grille est entièrement neutre, la légende vide, et
 /// <b>aucun fantôme</b> (« Parent A / Parent B ») n'apparaît nulle part.
 ///
-/// On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée
+/// On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée
 /// à une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>) dont le store d'acteurs est
 /// <b>vidé</b> (Given : on supprime tous les acteurs seedés du store réel pour reproduire le 1er
 /// lancement Mongo vide, asymétrie s15). Rempart anti « vert qui ment » : tant qu'aucune invite n'est

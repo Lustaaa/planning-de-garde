@@ -45,15 +45,15 @@ public sealed class AffecterPeriodeUnSeulJourMongoIntegrationTests : IDisposable
         var client = serveur.CreateClient();
 
         // Given — deux acteurs réels du foyer (identifiants stables attribués par le store durable).
-        var ajoutAlice = await client.PostAsJsonAsync("/api/canal/ajouter-acteur", new { Nom = "Alice", Couleur = "bleu" });
-        var ajoutBruno = await client.PostAsJsonAsync("/api/canal/ajouter-acteur", new { Nom = "Bruno", Couleur = "orange" });
+        var ajoutAlice = await client.PostAsJsonAsync("/api/foyer/acteurs", new { Nom = "Alice", Couleur = "bleu" });
+        var ajoutBruno = await client.PostAsJsonAsync("/api/foyer/acteurs", new { Nom = "Bruno", Couleur = "orange" });
         Assert.True(ajoutAlice.IsSuccessStatusCode && ajoutBruno.IsSuccessStatusCode, "l'ajout des acteurs doit aboutir.");
-        var acteurs = await client.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+        var acteurs = await client.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
         var aliceId = acteurs!.Single(a => a.Nom == "Alice").Id;
         var brunoId = acteurs!.Single(a => a.Nom == "Bruno").Id;
 
         // And — cycle de fond de 2 semaines (fond Bruno sur la semaine ISO 28 paire, index 0).
-        var cycle = await client.PostAsJsonAsync("/api/canal/definir-cycle", new
+        var cycle = await client.PutAsJsonAsync("/api/foyer/cycles", new
         {
             NombreSemaines = 2,
             Affectations = new Dictionary<int, string> { [0] = brunoId, [1] = aliceId },
@@ -61,7 +61,7 @@ public sealed class AffecterPeriodeUnSeulJourMongoIntegrationTests : IDisposable
         Assert.True(cycle.IsSuccessStatusCode, $"la définition du cycle doit aboutir, statut {(int)cycle.StatusCode}.");
 
         // When — une période affectant Alice est écrite sur l'intervalle d'un seul jour [08..08/07].
-        var periode = await client.PostAsJsonAsync("/api/canal/affecter-periode",
+        var periode = await client.PostAsJsonAsync("/api/periodes",
             new { ResponsableId = aliceId, Debut = j, Fin = j });
         Assert.True(periode.IsSuccessStatusCode, $"l'affectation de la période doit aboutir, statut {(int)periode.StatusCode}.");
 

@@ -30,8 +30,8 @@ public sealed class HoteHeadlessDescriptionTests
             $"l'hôte d'API headless doit servir son document de description OpenAPI, statut {(int)reponse.StatusCode}.");
 
         var document = await reponse.Content.ReadAsStringAsync();
-        Assert.Contains("/api/canal/poser-slot", document);
-        Assert.Contains("/api/canal/affecter-periode", document);
+        Assert.Contains("/api/slots", document);
+        Assert.Contains("/api/periodes", document);
     }
 
     // Test #2 (= acceptation, And) — caractérisation headless : la page d'exploration interactive

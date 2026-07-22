@@ -1,0 +1,126 @@
+@page "/connexion"
+@inject HttpClient Canal
+@inject PlanningDeGarde.Web.State.SessionPlanning Session
+@inject NavigationManager Nav
+@inject PlanningDeGarde.Web.IPersistanceSession Persistance
+
+<PageTitle>Connexion</PageTitle>
+
+<div class="connexion-page">
+    @* Page de connexion dédiée (s24, Sc.8) : landing par défaut, SEUL chemin d'entrée (Sc.10). Emballe
+       SeConnecterCommand (s23) via le canal requête/réponse (POST /api/session) — aucune règle
+       d'admission côté front (compte existant ET Actif tranché par le handler). Sur succès : redirection
+       vers le planning, sélecteur d'acteur pré-positionné sur l'acteur du compte (incarnation bornée s14).
+       Sur refus : motif clair affiché, on reste sur la page (Sc.9). Login email-only (s23) : pas de mot de passe.
+       Refonte s26 (Sc.7) : page d'entrée « Cocon élevé » — carte centrée tokenisée, marque sauge (Fraunces),
+       boutons OAuth habillés. Aucun data-testid / flux d'auth modifié (présentation seule). *@
+    <div class="connexion-carte">
+        <div class="connexion-marque">
+            <span class="connexion-marque-pastille" aria-hidden="true">🏠</span>
+            <span class="connexion-marque-nom">Planning de garde</span>
+        </div>
+        <h1 class="connexion-titre">Se connecter</h1>
+        <p class="connexion-sous-titre">Retrouvez qui a les enfants, en un coup d'œil.</p>
+
+        <div class="connexion-champ">
+            <label class="form-label" for="email-connexion">Adresse email</label>
+            <input type="email" id="email-connexion" class="form-control" placeholder="votre email"
+                   data-testid="champ-email-connexion" @bind="_email" />
+        </div>
+        @* Champ mot de passe (s28, volet 2) : la connexion émet désormais le COUPLE email + mot de passe.
+           Un compte sans mot de passe (email-only s23) reste connectable en laissant ce champ vide. *@
+        <div class="connexion-champ">
+            <label class="form-label" for="mot-de-passe-connexion">Mot de passe</label>
+            @* Bouton œil (s31, Sc.4) : bascule l'attribut type du champ (password ↔ text) pour afficher /
+               masquer la saisie. Pur confort de saisie, aucune règle métier, aucun flux d'auth touché. *@
+            <div class="connexion-mot-de-passe">
+                <input type="@(_motDePasseVisible ? "text" : "password")" id="mot-de-passe-connexion"
+                       class="form-control" placeholder="votre mot de passe"
+                       data-testid="champ-mot-de-passe-connexion" @bind="_motDePasse" />
+                <button type="button" class="connexion-oeil" data-testid="bouton-oeil-mot-de-passe"
+                        aria-label="@(_motDePasseVisible ? "Masquer le mot de passe" : "Afficher le mot de passe")"
+                        aria-pressed="@_motDePasseVisible" @onclick="BasculerVisibiliteMotDePasse">
+                    @(_motDePasseVisible ? "🙈" : "👁")
+                </button>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary w-100 connexion-bouton" data-testid="bouton-se-connecter"
+                @onclick="SeConnecterAsync">Se connecter</button>
+
+        @if (_motif is { } motif)
+        {
+            <div class="alert alert-danger mt-3" data-testid="motif-connexion" role="alert">@motif</div>
+        }
+
+        @* Lien vers l'écran « mot de passe oublié » (s28, volet 1) : émet une demande de récupération +
+           affiche un message neutre (anti-énumération). Simple navigation, aucune règle métier côté UI. *@
+        <a class="connexion-oubli" href="/mot-de-passe-oublie" data-testid="lien-mot-de-passe-oublie">Mot de passe oublié ?</a>
+
+        @* Connexion via un fournisseur OAuth externe (volet 4, s25) — À CÔTÉ du login local. Un clic
+           DÉCLENCHE le flux OAuth en naviguant vers l'endpoint de démarrage du provider côté serveur
+           (api/oauth/{provider}/demarrer), qui redirige vers l'authorize réel (secrets/callbacks vérifiés
+           manuellement au G3). Aucune règle métier côté UI : la vue ne fait que déclencher le flux. *@
+        <div class="oauth-providers" data-testid="oauth-providers">
+            <div class="oauth-separateur"><span>ou continuer avec</span></div>
+            <button type="button" class="oauth-bouton oauth-google" data-testid="bouton-oauth-google"
+                    @onclick='() => DemarrerOAuth("google")'>
+                <span class="oauth-marque" aria-hidden="true">G</span>Google
+            </button>
+            <button type="button" class="oauth-bouton oauth-microsoft" data-testid="bouton-oauth-microsoft"
+                    @onclick='() => DemarrerOAuth("microsoft")'>
+                <span class="oauth-marque" aria-hidden="true">⊞</span>Microsoft
+            </button>
+            <button type="button" class="oauth-bouton oauth-apple" data-testid="bouton-oauth-apple"
+                    @onclick='() => DemarrerOAuth("apple")'>
+                <span class="oauth-marque" aria-hidden="true"></span>Apple
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Page d'entrée « Cocon élevé » (Sc.7) : centrée, calme, tokenisée (clair ET sombre). */
+    .connexion-page { min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .connexion-carte { width: min(420px, 100%); background: var(--pdg-card); border: 1px solid var(--pdg-border);
+                       border-radius: 18px; padding: 2rem 1.75rem;
+                       box-shadow: 0 1px 2px rgba(16,24,40,.05), 0 12px 40px rgba(16,24,40,.10); }
+    /* Marque : pastille d'accent sauge + nom en Fraunces (identité de marque, hors bleu/orange). */
+    .connexion-marque { display: flex; align-items: center; gap: .55rem; margin-bottom: 1.5rem; }
+    .connexion-marque-pastille { display: inline-flex; align-items: center; justify-content: center;
+                                 width: 2.1rem; height: 2.1rem; border-radius: 12px;
+                                 background: var(--pdg-accent-soft); font-size: 1.1rem; }
+    .connexion-marque-nom { font-family: var(--pdg-font-titre); font-weight: 700; font-size: 1.1rem;
+                            color: var(--pdg-accent); letter-spacing: -.01em; }
+    .connexion-titre { font-family: var(--pdg-font-titre); font-weight: 700; font-size: 1.6rem;
+                       color: var(--pdg-ink); margin: 0 0 .25rem; letter-spacing: -.02em; }
+    .connexion-sous-titre { color: var(--pdg-muted); font-size: .92rem; margin: 0 0 1.5rem; }
+    .connexion-champ { margin-bottom: 1rem; }
+    /* Champ mot de passe + bouton œil (Sc.4) : l'œil se superpose à droite du champ, cible tactile ≥ 40px. */
+    .connexion-mot-de-passe { position: relative; }
+    .connexion-mot-de-passe .form-control { padding-right: 2.75rem; }
+    .connexion-oeil { position: absolute; top: 50%; right: .35rem; transform: translateY(-50%);
+                      display: inline-flex; align-items: center; justify-content: center; width: 2.2rem; height: 2.2rem;
+                      border: none; background: transparent; cursor: pointer; font-size: 1.1rem; line-height: 1;
+                      border-radius: 8px; color: var(--pdg-muted); }
+    .connexion-oeil:hover { background: var(--pdg-accent-soft); }
+    .connexion-bouton { border-radius: 12px; padding: .55rem; font-weight: 600; }
+    .connexion-oubli { display: inline-block; margin-top: .9rem; color: var(--pdg-muted); font-size: .88rem; }
+
+    /* Séparateur « ou continuer avec » : trait tokenisé + intitulé discret. */
+    .oauth-providers { margin-top: 1.5rem; display: flex; flex-direction: column; gap: .6rem; }
+    .oauth-separateur { display: flex; align-items: center; gap: .75rem; color: var(--pdg-muted);
+                        font-size: .78rem; margin-bottom: .3rem; }
+    .oauth-separateur::before, .oauth-separateur::after { content: ""; flex: 1; height: 1px; background: var(--pdg-border); }
+    /* Boutons providers : cohérents avec le thème (surface carte, bordure tokenisée), reconnaissables
+       par une pastille de marque colorée à gauche. Cible tactile ≥ 44px. */
+    .oauth-bouton { display: flex; align-items: center; gap: .65rem; width: 100%; min-height: 44px;
+                    padding: .5rem .9rem; border-radius: 12px; border: 1px solid var(--pdg-border);
+                    background: var(--pdg-card); color: var(--pdg-ink); font-weight: 600; cursor: pointer;
+                    transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+    .oauth-bouton:hover { border-color: var(--pdg-accent); box-shadow: 0 2px 8px rgba(16,24,40,.08); transform: translateY(-1px); }
+    .oauth-marque { display: inline-flex; align-items: center; justify-content: center; width: 1.6rem; height: 1.6rem;
+                    border-radius: 8px; font-weight: 700; color: #fff; font-size: .95rem; }
+    .oauth-google .oauth-marque { background: #4285F4; }
+    .oauth-microsoft .oauth-marque { background: #2F2F2F; }
+    .oauth-apple .oauth-marque { background: #111; }
+</style>

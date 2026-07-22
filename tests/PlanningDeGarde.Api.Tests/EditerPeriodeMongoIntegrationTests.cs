@@ -47,12 +47,12 @@ public sealed class EditerPeriodeMongoIntegrationTests : IDisposable
         using (var serveur1 = NouveauServeur())
         {
             var c1 = serveur1.CreateClient();
-            var ajout = await c1.PostAsJsonAsync("/api/canal/ajouter-acteur", new { Nom = "Nounou", Couleur = "vert" });
+            var ajout = await c1.PostAsJsonAsync("/api/foyer/acteurs", new { Nom = "Nounou", Couleur = "vert" });
             Assert.True(ajout.IsSuccessStatusCode, $"l'ajout de Nounou doit aboutir, statut {(int)ajout.StatusCode}.");
-            var acteurs = await c1.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+            var acteurs = await c1.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
             var nounouId = acteurs!.Single(a => a.Nom == "Nounou").Id;
 
-            var periode = await c1.PostAsJsonAsync("/api/canal/affecter-periode",
+            var periode = await c1.PostAsJsonAsync("/api/periodes",
                 new { ResponsableId = nounouId, Debut = lundi15, Fin = mercredi17 });
             Assert.True(periode.IsSuccessStatusCode, $"l'affectation de la période doit aboutir, statut {(int)periode.StatusCode}.");
 

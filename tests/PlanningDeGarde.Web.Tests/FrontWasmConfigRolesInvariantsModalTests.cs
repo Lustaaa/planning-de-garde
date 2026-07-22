@@ -4,7 +4,6 @@ using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -69,7 +68,7 @@ public sealed class FrontWasmConfigRolesInvariantsModalTests : TestContext
     {
         // Given — le canal /creer-role subit un échec de transport déterministe (les lectures passent).
         using var api = new ApiDistanteFactory();
-        var config = RendreConfig(api, client: GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "creer-role"));
+        var config = RendreConfig(api, client: GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "foyer/roles"));
 
         this.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-role']").Click());
         this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Grand-parent"));

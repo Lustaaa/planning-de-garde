@@ -13,7 +13,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <b>caractérisation early-green</b> du gating Invité (règle 9). Le déclencheur d'écriture de la case est
 /// <b>mutualisé</b> sur <see cref="SessionPlanning.EstParent"/> : ajouter une 3ᵉ entrée au menu ne change
 /// pas le point d'application du droit. On rend la <b>vraie</b> grille
-/// <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
+/// <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
 /// (<see cref="ApiDistanteFactory"/>).
 ///
 /// Anti « vert qui ment » : <b>contrôle positif en regard</b> dans le même test — on prouve d'abord qu'un

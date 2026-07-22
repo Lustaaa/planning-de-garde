@@ -8,6 +8,8 @@
     <ProjectReference Include="..\PlanningDeGarde.Application\PlanningDeGarde.Application.csproj" />
     <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.InMemory\PlanningDeGarde.AdapterDroite.InMemory.csproj" />
     <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.Mongo\PlanningDeGarde.AdapterDroite.Mongo.csproj" />
+    <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.Smtp\PlanningDeGarde.AdapterDroite.Smtp.csproj" />
+    <ProjectReference Include="..\PlanningDeGarde.AdapterDroite.Securite\PlanningDeGarde.AdapterDroite.Securite.csproj" />
     <ProjectReference Include="..\PlanningDeGarde.SignalR\PlanningDeGarde.SignalR.csproj" />
   </ItemGroup>
 

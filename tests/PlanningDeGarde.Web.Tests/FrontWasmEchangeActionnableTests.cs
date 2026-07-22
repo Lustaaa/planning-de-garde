@@ -10,7 +10,6 @@ using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web;
 using PlanningDeGarde.Web.Components;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 using static PlanningDeGarde.Web.CanalEcriture;
@@ -100,7 +99,7 @@ public sealed class FrontWasmEchangeActionnableTests : TestContext
     private static async Task SemerPropositionVers(ApiDistanteFactory api, string versActeurId)
     {
         var client = GrilleRuntimeHarness.ClientVers(api);
-        (await client.PostAsJsonAsync("api/canal/proposer-echange",
+        (await client.PostAsJsonAsync("api/propositions",
             new ProposerEchangeRequete(Jour, "Léa", versActeurId))).EnsureSuccessStatusCode();
     }
 

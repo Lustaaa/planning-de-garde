@@ -30,7 +30,7 @@ public sealed class AffecterPeriodeCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/canal/affecter-periode", CommandeAffectationParentA);
+        var reponse = await client.PostAsJsonAsync("/api/periodes", CommandeAffectationParentA);
 
         Assert.True(reponse.IsSuccessStatusCode, $"statut HTTP attendu de succès, obtenu {(int)reponse.StatusCode}.");
     }
@@ -43,7 +43,7 @@ public sealed class AffecterPeriodeCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/canal/affecter-periode", CommandeAffectationParentA);
+        var reponse = await client.PostAsJsonAsync("/api/periodes", CommandeAffectationParentA);
         Assert.True(reponse.IsSuccessStatusCode, $"l'affectation via le canal de l'hôte API doit aboutir, statut {(int)reponse.StatusCode}.");
 
         // Observable de bout en bout : la projection réelle (+ palette réelle) lit le store réel
@@ -75,7 +75,7 @@ public sealed class AffecterPeriodeCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/canal/affecter-periode", CommandeAffectationSansResponsable);
+        var reponse = await client.PostAsJsonAsync("/api/periodes", CommandeAffectationSansResponsable);
 
         Assert.False(reponse.IsSuccessStatusCode, $"une affectation sans responsable doit être refusée, statut obtenu {(int)reponse.StatusCode}.");
         var motif = await reponse.Content.ReadAsStringAsync();
@@ -88,7 +88,7 @@ public sealed class AffecterPeriodeCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/canal/affecter-periode", CommandeAffectationSansResponsable);
+        var reponse = await client.PostAsJsonAsync("/api/periodes", CommandeAffectationSansResponsable);
         Assert.False(reponse.IsSuccessStatusCode, "l'affectation sans responsable doit être refusée.");
 
         using var scope = hote.Services.CreateScope();

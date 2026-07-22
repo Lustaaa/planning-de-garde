@@ -4,7 +4,7 @@ using System.Collections.Generic;
 namespace PlanningDeGarde.Web;
 
 /// <summary>
-/// Modèle front d'une notification de la CLOCHE (s47), miroir du DTO d'API <c>NotificationClocheVue</c> : un
+/// Modèle front d'une notification de la CLOCHE, miroir du DTO d'API <c>NotificationClocheVue</c> : un
 /// événement du journal (délégation / reprise / transfert — informationnel) OU une proposition d'échange
 /// (<see cref="Actionnable"/> = pending adressée à l'utilisateur, boutons Accepter / Refuser). <see cref="Lu"/>
 /// pilote le style non-lu ; <see cref="PropositionId"/> est la clé d'action (null pour un événement du journal).

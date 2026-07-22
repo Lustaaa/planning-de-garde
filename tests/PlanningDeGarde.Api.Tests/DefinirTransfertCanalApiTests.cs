@@ -35,7 +35,7 @@ public sealed class DefinirTransfertCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/canal/definir-transfert", TransfertComplet);
+        var reponse = await client.PostAsJsonAsync("/api/transferts", TransfertComplet);
 
         Assert.True(reponse.IsSuccessStatusCode, $"statut HTTP attendu de succès, obtenu {(int)reponse.StatusCode}.");
     }
@@ -46,7 +46,7 @@ public sealed class DefinirTransfertCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/canal/definir-transfert", TransfertIncomplet);
+        var reponse = await client.PostAsJsonAsync("/api/transferts", TransfertIncomplet);
 
         Assert.False(reponse.IsSuccessStatusCode, $"un transfert incomplet doit être refusé, statut obtenu {(int)reponse.StatusCode}.");
         var motif = await reponse.Content.ReadAsStringAsync();

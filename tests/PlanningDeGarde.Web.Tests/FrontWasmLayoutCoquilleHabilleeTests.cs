@@ -36,7 +36,7 @@ public sealed class FrontWasmLayoutCoquilleHabilleeTests
     [Fact]
     public void L_ossature_du_layout_est_tokenisee_sans_couleur_de_chrome_codee_en_dur()
     {
-        var css = Lire("Components", "Layout", "MainLayout.razor.css");
+        var css = Lire("Components", "Shared", "Layout", "MainLayout.razor.css");
         Assert.Contains("var(--pdg-accent", css, StringComparison.Ordinal);
         Assert.Contains("var(--pdg-card)", css, StringComparison.Ordinal);
         // Les couleurs de chrome codées en dur cassaient la cohérence / le thème sombre.

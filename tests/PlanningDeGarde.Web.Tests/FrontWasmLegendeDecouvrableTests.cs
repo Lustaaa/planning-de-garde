@@ -27,7 +27,7 @@ public sealed class FrontWasmLegendeDecouvrableTests
 
         Assert.NotNull(dir);
         return File.ReadAllText(Path.Combine(
-            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Legende.razor"));
+            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Shared", "Legende.razor"));
     }
 
     [Fact]

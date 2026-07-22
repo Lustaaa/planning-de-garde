@@ -1,0 +1,37 @@
+@inject HttpClient Canal
+@using PlanningDeGarde.Domain
+
+@* Mini-dialog « Signaler un imprévu » (s48) ouverte depuis l'entrée « signaler un imprévu » du menu clic-case
+   (Parent-gated : le menu ne s'ouvre que pour un Parent). Signalement purement INFORMATIF d'un fait subi :
+   choix « malade » / « retard » + un motif OPTIONNEL. Valider émet la commande via le CANAL D'ÉCRITURE
+   (POST /api/imprevus) — jamais la diffusion. Le signalement N'ÉCRIT AUCUNE surcharge : la
+   résolution du planning reste inchangée (invariant s48) ; la notification arrive dans la cloche des concernés.
+   Portée par ModalConfig : Échap = « Annuler » (port IEcouteurEchapModal s33, capture document). Issues :
+   succès → OnValide ; refus domaine (type inconnu) / API injoignable → MOTIF dans la dialog, saisie CONSERVÉE,
+   dialog restée OUVERTE (parité s44/s47). *@
+<ModalConfig TestId="dialog-signaler-imprevu" OnFermer="OnAnnule">
+    <h2 class="h4 mb-3">Signaler un imprévu</h2>
+    <p class="text-muted small mb-3">Prévenez les autres acteurs d'un imprévu du @DateContexte.ToString("dd/MM/yyyy") — sans rien changer au planning.</p>
+    <EditForm Model="_form" OnValidSubmit="Soumettre" FormName="signaler-imprevu-dialog">
+        <div class="mb-3">
+            <label class="form-label">Type d'imprévu</label>
+            <InputSelect class="form-select" data-testid="champ-type-imprevu" @bind-Value="_form.Type">
+                <option value="@TypeImprevu.Malade">Enfant malade</option>
+                <option value="@TypeImprevu.Retard">Je serai en retard</option>
+            </InputSelect>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Motif (facultatif)</label>
+            <InputText class="form-control" data-testid="champ-motif-imprevu" @bind-Value="_form.Motif" placeholder="Optionnel" />
+        </div>
+        <div class="d-flex gap-2">
+            <button type="submit" class="btn btn-primary">Signaler</button>
+            <button type="button" class="btn btn-link" data-testid="dialog-signaler-imprevu-annuler" @onclick="Annuler">Annuler</button>
+        </div>
+    </EditForm>
+
+    @if (_motifEchec is not null)
+    {
+        <div class="alert alert-danger mt-3" data-testid="motif-echec-imprevu">@_motifEchec</div>
+    }
+</ModalConfig>

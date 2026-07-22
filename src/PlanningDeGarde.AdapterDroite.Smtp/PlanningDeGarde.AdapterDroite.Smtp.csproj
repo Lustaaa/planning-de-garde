@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Adaptateur de droite — canal MAIL concret (SMTP) : réalise IEnvoiMail via System.Net.Mail
+       (BCL, aucun package externe). Remet un vrai mail au serveur SMTP configuré (Smtp4dev en dev,
+       Docker ; relais réel en déploiement). DI-agnostique : le câblage vit dans la composition root
+       (PlanningDeGarde.Infrastructure). Issu de la scission de l'ancien fourre-tout Infrastructure. -->
+  <ItemGroup>
+    <ProjectReference Include="..\PlanningDeGarde.Application\PlanningDeGarde.Application.csproj" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+</Project>

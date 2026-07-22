@@ -62,7 +62,7 @@ public sealed class FrontWasmImprevuClocheTests : TestContext
     {
         var client = GrilleRuntimeHarness.ClientVers(api);
         (await client.PostAsJsonAsync(
-            "api/canal/signaler-imprevu",
+            "api/imprevus",
             new SignalerImprevuRequete(Jour, "Léa", type, signalantId, ""))).EnsureSuccessStatusCode();
     }
 

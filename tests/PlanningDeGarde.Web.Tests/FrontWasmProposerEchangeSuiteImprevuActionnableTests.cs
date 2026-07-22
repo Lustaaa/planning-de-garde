@@ -59,11 +59,11 @@ public sealed class FrontWasmProposerEchangeSuiteImprevuActionnableTests : TestC
     private static async Task SemerImprevuPuisPropositionGreffee(ApiDistanteFactory api, string signalantId, string versActeurId)
     {
         var client = GrilleRuntimeHarness.ClientVers(api);
-        (await client.PostAsJsonAsync("api/canal/signaler-imprevu",
+        (await client.PostAsJsonAsync("api/imprevus",
             new SignalerImprevuRequete(Jour, "Léa", TypeImprevu.Malade, signalantId, ""))).EnsureSuccessStatusCode();
         var imprevuId = api.Services.GetRequiredService<IJournalChangements>().Tout()
             .Single(e => e.Type == TypeChangement.Imprevu).Id;
-        (await client.PostAsJsonAsync("api/canal/proposer-echange-suite-imprevu",
+        (await client.PostAsJsonAsync("api/propositions/suite-imprevu",
             new ProposerEchangeSuiteImprevuRequete(imprevuId, versActeurId))).EnsureSuccessStatusCode();
     }
 

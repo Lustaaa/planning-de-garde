@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 namespace PlanningDeGarde.Web;
 
 /// <summary>
-/// Port de geste de surface (s49 — correctif du gate G3 : le drag ne fonctionnait pas en navigateur RÉEL).
+/// Port de geste de surface (sans lui, le drag ne fonctionnait pas en navigateur RÉEL).
 /// Écoute le RELÂCHEMENT du pointeur au niveau <b>document</b> (<c>pointerup</c>), jamais un
 /// <c>@onmouseup</c>/<c>@onpointerup</c> posé sur la case seule : en navigateur réel, relâcher le bouton
 /// <b>hors d'une case</b> (dans une gouttière, au-delà du bord de la grille, sur le document) N'ATTEINT PAS
@@ -22,7 +22,7 @@ public interface IEcouteurRelachementPointeur
 
 /// <summary>
 /// Adaptateur JS interop du port : délègue au module <c>window.pdgPointeur</c> défini inline dans index.html.
-/// <c>attacher</c> pose un <c>document.addEventListener('pointerup', …)</c> rappelant .NET ; <c>detacher</c>
+/// <c>attacher</c> pose un <c>document.addEventListener('pointerup', …)</c> rappelant.NET ; <c>detacher</c>
 /// retire l'écouteur. Adaptateur de bord : jamais doublé côté test (on double le port).
 /// </summary>
 public sealed class EcouteurRelachementPointeurJs : IEcouteurRelachementPointeur
@@ -39,7 +39,7 @@ public sealed class EcouteurRelachementPointeurJs : IEcouteurRelachementPointeur
         return new Abonnement(_js, reference, id);
     }
 
-    /// <summary>Pont .NET rappelé depuis le listener document JS : chaque <c>pointerup</c> invoque le callback fourni.</summary>
+    /// <summary>Pont.NET rappelé depuis le listener document JS : chaque <c>pointerup</c> invoque le callback fourni.</summary>
     private sealed class PontRelachement
     {
         private readonly Func<Task> _onRelache;

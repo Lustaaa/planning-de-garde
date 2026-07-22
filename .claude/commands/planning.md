@@ -16,7 +16,7 @@ et valeur de retour).
    `docs/BACKLOG.md` (retours prioritaires) + `docs/specs/index.md`.
    - **Fallback** : type absent du registre → `general-purpose` + « applique l'agent
      `scrum-master`, chapeau PLANNING ».
-   - Il renvoie `{ "type":"goals", goals:[{titre, scope:[…]}] }` (3-4 cartes, ~1h IA chacune,
+   - Il renvoie `{ "type":"goals", goals:[{titre, scope:[…]}] }` (3-4 cartes, ~2h IA chacune,
      bullets de scope concret).
 
 2. **Porte G2 — choix du sprint goal.** Affiche le `resume`, puis `AskUserQuestion` : présente

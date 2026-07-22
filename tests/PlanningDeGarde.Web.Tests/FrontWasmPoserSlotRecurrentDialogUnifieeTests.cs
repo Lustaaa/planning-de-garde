@@ -10,7 +10,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <summary>
 /// Acceptation de NIVEAU RUNTIME du sprint 29 — S8 (🖥️ scénario IHM, rework G3) : poser un slot RÉCURRENT
 /// depuis la dialog « Poser un slot » UNIFIÉE (retour PO : pas de dialog/bouton séparés). Sur la grille
-/// réellement câblée (front WASM <see cref="Web.Components.Pages.PlanningPartage"/> + API distante réelle,
+/// réellement câblée (front WASM <see cref="Web.Components.Planning.PlanningPartage"/> + API distante réelle,
 /// store réel, projection réelle, canal d'écriture HTTP réel), cocher « Répéter chaque semaine » dans la
 /// dialog de pose ordinaire bascule vers le chemin récurrent (jour de semaine déduit de la case cliquée) ;
 /// la pose validée matérialise ses occurrences sur CHAQUE case du bon jour de la fenêtre.
@@ -25,7 +25,7 @@ public sealed class FrontWasmPoserSlotRecurrentDialogUnifieeTests : TestContext
     private static readonly DateTime Lundi_29_06_2026 = new(2026, 6, 29);
     private static readonly string[] SamedisVisibles = { "04/07", "11/07", "18/07", "25/07" };
 
-    private static void OuvrirDialogPoseDepuisSamedi(Bunit.TestContext ctx, IRenderedComponent<Web.Components.Pages.PlanningPartage> grille)
+    private static void OuvrirDialogPoseDepuisSamedi(Bunit.TestContext ctx, IRenderedComponent<Web.Components.Planning.PlanningPartage> grille)
     {
         grille.WaitForAssertion(
             () =>

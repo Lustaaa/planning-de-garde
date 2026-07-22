@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Layout;
+using PlanningDeGarde.Web.Components.Shared.Layout;
 using PlanningDeGarde.Web.State;
 using Xunit;
 

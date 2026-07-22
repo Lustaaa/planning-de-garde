@@ -18,7 +18,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// qui rafraîchit un <b>second écran</b> affichant le même planning partagé, <b>sans rechargement</b>.
 /// Deux écrans câblés à la <b>MÊME API distante réelle</b> (<see cref="ApiDistanteFactory"/> unique → store
 /// singleton partagé, hub SignalR réel commun) : l'écran 2 est la <b>grille</b>
-/// (<see cref="Web.Components.Pages.PlanningPartage"/>), l'écran 1 émet la suppression sur le canal réel.
+/// (<see cref="Web.Components.Planning.PlanningPartage"/>), l'écran 1 émet la suppression sur le canal réel.
 ///
 /// Montage : « Nina la nounou » garde le mardi 16/06/2026 (<b>surcharge</b>) ; le <b>cycle de fond</b>
 /// (N=1, index 0 → parent-a) attribue « Alice » à toute la fenêtre. La surcharge prime → la case du 16/06
@@ -74,7 +74,7 @@ public sealed class FrontWasmSupprimerPeriodeTempsReelTests : TestContext
         {
             while (!diffusionContinue.IsCancellationRequested)
             {
-                await client1.PostAsJsonAsync("api/canal/supprimer-periode", new { PeriodeId = idPeriode });
+                await client1.DeleteAsync($"api/periodes/{idPeriode}");
                 try { await Task.Delay(150, diffusionContinue.Token); }
                 catch (TaskCanceledException) { break; }
             }

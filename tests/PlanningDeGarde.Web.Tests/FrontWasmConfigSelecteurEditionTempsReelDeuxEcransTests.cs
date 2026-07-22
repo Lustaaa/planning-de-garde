@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -85,7 +84,7 @@ public sealed class FrontWasmConfigSelecteurEditionTempsReelDeuxEcransTests : Te
             li => li.QuerySelector(".acteur-nom")!.TextContent.Trim() == "Carla");
 
         // When — un parent ajoute « Carla » (rose) depuis le SECOND écran via la MODAL d'ajout (refonte s32 ;
-        // canal d'écriture HTTP réel : POST /api/canal/ajouter-acteur → store partagé muté + diffusion).
+        // canal d'écriture HTTP réel : POST /api/foyer/acteurs → store partagé muté + diffusion).
         ConfigActeursModalHarness.OuvrirAjout(ecran2, config2);
         config2.SurDispatcher(() => config2.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
         config2.SurDispatcher(() => config2.Find("[data-testid='pastille-couleur-ajout-rose']").Click()); // palette (Sc.6)

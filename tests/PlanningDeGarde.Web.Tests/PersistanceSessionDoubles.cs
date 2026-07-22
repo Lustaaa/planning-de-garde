@@ -38,7 +38,7 @@ internal sealed class SpyPersistanceSession : IPersistanceSession
 }
 
 /// <summary>Double INERTE du port <see cref="IPersistanceSession"/> pour les tests qui rendent
-/// <see cref="PlanningDeGarde.Web.Components.Pages.Connexion"/> sans se soucier de la persistance (rien à
+/// <see cref="PlanningDeGarde.Web.Components.Comptes.Connexion"/> sans se soucier de la persistance (rien à
 /// persister, stockage vide). Évite d'imposer une vraie persistance là où le scénario ne l'observe pas.</summary>
 internal sealed class PersistanceSessionInerte : IPersistanceSession
 {

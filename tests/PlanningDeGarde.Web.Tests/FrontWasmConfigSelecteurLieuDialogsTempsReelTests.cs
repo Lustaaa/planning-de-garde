@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -104,7 +103,7 @@ public sealed class FrontWasmConfigSelecteurLieuDialogsTempsReelTests : TestCont
         try
         {
             // When — le parent AJOUTE l'activité « piscine » via la MODAL de config (patron s35, canal d'écriture
-            // HTTP réel : POST /api/canal/ajouter-activite → store partagé muté + diffusion temps réel déclenchée).
+            // HTTP réel : POST /api/foyer/activites → store partagé muté + diffusion temps réel déclenchée).
             config.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-activite']").Click());
             config.WaitForElement("[data-testid='dialog-activite']", TimeSpan.FromSeconds(10));
             config.SurDispatcher(() => config.Find("[data-testid='champ-libelle-activite']").Change("piscine"));

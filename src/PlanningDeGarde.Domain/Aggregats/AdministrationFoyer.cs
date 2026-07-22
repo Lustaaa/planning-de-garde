@@ -5,7 +5,7 @@ namespace PlanningDeGarde.Domain;
 
 /// <summary>
 /// Agrégat de l'administration du foyer : l'ensemble des acteurs désignés <b>admins</b>. Porte
-/// l'invariant métier PUR « <b>admin = parent</b> » (retour PO URGENT #3) : un acteur ne peut
+/// l'invariant métier PUR « <b>admin = parent</b> » : un acteur ne peut
 /// rejoindre l'ensemble des admins QUE s'il est de type Parent. L'invariant borne le <b>type</b>,
 /// pas l'unicité — plusieurs parents peuvent être admins. Reconstitué depuis un snapshot d'ids
 /// (persistance derrière un port), muté par <see cref="DesignerAdmin"/> (Tell-Don't-Ask : c'est
@@ -41,7 +41,7 @@ public sealed class AdministrationFoyer
     }
 
     /// <summary>
-    /// Retire la désignation d'admin de l'acteur (sens OFF, s41). <b>Idempotent</b> : dé-désigner un
+    /// Retire la désignation d'admin de l'acteur (sens OFF). <b>Idempotent</b> : dé-désigner un
     /// acteur déjà non-admin est un no-op qui réussit (aucune mutation). Sinon l'acteur quitte
     /// l'ensemble des admins.
     /// </summary>

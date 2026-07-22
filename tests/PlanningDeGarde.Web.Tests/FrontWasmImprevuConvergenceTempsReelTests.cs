@@ -79,7 +79,7 @@ public sealed class FrontWasmImprevuConvergenceTempsReelTests : TestContext
         // When — un imprévu « malade » est SIGNALÉ depuis le PREMIER écran (POST canal d'écriture, signalant parent-a).
         var client = GrilleRuntimeHarness.ClientVers(api);
         (await client.PostAsJsonAsync(
-            "api/canal/signaler-imprevu",
+            "api/imprevus",
             new SignalerImprevuRequete(Jour, "Léa", TypeImprevu.Malade, "parent-a", ""))).EnsureSuccessStatusCode();
 
         // Diffusion RÉELLE repoussée en boucle de fond (idempotente) pour tomber APRÈS l'établissement de la

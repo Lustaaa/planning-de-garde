@@ -28,7 +28,7 @@ public sealed class CanalLectureApiTests
         var client = hote.CreateClient();
 
         // Given/When — pose émise via le canal d'écriture de l'API distante.
-        var pose = await client.PostAsJsonAsync("/api/canal/poser-slot", CommandePoseLea);
+        var pose = await client.PostAsJsonAsync("/api/slots", CommandePoseLea);
         Assert.True(pose.IsSuccessStatusCode, $"la pose doit aboutir, statut {(int)pose.StatusCode}.");
 
         // Then — la grille relue via le canal de LECTURE HTTP (comme le front WASM) porte le slot.

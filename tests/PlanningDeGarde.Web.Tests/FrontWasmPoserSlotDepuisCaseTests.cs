@@ -11,11 +11,11 @@ namespace PlanningDeGarde.Web.Tests;
 /// Acceptation de NIVEAU RUNTIME du Sc.1 (🖥️ scénario IHM, <c>@nominal</c> — palier 7 « écriture en
 /// contexte ») — le comportement neuf vit dans le <c>.razor</c> : <b>cliquer une case du planning ouvre
 /// la dialog « Poser un slot »</b>, pré-remplie sur la date de la case ; la pose validée <b>réapparaît</b>
-/// positionnée dans cette case. On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/>
+/// positionnée dans cette case. On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/>
 /// (front WASM) câblée à une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel,
 /// projection réelle <see cref="GrilleAgendaQuery"/>, canal d'écriture HTTP réel) — exactement le câblage
 /// des acceptations runtime s05/s10. Aucun handler ni règle backend neuf : on réutilise la commande
-/// <c>PoserSlot</c> et l'endpoint <c>POST /api/canal/poser-slot</c>.
+/// <c>PoserSlot</c> et l'endpoint <c>POST /api/slots</c>.
 ///
 /// Anti « vert qui ment » : si le clic sur la case n'ouvre aucune dialog (câblage <c>@onclick</c> → dialog
 /// absent), si la pose ne transite pas jusqu'au store distant, ou si le slot retombe à une autre date,

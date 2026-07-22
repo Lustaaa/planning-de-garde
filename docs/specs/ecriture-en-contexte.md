@@ -54,8 +54,8 @@ aucune persistance tirée en avant. Texte complet :
   **mutualisé** sur le déclencheur quelle que soit l'entrée.
 - **Supprimer un slot** *(6ᵉ usage du menu clic-case, livré s18)* → dialog listant les slots
   **couvrant** la date (`SlotsDuJourQuery` : enfant, lieu, bornes horaires, **identifiant stable** ;
-  lecture seule, ne déclenche **jamais** la diffusion) → bouton supprimer par ligne → commande `POST
-  /api/canal/supprimer-slot` (**idempotente** : id absent / déjà supprimé = **succès no-op** ; clé =
+  lecture seule, ne déclenche **jamais** la diffusion) → bouton supprimer par ligne → commande `DELETE
+  /api/slots/{id}` (**idempotente** : id absent / déjà supprimé = **succès no-op** ; clé =
   identifiant stable, jamais un libellé). **Succès** → **accusé « Slot supprimé » à part** (non
   bloquant) + **diffusion temps réel** : le slot disparaît de la case relue **et de chacun des deux
   jours** s'il franchit minuit, la **pile horaire** des autres slots restant **empilée dans l'ordre**.

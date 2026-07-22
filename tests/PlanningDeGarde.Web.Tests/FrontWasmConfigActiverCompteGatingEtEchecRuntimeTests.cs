@@ -3,7 +3,6 @@ using System.Linq;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -75,7 +74,7 @@ public sealed class FrontWasmConfigActiverCompteGatingEtEchecRuntimeTests : Test
         using var api = new ApiDistanteFactory();
         SemerCompteInactifAlice(api);
         Services.AddSingleton(
-            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "activer-compte"));
+            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/activation"));
         Services.AddSingleton(new SessionPlanning()); // Parent par défaut
 
         var config = RenderComponent<ConfigurationFoyer>();

@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -13,7 +12,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <summary>
 /// Sprint 31 — Sc.1 (🖥️ @ihm — acceptation de NIVEAU RUNTIME) : moitié « persisté au login » de la survie
 /// au F5. La <b>vraie</b> page de connexion (<see cref="Connexion"/>, API distante RÉELLE
-/// <see cref="ApiDistanteFactory"/>, endpoint <c>POST /api/canal/se-connecter</c> + <c>SeConnecterHandler</c> +
+/// <see cref="ApiDistanteFactory"/>, endpoint <c>POST /api/session</c> + <c>SeConnecterHandler</c> +
 /// store réels) : sur une connexion réussie (bon couple email + mot de passe), elle <b>persiste un jeton de
 /// session</b> via le port <see cref="IPersistanceSession"/> (seul doublé — un espion ; l'effet localStorage
 /// réel est couvert par la garde d'asset <see cref="AmorceSessionAssetTests"/>). C'est ce jeton que le

@@ -12,7 +12,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// jours où l'enfant est chez moi » dans la dialog « Poser un slot » (récurrent) pose un slot récurrent
 /// <b>conditionné à la garde</b> (ConditionneGarde=true) portant l'identité du <b>parent courant</b>
 /// (PoseurId = identité effective de la session). Sur la grille réellement câblée (front WASM
-/// <see cref="Web.Components.Pages.PlanningPartage"/> + API distante réelle, store réel, canal d'écriture
+/// <see cref="Web.Components.Planning.PlanningPartage"/> + API distante réelle, store réel, canal d'écriture
 /// HTTP réel), la pose transite jusqu'au store distant avec le conditionnement demandé ; laisser le toggle
 /// inactif pose un slot au comportement s29 par défaut (non conditionné).
 ///
@@ -25,7 +25,7 @@ public sealed class FrontWasmPoserSlotRecurrentConditionneGardeToggleTests : Tes
 {
     private static readonly DateTime Lundi_29_06_2026 = new(2026, 6, 29);
 
-    private static void OuvrirDialogPoseRecurrenteDepuisSamedi(Bunit.TestContext ctx, IRenderedComponent<Web.Components.Pages.PlanningPartage> grille)
+    private static void OuvrirDialogPoseRecurrenteDepuisSamedi(Bunit.TestContext ctx, IRenderedComponent<Web.Components.Planning.PlanningPartage> grille)
     {
         grille.WaitForAssertion(
             () =>

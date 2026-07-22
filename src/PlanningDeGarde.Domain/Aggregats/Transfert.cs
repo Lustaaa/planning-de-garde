@@ -4,7 +4,7 @@ namespace PlanningDeGarde.Domain;
 
 /// <summary>
 /// Snapshot immuable d'un transfert — frontière publique pour assertions / persistance. <paramref name="EnfantId"/>
-/// (s53) SCOPE le transfert saisi à un enfant : il n'apparaît que dans la grille de CET enfant. Absent (<c>""</c>)
+/// SCOPE le transfert saisi à un enfant : il n'apparaît que dans la grille de CET enfant. Absent (<c>""</c>)
 /// = transfert partagé/legacy (mono-enfant antérieur).
 /// </summary>
 public sealed record TransfertSnapshot(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date, string EnfantId = "");
@@ -32,7 +32,7 @@ public sealed class Transfert
         _enfantId = enfantId;
     }
 
-    /// <summary>Définit un transfert de bascule. <paramref name="enfantId"/> (s53) SCOPE le transfert à un
+    /// <summary>Définit un transfert de bascule. <paramref name="enfantId"/> SCOPE le transfert à un
     /// enfant (hérité de la vue courante, Option A) ; absent (<c>""</c>) = partagé/legacy.</summary>
     public static Result<Transfert> Definir(string deposeParId, string recupereParId, string lieuId, TimeSpan heure, DateTime date, string enfantId = "")
     {

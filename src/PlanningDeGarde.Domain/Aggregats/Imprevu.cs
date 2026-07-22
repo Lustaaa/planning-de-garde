@@ -3,9 +3,9 @@ using System;
 namespace PlanningDeGarde.Domain;
 
 /// <summary>
-/// Agrégat « imprévu signalé » (s48) : un parent SIGNALE un fait subi non-négocié (enfant
+/// Agrégat « imprévu signalé » : un parent SIGNALE un fait subi non-négocié (enfant
 /// <see cref="TypeImprevu.Malade"/> / parent <see cref="TypeImprevu.Retard"/>) sur un jour, pour un enfant,
-/// avec un motif OPTIONNEL. Purement INFORMATIF : il produit une trace de LECTURE au journal (cloche s47),
+/// avec un motif OPTIONNEL. Purement INFORMATIF : il produit une trace de LECTURE au journal (cloche),
 /// JAMAIS une écriture de résolution. Invariant : le <see cref="TypeImprevu"/> doit être connu (malade ou
 /// retard) — un type inconnu est REFUSÉ avant toute écriture (Tell-Don't-Ask, la règle vit dans l'agrégat).
 /// </summary>
@@ -37,7 +37,7 @@ public sealed class Imprevu
             new Imprevu(Guid.NewGuid().ToString("N"), jour, enfantId, type, signalantId, motif ?? ""));
     }
 
-    /// <summary>Produit la trace de LECTURE horodatée pour le journal (cloche s47). <paramref name="responsableDuJourId"/>
+    /// <summary>Produit la trace de LECTURE horodatée pour le journal (cloche). <paramref name="responsableDuJourId"/>
     /// est l'acteur RÉSOLU du jour (autre acteur concerné) — lu sans jamais modifier la résolution.</summary>
     public EvenementChangementSnapshot VersEvenement(string responsableDuJourId, DateTime horodatage)
         => new(Id, TypeChangement.Imprevu, Jour, EnfantId,

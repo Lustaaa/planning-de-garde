@@ -8,7 +8,7 @@ namespace PlanningDeGarde.Domain;
 /// Cycle de fond : répartition par défaut de la responsabilité de garde sur un cycle de
 /// <see cref="NombreSemaines"/> semaines, une responsabilité par semaine. L'index de semaine
 /// est dérivé du numéro de semaine ISO 8601 de la date (<c>index = ISOWeek mod N</c>), fonction
-/// pure de la date (déterministe, sans horloge). Le mapping associe un index 0..N-1 à un
+/// pure de la date (déterministe, sans horloge). Le mapping associe un index 0.N-1 à un
 /// identifiant stable de responsable (jamais le libellé). Index non mappé = pas de fond.
 /// </summary>
 public sealed class CycleDeFond
@@ -25,8 +25,8 @@ public sealed class CycleDeFond
     public int NombreSemaines { get; }
 
     /// <summary>
-    /// Mapping index de semaine (0..N-1) → identifiant stable de responsable — frontière de lecture
-    /// exposée pour la <b>persistance</b> du cycle (sérialisation N + mapping, s15 Sc.9). Lecture seule.
+    /// Mapping index de semaine (0.N-1) → identifiant stable de responsable — frontière de lecture
+    /// exposée pour la <b>persistance</b> du cycle (sérialisation N + mapping). Lecture seule.
     /// </summary>
     public IReadOnlyDictionary<int, string> Affectations => _affectations;
 

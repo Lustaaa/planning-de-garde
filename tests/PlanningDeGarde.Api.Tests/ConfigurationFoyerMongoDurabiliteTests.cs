@@ -54,20 +54,20 @@ public sealed class ConfigurationFoyerMongoDurabiliteTests : IDisposable
         {
             var c1 = serveur1.CreateClient();
 
-            var ajoutAlice = await c1.PostAsJsonAsync("/api/canal/ajouter-acteur", new { Nom = "Alice", Couleur = "bleu" });
+            var ajoutAlice = await c1.PostAsJsonAsync("/api/foyer/acteurs", new { Nom = "Alice", Couleur = "bleu" });
             Assert.True(ajoutAlice.IsSuccessStatusCode, $"l'ajout d'Alice doit aboutir, statut {(int)ajoutAlice.StatusCode}.");
 
             // L'id stable est généré côté serveur : on le relit via l'énumération du store.
-            var apresAlice = await c1.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+            var apresAlice = await c1.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
             aliciaId = apresAlice!.Single(a => a.Nom == "Alice").Id;
 
             // Édition durable : le renommage Alice → Alicia doit survivre au redémarrage.
-            var edition = await c1.PostAsJsonAsync("/api/canal/editer-acteur", new { ActeurId = aliciaId, Nom = "Alicia" });
+            var edition = await c1.PutAsJsonAsync($"/api/foyer/acteurs/{aliciaId}", new { Nom = "Alicia" });
             Assert.True(edition.IsSuccessStatusCode, $"le renommage Alice → Alicia doit aboutir, statut {(int)edition.StatusCode}.");
 
-            var ajoutCarla = await c1.PostAsJsonAsync("/api/canal/ajouter-acteur", new { Nom = "Carla", Couleur = "rose" });
+            var ajoutCarla = await c1.PostAsJsonAsync("/api/foyer/acteurs", new { Nom = "Carla", Couleur = "rose" });
             Assert.True(ajoutCarla.IsSuccessStatusCode, $"l'ajout de Carla doit aboutir, statut {(int)ajoutCarla.StatusCode}.");
-            var apresCarla = await c1.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+            var apresCarla = await c1.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
             carlaId = apresCarla!.Single(a => a.Nom == "Carla").Id;
         }
 
@@ -76,16 +76,16 @@ public sealed class ConfigurationFoyerMongoDurabiliteTests : IDisposable
         var c2 = serveur2.CreateClient();
 
         // Then — l'écran de configuration liste toujours Alicia (édition) et Carla (ajout), sans ressaisie.
-        var acteurs = await c2.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+        var acteurs = await c2.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
         Assert.Contains(acteurs!, a => a.Id == aliciaId && a.Nom == "Alicia");
         Assert.Contains(acteurs!, a => a.Id == carlaId && a.Nom == "Carla");
 
         // Les périodes sont InMemory (volatiles, règle 30) : ré-affectées sur le serveur redémarré.
         // Les ids ont survécu → ré-affecter dessus résout nom + couleur depuis le store durable.
-        var pAlicia = await c2.PostAsJsonAsync("/api/canal/affecter-periode",
+        var pAlicia = await c2.PostAsJsonAsync("/api/periodes",
             new { ResponsableId = aliciaId, Debut = new DateTime(2026, 6, 1), Fin = new DateTime(2026, 6, 5) });
         Assert.True(pAlicia.IsSuccessStatusCode, $"affectation Alicia 1-5 juin, statut {(int)pAlicia.StatusCode}.");
-        var pCarla = await c2.PostAsJsonAsync("/api/canal/affecter-periode",
+        var pCarla = await c2.PostAsJsonAsync("/api/periodes",
             new { ResponsableId = carlaId, Debut = new DateTime(2026, 6, 8), Fin = new DateTime(2026, 6, 12) });
         Assert.True(pCarla.IsSuccessStatusCode, $"affectation Carla 8-12 juin, statut {(int)pCarla.StatusCode}.");
 

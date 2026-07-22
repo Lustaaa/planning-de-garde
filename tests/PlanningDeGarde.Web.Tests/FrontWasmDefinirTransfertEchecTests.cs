@@ -11,7 +11,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <summary>
 /// Acceptation de NIVEAU RUNTIME du Sc.3 (🖥️ scénario IHM, <c>@erreur</c> — palier 7, 3ᵉ dialog) :
 /// <b>caractérisation early-green</b> de l'issue d'échec (règle 28 — un seul observable). On rend la
-/// <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à une
+/// <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à une
 /// <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel, canal HTTP réel). Quel que
 /// soit le mode d'échec — <b>refus du domaine</b> (transfert incomplet, motif propagé par le canal) ou
 /// <b>API injoignable</b> (transport réellement coupé) — l'observable converge : la dialog <b>reste
@@ -71,7 +71,7 @@ public sealed class FrontWasmDefinirTransfertEchecTests : TestContext
         // transport déterministe (handler levant HttpRequestException avant tout aller-retour — robuste vs
         // proxy loopback Docker). La lecture initiale de la grille transite normalement.
         using var api = new ApiDistanteFactory();
-        var clientCoupe = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "definir-transfert");
+        var clientCoupe = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "transferts");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Vendredi_19_06_2026, clientCoupe);
 
         // When — un Parent ouvre la dialog depuis la case du vendredi 19/06, saisit un transfert COMPLET
@@ -107,7 +107,7 @@ public sealed class FrontWasmDefinirTransfertEchecTests : TestContext
 
     // Ouvre la dialog « Définir un transfert » depuis la case ciblée, idempotent sous WaitForAssertion
     // (robuste aux re-renders async de la connexion du hub SignalR du harnais).
-    private static void OuvrirDialogTransfert(IRenderedComponent<Web.Components.Pages.PlanningPartage> grille, string jjMM)
+    private static void OuvrirDialogTransfert(IRenderedComponent<Web.Components.Planning.PlanningPartage> grille, string jjMM)
         => grille.WaitForAssertion(
             () =>
             {

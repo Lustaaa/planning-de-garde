@@ -13,6 +13,11 @@ target/
 bin/
 obj/
 
+# Doc technique DocFX (générée — jamais versionnée : seule la CONFIG l'est)
+docfx/_site/
+docfx/api/
+docfx/obj/
+
 # Environnement & secrets
 .env
 .env.*
@@ -32,6 +37,9 @@ desktop.ini
 # Éditeurs / IDE
 .idea/
 .vscode/
+.vs/
+*.csproj.user
+*.user
 *.swp
 *~
 

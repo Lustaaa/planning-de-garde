@@ -2,7 +2,6 @@ using System;
 using System.Net.Http;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -62,7 +61,7 @@ public sealed class FrontWasmConfigApiInjoignableTempsReelTests : TestContext
         // « Alicia » et j'enregistre (l'émission HTTP réelle se heurte à une HttpRequestException).
         using var ecranConfig = new TestContext();
         ecranConfig.Services.AddSingleton(
-            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "editer-acteur"));
+            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/foyer/acteurs/"));
         ecranConfig.Services.AddSingleton(new SessionPlanning()); // contexte rôle réel requis par l'écran (gating Sc.7)
         var config = ecranConfig.RenderComponent<ConfigurationFoyer>();
 

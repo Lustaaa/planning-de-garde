@@ -4,17 +4,17 @@ using Microsoft.JSInterop;
 namespace PlanningDeGarde.Web;
 
 /// <summary>
-/// Port d'ergonomie de surface (sprint 26, Sc.3) — lecture du thème appliqué et persistance du choix
+/// Port d'ergonomie de surface — lecture du thème appliqué et persistance du choix
 /// explicite clair/sombre. Refonte purement visuelle : aucune règle métier, aucun observable de domaine.
 /// Le choix persisté prime sur la préférence système au chargement suivant (l'amorce inline lit
-/// localStorage en premier, Sc.2).
+/// localStorage en premier).
 /// </summary>
 public interface IPreferencesTheme
 {
     /// <summary>Thème actuellement appliqué (« clair » | « sombre »), lu depuis &lt;html data-theme&gt;.</summary>
     ValueTask<string> ThemeCourantAsync();
 
-    /// <summary>Persiste le choix (localStorage) ET l'applique immédiatement (data-theme sur &lt;html&gt;).</summary>
+    /// <summary>Persiste le choix (localStorage) ET l'applique immédiatement (data-theme sur &lt;html&gt).</summary>
     ValueTask DefinirAsync(string theme);
 }
 

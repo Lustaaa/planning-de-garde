@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -46,7 +45,7 @@ public sealed class FrontWasmConfigFoyerHabilleTests : TestContext
 
         Assert.NotNull(dir);
         var razor = File.ReadAllText(Path.Combine(
-            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Pages", "ConfigurationFoyer.razor"));
+            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Foyer", "ConfigurationFoyer.razor"));
 
         Assert.Contains("var(--pdg-ink)", razor, StringComparison.Ordinal);
         Assert.Contains("config-panneau", razor, StringComparison.Ordinal);

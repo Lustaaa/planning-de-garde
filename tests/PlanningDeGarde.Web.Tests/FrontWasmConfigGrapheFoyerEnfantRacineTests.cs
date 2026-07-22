@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Bunit;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -91,8 +90,8 @@ public sealed class FrontWasmConfigGrapheFoyerEnfantRacineTests : TestContext
 
         private sealed class EnfantsVides : IEnumerationEnfants
         {
-            public System.Collections.Generic.IReadOnlyCollection<PlanningDeGarde.Application.EnfantFoyer> EnumererEnfants()
-                => System.Array.Empty<PlanningDeGarde.Application.EnfantFoyer>();
+            public System.Collections.Generic.IReadOnlyCollection<PlanningDeGarde.Application.Enfants.Ports.EnfantFoyer> EnumererEnfants()
+                => System.Array.Empty<PlanningDeGarde.Application.Enfants.Ports.EnfantFoyer>();
         }
     }
 }

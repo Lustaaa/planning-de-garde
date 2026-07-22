@@ -2,7 +2,6 @@ using System;
 using System.Linq;
 using AngleSharp.Dom;
 using Bunit;
-using PlanningDeGarde.Web.Components.Pages;
 
 namespace PlanningDeGarde.Web.Tests;
 

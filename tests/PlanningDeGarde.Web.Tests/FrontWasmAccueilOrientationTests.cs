@@ -3,7 +3,6 @@ using System.IO;
 using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -49,7 +48,7 @@ public sealed class FrontWasmAccueilOrientationTests : TestContext
 
         Assert.NotNull(dir);
         var razor = File.ReadAllText(Path.Combine(
-            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Pages", "Home.razor"));
+            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Planning", "Home.razor"));
 
         Assert.Contains("accueil-orientation", razor, StringComparison.Ordinal);
         Assert.Contains("var(--pdg-", razor, StringComparison.Ordinal);

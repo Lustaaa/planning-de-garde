@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 namespace PlanningDeGarde.Web;
 
 /// <summary>
-/// Port de geste de surface (s49 — 2ᵉ correctif du gate G3 : le drag ne surlignait AUCUNE case intermédiaire
+/// Port de geste de surface (sans lui, le drag ne surlignait AUCUNE case intermédiaire
 /// en navigateur RÉEL). Écoute le MOUVEMENT du pointeur au niveau <b>document</b> (<c>pointermove</c>,
 /// bouton appuyé) : à chaque déplacement, l'adaptateur résout la case sous le curseur
 /// (<c>document.elementFromPoint</c> → plus proche <c>[data-testid="jour-case"]</c> → son <c>data-date</c>)
@@ -24,7 +24,7 @@ public interface IEcouteurMouvementPointeur
 /// <summary>
 /// Adaptateur JS interop du port : délègue au module <c>window.pdgPointeur</c> (défini inline dans index.html).
 /// <c>attacherMouvement</c> pose un <c>document.addEventListener('pointermove', …)</c> qui, bouton primaire appuyé,
-/// résout la case sous le curseur par <c>elementFromPoint</c> et rappelle .NET ; <c>detacherMouvement</c> le retire.
+/// résout la case sous le curseur par <c>elementFromPoint</c> et rappelle.NET ; <c>detacherMouvement</c> le retire.
 /// Adaptateur de bord : jamais doublé côté test (on double le port).
 /// </summary>
 public sealed class EcouteurMouvementPointeurJs : IEcouteurMouvementPointeur
@@ -41,7 +41,7 @@ public sealed class EcouteurMouvementPointeurJs : IEcouteurMouvementPointeur
         return new Abonnement(_js, reference, id);
     }
 
-    /// <summary>Pont .NET rappelé depuis le listener document JS : chaque <c>pointermove</c> bouton-appuyé
+    /// <summary>Pont.NET rappelé depuis le listener document JS : chaque <c>pointermove</c> bouton-appuyé
     /// invoque le callback avec le <c>data-date</c> résolu (ou <c>null</c> hors case).</summary>
     private sealed class PontSurvol
     {

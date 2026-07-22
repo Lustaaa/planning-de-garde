@@ -4,7 +4,6 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Web.Components.Pages;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
@@ -12,7 +11,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <summary>
 /// Sprint 28 — S6 (@ihm, acceptation de NIVEAU RUNTIME, bout-à-bout). L'écran « redéfinir par jeton »
 /// réellement câblé (<see cref="ReinitialiserMotDePasse"/>, API distante RÉELLE <see cref="ApiDistanteFactory"/>,
-/// endpoint <c>POST /api/canal/redefinir-mot-de-passe</c> + <c>RedefinirMotDePasseHandler</c> + hacheur
+/// endpoint <c>POST /api/comptes/reinitialisation</c> + <c>RedefinirMotDePasseHandler</c> + hacheur
 /// PBKDF2 + stores réels) : le jeton valide est porté par l'URL, la saisie d'un nouveau mot de passe le
 /// redéfinit (haché), le jeton est CONSOMMÉ (usage unique), et l'utilisateur peut se connecter avec
 /// « email + nouveau mot de passe » (l'ancien ne vérifie plus). Une SECONDE redéfinition avec le même

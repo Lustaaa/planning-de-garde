@@ -14,15 +14,15 @@ public sealed record SlotRecurrentSnapshot(
 
 /// <summary>
 /// Agrégat « où est l'enfant, chaque semaine » (axe localisation, orthogonal à la responsabilité —
-/// décision SM s29 : le slot reste une LOCALISATION sans responsable). Miroir de
+/// le slot reste une LOCALISATION sans responsable). Miroir de
 /// <see cref="SlotDeLocalisation"/>, mais la borne temporelle est un <b>jour de semaine récurrent</b>
 /// et une plage horaire, jamais une date. Invariant porté : heure fin > heure début.
 ///
-/// <para>D1 (s31) : un slot peut être <b>conditionné à la garde</b> (« seulement les jours où l'enfant est
+/// <para> : un slot peut être <b>conditionné à la garde</b> (« seulement les jours où l'enfant est
 /// chez moi ») — <see cref="_conditionneGarde"/> — auquel cas il porte l'identité du <b>parent poseur</b>
 /// (<see cref="_poseurId"/>). La projection ne matérialise alors ses occurrences que les jours où la
 /// résolution de responsabilité (surcharge &gt; fond) désigne ce poseur. Un slot non conditionné (défaut)
-/// conserve le comportement s29 strictement inchangé (matérialisé sur tous ses jours de récurrence).</para>
+/// conserve le comportement strictement inchangé (matérialisé sur tous ses jours de récurrence).</para>
 /// </summary>
 public sealed class SlotRecurrent
 {

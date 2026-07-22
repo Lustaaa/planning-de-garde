@@ -59,14 +59,14 @@ la portion **encore couverte** affiche le responsable (ré)affecté.
   **couvrant** la date avec **identifiant stable, bornes, responsable** ; alimente la dialog de
   suppression ; ne déclenche **jamais** la diffusion.
 - **Supprimer une période** — 4ᵉ usage du **menu clic-case** → dialog listant les périodes de la
-  date → bouton supprimer par ligne → commande `POST /api/canal/supprimer-periode` (idempotente) ;
+  date → bouton supprimer par ligne → commande `DELETE /api/periodes/{id}` (idempotente) ;
   sur succès, **accusé « Période supprimée » à part** (non bloquant) et **diffusion temps réel**
   (case + légende re-résolues sans rechargement). Échec API → la dialog **reste ouverte**, message
   clair, **rien appliqué** ; annulation → **aucune commande émise**. **Gating Invité** : entrée
   absente, aucune commande émissible.
 - **Éditer une période** — 5ᵉ usage du **menu clic-case** : un bouton « Éditer » par ligne de la
   dialog liste ouvre un **formulaire pré-rempli** (bornes + responsable) → re-borner et/ou
-  réaffecter → commande `POST /api/canal/editer-periode` (clé = identifiant stable). Sur succès,
+  réaffecter → commande `PUT /api/periodes/{id}` (clé = identifiant stable). Sur succès,
   **accusé « Période modifiée » à part** (non bloquant) et **diffusion temps réel** (case + légende
   re-résolues sans rechargement). **Rejet** si bornes invalides (fin ≤ début), responsable manquant,
   **ou état périmé** (concurrence) → message clair dans la dialog, **rien appliqué**. Échec API → la

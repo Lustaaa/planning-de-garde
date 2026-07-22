@@ -1,0 +1,49 @@
+@inject HttpClient Canal
+
+@* Dialog (modal) « Supprimer une période » ouverte depuis le menu d'actions d'une case (palier 7,
+   écriture en contexte — 4ᵉ usage du menu clic-case). À l'ouverture, elle LIT les périodes couvrant la
+   date via le canal de lecture HTTP (GET /api/periodes/{aaaa}/{MM}/{jj}) ; supprimer une ligne émet sa
+   commande via le canal d'écriture HTTP (DELETE /api/periodes/{id}) — JAMAIS un handler en DI
+   direct ni le canal de diffusion. Aucune règle métier ici. La clé envoyée est l'identifiant stable de
+   la période (jamais un libellé). Issues : succès → OnValide (le parent ferme, accuse et relit la
+   grille) ; refus métier / API injoignable → message DANS la dialog, la dialog reste ouverte. *@
+<div class="dialog-backdrop" data-testid="dialog-supprimer-periode">
+    <div class="dialog-panneau">
+        <h2 class="h4 mb-3">Supprimer une période — @DateContexte.ToString("dd/MM/yyyy")</h2>
+
+        @if (_periodes is null)
+        {
+            <p class="text-muted" data-testid="periodes-chargement">Chargement des périodes…</p>
+        }
+        else if (_periodes.Count == 0)
+        {
+            <p class="text-muted" data-testid="periodes-vide">Aucune période ne couvre ce jour.</p>
+        }
+        else
+        {
+            <ul class="list-group mb-3">
+                @foreach (var periode in _periodes)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center"
+                        data-testid="periode-supprimable" data-periode-id="@periode.Id">
+                        <span>
+                            <strong>@periode.ResponsableNom</strong>
+                            <span class="text-muted ms-2">@periode.Debut.ToString("dd/MM")–@periode.Fin.ToString("dd/MM")</span>
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-danger" data-testid="bouton-supprimer-periode"
+                                @onclick="@(() => Supprimer(periode.Id))">Supprimer</button>
+                    </li>
+                }
+            </ul>
+        }
+
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-link" data-testid="dialog-annuler" @onclick="Annuler">Fermer</button>
+        </div>
+
+        @if (_motifEchec is not null)
+        {
+            <div class="alert alert-danger mt-3" data-testid="motif-echec">@_motifEchec</div>
+        }
+    </div>
+</div>

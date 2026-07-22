@@ -42,7 +42,7 @@ public sealed class FrontWasmGrilleAjoutVivantTempsReelTests : TestContext
 
         // When — un autre acteur affecte Bruno (parent-b) le jeudi 02/07 via le canal d'écriture réel …
         using var clientAutreActeur = GrilleRuntimeHarness.ClientVers(api);
-        var reponse = await clientAutreActeur.PostAsJsonAsync("api/canal/affecter-periode", new
+        var reponse = await clientAutreActeur.PostAsJsonAsync("api/periodes", new
         {
             ResponsableId = "parent-b",
             Debut = new DateTime(2026, 7, 2),

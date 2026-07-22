@@ -16,7 +16,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// </summary>
 public sealed class Scenario36_S3_SeedAmorcageB2Tests
 {
-    private static bool EstParent(System.Collections.Generic.IReadOnlyCollection<PlanningDeGarde.Application.RoleFoyer> roles, string libelle)
+    private static bool EstParent(System.Collections.Generic.IReadOnlyCollection<PlanningDeGarde.Application.Foyer.Ports.RoleFoyer> roles, string libelle)
         => roles.Single(r => r.Libelle == libelle).EstRoleParent;
 
     [Fact]

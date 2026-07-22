@@ -2,7 +2,6 @@ using System;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 
@@ -37,7 +36,7 @@ public sealed class FrontWasmConnexionAncreIdentiteReelleSurActeurRuntimeTests :
 
         var connexion = RenderComponent<Connexion>();
 
-        // When — je me connecte avec cet email (POST /api/canal/se-connecter réel).
+        // When — je me connecte avec cet email (POST /api/session réel).
         this.SurDispatcher(() => connexion.Find("[data-testid='champ-email-connexion']").Change("mamie@foyer.fr"));
         this.SurDispatcher(() => connexion.Find("[data-testid='bouton-se-connecter']").Click());
 

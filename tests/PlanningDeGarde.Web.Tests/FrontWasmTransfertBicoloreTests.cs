@@ -7,7 +7,7 @@ namespace PlanningDeGarde.Web.Tests;
 
 /// <summary>
 /// Acceptation de NIVEAU RUNTIME du sprint 29 — S13 (🖥️ scénario IHM, gate G3) : rendu du transfert
-/// BICOLORE sur la grille réellement câblée (front WASM <see cref="Web.Components.Pages.PlanningPartage"/>
+/// BICOLORE sur la grille réellement câblée (front WASM <see cref="Web.Components.Planning.PlanningPartage"/>
 /// + API distante réelle, projection réelle). Un jour portant un transfert affiche une case coupée par une
 /// DIAGONALE séparant la couleur de départ (déposant) de la couleur d'arrivée (récupérant), le nom du
 /// responsable et la légende restant lisibles ; la légende signale le motif bicolore = transfert.
