@@ -2,6 +2,8 @@
 // (dossiers Classes/ et Interfaces/ supprimés). Ces global usings ré-exposent les sous-espaces
 // de noms pour que les consommateurs compilent sans éditer chaque fichier un par un.
 
+global using Microsoft.AspNetCore.Mvc;
+global using PlanningDeGarde.Domain;
 global using PlanningDeGarde.Application.Activites.Handlers;
 global using PlanningDeGarde.Application.Activites.Ports;
 global using PlanningDeGarde.Application.Commun.Ports;

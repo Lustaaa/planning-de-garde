@@ -13,7 +13,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// configuration réellement câblé (<see cref="ConfigurationFoyer"/>, API distante réelle
 /// <see cref="ApiDistanteFactory"/>, store réel, DI réelle, hub SignalR réel), on <b>crée / associe un
 /// compte à un acteur</b> (email obligatoire) via le canal d'écriture HTTP réel (POST
-/// /api/canal/creer-compte), relu depuis le store (GET /api/foyer/comptes). Le compte apparaît associé à
+/// /api/foyer/comptes), relu depuis le store (GET /api/foyer/comptes). Le compte apparaît associé à
 /// l'acteur avec son statut « inactif » affiché, sans rechargement. Un email vide (ou déjà utilisé) est
 /// refusé par le handler réel : le formulaire reste ouvert avec un motif clair, aucun compte créé.
 /// </summary>

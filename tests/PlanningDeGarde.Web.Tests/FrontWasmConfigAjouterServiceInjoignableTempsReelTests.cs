@@ -12,7 +12,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// Acceptation de NIVEAU RUNTIME du Sc.9 (🖥️ IHM, <c>@erreur</c>) — VOLET 100 % RUNTIME (backend néant) :
 /// depuis l'<b>écran de configuration réellement câblé</b> (<see cref="ConfigurationFoyer"/>), un parent a
 /// saisi « Carla » (rose) dans le formulaire d'AJOUT et valide alors que le <b>service de configuration est
-/// injoignable</b>. L'échec est de <b>transport</b> (le canal d'ajout <c>POST /api/canal/ajouter-acteur</c>
+/// injoignable</b>. L'échec est de <b>transport</b> (le canal d'ajout <c>POST /api/foyer/acteurs</c>
 /// n'aboutit pas : <see cref="System.Net.Http.HttpRequestException"/>), PAS un refus métier 4xx comme Sc.8 :
 /// le handler <c>AjouterActeur</c> ne s'exécute jamais. L'écran doit surfacer un <b>message d'échec clair</b>
 /// (« Enregistrement impossible : le service est injoignable, réessayez. »), <b>conserver</b> la saisie « Carla /
@@ -36,10 +36,10 @@ public sealed class FrontWasmConfigAjouterServiceInjoignableTempsReelTests : Tes
     {
         // Given — l'écran de configuration réellement câblé à l'API distante réelle. L'énumération initiale
         // (GET HTTP réel) transite normalement et peuple la liste ; SEUL le canal d'ajout est injoignable
-        // (échec de transport déterministe sur le POST /api/canal/ajouter-acteur).
+        // (échec de transport déterministe sur le POST /api/foyer/acteurs).
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(
-            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "ajouter-acteur"));
+            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "foyer/acteurs"));
         Services.AddSingleton(new SessionPlanning()); // contexte rôle réel (Parent par défaut) requis par l'écran (gating Sc.7)
 
         var config = RenderComponent<ConfigurationFoyer>();

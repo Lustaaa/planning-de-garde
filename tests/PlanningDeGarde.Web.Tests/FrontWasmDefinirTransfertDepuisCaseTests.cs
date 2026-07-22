@@ -17,7 +17,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// l'API distante. On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/>
 /// (front WASM) câblée à une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel,
 /// canal HTTP réel). Aucun handler ni règle backend neuf : réutilisation de la commande
-/// <c>DefinirTransfert</c> et de l'endpoint <c>POST /api/canal/definir-transfert</c> (s01→s05).
+/// <c>DefinirTransfert</c> et de l'endpoint <c>POST /api/transferts</c> (s01→s05).
 ///
 /// Anti « vert qui ment » : si le clic n'ouvre pas le menu, si la 3ᵉ entrée manque, si la validation ne
 /// transite pas jusqu'au store distant, ou si le transfert retombe à une autre date, l'observable distant

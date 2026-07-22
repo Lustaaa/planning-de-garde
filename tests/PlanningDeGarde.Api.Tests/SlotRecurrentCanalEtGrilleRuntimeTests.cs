@@ -9,7 +9,7 @@ namespace PlanningDeGarde.Api.Tests;
 /// <summary>
 /// Sprint 29 — Câblage DI runtime du slot récurrent (prérequis IHM) : sur l'hôte d'API RÉEL (DI réelle,
 /// store réel InMemory), poser un slot récurrent via le CANAL D'ÉCRITURE (endpoint
-/// <c>POST /api/canal/poser-slot-recurrent</c>) doit aboutir, puis ses occurrences doivent apparaître sur
+/// <c>POST /api/slots/recurrents</c>) doit aboutir, puis ses occurrences doivent apparaître sur
 /// CHAQUE case du bon jour de la grille projetée réellement (<c>GET /api/grille/…</c>) — preuve que
 /// <see cref="ISlotRecurrentRepository"/> est bien enregistré ET injecté dans
 /// <see cref="GrilleAgendaQuery"/>. Aucun accès direct au store : tout transite par le câblage réel.
@@ -33,7 +33,7 @@ public sealed class SlotRecurrentCanalEtGrilleRuntimeTests
         hote.Services.GetRequiredService<IEditeurEnfants>().Ajouter("lea", "lea");
 
         // When — un Parent pose un slot récurrent le samedi de 11h30 à 12h15 au lieu « piscine ».
-        var pose = await client.PostAsJsonAsync("/api/canal/poser-slot-recurrent", new
+        var pose = await client.PostAsJsonAsync("/api/slots/recurrents", new
         {
             EnfantId = "lea",
             LieuId = "piscine",

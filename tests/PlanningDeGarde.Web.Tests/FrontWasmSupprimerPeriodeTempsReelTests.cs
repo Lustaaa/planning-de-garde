@@ -74,7 +74,7 @@ public sealed class FrontWasmSupprimerPeriodeTempsReelTests : TestContext
         {
             while (!diffusionContinue.IsCancellationRequested)
             {
-                await client1.PostAsJsonAsync("api/canal/supprimer-periode", new { PeriodeId = idPeriode });
+                await client1.DeleteAsync($"api/periodes/{idPeriode}");
                 try { await Task.Delay(150, diffusionContinue.Token); }
                 catch (TaskCanceledException) { break; }
             }

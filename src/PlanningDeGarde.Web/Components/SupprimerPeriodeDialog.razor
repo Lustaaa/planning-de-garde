@@ -3,7 +3,7 @@
 @* Dialog (modal) « Supprimer une période » ouverte depuis le menu d'actions d'une case (palier 7,
    écriture en contexte — 4ᵉ usage du menu clic-case). À l'ouverture, elle LIT les périodes couvrant la
    date via le canal de lecture HTTP (GET /api/periodes/{aaaa}/{MM}/{jj}) ; supprimer une ligne émet sa
-   commande via le canal d'écriture HTTP (POST /api/canal/supprimer-periode) — JAMAIS un handler en DI
+   commande via le canal d'écriture HTTP (DELETE /api/periodes/{id}) — JAMAIS un handler en DI
    direct ni le canal de diffusion. Aucune règle métier ici. La clé envoyée est l'identifiant stable de
    la période (jamais un libellé). Issues : succès → OnValide (le parent ferme, accuse et relit la
    grille) ; refus métier / API injoignable → message DANS la dialog, la dialog reste ouverte. *@

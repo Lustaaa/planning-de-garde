@@ -15,7 +15,7 @@ namespace PlanningDeGarde.Web.Components;
 /// <summary>
 /// Dialog (modal) « Affecter une période » réutilisable, ouverte depuis le menu d'actions d'une case
 /// (palier 7, écriture en contexte). L'écriture passe par le <b>canal requête/réponse</b> (endpoint
-/// HTTP <c>/api/canal/affecter-periode</c>) — JAMAIS un handler en DI direct ni le canal de diffusion.
+/// HTTP <c>/api/periodes</c>) — JAMAIS un handler en DI direct ni le canal de diffusion.
 /// Aucune règle métier ici. Le sélecteur bind l'<b>identifiant stable</b> (clé atteignable de la
 /// palette/du référentiel, cadrage (B) du s06). Issues : succès → <see cref="OnValide"/> ; refus métier
 /// (4xx, motif propagé) ou API injoignable → message <b>dans</b> la dialog, saisie conservée.
@@ -89,7 +89,7 @@ public partial class AffecterPeriodeDialog
         try
         {
             reponse = await Canal.PostAsJsonAsync(
-                "api/canal/affecter-periode",
+                "api/periodes",
                 new AffecterPeriodeRequete(_form.ResponsableId, _form.Debut, _form.Fin, EnfantId));
         }
         catch (HttpRequestException)

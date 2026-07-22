@@ -2,7 +2,7 @@ extern alias api;
 using System.Net.Http.Json;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using AffecterPeriodeRequete = api::PlanningDeGarde.Api.CanalEcriture.AffecterPeriodeRequete;
+using AffecterPeriodeRequete = api::PlanningDeGarde.Api.AffecterPeriodeRequete;
 
 namespace PlanningDeGarde.Web.Tests;
 
@@ -45,8 +45,8 @@ public sealed class FrontWasmLibelleAuLieuIdGrisTests
 
         // When — deux affectations RÉELLES via le canal : le libellé « Parent A » (24/06) et l'id
         // stable « parent-a » (27/06). Les deux périodes existent réellement dans le store distant.
-        var reponseLibelle = await clientFront.PostAsJsonAsync("api/canal/affecter-periode", AffectationLibelle);
-        var reponseIdStable = await clientFront.PostAsJsonAsync("api/canal/affecter-periode", AffectationIdStable);
+        var reponseLibelle = await clientFront.PostAsJsonAsync("api/periodes", AffectationLibelle);
+        var reponseIdStable = await clientFront.PostAsJsonAsync("api/periodes", AffectationIdStable);
         Assert.True(reponseLibelle.IsSuccessStatusCode, "l'affectation par libellé doit être enregistrée (la période existe).");
         Assert.True(reponseIdStable.IsSuccessStatusCode, "l'affectation par id stable doit être enregistrée.");
 

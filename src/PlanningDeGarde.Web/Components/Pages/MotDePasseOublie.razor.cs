@@ -7,7 +7,7 @@ namespace PlanningDeGarde.Web.Components.Pages;
 
 /// <summary>
 /// Écran « mot de passe oublié » (front <b>WASM</b>, s28, volet 1) : émet une demande de récupération de
-/// mot de passe via le <b>canal requête/réponse</b> HTTP (<c>POST /api/canal/demander-recuperation</c>,
+/// mot de passe via le <b>canal requête/réponse</b> HTTP (<c>POST /api/comptes/recuperation</c>,
 /// règle 27 — aucune vue n'écrit le domaine en direct) puis affiche un <b>message neutre fixe</b>. Anti
 /// énumération : le message est le même que l'email soit connu ou non (l'API répond toujours par un succès
 /// neutre, jeton + mail restant hors du canal de réponse). Le front ne porte AUCUNE règle métier.
@@ -23,7 +23,7 @@ public partial class MotDePasseOublie
         // neutre — anti-énumération). On affiche le message neutre fixe une fois la demande émise ; il est
         // identique que l'email soit connu ou non, ne révélant jamais l'existence d'un compte.
         var reponse = await Canal.PostAsJsonAsync(
-            "api/canal/demander-recuperation", new DemanderRecuperationRequete(_email));
+            "api/comptes/recuperation", new DemanderRecuperationRequete(_email));
         if (reponse.IsSuccessStatusCode)
             _messageNeutre = true;
     }

@@ -3,7 +3,7 @@
 @* Dialog (modal) « Définir un transfert » réutilisable, ouverte depuis le menu d'actions d'une case
    du planning (palier 7, écriture en contexte — 3e dialog qui referme l'épic É12). Le formulaire est
    extrait de la page DefinirTransfert ; il émet sa commande via le MÊME canal d'écriture HTTP
-   (POST /api/canal/definir-transfert) — aucune règle métier dans l'UI. La date de contexte (case
+   (POST /api/transferts) — aucune règle métier dans l'UI. La date de contexte (case
    cliquée) pré-remplit la saisie sur ce seul jour. Issues : succès → OnValide (le parent ferme la
    dialog, l'accusé « Transfert défini » s'affiche à part) ; refus domaine / API injoignable → message
    DANS la dialog, saisie conservée. Les sélecteurs dépose/récupère bindent l'identifiant stable

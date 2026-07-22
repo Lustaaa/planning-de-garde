@@ -5,7 +5,7 @@
 
 <div class="connexion-page">
     @* Écran « mot de passe oublié » (s28, volet 1) : émet une demande de récupération via le canal
-       requête/réponse (POST /api/canal/demander-recuperation) et affiche un message NEUTRE fixe — le même
+       requête/réponse (POST /api/comptes/recuperation) et affiche un message NEUTRE fixe — le même
        que l'email soit connu ou non (anti-énumération : aucune fuite d'existence côté UI ; l'API répond
        toujours par un succès neutre). Aucune règle métier côté front. *@
     <div class="connexion-carte">

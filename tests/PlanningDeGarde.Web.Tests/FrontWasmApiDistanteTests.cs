@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PoserSlotRequete = api::PlanningDeGarde.Api.CanalEcriture.PoserSlotRequete;
+using PoserSlotRequete = api::PlanningDeGarde.Api.PoserSlotRequete;
 
 namespace PlanningDeGarde.Web.Tests;
 
@@ -48,7 +48,7 @@ public sealed class FrontWasmApiDistanteTests
         var clientFront = ClientCanalEcriture.Construire(configFront, transportVersApiDistante);
 
         // When — le front émet, vers l'API distante, une pose de slot pour Léa.
-        var reponse = await clientFront.PostAsJsonAsync("api/canal/poser-slot", PoseLea);
+        var reponse = await clientFront.PostAsJsonAsync("api/slots", PoseLea);
 
         // Then — l'API distante confirme l'effet par un succès.
         Assert.True(reponse.IsSuccessStatusCode,

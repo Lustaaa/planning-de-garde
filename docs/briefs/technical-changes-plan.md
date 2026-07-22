@@ -9,9 +9,33 @@ Docker actif), branche `ia-refacto/lotN-…`, pas de merge/PR (le PO gère la po
 
 - [x] **Lot 1 — `PlanningDeGarde.Application`** : réorganisation `[BoundedContext]/[Technical]`,
       suppression des dossiers `Classes/` et `Interfaces/`, namespaces alignés. (920/920 vert)
-- [ ] **Lot 2 — `PlanningDeGarde.Api`** : tendre vers REST, un `XxxController` par ressource
-      (`api/notifications` → `NotificationsController`, `api/foyer` → `FoyerController`, …), un
-      fichier `.cs` par contrôleur.
+- [x] **Lot 2 — `PlanningDeGarde.Api`** : **REST complet + controllers MVC** (décision PO). Quitté les
+      minimal-APIs `MapPost` groupées (`CanalEcriture`/`CanalLecture`/`OAuthEndpoints` supprimés) pour
+      **18 controllers `[ApiController]` attribute-routed, un `.cs` par ressource / bounded context**,
+      routes ressource + verbes HTTP (POST create/action, PUT/DELETE id-en-chemin). Handlers/queries,
+      diffusion SignalR et DI **strictement inchangés** ; front (`PlanningDeGarde.Web`) et tests
+      (Api.Tests + Web.Tests) rebranchés sur les nouvelles routes/verbes. (920/920 vert, dont 108
+      Api.Tests sur Mongo réel) — livré sur la branche `ia-refacto/lot1-application-bc-technical`.
+      **Décisions/écarts** :
+      - **DTO** : records de requête migrés en `Dtos/Requetes.cs` (namespace `PlanningDeGarde.Api`,
+        records **top-level**, plus nichés dans une classe statique) ; les ids portés par l'URL sont
+        **retirés du corps** (records `*Corps` réduits) ; read models en `Dtos/Vues.cs`. Forme JSON des
+        champs restants **inchangée** (compat front) ; les tests référençant `CanalLecture.ActeurFoyerVue`
+        recalés en `ActeurFoyerVue`, l'alias `api::…CanalEcriture.PoserSlotRequete` en `api::…PoserSlotRequete`.
+      - **Contrat de réponse préservé** : `AddControllers` **retire le `StringOutputFormatter`** pour que
+        `BadRequest(motif)` reste **`application/json` (`"motif"`)** comme `Results.BadRequest(string)` des
+        minimal-APIs (sinon MVC l'écrit en `text/plain` et le front, qui lit `ReadFromJsonAsync<string>`,
+        ne décode plus le motif). Codes retour identiques (Ok / BadRequest+motif) ; DELETE/PUT là où c'est
+        naturel (pas de réécriture en 201/204).
+      - **Diffusion** : chaque controller ré-appelle `INotificateurPlanning`/`INotificateurChangement`
+        **exactement là où l'ancien endpoint le faisait** (audit endpoint par endpoint ; ex. `DELETE
+        /api/slots/{id}` notifie, `POST /api/slots` non — le handler diffuse).
+      - **Front** : les helpers génériques `AppliquerToggle`/`PosterActivite`/`PosterEnfant` (qui ne
+        savaient que POSTer un corps) généralisés en `Func<Task<HttpResponseMessage>>` (PUT/DELETE inline).
+      - **Tests injoignables** : le `EcritureInjoignableHandler` (harnais Web) coupait un `POST` finissant
+        par un suffixe ; élargi à tout **write (POST/PUT/DELETE)** dont le chemin **contient** un fragment
+        de ressource ; les gardes « 0 écriture » détectent désormais un write par **méthode** (POST/PUT/DELETE
+        vers `/api/`) plutôt que par le préfixe `/api/canal`.
 - [x] **Lot 3 — `PlanningDeGarde.Infrastructure`** : scindé en adaptateurs de droite par techno ;
       `Infrastructure` CONSERVÉ comme **composition root** (câblage DI), pas un adaptateur. (920/920 vert) —
       livré comme **4e lot exécuté** du programme, sur la branche `ia-refacto/lot1-application-bc-technical`.
@@ -163,3 +187,77 @@ DOIVENT utiliser le même segment `CyclesDeFond`.
    du fichier. Idem si un jour un BC porte le segment `.CycleDeFond` (déjà évité via `CyclesDeFond`).
    Le lot **Mongo (4)** a vérifié ce point : seul `ConfigurationFoyerMongo` lit le seed → alias scopé posé,
    les autres fichiers Foyer/DbModels ne le lisent pas.
+
+## Lot Api : mapping des routes (ANCIENNE minimal-API → NOUVELLE REST/controller)
+
+Verbes : **POST** = création / action ; **PUT** = mise à jour complète (id en chemin) ; **DELETE** =
+suppression (id en chemin) ; **GET** = lecture. Sémantique CQRS conservée (écritures = handlers inchangés,
+lectures = queries, diffusion SignalR lecture seule). Codes retour identiques (Ok / BadRequest+motif JSON).
+
+| Ancienne route (POST) | Nouvelle route | Controller |
+|---|---|---|
+| `/api/canal/poser-slot` | `POST /api/slots` | `SlotsController` |
+| `/api/canal/poser-slot-recurrent` | `POST /api/slots/recurrents` | `SlotsController` |
+| `/api/canal/supprimer-slot` | `DELETE /api/slots/{id}` | `SlotsController` |
+| `/api/canal/supprimer-slot-recurrent` | `DELETE /api/slots/recurrents/{id}` | `SlotsController` |
+| (lecture) `/api/slots/{a}/{m}/{j}` | `GET /api/slots/{annee}/{mois}/{jour}` | `SlotsController` |
+| `/api/canal/affecter-periode` | `POST /api/periodes` | `PeriodesController` |
+| `/api/canal/editer-periode` | `PUT /api/periodes/{id}` | `PeriodesController` |
+| `/api/canal/supprimer-periode` | `DELETE /api/periodes/{id}` | `PeriodesController` |
+| (lecture) `/api/periodes/{a}/{m}/{j}` | `GET /api/periodes/{annee}/{mois}/{jour}` | `PeriodesController` |
+| `/api/canal/definir-transfert` | `POST /api/transferts` | `TransfertsController` |
+| `/api/canal/deleguer-recuperation` | `POST /api/delegations` | `DelegationsController` |
+| `/api/canal/annuler-delegation` | `DELETE /api/delegations?jour=&enfant=` | `DelegationsController` |
+| `/api/canal/definir-cycle` | `PUT /api/foyer/cycles` | `CyclesController` |
+| (lecture) `/api/foyer/cycles` | `GET /api/foyer/cycles?enfant=` | `CyclesController` |
+| `/api/canal/proposer-echange` | `POST /api/propositions` | `PropositionsController` |
+| `/api/canal/proposer-echange-suite-imprevu` | `POST /api/propositions/suite-imprevu` | `PropositionsController` |
+| `/api/canal/accepter-proposition` | `POST /api/propositions/{id}/acceptation` | `PropositionsController` |
+| `/api/canal/refuser-proposition` | `POST /api/propositions/{id}/refus` | `PropositionsController` |
+| `/api/canal/signaler-imprevu` | `POST /api/imprevus` | `ImprevusController` |
+| `/api/canal/marquer-notifications-lues` | `POST /api/notifications/lues` | `NotificationsController` |
+| (lecture) `/api/notifications/{u}` | `GET /api/notifications/{utilisateurId}` | `NotificationsController` |
+| `/api/canal/ajouter-enfant` | `POST /api/foyer/enfants` | `EnfantsController` |
+| `/api/canal/editer-enfant` | `PUT /api/foyer/enfants/{id}` | `EnfantsController` |
+| `/api/canal/lier-enfant-parent` | `PUT /api/foyer/enfants/{id}/parents/{acteurId}` | `EnfantsController` |
+| `/api/canal/delier-enfant-parent` | `DELETE /api/foyer/enfants/{id}/parents/{acteurId}` | `EnfantsController` |
+| (lecture) `/api/foyer/enfants` | `GET /api/foyer/enfants` | `EnfantsController` |
+| `/api/canal/ajouter-activite` | `POST /api/foyer/activites` | `ActivitesController` |
+| `/api/canal/editer-activite` | `PUT /api/foyer/activites/{id}` | `ActivitesController` |
+| `/api/canal/supprimer-activite` | `DELETE /api/foyer/activites/{id}` | `ActivitesController` |
+| `/api/canal/lier-enfant-activite` | `PUT /api/foyer/activites/{id}/enfants/{enfantId}` | `ActivitesController` |
+| `/api/canal/delier-enfant-activite` | `DELETE /api/foyer/activites/{id}/enfants/{enfantId}` | `ActivitesController` |
+| (lecture) `/api/foyer/activites` | `GET /api/foyer/activites` | `ActivitesController` |
+| `/api/canal/ajouter-acteur` | `POST /api/foyer/acteurs` | `ActeursController` |
+| `/api/canal/editer-acteur` | `PUT /api/foyer/acteurs/{id}` | `ActeursController` |
+| `/api/canal/supprimer-acteur` | `DELETE /api/foyer/acteurs/{id}` | `ActeursController` |
+| `/api/canal/affecter-role` | `PUT /api/foyer/acteurs/{id}/role` | `ActeursController` |
+| `/api/canal/retirer-role` | `DELETE /api/foyer/acteurs/{id}/role` | `ActeursController` |
+| (lecture) `/api/foyer/acteurs` | `GET /api/foyer/acteurs` | `ActeursController` |
+| `/api/canal/creer-role` | `POST /api/foyer/roles` | `RolesController` |
+| `/api/canal/renommer-role` | `PUT /api/foyer/roles/{id}` | `RolesController` |
+| `/api/canal/supprimer-role` | `DELETE /api/foyer/roles/{id}` | `RolesController` |
+| `/api/canal/marquer-role-parent` | `PUT /api/foyer/roles/{id}/parent` | `RolesController` |
+| (lecture) `/api/foyer/roles` | `GET /api/foyer/roles` | `RolesController` |
+| `/api/canal/designer-admin` | `PUT /api/foyer/admins/{acteurId}` | `AdminsController` |
+| `/api/canal/de-designer-admin` | `DELETE /api/foyer/admins/{acteurId}` | `AdminsController` |
+| (lecture) `/api/foyer/admins` | `GET /api/foyer/admins` | `AdminsController` |
+| `/api/canal/creer-compte` | `POST /api/foyer/comptes` | `ComptesController` |
+| `/api/canal/activer-compte` | `POST /api/foyer/comptes/{id}/activation` | `ComptesController` |
+| `/api/canal/desactiver-compte` | `DELETE /api/foyer/comptes/{id}/activation` | `ComptesController` |
+| `/api/canal/definir-mot-de-passe` | `PUT /api/foyer/comptes/{id}/mot-de-passe` | `ComptesController` |
+| `/api/canal/demander-recuperation` | `POST /api/comptes/recuperation` | `ComptesController` |
+| `/api/canal/redefinir-mot-de-passe` | `POST /api/comptes/reinitialisation` | `ComptesController` |
+| (lecture) `/api/foyer/comptes` | `GET /api/foyer/comptes` | `ComptesController` |
+| `/api/canal/se-connecter` | `POST /api/session` | `SessionController` |
+| (lecture) `/api/foyer/graphe` | `GET /api/foyer/graphe` | `FoyerController` |
+| (lecture) `/api/grille/{a}/{m}/{j}` | `GET /api/grille/{annee}/{mois}/{jour}?vue=&enfant=` | `GrilleController` |
+| `/api/oauth/google/demarrer` · `/callback` | `GET` idem | `OAuthController` |
+
+**Note pour le lot Web (6)** : côté front, plusieurs read-models sont dupliqués (`SlotDuJourVue`,
+`PeriodeDuJourVue`, `CycleFoyer`, `EnfantFoyer`, `ActeurFoyer`…) entre `PlanningDeGarde.Web` et
+`PlanningDeGarde.Api.Dtos` — candidats à unification. Les commandes d'écriture du front vivent dans
+`PlanningDeGarde.Web/CanalEcriture.cs` (records de corps) ; les composants construisent désormais l'URL
+ressource + verbe eux-mêmes. Les dialogs de config (`ConfigurationFoyer.razor.cs`) portent les helpers
+d'envoi génériques (`Func<Task<HttpResponseMessage>>`) — à regrouper dans un service client si le lot Web
+introduit une librairie de composants.

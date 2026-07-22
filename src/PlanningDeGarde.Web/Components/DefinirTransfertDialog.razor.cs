@@ -11,7 +11,7 @@ namespace PlanningDeGarde.Web.Components;
 /// <summary>
 /// Dialog (modal) « Définir un transfert » réutilisable, ouverte depuis le menu d'actions d'une case
 /// (palier 7, écriture en contexte — 3ᵉ dialog qui referme l'épic É12). L'écriture passe par le
-/// <b>canal requête/réponse</b> (endpoint HTTP <c>/api/canal/definir-transfert</c>) — JAMAIS un handler
+/// <b>canal requête/réponse</b> (endpoint HTTP <c>/api/transferts</c>) — JAMAIS un handler
 /// en DI direct ni le canal de diffusion. Aucune règle métier ici. Les sélecteurs dépose/récupère
 /// bindent l'<b>identifiant stable</b> (clé atteignable du référentiel, règle 19), jamais le libellé.
 /// Issues : succès → <see cref="OnValide"/> (le parent ferme la dialog, l'accusé « Transfert défini »
@@ -87,7 +87,7 @@ public partial class DefinirTransfertDialog
         try
         {
             reponse = await Canal.PostAsJsonAsync(
-                "api/canal/definir-transfert",
+                "api/transferts",
                 new DefinirTransfertRequete(_form.DeposeParId, _form.RecupereParId, _form.LieuId, heure, _form.Date, EnfantId));
         }
         catch (HttpRequestException)

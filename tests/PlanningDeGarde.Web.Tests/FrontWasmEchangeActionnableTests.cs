@@ -100,7 +100,7 @@ public sealed class FrontWasmEchangeActionnableTests : TestContext
     private static async Task SemerPropositionVers(ApiDistanteFactory api, string versActeurId)
     {
         var client = GrilleRuntimeHarness.ClientVers(api);
-        (await client.PostAsJsonAsync("api/canal/proposer-echange",
+        (await client.PostAsJsonAsync("api/propositions",
             new ProposerEchangeRequete(Jour, "Léa", versActeurId))).EnsureSuccessStatusCode();
     }
 

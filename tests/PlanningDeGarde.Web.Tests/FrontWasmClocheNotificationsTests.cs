@@ -88,7 +88,7 @@ public sealed class FrontWasmClocheNotificationsTests : TestContext
     {
         var client = GrilleRuntimeHarness.ClientVers(api);
         var reponse = await client.PostAsJsonAsync(
-            "api/canal/deleguer-recuperation",
+            "api/delegations",
             new DeleguerRecuperationRequete(new DateOnly(2026, 6, 29), "Léa", versActeurId));
         reponse.EnsureSuccessStatusCode();
     }

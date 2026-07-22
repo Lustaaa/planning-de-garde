@@ -45,7 +45,7 @@ public sealed class FrontWasmConfigSupprimerApiInjoignableTempsReelTests : TestC
         // (échec de transport déterministe sur le POST /api/canal/supprimer-acteur).
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(
-            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "supprimer-acteur"));
+            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/foyer/acteurs/"));
         Services.AddSingleton(new SessionPlanning()); // contexte rôle réel (Parent par défaut) — le bouton est rendu
 
         var config = RenderComponent<ConfigurationFoyer>();

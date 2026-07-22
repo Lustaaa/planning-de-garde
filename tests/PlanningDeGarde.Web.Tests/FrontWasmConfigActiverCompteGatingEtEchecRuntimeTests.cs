@@ -75,7 +75,7 @@ public sealed class FrontWasmConfigActiverCompteGatingEtEchecRuntimeTests : Test
         using var api = new ApiDistanteFactory();
         SemerCompteInactifAlice(api);
         Services.AddSingleton(
-            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "activer-compte"));
+            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/activation"));
         Services.AddSingleton(new SessionPlanning()); // Parent par défaut
 
         var config = RenderComponent<ConfigurationFoyer>();

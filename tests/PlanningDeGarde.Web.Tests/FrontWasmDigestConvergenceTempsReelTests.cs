@@ -79,7 +79,7 @@ public sealed class FrontWasmDigestConvergenceTempsReelTests : TestContext
         // résolution du 08/07 bascule → un TRANSFERT dérivé apparaît ce jour-là (canal d'écriture).
         var autreEcran = GrilleRuntimeHarness.ClientVers(api);
         (await autreEcran.PostAsJsonAsync(
-            "api/canal/deleguer-recuperation",
+            "api/delegations",
             new DeleguerRecuperationRequete(Mercredi_08_07_2026, "Léa", "nounou"))).EnsureSuccessStatusCode();
 
         var nbPeriodesApresEcriture = api.Services.GetRequiredService<IPeriodeRepository>().AllSnapshots().Count;

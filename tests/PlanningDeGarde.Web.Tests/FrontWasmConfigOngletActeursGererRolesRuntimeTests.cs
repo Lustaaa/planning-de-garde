@@ -14,7 +14,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// réelle <see cref="ApiDistanteFactory"/>, store réel), on <b>gère le référentiel de rôles du foyer</b> :
 /// créer « Nounou », le renommer, créer « Grand-parent », puis supprimer un rôle. Le référentiel commence
 /// vide (store réel neuf). Les écritures transitent par le <b>canal HTTP réel</b>
-/// (POST /api/canal/creer-role, /renommer-role, /supprimer-role) et la liste des rôles est relue depuis le
+/// (POST /api/foyer/roles, /renommer-role, /supprimer-role) et la liste des rôles est relue depuis le
 /// store durable (GET /api/foyer/roles) — jamais une doublure de transport. Observé sur les observables
 /// propres de l'écran : la liste des rôles reflète créations, renommage et suppression sans rechargement.
 /// </summary>
@@ -39,7 +39,7 @@ public sealed class FrontWasmConfigOngletActeursGererRolesRuntimeTests : TestCon
         // Fusion des sections (hors-sprint) : plus d'onglets — la gestion des rôles est sur la page unique.
 
         // When (création) — refonte s33 Sc.8 : j'ouvre la modal d'ajout, saisis « Nounou » et enregistre
-        // (canal d'écriture HTTP réel : POST /api/canal/creer-role).
+        // (canal d'écriture HTTP réel : POST /api/foyer/roles).
         this.SurDispatcher(() => config.Find("[data-testid='bouton-ajouter-role']").Click());
         this.SurDispatcher(() => config.Find("[data-testid='champ-libelle-role']").Change("Nounou"));
         this.SurDispatcher(() => config.Find("#form-role").Submit());

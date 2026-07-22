@@ -75,7 +75,7 @@ public sealed class FrontWasmEchangeConvergenceTempsReelTests : TestContext
     private static async Task<string> SemerPropositionVersParentA(ApiDistanteFactory api)
     {
         var client = GrilleRuntimeHarness.ClientVers(api);
-        (await client.PostAsJsonAsync("api/canal/proposer-echange",
+        (await client.PostAsJsonAsync("api/propositions",
             new ProposerEchangeRequete(Jour, "Léa", "parent-a"))).EnsureSuccessStatusCode();
         return api.Services.GetRequiredService<IPropositionEchangeRepository>().AllSnapshots()
             .Single(p => p.VersActeurId == "parent-a").Id;
@@ -104,7 +104,7 @@ public sealed class FrontWasmEchangeConvergenceTempsReelTests : TestContext
 
         // When — le RECEVANT ACCEPTE depuis sa cloche (autre écran = POST accord).
         var client = GrilleRuntimeHarness.ClientVers(api);
-        (await client.PostAsJsonAsync("api/canal/accepter-proposition", new RepondrePropositionRequete(propositionId))).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync($"api/propositions/{propositionId}/acceptation", new { })).EnsureSuccessStatusCode();
 
         // Diffusion RÉELLE repoussée en boucle de fond (idempotente) pour tomber APRÈS l'établissement des
         // connexions : MiseAJour (grille relue) + Changement (délégation → cloche) + Proposition (statut accepté → cloche).
@@ -168,7 +168,7 @@ public sealed class FrontWasmEchangeConvergenceTempsReelTests : TestContext
 
         // When — le RECEVANT REFUSE (autre écran = POST refus).
         var client = GrilleRuntimeHarness.ClientVers(api);
-        (await client.PostAsJsonAsync("api/canal/refuser-proposition", new RepondrePropositionRequete(propositionId))).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync($"api/propositions/{propositionId}/refus", new { })).EnsureSuccessStatusCode();
 
         var propositionRefusee = api.Services.GetRequiredService<IPropositionEchangeRepository>().AllSnapshots().Single(p => p.Id == propositionId);
         var changement = api.Services.GetRequiredService<INotificateurChangement>();

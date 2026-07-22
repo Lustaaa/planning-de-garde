@@ -409,7 +409,7 @@
                 @* Refonte s33 (Sc.8) : patron « tableau lecture seule + crayon → modal » (comme Acteurs s32).
                    La table des rôles est PUREMENT EN LECTURE ; toute l'écriture (créer / renommer / supprimer)
                    est déportée dans la MODAL ouverte par le crayon (édition) ou « Ajouter un rôle » (création).
-                   Réutilise les MÊMES commandes existantes (POST /api/canal/{creer,renommer,supprimer}-role,
+                   Réutilise les MÊMES commandes existantes (POST /api/foyer/roles (POST/PUT/DELETE),
                    aucun handler neuf). Gating d'écriture sur l'identité EFFECTIVE (règle 9) : crayon, bouton
                    d'ajout et modal ne sont rendus que Parent ; la table reste visible en lecture pour tous. *@
                 <h2 class="config-panneau-titre">Rôles du foyer</h2>
@@ -622,7 +622,7 @@
                    « Ajouter une activité » (création). Les activités disponibles à la saisie (sélecteurs des
                    dialogs Poser un slot / Définir un transfert, axe LOCALISATION du slot préservé) proviennent
                    EXCLUSIVEMENT de ce référentiel vivant. Écritures via le canal HTTP (POST
-                   /api/canal/{ajouter,editer,supprimer}-activite). Gating d'identité EFFECTIVE (règle 9) : crayon,
+                   /api/foyer/activites (POST/PUT/DELETE)). Gating d'identité EFFECTIVE (règle 9) : crayon,
                    bouton d'ajout et modal ne sont rendus que Parent ; la table reste visible en lecture pour tous. *@
                 <h2 class="config-panneau-titre">Activités du foyer</h2>
                 <p class="text-muted">Le référentiel d'activités (école, nounou, piscine…) et, pour chacune, son
@@ -773,7 +773,7 @@
                    liés » résolue en noms d'acteurs) ; toute l'écriture (ajouter / éditer le prénom, et — Sc.5 —
                    lier/délier des parents) est déportée dans la MODAL ouverte par le crayon (édition) ou
                    « Ajouter un enfant » (création). Réutilise les MÊMES commandes existantes (POST
-                   /api/canal/{ajouter,editer}-enfant) ; l'inline préexistant (form-ajouter-enfant,
+                   /api/foyer/enfants (POST/PUT)) ; l'inline préexistant (form-ajouter-enfant,
                    champ-editer-enfant) n'est PLUS rendu (lot atomique de surface). Gating d'identité EFFECTIVE
                    (règle 9) : crayon, bouton d'ajout et modal ne sont rendus que Parent ; la table reste
                    visible en lecture pour tous. *@

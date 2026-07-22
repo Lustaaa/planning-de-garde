@@ -2,7 +2,7 @@
 
 @* Dialog (modal) « Affecter une période » réutilisable, ouverte depuis le menu d'actions d'une case
    du planning (palier 7, écriture en contexte). Le formulaire est extrait de la page AffecterPeriode ;
-   il émet sa commande via le MÊME canal d'écriture HTTP (POST /api/canal/affecter-periode) — aucune
+   il émet sa commande via le MÊME canal d'écriture HTTP (POST /api/periodes) — aucune
    règle métier dans l'UI. La date de contexte (case cliquée) pré-remplit la saisie sur ce seul jour.
    Issues : succès → OnValide (le parent ferme et relit la grille) ; refus domaine / API injoignable →
    message DANS la dialog, saisie conservée. Le sélecteur affiche le libellé mais bind l'id stable. *@

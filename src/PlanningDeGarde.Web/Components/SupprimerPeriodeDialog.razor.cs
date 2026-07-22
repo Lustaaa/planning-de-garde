@@ -12,7 +12,7 @@ namespace PlanningDeGarde.Web.Components;
 /// Dialog (modal) « Supprimer une période » ouverte depuis le menu d'actions d'une case (palier 7,
 /// écriture en contexte — 4ᵉ usage du menu clic-case). À l'ouverture elle LIT les périodes couvrant la
 /// date via le <b>canal de lecture</b> HTTP (<c>GET /api/periodes/…</c>) ; supprimer une ligne émet la
-/// commande via le <b>canal requête/réponse</b> (<c>POST /api/canal/supprimer-periode</c>) — JAMAIS un
+/// commande via le <b>canal requête/réponse</b> (<c>DELETE /api/periodes/{id}</c>) — JAMAIS un
 /// handler en DI direct ni le canal de diffusion. Aucune règle métier ici : la clé envoyée est
 /// l'<b>identifiant stable</b> de la période. Issues : succès → <see cref="OnValide"/> (le parent ferme,
 /// accuse et relit la grille) ; refus métier (4xx) ou API injoignable → message <b>dans</b> la dialog,
@@ -64,8 +64,7 @@ public partial class SupprimerPeriodeDialog
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/supprimer-periode", new SupprimerPeriodeRequete(periodeId));
+            reponse = await Canal.DeleteAsync($"api/periodes/{periodeId}");
         }
         catch (HttpRequestException)
         {

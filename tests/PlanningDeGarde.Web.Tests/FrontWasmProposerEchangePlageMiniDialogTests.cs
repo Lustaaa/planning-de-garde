@@ -15,7 +15,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// ENRICHI d'un champ « jusqu'au » (miroir EXACT du champ ajouté à la dialog de délégation en s45). Son DÉFAUT =
 /// le jour cliqué (fin = début) → l'échange d'UN jour (s47) reste STRICTEMENT inchangé. Choisir un recevant + une
 /// date de fin postérieure puis valider émet la proposition d'échange sur la PLAGE <c>[jour cliqué..J3]</c> via le
-/// CANAL D'ÉCRITURE (POST /api/canal/proposer-echange) — SANS aucune écriture de surcharge (canal de consentement) :
+/// CANAL D'ÉCRITURE (POST /api/propositions) — SANS aucune écriture de surcharge (canal de consentement) :
 /// une Proposition <c>pending</c> portant l'intervalle est créée chez le recevant.
 ///
 /// Anti « vert qui ment » : la grille est câblée à l'API distante RÉELLE (store réel, canal réel) ; la proposition

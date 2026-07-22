@@ -59,11 +59,11 @@ public sealed class FrontWasmProposerEchangeSuiteImprevuConvergenceTempsReelTest
     private static async Task<string> SemerImprevuPuisPropositionGreffeeVersParentA(ApiDistanteFactory api)
     {
         var autreEcran = GrilleRuntimeHarness.ClientVers(api);
-        (await autreEcran.PostAsJsonAsync("api/canal/signaler-imprevu",
+        (await autreEcran.PostAsJsonAsync("api/imprevus",
             new SignalerImprevuRequete(Jour, "Léa", TypeImprevu.Malade, "parent-b", ""))).EnsureSuccessStatusCode();
         var imprevuId = api.Services.GetRequiredService<IJournalChangements>().Tout()
             .Single(e => e.Type == TypeChangement.Imprevu).Id;
-        (await autreEcran.PostAsJsonAsync("api/canal/proposer-echange-suite-imprevu",
+        (await autreEcran.PostAsJsonAsync("api/propositions/suite-imprevu",
             new ProposerEchangeSuiteImprevuRequete(imprevuId, "parent-a"))).EnsureSuccessStatusCode();
         return api.Services.GetRequiredService<IPropositionEchangeRepository>().AllSnapshots()
             .Single(p => p.VersActeurId == "parent-a").Id;

@@ -61,7 +61,7 @@ public sealed class FrontWasmEchangePlageActionnableTests : TestContext
     private static async Task SemerPropositionPlageVers(ApiDistanteFactory api, string versActeurId)
     {
         var client = GrilleRuntimeHarness.ClientVers(api);
-        (await client.PostAsJsonAsync("api/canal/proposer-echange",
+        (await client.PostAsJsonAsync("api/propositions",
             new ProposerEchangeRequete(J1, "Léa", versActeurId, J3))).EnsureSuccessStatusCode();
     }
 

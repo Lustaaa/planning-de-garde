@@ -13,7 +13,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// l'<b>écran de configuration réellement câblé</b> (<see cref="ConfigurationFoyer"/>), un parent tente
 /// d'ajouter un acteur en laissant le <b>nom vide</b> et valide. L'écran — câblé à l'<b>API distante
 /// réelle</b> (<see cref="ApiDistanteFactory"/>, store réel <c>ConfigurationFoyerEnMemoire</c>, énumération
-/// réelle) — émet l'ajout via le <b>canal d'écriture HTTP réel</b> (<c>POST /api/canal/ajouter-acteur</c>) ;
+/// réelle) — émet l'ajout via le <b>canal d'écriture HTTP réel</b> (<c>POST /api/foyer/acteurs</c>) ;
 /// le handler applique sa garde « nom non vide » et renvoie un <c>Result.Echec</c> dont le <b>motif métier</b>
 /// (« le nom ne peut pas être vide ») doit être <b>surfacé à l'écran</b>. Aucun identifiant n'est généré, le
 /// store n'est pas muté : la liste des acteurs <b>reste inchangée</b>, sans rechargement.

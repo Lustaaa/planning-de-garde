@@ -8,7 +8,7 @@
 
 <div class="connexion-page">
     @* Page de connexion dédiée (s24, Sc.8) : landing par défaut, SEUL chemin d'entrée (Sc.10). Emballe
-       SeConnecterCommand (s23) via le canal requête/réponse (POST /api/canal/se-connecter) — aucune règle
+       SeConnecterCommand (s23) via le canal requête/réponse (POST /api/session) — aucune règle
        d'admission côté front (compte existant ET Actif tranché par le handler). Sur succès : redirection
        vers le planning, sélecteur d'acteur pré-positionné sur l'acteur du compte (incarnation bornée s14).
        Sur refus : motif clair affiché, on reste sur la page (Sc.9). Login email-only (s23) : pas de mot de passe.

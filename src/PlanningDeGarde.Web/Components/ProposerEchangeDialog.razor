@@ -3,7 +3,7 @@
 @* Mini-dialog « Proposer un échange » (s47) ouverte depuis l'entrée « proposer un échange » du menu clic-case
    (Parent-gated : le menu ne s'ouvre que pour un Parent). « Je ne peux pas récupérer ce jour, échange-le avec
    moi » : on choisit l'acteur RECEVANT ; valider émet la commande via le CANAL D'ÉCRITURE
-   (POST /api/canal/proposer-echange) — jamais la diffusion. PROPOSER n'écrit AUCUNE surcharge (canal de
+   (POST /api/propositions) — jamais la diffusion. PROPOSER n'écrit AUCUNE surcharge (canal de
    consentement) : la case reste inchangée tant que le recevant n'a pas accepté depuis sa cloche. Portée par
    ModalConfig : Échap = « Annuler » (port IEcouteurEchapModal s33, capture document). Issues : succès →
    OnValide ; refus domaine (recevant inconnu / à soi-même) / API injoignable → MOTIF dans la dialog, saisie

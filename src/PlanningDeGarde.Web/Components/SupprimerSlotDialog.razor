@@ -3,7 +3,7 @@
 @* Dialog (modal) « Supprimer un slot » ouverte depuis le menu d'actions d'une case (palier 7, écriture
    en contexte — 6ᵉ usage du menu clic-case). À l'ouverture, elle LIT les slots couvrant la date via le
    canal de lecture HTTP (GET /api/slots/{aaaa}/{MM}/{jj}) ; supprimer une ligne émet sa commande via le
-   canal d'écriture HTTP (POST /api/canal/supprimer-slot) — JAMAIS un handler en DI direct ni le canal de
+   canal d'écriture HTTP (DELETE /api/slots/{id}) — JAMAIS un handler en DI direct ni le canal de
    diffusion. Aucune règle métier ici. La clé envoyée est l'identifiant stable du slot (jamais un libellé).
    Issues : succès → OnValide (le parent ferme, accuse et relit la grille) ; refus métier / API injoignable
    → message DANS la dialog, la dialog reste ouverte (Sc.9). *@

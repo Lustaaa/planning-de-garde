@@ -70,9 +70,8 @@ public sealed class FrontWasmEditerPeriodeTempsReelTests : TestContext
         {
             while (!diffusionContinue.IsCancellationRequested)
             {
-                await client1.PostAsJsonAsync("api/canal/editer-periode", new
+                await client1.PutAsJsonAsync($"api/periodes/{idPeriode}", new
                 {
-                    PeriodeId = idPeriode,
                     NouveauResponsableId = "parent-a",
                     NouveauDebut = Mardi_16_06_2026,
                     NouvelleFin = Mardi_16_06_2026,

@@ -17,7 +17,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// (<see cref="ApiDistanteFactory"/>, store réel, projection réelle <see cref="GrilleAgendaQuery"/>,
 /// palette + référentiel <b>réels</b> du foyer : <c>parent-a</c> → « Alice » / « bleu »). Aucun handler ni
 /// règle backend neuf : réutilisation de la commande <c>AffecterPeriode</c> et de l'endpoint
-/// <c>POST /api/canal/affecter-periode</c>.
+/// <c>POST /api/periodes</c>.
 ///
 /// Anti « vert qui ment » : si le menu n'ouvre pas la dialog d'affectation, si l'affectation ne transite
 /// pas jusqu'au store distant, ou si la projection ne résout pas nom/couleur/légende, l'observable reste

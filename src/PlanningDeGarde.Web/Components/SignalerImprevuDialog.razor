@@ -4,7 +4,7 @@
 @* Mini-dialog « Signaler un imprévu » (s48) ouverte depuis l'entrée « signaler un imprévu » du menu clic-case
    (Parent-gated : le menu ne s'ouvre que pour un Parent). Signalement purement INFORMATIF d'un fait subi :
    choix « malade » / « retard » + un motif OPTIONNEL. Valider émet la commande via le CANAL D'ÉCRITURE
-   (POST /api/canal/signaler-imprevu) — jamais la diffusion. Le signalement N'ÉCRIT AUCUNE surcharge : la
+   (POST /api/imprevus) — jamais la diffusion. Le signalement N'ÉCRIT AUCUNE surcharge : la
    résolution du planning reste inchangée (invariant s48) ; la notification arrive dans la cloche des concernés.
    Portée par ModalConfig : Échap = « Annuler » (port IEcouteurEchapModal s33, capture document). Issues :
    succès → OnValide ; refus domaine (type inconnu) / API injoignable → MOTIF dans la dialog, saisie CONSERVÉE,

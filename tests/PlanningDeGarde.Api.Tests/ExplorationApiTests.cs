@@ -40,7 +40,7 @@ public sealed class ExplorationApiTests
 
         var document = await reponse.Content.ReadAsStringAsync();
 
-        Assert.Contains("/api/canal/poser-slot", document);
-        Assert.Contains("/api/canal/affecter-periode", document);
+        Assert.Contains("/api/slots", document);
+        Assert.Contains("/api/periodes", document);
     }
 }

@@ -3,7 +3,7 @@
 @* Mini-dialog « Déléguer ce jour » (s44) ouverte depuis la carte « Aujourd'hui » (s42) ET le panneau
    « À venir » (s43) : « je ne récupère pas ce jour-là, X le fera ». On choisit l'acteur RECEVANT parmi
    les acteurs éligibles du foyer ; valider émet la commande via le CANAL D'ÉCRITURE
-   (POST /api/canal/deleguer-recuperation) — jamais la diffusion. Le use case COMPOSE l'écriture surcharge
+   (POST /api/delegations) — jamais la diffusion. Le use case COMPOSE l'écriture surcharge
    ponctuelle existante (s06) ; le transfert bicolore sort dérivé de s31 (aucune règle métier ici).
    La modal est portée par ModalConfig : Échap = « Annuler » (port IEcouteurEchapModal s33, capture document).
    Issues : succès → OnValide (le parent ferme et relit la grille) ; refus domaine (délégataire inconnu, à

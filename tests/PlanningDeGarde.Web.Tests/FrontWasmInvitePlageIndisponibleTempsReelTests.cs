@@ -118,8 +118,8 @@ public sealed class FrontWasmInvitePlageIndisponibleTempsReelTests : TestContext
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
-            if (request.Method == HttpMethod.Post
-                && (request.RequestUri?.AbsolutePath.Contains("/api/canal/", StringComparison.Ordinal) ?? false))
+            if ((request.Method == HttpMethod.Post || request.Method == HttpMethod.Put || request.Method == HttpMethod.Delete)
+                && (request.RequestUri?.AbsolutePath.StartsWith("/api/", StringComparison.Ordinal) ?? false))
             {
                 PostsEcriture++;
             }

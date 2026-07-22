@@ -14,7 +14,7 @@ namespace PlanningDeGarde.Web.Components;
 /// <b>canal de lecture</b> HTTP (<c>GET /api/periodes/…</c>) et les acteurs du foyer (<c>GET
 /// /api/foyer/acteurs</c>) pour le sélecteur. « Éditer » une ligne ouvre un formulaire <b>pré-rempli</b>
 /// (responsable courant + bornes) ; « Enregistrer » émet la commande via le <b>canal requête/réponse</b>
-/// (<c>POST /api/canal/editer-periode</c>) — JAMAIS un handler en DI direct ni le canal de diffusion.
+/// (<c>PUT /api/periodes/{id}</c>) — JAMAIS un handler en DI direct ni le canal de diffusion.
 /// Aucune règle métier ici : la clé envoyée est l'<b>identifiant stable</b>. Issues : succès →
 /// <see cref="OnValide"/> (le parent ferme, accuse et relit la grille) ; refus métier (4xx) ou API
 /// injoignable → message <b>dans</b> la dialog, la dialog reste ouverte.
@@ -105,9 +105,9 @@ public partial class EditerPeriodeDialog
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/editer-periode",
-                new EditerPeriodeRequete(_enEdition.Id, _form.ResponsableId, _form.Debut, _form.Fin));
+            reponse = await Canal.PutAsJsonAsync(
+                $"api/periodes/{_enEdition.Id}",
+                new EditerPeriodeCorps(_form.ResponsableId, _form.Debut, _form.Fin));
         }
         catch (HttpRequestException)
         {

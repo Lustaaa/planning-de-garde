@@ -44,14 +44,14 @@ public sealed class AdresseActeurMongoDurabiliteTests : IDisposable
         {
             var c1 = serveur1.CreateClient();
 
-            var ajout = await c1.PostAsJsonAsync("/api/canal/ajouter-acteur", new { Nom = "Alice", Couleur = "bleu" });
+            var ajout = await c1.PostAsJsonAsync("/api/foyer/acteurs", new { Nom = "Alice", Couleur = "bleu" });
             Assert.True(ajout.IsSuccessStatusCode, $"l'ajout d'Alice doit aboutir, statut {(int)ajout.StatusCode}.");
 
-            var apresAjout = await c1.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+            var apresAjout = await c1.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
             aliceId = apresAjout!.Single(a => a.Nom == "Alice").Id;
             Assert.Null(apresAjout.Single(a => a.Id == aliceId).Adresse); // aucune adresse au départ (optionnelle)
 
-            var edition = await c1.PostAsJsonAsync("/api/canal/editer-acteur", new { ActeurId = aliceId, Adresse = adresse });
+            var edition = await c1.PutAsJsonAsync($"/api/foyer/acteurs/{aliceId}", new { Adresse = adresse });
             Assert.True(edition.IsSuccessStatusCode, $"l'édition de l'adresse doit aboutir, statut {(int)edition.StatusCode}.");
         }
 
@@ -60,17 +60,17 @@ public sealed class AdresseActeurMongoDurabiliteTests : IDisposable
         var c2 = serveur2.CreateClient();
 
         // Then — l'adresse est relue telle quelle, l'id stable inchangé, nom + couleur intacts (pas de recréation).
-        var acteurs = await c2.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+        var acteurs = await c2.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
         var alice = acteurs!.Single(a => a.Id == aliceId);
         Assert.Equal(adresse, alice.Adresse);
         Assert.Equal("Alice", alice.Nom);
         Assert.Equal("bleu", alice.Couleur);
 
         // Et une adresse VIDE est acceptée (champ optionnel) sans écriture partielle des autres champs.
-        var vidage = await c2.PostAsJsonAsync("/api/canal/editer-acteur", new { ActeurId = aliceId, Adresse = "" });
+        var vidage = await c2.PutAsJsonAsync($"/api/foyer/acteurs/{aliceId}", new { Adresse = "" });
         Assert.True(vidage.IsSuccessStatusCode, $"vider l'adresse doit aboutir, statut {(int)vidage.StatusCode}.");
 
-        var apresVidage = await c2.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+        var apresVidage = await c2.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
         var aliceVidee = apresVidage!.Single(a => a.Id == aliceId);
         Assert.Equal(string.Empty, aliceVidee.Adresse); // adresse vide relue telle quelle
         Assert.Equal("Alice", aliceVidee.Nom);          // nom intact (aucune écriture partielle)

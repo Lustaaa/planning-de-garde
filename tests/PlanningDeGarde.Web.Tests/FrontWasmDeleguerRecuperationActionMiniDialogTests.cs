@@ -18,7 +18,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// bouton posé sur la carte « Aujourd'hui » (s42) ni le panneau « À venir » (s43) — ces surfaces redeviennent
 /// STRICTEMENT en LECTURE (invariant CLAUDE.md « les cartes de lecture n'hébergent pas d'écriture »).
 /// L'entrée ouvre le mini-dialog de choix de l'acteur recevant ; valider émet la commande via le CANAL
-/// D'ÉCRITURE (POST /api/canal/deleguer-recuperation) qui COMPOSE l'écriture surcharge ponctuelle (s06) ;
+/// D'ÉCRITURE (POST /api/delegations) qui COMPOSE l'écriture surcharge ponctuelle (s06) ;
 /// Échap FERME sans émettre (port IEcouteurEchapModal s33) ; l'Invité ne voit ni le menu ni l'entrée
 /// (Parent-gated). La grille est réellement câblée à l'API distante (store réel, projection réelle, canal réel).
 ///

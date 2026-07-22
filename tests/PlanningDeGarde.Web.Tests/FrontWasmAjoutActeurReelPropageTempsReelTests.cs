@@ -21,7 +21,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <b>Deux écrans</b> (deux <see cref="Bunit.TestContext"/> = deux navigateurs / DI séparées) câblés à la
 /// <b>MÊME API distante réelle</b> (<see cref="ApiDistanteFactory"/> unique → store singleton partagé,
 /// projection réelle, hub SignalR réel commun). Écran 1 ajoute « Carla » via le <b>canal d'écriture
-/// HTTP réel</b> (<c>POST /api/canal/ajouter-acteur</c>, règle 27) puis lui affecte le 15/07 ; la
+/// HTTP réel</b> (<c>POST /api/foyer/acteurs</c>, règle 27) puis lui affecte le 15/07 ; la
 /// diffusion temps réel (notificateur réel) fait réagir l'écran 2 <b>sans second render manuel</b>.
 ///
 /// Anti « vert qui ment » : baseline (15/07 sans nom, aucun fantôme) asserté sur les DEUX écrans avant
@@ -57,13 +57,13 @@ public sealed class FrontWasmAjoutActeurReelPropageTempsReelTests : TestContext
         // When — l'écran 1 ajoute « Carla » (acteur réel) via le canal d'écriture HTTP réel, puis lui
         // affecte le mercredi 15/07 (sur son identifiant stable neuf, relu du store partagé).
         using var client = GrilleRuntimeHarness.ClientVers(api);
-        var ajout = await client.PostAsJsonAsync("api/canal/ajouter-acteur", new { Nom = "Carla", Couleur = "rose" });
+        var ajout = await client.PostAsJsonAsync("api/foyer/acteurs", new { Nom = "Carla", Couleur = "rose" });
         Assert.True(ajout.IsSuccessStatusCode);
 
         var declares = await client.GetFromJsonAsync<List<ActeurVue>>("api/foyer/acteurs") ?? new();
         var carlaId = declares.Single(a => a.Nom == "Carla").Id;
 
-        var affectation = await client.PostAsJsonAsync("api/canal/affecter-periode", new
+        var affectation = await client.PostAsJsonAsync("api/periodes", new
         {
             ResponsableId = carlaId,
             Debut = new DateTime(2026, 7, 15),

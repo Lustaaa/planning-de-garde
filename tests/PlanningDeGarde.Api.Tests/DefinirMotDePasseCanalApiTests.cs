@@ -30,8 +30,8 @@ public sealed class DefinirMotDePasseCanalApiTests
             .Creer("compte-maman", Email, StatutCompte.Actif, "acteur-maman");
 
         // When — on pose un mot de passe via l'endpoint du canal d'écriture.
-        var reponse = await client.PostAsJsonAsync(
-            "/api/canal/definir-mot-de-passe", new { CompteId = "compte-maman", MotDePasse = BonMotDePasse });
+        var reponse = await client.PutAsJsonAsync(
+            "/api/foyer/comptes/compte-maman/mot-de-passe", new { MotDePasse = BonMotDePasse });
         Assert.True(reponse.IsSuccessStatusCode, $"la définition doit aboutir, statut {(int)reponse.StatusCode}.");
 
         // Then — la connexion « email + mot de passe » réussit avec le bon couple, échoue avec le mauvais

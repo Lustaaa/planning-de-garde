@@ -213,7 +213,7 @@ Deux briques greffées l'une sur l'autre, livrées ensemble s47 :
   ajoute aucun statut. **Les deux modèles restent séparés** : l'imprévu **informe**, la proposition
   **négocie**. Signaler « malade » **puis** proposer un échange = **deux événements distincts** au journal.
 - **`ProposerEchangeSuiteImprevu` = use case de COMPOSITION** (`ProposerEchangeSuiteImprevuHandler`, endpoint
-  `/api/canal/proposer-echange-suite-imprevu`) : **lit l'imprévu au journal** (jour + enfant **hérités**),
+  `POST /api/propositions/suite-imprevu`) : **lit l'imprévu au journal** (jour + enfant **hérités**),
   puis **délègue à `ProposerEchange` s47** (brique B) avec le `versActeur` choisi. **AUCUN modèle / store
   neuf** — réemploi INTÉGRAL de `Proposition` s47 (+ ses ports / store) et du journal s48.
 - **Invariants prouvés** *(Sc.1–Sc.4)* : proposer (même depuis un imprévu) crée un `pending` **SANS écriture**

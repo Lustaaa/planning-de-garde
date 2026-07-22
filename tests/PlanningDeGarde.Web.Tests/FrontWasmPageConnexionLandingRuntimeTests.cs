@@ -15,7 +15,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// redirige vers la page de connexion dédiée (« connexion »), PAS vers le planning. Sur la page de
 /// connexion réellement câblée (<see cref="Connexion"/>, API distante réelle <see cref="ApiDistanteFactory"/>,
 /// store réel, DI réelle), saisir l'email d'un compte <b>Actif</b> puis « Se connecter » ouvre la session via
-/// le canal HTTP réel (POST /api/canal/se-connecter, s23), <b>redirige vers le planning</b>, et pré-positionne
+/// le canal HTTP réel (POST /api/session, s23), <b>redirige vers le planning</b>, et pré-positionne
 /// le sélecteur d'acteur sur l'acteur du compte connecté (non-régression s23 Sc.8, via l'incarnation bornée s14).
 /// </summary>
 public sealed class FrontWasmPageConnexionLandingRuntimeTests : TestContext

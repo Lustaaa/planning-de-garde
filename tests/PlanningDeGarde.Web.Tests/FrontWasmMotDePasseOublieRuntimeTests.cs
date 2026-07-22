@@ -14,7 +14,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <summary>
 /// Sprint 28 — S5 (@ihm, acceptation de NIVEAU RUNTIME) : l'écran « mot de passe oublié » réellement
 /// câblé (<see cref="MotDePasseOublie"/>, API distante RÉELLE <see cref="ApiDistanteFactory"/>, endpoint
-/// <c>POST /api/canal/demander-recuperation</c> + <c>DemanderRecuperationMotDePasseHandler</c> + store
+/// <c>POST /api/comptes/recuperation</c> + <c>DemanderRecuperationMotDePasseHandler</c> + store
 /// réels) émet la demande via le canal et affiche un message NEUTRE fixe. Le chemin observé n'est pas
 /// doublé : la commande transite par le canal HTTP réel jusqu'au handler — prouvé par un <b>Spy sur le
 /// port de sortie</b> <see cref="IEnvoiMail"/> (l'adaptateur SMTP réel est prouvé séparément en S1, donc
@@ -49,7 +49,7 @@ public sealed class FrontWasmMotDePasseOublieRuntimeTests : TestContext
 
         var ecran = RenderComponent<MotDePasseOublie>();
 
-        // When — l'utilisateur saisit son email puis valide (POST /api/canal/demander-recuperation réel).
+        // When — l'utilisateur saisit son email puis valide (POST /api/comptes/recuperation réel).
         this.SurDispatcher(() => ecran.Find("[data-testid='champ-email-oubli']").Change("connu@foyer.fr"));
         this.SurDispatcher(() => ecran.Find("[data-testid='bouton-demander-recuperation']").Click());
 

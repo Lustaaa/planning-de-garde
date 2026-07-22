@@ -19,12 +19,12 @@ public sealed class CyclesFoyerLectureRuntimeTests
         var client = hote.CreateClient();
 
         // Given — aucun cycle déclaré : la lecture renvoie une liste vide (pas d'erreur).
-        var avant = await client.GetFromJsonAsync<List<CanalLecture.CycleFoyerVue>>("/api/foyer/cycles");
+        var avant = await client.GetFromJsonAsync<List<CycleFoyerVue>>("/api/foyer/cycles");
         Assert.NotNull(avant);
         Assert.Empty(avant!);
 
         // When — un cycle de fond de 2 semaines est déclaré via le canal d'écriture (parent-a / parent-b).
-        var definition = await client.PostAsJsonAsync("/api/canal/definir-cycle", new
+        var definition = await client.PutAsJsonAsync("/api/foyer/cycles", new
         {
             NombreSemaines = 2,
             Affectations = new Dictionary<int, string> { [0] = "parent-a", [1] = "parent-b" },
@@ -32,7 +32,7 @@ public sealed class CyclesFoyerLectureRuntimeTests
         Assert.True(definition.IsSuccessStatusCode, $"la définition du cycle doit aboutir, statut {(int)definition.StatusCode}.");
 
         // Then — le canal de lecture HTTP restitue TOUS les cycles déclarés (plus invisibles).
-        var cycles = await client.GetFromJsonAsync<List<CanalLecture.CycleFoyerVue>>("/api/foyer/cycles");
+        var cycles = await client.GetFromJsonAsync<List<CycleFoyerVue>>("/api/foyer/cycles");
         Assert.NotNull(cycles);
         Assert.Equal(2, cycles!.Count);
         Assert.Contains(cycles, c => c.IndexSemaine == 0 && c.ResponsableId == "parent-a");

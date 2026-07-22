@@ -105,8 +105,11 @@ internal static class GrilleRuntimeHarness
         protected override System.Threading.Tasks.Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, System.Threading.CancellationToken cancellationToken)
         {
-            if (request.Method == HttpMethod.Post
-                && (request.RequestUri?.AbsolutePath.EndsWith(_suffixeEndpointEcriture, StringComparison.Ordinal) ?? false))
+            // Lot 5 (REST) : une écriture est désormais un POST/PUT/DELETE vers une ressource. On coupe la
+            // requête d'écriture dont le chemin CONTIENT le fragment de ressource ciblé (les lectures GET
+            // transitent normalement).
+            if ((request.Method == HttpMethod.Post || request.Method == HttpMethod.Put || request.Method == HttpMethod.Delete)
+                && (request.RequestUri?.AbsolutePath.Contains(_suffixeEndpointEcriture, StringComparison.Ordinal) ?? false))
             {
                 throw new HttpRequestException(
                     $"service injoignable (échec de transport simulé, déterministe) vers {_suffixeEndpointEcriture}");

@@ -40,7 +40,7 @@ public sealed class FrontWasmConfigCycleServiceInjoignableTempsReelTests : TestC
         // (échec de transport déterministe sur le POST /api/canal/definir-cycle).
         using var api = new ApiDistanteFactory();
         Services.AddSingleton(
-            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "definir-cycle"));
+            GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/cycles"));
         Services.AddSingleton(new SessionPlanning()); // contexte rôle réel (Parent par défaut) requis par l'écran (gating Sc.7)
 
         var config = RenderComponent<ConfigurationFoyer>();

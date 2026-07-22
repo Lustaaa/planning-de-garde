@@ -44,7 +44,7 @@ public sealed class FrontWasmEchangePlageConvergenceDeuxEcransTempsReelTests : T
 
         // Une proposition pending sur la PLAGE [30/06 .. 02/07] vers Alice (parent-a), écrite par le canal réel.
         var client = GrilleRuntimeHarness.ClientVers(api);
-        (await client.PostAsJsonAsync("api/canal/proposer-echange",
+        (await client.PostAsJsonAsync("api/propositions",
             new ProposerEchangeRequete(J1, "Léa", "parent-a", J3))).EnsureSuccessStatusCode();
         var propositionId = api.Services.GetRequiredService<IPropositionEchangeRepository>().AllSnapshots()
             .Single(p => p.VersActeurId == "parent-a").Id;
@@ -69,7 +69,7 @@ public sealed class FrontWasmEchangePlageConvergenceDeuxEcransTempsReelTests : T
         // RÉELLE (MiseAJour) est repoussée en boucle de fond (idempotente) pour tomber APRÈS l'établissement des
         // connexions (anti-flake timing) — c'est le SEUL signal de convergence : le 2ᵉ écran reprojette la grille
         // relue (canal de LECTURE s20), AUCUN GET dédié n'est déclenché par le push.
-        (await client.PostAsJsonAsync("api/canal/accepter-proposition", new RepondrePropositionRequete(propositionId))).EnsureSuccessStatusCode();
+        (await client.PostAsJsonAsync($"api/propositions/{propositionId}/acceptation", new { })).EnsureSuccessStatusCode();
 
         var notificateur = api.Services.GetRequiredService<INotificateurPlanning>();
         using var diffusionContinue = new CancellationTokenSource();

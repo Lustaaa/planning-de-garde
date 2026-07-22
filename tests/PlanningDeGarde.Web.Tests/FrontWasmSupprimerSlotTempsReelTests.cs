@@ -69,7 +69,7 @@ public sealed class FrontWasmSupprimerSlotTempsReelTests : TestContext
         {
             while (!diffusionContinue.IsCancellationRequested)
             {
-                await client1.PostAsJsonAsync("api/canal/supprimer-slot", new { SlotId = idSlot });
+                await client1.DeleteAsync($"api/slots/{idSlot}");
                 try { await Task.Delay(150, diffusionContinue.Token); }
                 catch (TaskCanceledException) { break; }
             }

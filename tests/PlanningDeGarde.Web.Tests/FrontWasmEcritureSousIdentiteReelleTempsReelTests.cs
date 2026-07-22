@@ -41,7 +41,7 @@ public sealed class FrontWasmEcritureSousIdentiteReelleTempsReelTests : TestCont
         // Given — la grille réellement câblée, avec un client dont on capte le corps de l'écriture émise
         // vers le canal de pose (puis relayé vers l'API live : le store est réellement muté).
         using var api = new ApiDistanteFactory();
-        var capture = new CaptureCorpsHandler(api.Server.CreateHandler(), "/api/canal/poser-slot");
+        var capture = new CaptureCorpsHandler(api.Server.CreateHandler(), "/api/slots");
         using var client = new HttpClient(capture) { BaseAddress = api.Server.BaseAddress };
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mardi_16_06_2026, client);
 

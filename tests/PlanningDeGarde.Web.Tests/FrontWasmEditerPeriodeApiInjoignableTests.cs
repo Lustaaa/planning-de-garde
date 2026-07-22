@@ -32,7 +32,7 @@ public sealed class FrontWasmEditerPeriodeApiInjoignableTests : TestContext
         // transport) ; une période « Nina la nounou » attribue le mardi 16/06/2026.
         using var api = new ApiDistanteFactory();
         GrilleRuntimeHarness.SemerPeriode(api, "nounou", Mardi_16_06_2026, Mardi_16_06_2026);
-        var client = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "editer-periode");
+        var client = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/periodes/");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mardi_16_06_2026, client);
 
         // … baseline : la case du 16/06 porte « Nina la nounou ».

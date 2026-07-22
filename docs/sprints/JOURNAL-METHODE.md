@@ -197,3 +197,14 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   ProjectReference ajoutée aux tests, pattern lots Mongo/InMemory). Placeholder OAuth **inchangé** (dette assumée).
   Plan lot 3/Infrastructure coché ; CLAUDE.md architecture (10 projets + rôle composition root) resynchronisé.
   **920/920 vert**. Aucune règle de gestion touchée.
+- 2026-07-22 — Refonte technique **lot 5 / Api → REST + controllers MVC** (architecte, hors sprint, décision PO
+  « REST complet »). Minimal-APIs `MapPost` groupées (`CanalEcriture`/`CanalLecture`/`OAuthEndpoints` supprimés)
+  → **18 controllers `[ApiController]` attribute-routed** (un `.cs` par ressource/BC, DTO sous `Dtos/`), routes
+  ressource + verbes HTTP (POST create/action, PUT/DELETE id-en-chemin, DELETE délégation en query). Handlers,
+  diffusion SignalR, DI **inchangés** ; front (`PlanningDeGarde.Web`) et tests (Api.Tests + Web.Tests) rebranchés
+  sur les nouvelles routes/verbes. **2 pièges tranchés** : (1) `[ApiController]` `BadRequest(string)` sort en
+  `text/plain` via `StringOutputFormatter` → contrat cassé (le front lit `ReadFromJsonAsync<string>`) : retiré le
+  `StringOutputFormatter` pour rester `application/json` (`"motif"`) comme `Results.BadRequest(string)` ; (2) audit
+  endpoint par endpoint des appels `NotifierMiseAJour()` (un oubli sur `DELETE /api/slots/{id}` cassait la diffusion
+  temps réel du 2e écran). Plan lot 2 coché + **table de mapping des routes** ajoutée ; CLAUDE.md (architecture Api)
+  resynchronisé. **920/920 vert** (dont 108 Api.Tests sur Mongo réel). Aucune règle de gestion touchée.

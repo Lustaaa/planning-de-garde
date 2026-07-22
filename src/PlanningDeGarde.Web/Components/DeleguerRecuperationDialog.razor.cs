@@ -10,7 +10,7 @@ namespace PlanningDeGarde.Web.Components;
 
 /// <summary>
 /// Mini-dialog « Déléguer ce jour » (s44) : choix de l'acteur RECEVANT, émission de la commande de
-/// délégation via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/canal/deleguer-recuperation</c>)
+/// délégation via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/delegations</c>)
 /// — JAMAIS le canal de diffusion. Aucune règle métier ici (le refus « soi-même » / « inconnu » est tranché
 /// côté domaine). Issues : succès → <see cref="OnValide"/> ; refus métier (motif propagé) ou API injoignable
 /// → message <b>dans</b> la dialog, saisie <b>conservée</b>, dialog restée OUVERTE (Sc.5). Portée par
@@ -68,7 +68,7 @@ public partial class DeleguerRecuperationDialog
         try
         {
             reponse = await Canal.PostAsJsonAsync(
-                "api/canal/deleguer-recuperation",
+                "api/delegations",
                 new DeleguerRecuperationRequete(
                     DateContexte, EnfantId, _form.VersActeurId, DateOnly.FromDateTime(_form.Jusqu)));
         }

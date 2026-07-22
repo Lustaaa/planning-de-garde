@@ -13,8 +13,8 @@ namespace PlanningDeGarde.Web.Components;
 /// <summary>
 /// Dialog (modal) « Poser un slot » <b>unifiée</b>, ouverte depuis une case du planning (palier 7, écriture
 /// en contexte). Elle porte DEUX chemins d'écriture derrière un seul formulaire (retour PO G3) : un slot
-/// <b>ponctuel</b> (endpoint <c>/api/canal/poser-slot</c>, inchangé) ou — si « Répéter chaque semaine » est
-/// coché — un slot <b>récurrent</b> hebdomadaire (endpoint <c>/api/canal/poser-slot-recurrent</c>, s29) dont
+/// <b>ponctuel</b> (endpoint <c>/api/slots</c>, inchangé) ou — si « Répéter chaque semaine » est
+/// coché — un slot <b>récurrent</b> hebdomadaire (endpoint <c>/api/slots/recurrents</c>, s29) dont
 /// le jour de semaine est celui de la case cliquée. L'enfant n'est plus affiché (dette « déclaration des
 /// enfants », backlog P1) mais reste transmis implicitement au back (<see cref="SessionPlanning.EnfantId"/>),
 /// contrat inchangé. Aucune règle métier ici. Issues : succès → <see cref="OnValide"/> (le parent ferme et
@@ -106,14 +106,14 @@ public partial class PoserSlotDialog
         {
             reponse = _form.Repeter
                 ? await Canal.PostAsJsonAsync(
-                    "api/canal/poser-slot-recurrent",
+                    "api/slots/recurrents",
                     new PoserSlotRecurrentRequete(
                         _form.EnfantId, _form.LieuId, DateContexte.DayOfWeek, _form.HeureDebut.ToTimeSpan(), _form.HeureFin.ToTimeSpan(),
                         // D1 (s31) : le conditionnement à la garde porte l'identité du parent COURANT (identité
                         // effective de la session) comme poseur — sa responsabilité pilote la projection du slot.
                         _form.ConditionneGarde, Session.IdentiteEffective.Id))
                 : await Canal.PostAsJsonAsync(
-                    "api/canal/poser-slot",
+                    "api/slots",
                     new PoserSlotRequete(_form.EnfantId, _form.LieuId, _form.Debut, _form.Fin));
         }
         catch (HttpRequestException)

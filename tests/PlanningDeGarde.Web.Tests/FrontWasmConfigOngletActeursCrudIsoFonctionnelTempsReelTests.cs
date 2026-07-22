@@ -67,7 +67,7 @@ public sealed class FrontWasmConfigOngletActeursCrudIsoFonctionnelTempsReelTests
             },
             TimeSpan.FromSeconds(10));
 
-        // When (ajout) — j'ouvre la modal d'ajout et j'ajoute « Carla » en rose (POST /api/canal/ajouter-acteur).
+        // When (ajout) — j'ouvre la modal d'ajout et j'ajoute « Carla » en rose (POST /api/foyer/acteurs).
         ConfigActeursModalHarness.OuvrirAjout(this, config);
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
         this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-ajout-rose']").Click()); // palette (Sc.6)

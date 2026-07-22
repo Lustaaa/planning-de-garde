@@ -36,7 +36,7 @@ public sealed class FrontWasmConfigActeursBoutonAjouterModalVideTests : TestCont
         ConfigActeursModalHarness.OuvrirAjout(this, config);
         Assert.Equal("", config.Find("[data-testid='champ-nom-ajout']").GetAttribute("value") ?? "");
 
-        // When — je saisis « Carla » en rose et j'enregistre (POST réel /api/canal/ajouter-acteur).
+        // When — je saisis « Carla » en rose et j'enregistre (POST réel /api/foyer/acteurs).
         this.SurDispatcher(() => config.Find("[data-testid='champ-nom-ajout']").Change("Carla"));
         this.SurDispatcher(() => config.Find("[data-testid='pastille-couleur-ajout-rose']").Click()); // palette (Sc.6)
         this.SurDispatcher(() => config.Find("#form-ajout").Submit());

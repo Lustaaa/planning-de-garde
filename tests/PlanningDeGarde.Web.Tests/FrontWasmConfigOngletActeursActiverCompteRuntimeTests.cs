@@ -41,7 +41,7 @@ public sealed class FrontWasmConfigOngletActeursActiverCompteRuntimeTests : Test
     public void Should_activer_un_compte_inactif_afficher_l_accuse_et_fermer_la_modal_When_le_parent_bascule_le_toggle_actif_et_enregistre()
     {
         // Given — l'écran de configuration réellement câblé à l'API distante réelle (store réel), identité
-        // Parent. On crée d'abord le compte d'Alice (POST /api/canal/creer-compte réel) : il naît « inactif ».
+        // Parent. On crée d'abord le compte d'Alice (POST /api/foyer/comptes réel) : il naît « inactif ».
         using var api = new ApiDistanteFactory();
         var config = RendreConfig(api);
 

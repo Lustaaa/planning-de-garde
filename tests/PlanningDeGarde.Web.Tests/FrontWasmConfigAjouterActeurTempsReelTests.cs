@@ -18,7 +18,7 @@ namespace PlanningDeGarde.Web.Tests;
 ///
 /// Chemin réel exercé : l'écran <b>énumère les acteurs depuis le store</b> via le canal de lecture
 /// HTTP réel (<c>GET /api/foyer/acteurs</c>), puis émet l'ajout via le <b>canal d'écriture HTTP
-/// réel</b> (<c>POST /api/canal/ajouter-acteur</c>, règle 27 — aucune vue n'écrit le domaine en
+/// réel</b> (<c>POST /api/foyer/acteurs</c>, règle 27 — aucune vue n'écrit le domaine en
 /// direct) → le handler génère un identifiant stable neuf et persiste l'acteur → l'écran ré-énumère
 /// le store et fait apparaître Carla, sans recharger la page.
 ///

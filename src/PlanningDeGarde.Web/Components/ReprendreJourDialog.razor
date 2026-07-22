@@ -2,7 +2,7 @@
 
 @* Mini-dialog « Reprendre ce jour » (s46, ferme la boucle undo s44/s45) ouvert depuis l'entrée CONDITIONNELLE
    du menu clic-case (visible uniquement sur une case portant une délégation active). Confirmer émet la reprise
-   via le CANAL D'ÉCRITURE (POST /api/canal/annuler-delegation) — jamais la diffusion. Le use case COMPOSE la
+   via le CANAL D'ÉCRITURE (POST DELETE /api/delegations) — jamais la diffusion. Le use case COMPOSE la
    SUPPRESSION de surcharge existante (s16) : la case retombe sur le fond, le transfert dérivé s31 disparaît.
    Granularité = UNE occurrence (seul le jour cliqué, même dans une plage s45). Portée par ModalConfig :
    Échap = « Annuler » (port IEcouteurEchapModal s33, capture document). Issues : succès → OnValide (le parent

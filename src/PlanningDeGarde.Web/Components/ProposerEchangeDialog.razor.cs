@@ -10,7 +10,7 @@ namespace PlanningDeGarde.Web.Components;
 
 /// <summary>
 /// Mini-dialog « Proposer un échange » (s47) : choix de l'acteur RECEVANT, émission de la commande de proposition
-/// via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/canal/proposer-echange</c>) — JAMAIS le canal de
+/// via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/propositions</c>) — JAMAIS le canal de
 /// diffusion. Aucune règle métier ici (le refus « à soi-même » / « inconnu » est tranché côté domaine, AVANT toute
 /// écriture). PROPOSER n'écrit AUCUNE surcharge : c'est un canal de consentement, la case reste inchangée tant que
 /// le recevant n'a pas accepté depuis sa cloche. Issues : succès → <see cref="OnValide"/> ; refus métier (motif
@@ -55,8 +55,8 @@ public partial class ProposerEchangeDialog
 
     /// <summary>OPTIONNEL (s51) : identifiant de l'ÉVÉNEMENT d'imprévu journalisé (s48) quand la mini-dialog est
     /// ouverte comme ACTION DE SUIVI depuis la notif d'imprévu de la cloche. Non-null → la proposition est émise
-    /// par le use case de COMPOSITION (POST /api/canal/proposer-echange-suite-imprevu), qui hérite le jour + l'enfant
-    /// de l'imprévu. Null / vide → proposition d'échange autonome s47 (POST /api/canal/proposer-echange).</summary>
+    /// par le use case de COMPOSITION (POST /api/propositions/suite-imprevu), qui hérite le jour + l'enfant
+    /// de l'imprévu. Null / vide → proposition d'échange autonome s47 (POST /api/propositions).</summary>
     [Parameter]
     public string? ImprevuEvenementId { get; set; }
 
@@ -80,10 +80,10 @@ public partial class ProposerEchangeDialog
             // Sinon, proposition d'échange autonome s47. Même canal d'écriture, jamais la diffusion.
             reponse = string.IsNullOrEmpty(ImprevuEvenementId)
                 ? await Canal.PostAsJsonAsync(
-                    "api/canal/proposer-echange",
+                    "api/propositions",
                     new ProposerEchangeRequete(DateContexte, EnfantId, _form.VersActeurId, DateOnly.FromDateTime(_form.Jusqu)))
                 : await Canal.PostAsJsonAsync(
-                    "api/canal/proposer-echange-suite-imprevu",
+                    "api/propositions/suite-imprevu",
                     new ProposerEchangeSuiteImprevuRequete(ImprevuEvenementId, _form.VersActeurId));
         }
         catch (HttpRequestException)

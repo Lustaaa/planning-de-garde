@@ -11,7 +11,7 @@ namespace PlanningDeGarde.Web.Components;
 
 /// <summary>
 /// Mini-dialog « Signaler un imprévu » (s48) : choix du TYPE (malade / retard) + motif OPTIONNEL, émission de la
-/// commande via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/canal/signaler-imprevu</c>) — JAMAIS le
+/// commande via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/imprevus</c>) — JAMAIS le
 /// canal de diffusion. Aucune règle métier ici (le refus « type inconnu » est tranché côté domaine, AVANT toute
 /// écriture). Le signalement est purement INFORMATIF : il N'ÉCRIT AUCUNE surcharge, la résolution du planning
 /// reste inchangée (invariant s48) ; la cloche des concernés reprojette la notification. L'acteur SIGNALANT est
@@ -56,7 +56,7 @@ public partial class SignalerImprevuDialog
         try
         {
             reponse = await Canal.PostAsJsonAsync(
-                "api/canal/signaler-imprevu",
+                "api/imprevus",
                 new SignalerImprevuRequete(DateContexte, EnfantId, _form.Type, Session.IdentiteEffective.Id, _form.Motif));
         }
         catch (HttpRequestException)

@@ -4,7 +4,7 @@
    en contexte — 5ᵉ usage du menu clic-case). À l'ouverture elle LIT les périodes couvrant la date via le
    canal de lecture HTTP (GET /api/periodes/…) ainsi que les acteurs du foyer (GET /api/foyer/acteurs)
    pour alimenter le sélecteur. « Éditer » une ligne ouvre un formulaire PRÉ-REMPLI (responsable courant +
-   bornes) ; « Enregistrer » émet la commande via le canal d'écriture HTTP (POST /api/canal/editer-periode)
+   bornes) ; « Enregistrer » émet la commande via le canal d'écriture HTTP (PUT /api/periodes/{id})
    — JAMAIS un handler en DI direct ni le canal de diffusion. Aucune règle métier ici. La clé envoyée est
    l'identifiant stable de la période. Issues : succès → OnValide (le parent ferme, accuse et relit la
    grille) ; refus métier / API injoignable → message DANS la dialog, la dialog reste ouverte. *@

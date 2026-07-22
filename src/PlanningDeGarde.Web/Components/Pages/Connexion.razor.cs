@@ -11,7 +11,7 @@ namespace PlanningDeGarde.Web.Components.Pages;
 /// <summary>
 /// Page de connexion dédiée (front <b>WASM</b>, s24) : landing par défaut et <b>seul chemin d'entrée</b>
 /// (Sc.8/Sc.10). Emballe la connexion locale par email (<see cref="SeConnecterCommand"/> s23) via le
-/// <b>canal requête/réponse</b> HTTP (<c>POST /api/canal/se-connecter</c>, règle 27 — aucune vue n'écrit le
+/// <b>canal requête/réponse</b> HTTP (<c>POST /api/session</c>, règle 27 — aucune vue n'écrit le
 /// domaine en direct). Le front ne porte AUCUNE règle d'admission : l'admission (compte existant ET Actif)
 /// est tranchée par le handler. Sur succès, la session pré-positionne l'acteur du compte (incarnation bornée
 /// s14, lecture seule, aucune persistance neuve) puis <b>redirige vers le planning</b>. Sur refus (email
@@ -66,7 +66,7 @@ public partial class Connexion
         try
         {
             reponse = await Canal.PostAsJsonAsync(
-                "api/canal/se-connecter", new SeConnecterRequete(_email, _motDePasse));
+                "api/session", new SeConnecterRequete(_email, _motDePasse));
         }
         catch (HttpRequestException)
         {

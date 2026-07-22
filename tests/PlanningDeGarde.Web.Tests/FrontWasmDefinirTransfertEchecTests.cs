@@ -71,7 +71,7 @@ public sealed class FrontWasmDefinirTransfertEchecTests : TestContext
         // transport déterministe (handler levant HttpRequestException avant tout aller-retour — robuste vs
         // proxy loopback Docker). La lecture initiale de la grille transite normalement.
         using var api = new ApiDistanteFactory();
-        var clientCoupe = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "definir-transfert");
+        var clientCoupe = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "transferts");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Vendredi_19_06_2026, clientCoupe);
 
         // When — un Parent ouvre la dialog depuis la case du vendredi 19/06, saisit un transfert COMPLET

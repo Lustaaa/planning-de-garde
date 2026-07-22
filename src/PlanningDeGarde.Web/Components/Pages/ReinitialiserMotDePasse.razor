@@ -7,7 +7,7 @@
 <div class="connexion-page">
     @* Écran « redéfinir par jeton » (s28, volet 1) : le jeton de réinitialisation est porté par l'URL
        (?jeton=…, reçu par mail). L'utilisateur saisit un nouveau mot de passe → redéfinition via le canal
-       requête/réponse (POST /api/canal/redefinir-mot-de-passe) → jeton consommé (usage unique). Sur succès,
+       requête/réponse (POST /api/comptes/reinitialisation) → jeton consommé (usage unique). Sur succès,
        il peut se connecter avec « email + nouveau mot de passe » ; sur refus (jeton invalide / consommé /
        expiré), le motif est surfacé. Aucune règle métier côté front. *@
     <div class="connexion-carte">

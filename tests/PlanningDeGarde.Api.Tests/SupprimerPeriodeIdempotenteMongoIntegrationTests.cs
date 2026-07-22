@@ -62,7 +62,7 @@ public sealed class SupprimerPeriodeIdempotenteMongoIntegrationTests : IDisposab
 
     private static async Task Affecter(HttpClient client, string responsableId, DateTime jour)
     {
-        var reponse = await client.PostAsJsonAsync("/api/canal/affecter-periode",
+        var reponse = await client.PostAsJsonAsync("/api/periodes",
             new { ResponsableId = responsableId, Debut = jour, Fin = jour });
         Assert.True(reponse.IsSuccessStatusCode, $"l'affectation de la période doit aboutir, statut {(int)reponse.StatusCode}.");
     }

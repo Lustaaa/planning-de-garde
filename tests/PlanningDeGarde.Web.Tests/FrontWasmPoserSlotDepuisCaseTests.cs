@@ -15,7 +15,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// (front WASM) câblée à une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel,
 /// projection réelle <see cref="GrilleAgendaQuery"/>, canal d'écriture HTTP réel) — exactement le câblage
 /// des acceptations runtime s05/s10. Aucun handler ni règle backend neuf : on réutilise la commande
-/// <c>PoserSlot</c> et l'endpoint <c>POST /api/canal/poser-slot</c>.
+/// <c>PoserSlot</c> et l'endpoint <c>POST /api/slots</c>.
 ///
 /// Anti « vert qui ment » : si le clic sur la case n'ouvre aucune dialog (câblage <c>@onclick</c> → dialog
 /// absent), si la pose ne transite pas jusqu'au store distant, ou si le slot retombe à une autre date,

@@ -46,7 +46,7 @@ public sealed class PremierLancementMongoVideTests : IDisposable
         var client = serveur.CreateClient();
 
         // Then — aucun acteur n'est listé dans la configuration du foyer (seed-once Mongo retiré).
-        var acteurs = await client.GetFromJsonAsync<List<CanalLecture.ActeurFoyerVue>>("/api/foyer/acteurs");
+        var acteurs = await client.GetFromJsonAsync<List<ActeurFoyerVue>>("/api/foyer/acteurs");
         Assert.NotNull(acteurs);
         Assert.Empty(acteurs!);
 

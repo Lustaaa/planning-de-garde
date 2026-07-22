@@ -14,7 +14,7 @@ namespace PlanningDeGarde.Web.Components.Pages;
 
 /// <summary>
 /// Écran de configuration du foyer (front <b>WASM</b>) : renomme un acteur déjà semé. L'écriture
-/// passe par le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/canal/editer-acteur</c>),
+/// passe par le <b>canal requête/réponse</b> (endpoint HTTP <c>PUT /api/foyer/acteurs/{id}</c>),
 /// JAMAIS par un appel de handler en DI direct ni par le canal de diffusion (SignalR, lecture
 /// seule) — règle 27. Sur succès, la vue confirme l'effet et <b>reste</b> sur l'écran (l'édition
 /// est volatile, on peut en enchaîner d'autres) : la grille partagée suit sans rechargement via la
@@ -747,9 +747,9 @@ public partial class ConfigurationFoyer
             // Émission de la commande d'édition via le canal HTTP de l'API distante (adaptateur de gauche).
             // L'adresse (Sc.5) part telle quelle : pré-remplie sur la valeur courante, elle n'écrase donc pas
             // par erreur lors d'une édition nom/couleur-seule, et une adresse vidée volontairement est acceptée (Sc.1).
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/editer-acteur",
-                new EditerActeurRequete(_form.ActeurId, nom, couleur, _form.Adresse));
+            reponse = await Canal.PutAsJsonAsync(
+                $"api/foyer/acteurs/{_form.ActeurId}",
+                new EditerActeurCorps(nom, couleur, _form.Adresse));
         }
         catch (HttpRequestException)
         {
@@ -775,9 +775,9 @@ public partial class ConfigurationFoyer
         // n'émet rien. Sur refus/injoignable (borne dernier admin, compte inconnu, transport), la modal reste
         // ouverte avec le motif, sans écriture partielle relue (le tableau n'est relu qu'après le succès complet).
         var estAdmin = EstAdmin(_form.ActeurId);
-        if (_form.Admin && !estAdmin && !await AppliquerToggle("api/canal/designer-admin", new DesignerAdminRequete(_form.ActeurId)))
+        if (_form.Admin && !estAdmin && !await AppliquerToggle(() => Canal.PutAsync($"api/foyer/admins/{_form.ActeurId}", null)))
             return;
-        if (!_form.Admin && estAdmin && !await AppliquerToggle("api/canal/de-designer-admin", new DeDesignerAdminRequete(_form.ActeurId)))
+        if (!_form.Admin && estAdmin && !await AppliquerToggle(() => Canal.DeleteAsync($"api/foyer/admins/{_form.ActeurId}")))
             return;
 
         if (CompteDe(_form.ActeurId) is { } compte)
@@ -785,13 +785,13 @@ public partial class ConfigurationFoyer
             var estInactif = EstInactif(compte);
             if (_form.Actif && estInactif)
             {
-                if (!await AppliquerToggle("api/canal/activer-compte", new ActiverCompteRequete(compte.Id)))
+                if (!await AppliquerToggle(() => Canal.PostAsync($"api/foyer/comptes/{compte.Id}/activation", null)))
                     return;
                 _accuseActivation = "Compte activé.";
             }
             else if (!_form.Actif && !estInactif)
             {
-                if (!await AppliquerToggle("api/canal/desactiver-compte", new DesactiverCompteRequete(compte.Id)))
+                if (!await AppliquerToggle(() => Canal.DeleteAsync($"api/foyer/comptes/{compte.Id}/activation")))
                     return;
                 _accuseActivation = "Compte désactivé.";
             }
@@ -809,12 +809,12 @@ public partial class ConfigurationFoyer
     /// <summary>Émet une commande de toggle (Sc.4) via le canal HTTP réel et renvoie <c>true</c> en succès.
     /// Sur service injoignable ou refus métier, pose le motif dans la modal (<c>_motifEchec</c>) et renvoie
     /// <c>false</c> — la modal reste ouverte, aucun tableau relu (pas d'écriture partielle affichée).</summary>
-    private async Task<bool> AppliquerToggle<TRequete>(string route, TRequete requete)
+    private async Task<bool> AppliquerToggle(Func<Task<HttpResponseMessage>> envoi)
     {
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(route, requete);
+            reponse = await envoi();
         }
         catch (HttpRequestException)
         {
@@ -833,7 +833,7 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Ajoute un acteur neuf au foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/ajouter-acteur</c>, règle 27 — aucune vue n'écrit le domaine en direct),
+    /// (<c>POST /api/foyer/acteurs</c>, règle 27 — aucune vue n'écrit le domaine en direct),
     /// puis ré-énumère le store pour faire apparaître l'acteur ajouté <b>sans rechargement</b> (Sc.1).
     /// Sur refus métier (Sc.8, nom vide), le motif renvoyé par le canal est surfacé sans muter la liste.
     /// Sur <b>service injoignable</b> (Sc.9 s09, échec de transport <see cref="HttpRequestException"/> avant
@@ -847,7 +847,7 @@ public partial class ConfigurationFoyer
         try
         {
             reponse = await Canal.PostAsJsonAsync(
-                "api/canal/ajouter-acteur",
+                "api/foyer/acteurs",
                 new AjouterActeurRequete(_ajout.Nom, _ajout.Couleur));
         }
         catch (HttpRequestException)
@@ -878,7 +878,7 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Supprime un acteur du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/supprimer-acteur</c>, règle 27 — aucune vue n'écrit le domaine en direct),
+    /// (<c>DELETE /api/foyer/acteurs/{id}</c>, règle 27 — aucune vue n'écrit le domaine en direct),
     /// puis ré-énumère le store pour que l'acteur supprimé <b>quitte la liste sans rechargement</b> (Sc.6).
     /// Sur succès, un accusé <b>« Acteur supprimé »</b> non bloquant s'affiche à part (D5) et le handler a
     /// muté le store ET déclenché la diffusion temps réel (grilles et légende dédoublonnée suivent — le
@@ -904,9 +904,7 @@ public partial class ConfigurationFoyer
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/supprimer-acteur",
-                new SupprimerActeurRequete(acteurId));
+            reponse = await Canal.DeleteAsync($"api/foyer/acteurs/{acteurId}");
         }
         catch (HttpRequestException)
         {
@@ -943,7 +941,7 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Affecte (ou retire, si l'option « sans rôle » est choisie = valeur vide) un rôle du référentiel à un
-    /// acteur via le <b>canal d'écriture HTTP</b> de l'API distante (POST /api/canal/affecter-role ou
+    /// acteur via le <b>canal d'écriture HTTP</b> de l'API distante (PUT /api/foyer/acteurs/{id}/role ou
     /// /retirer-role, règle 27 — aucune vue n'écrit le domaine en direct). La valeur émise est l'<b>id de
     /// rôle du référentiel</b> (jamais un libellé en dur, Sc.8) ; sur succès, on relit les acteurs pour que
     /// le rôle courant suive sans rechargement. Sur refus métier (id hors référentiel, Sc.4), le motif est surfacé.
@@ -956,8 +954,8 @@ public partial class ConfigurationFoyer
         try
         {
             reponse = string.IsNullOrWhiteSpace(roleId)
-                ? await Canal.PostAsJsonAsync("api/canal/retirer-role", new RetirerRoleRequete(acteurId))
-                : await Canal.PostAsJsonAsync("api/canal/affecter-role", new AffecterRoleRequete(acteurId, roleId));
+                ? await Canal.DeleteAsync($"api/foyer/acteurs/{acteurId}/role")
+                : await Canal.PutAsJsonAsync($"api/foyer/acteurs/{acteurId}/role", new AffecterRoleCorps(roleId));
         }
         catch (HttpRequestException)
         {
@@ -976,8 +974,8 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Enregistre la modal rôle (Sc.8) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
-    /// en mode CRÉATION émet <c>POST /api/canal/creer-role</c> (id stable neuf généré côté handler), en mode
-    /// ÉDITION émet <c>POST /api/canal/renommer-role</c> sur l'id stable (jamais le libellé). Réutilise les
+    /// en mode CRÉATION émet <c>POST /api/foyer/roles</c> (id stable neuf généré côté handler), en mode
+    /// ÉDITION émet <c>PUT /api/foyer/roles/{id}</c> sur l'id stable (jamais le libellé). Réutilise les
     /// commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le référentiel (le libellé suit sans
     /// rechargement, Sc.2) et la modal se ferme. Sur refus métier (libellé vide / doublon) ou service
     /// injoignable, le motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée (Sc.9).
@@ -990,8 +988,8 @@ public partial class ConfigurationFoyer
         try
         {
             reponse = _modalRoleAjout
-                ? await Canal.PostAsJsonAsync("api/canal/creer-role", new CreerRoleRequete(_role.Libelle))
-                : await Canal.PostAsJsonAsync("api/canal/renommer-role", new RenommerRoleRequete(_modalRoleId!, _role.Libelle));
+                ? await Canal.PostAsJsonAsync("api/foyer/roles", new CreerRoleRequete(_role.Libelle))
+                : await Canal.PutAsJsonAsync($"api/foyer/roles/{_modalRoleId!}", new RenommerRoleCorps(_role.Libelle));
         }
         catch (HttpRequestException)
         {
@@ -1016,9 +1014,9 @@ public partial class ConfigurationFoyer
                 HttpResponseMessage reponseFlag;
                 try
                 {
-                    reponseFlag = await Canal.PostAsJsonAsync(
-                        "api/canal/marquer-role-parent",
-                        new MarquerRoleParentRequete(_modalRoleId!, _role.EstParent));
+                    reponseFlag = await Canal.PutAsJsonAsync(
+                        $"api/foyer/roles/{_modalRoleId!}/parent",
+                        new MarquerRoleParentCorps(_role.EstParent));
                 }
                 catch (HttpRequestException)
                 {
@@ -1039,7 +1037,7 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Supprime un rôle du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>POST /api/canal/supprimer-role</c>) depuis la modal d'édition (Sc.8) : la clé est l'identifiant
+    /// (<c>DELETE /api/foyer/roles/{id}</c>) depuis la modal d'édition (Sc.8) : la clé est l'identifiant
     /// stable du rôle. Sur succès, on relit le référentiel (le rôle quitte la table sans rechargement) ET
     /// les acteurs (un porteur du rôle supprimé retombe « sans rôle »), puis la modal se ferme. Idempotence
     /// côté handler ; sur refus / service injoignable, le motif reste DANS la modal ouverte.</summary>
@@ -1050,9 +1048,7 @@ public partial class ConfigurationFoyer
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/supprimer-role",
-                new SupprimerRoleRequete(roleId));
+            reponse = await Canal.DeleteAsync($"api/foyer/roles/{roleId}");
         }
         catch (HttpRequestException)
         {
@@ -1073,7 +1069,7 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Définit / ré-édite le cycle de fond via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/definir-cycle</c>, règle 27). Sur succès, la grille partagée suit sans
+    /// (<c>PUT /api/foyer/cycles</c>, règle 27). Sur succès, la grille partagée suit sans
     /// rechargement via la diffusion temps réel déclenchée côté API. Sur refus métier (N &lt; 1, Sc.7),
     /// le motif propagé est affiché.
     /// </summary>
@@ -1085,8 +1081,8 @@ public partial class ConfigurationFoyer
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/definir-cycle",
+            reponse = await Canal.PutAsJsonAsync(
+                "api/foyer/cycles",
                 new DefinirCycleRequete(_cycle.NombreSemaines, _cycle.Affectations, _cycleEnfantSelectionne ?? ""));
         }
         catch (HttpRequestException)
@@ -1116,8 +1112,8 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Enregistre la modal activité (Sc.4) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
-    /// en mode CRÉATION émet <c>POST /api/canal/ajouter-activite</c> (id stable neuf posé côté handler), en mode
-    /// ÉDITION émet <c>POST /api/canal/editer-activite</c> sur l'id stable (jamais éditable) — libellé + adresse.
+    /// en mode CRÉATION émet <c>POST /api/foyer/activites</c> (id stable neuf posé côté handler), en mode
+    /// ÉDITION émet <c>PUT /api/foyer/activites/{id}</c> sur l'id stable (jamais éditable) — libellé + adresse.
     /// Réutilise les commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le référentiel (le tableau
     /// suit sans rechargement) et la modal se ferme. Sur refus métier (libellé vide) ou service injoignable, le
     /// motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée (Sc.6).
@@ -1129,7 +1125,7 @@ public partial class ConfigurationFoyer
         if (_modalActiviteAjout)
         {
             // Création : ajouter-activite seul (les liens enfant se posent ensuite en édition, Sc.5).
-            if (!await PosterActivite("api/canal/ajouter-activite", new AjouterActiviteRequete(_activite.Libelle)))
+            if (!await PosterActivite(() => Canal.PostAsJsonAsync("api/foyer/activites", new AjouterActiviteRequete(_activite.Libelle))))
                 return;
         }
         else
@@ -1137,19 +1133,19 @@ public partial class ConfigurationFoyer
             // Édition : libellé + adresse (editer-activite) PUIS les diffs d'enfants liés (lier/délier). Sur le
             // PREMIER refus (métier ou injoignable), on s'arrête, motif dans la modal restée ouverte (Sc.6) — le
             // tableau n'est relu qu'après le succès complet.
-            if (!await PosterActivite("api/canal/editer-activite",
-                new EditerActiviteRequete(_modalActiviteId!, _activite.Libelle, _activite.Adresse)))
+            if (!await PosterActivite(() => Canal.PutAsJsonAsync($"api/foyer/activites/{_modalActiviteId!}",
+                new EditerActiviteCorps(_activite.Libelle, _activite.Adresse))))
                 return;
 
             var courant = _activites.FirstOrDefault(a => a.Id == _modalActiviteId)?.EnfantsLies
                 ?? (IReadOnlyCollection<string>)Array.Empty<string>();
 
             foreach (var enfantId in _selectionEnfants.Where(id => !courant.Contains(id)).ToList())
-                if (!await PosterActivite("api/canal/lier-enfant-activite", new LierEnfantActiviteRequete(enfantId, _modalActiviteId!)))
+                if (!await PosterActivite(() => Canal.PutAsync($"api/foyer/activites/{_modalActiviteId!}/enfants/{enfantId}", null)))
                     return;
 
             foreach (var enfantId in courant.Where(id => !_selectionEnfants.Contains(id)).ToList())
-                if (!await PosterActivite("api/canal/delier-enfant-activite", new DelierEnfantActiviteRequete(enfantId, _modalActiviteId!)))
+                if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/activites/{_modalActiviteId!}/enfants/{enfantId}")))
                     return;
         }
 
@@ -1160,12 +1156,12 @@ public partial class ConfigurationFoyer
     /// <summary>Émet une écriture activité (ajouter / éditer / lier / délier) via le canal HTTP réel et renvoie
     /// <c>true</c> en succès. Sur service injoignable ou refus métier, pose le motif dans la modal
     /// (<c>_motifEchecActivite</c>) et renvoie <c>false</c> — la modal reste ouverte, aucun tableau relu.</summary>
-    private async Task<bool> PosterActivite<TRequete>(string route, TRequete requete)
+    private async Task<bool> PosterActivite(Func<Task<HttpResponseMessage>> envoi)
     {
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(route, requete);
+            reponse = await envoi();
         }
         catch (HttpRequestException)
         {
@@ -1183,13 +1179,13 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Supprime une activité du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>POST /api/canal/supprimer-activite</c>) depuis la modal d'édition (Sc.4) : la clé est l'identifiant
+    /// (<c>DELETE /api/foyer/activites/{id}</c>) depuis la modal d'édition (Sc.4) : la clé est l'identifiant
     /// stable. Sur succès, on relit le référentiel (l'activité quitte le tableau et n'est plus proposée à la
     /// saisie, sans rechargement — S6), puis la modal se ferme. Idempotence côté handler ; borne : les slots
     /// déjà posés sur cette activité conservent leur lieu. Sur refus / injoignable, le motif reste DANS la modal.</summary>
     private async Task SupprimerActivite(string activiteId)
     {
-        if (!await PosterActivite("api/canal/supprimer-activite", new SupprimerActiviteRequete(activiteId)))
+        if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/activites/{activiteId}")))
             return;
 
         await RechargerActivites();
@@ -1198,8 +1194,8 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Enregistre la modal enfant (Sc.4) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
-    /// en mode CRÉATION émet <c>POST /api/canal/ajouter-enfant</c> (id stable opaque neuf posé côté handler),
-    /// en mode ÉDITION émet <c>POST /api/canal/editer-enfant</c> sur l'id stable (jamais éditable, seul le
+    /// en mode CRÉATION émet <c>POST /api/foyer/enfants</c> (id stable opaque neuf posé côté handler),
+    /// en mode ÉDITION émet <c>PUT /api/foyer/enfants/{id}</c> sur l'id stable (jamais éditable, seul le
     /// prénom change). Réutilise les commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le
     /// référentiel (la table suit sans rechargement) et la modal se ferme. Sur refus métier (prénom vide /
     /// doublon) ou service injoignable, le motif est surfacé DANS la modal, qui reste ouverte et la saisie
@@ -1212,7 +1208,7 @@ public partial class ConfigurationFoyer
         if (_modalEnfantAjout)
         {
             // Création : ajouter-enfant seul (les liens parents se posent ensuite en édition, Sc.5).
-            if (!await PosterEnfant("api/canal/ajouter-enfant", new AjouterEnfantRequete(_enfant.Prenom)))
+            if (!await PosterEnfant(() => Canal.PostAsJsonAsync("api/foyer/enfants", new AjouterEnfantRequete(_enfant.Prenom))))
                 return;
         }
         else
@@ -1220,7 +1216,7 @@ public partial class ConfigurationFoyer
             // Édition : prénom (editer-enfant) PUIS les diffs de parents liés (lier/délier). Sur le PREMIER
             // refus (métier ou injoignable), on s'arrête, motif dans la modal restée ouverte (Sc.6) — le
             // tableau n'est relu qu'après le succès complet.
-            if (!await PosterEnfant("api/canal/editer-enfant", new EditerEnfantRequete(_modalEnfantId!, _enfant.Prenom)))
+            if (!await PosterEnfant(() => Canal.PutAsJsonAsync($"api/foyer/enfants/{_modalEnfantId!}", new EditerEnfantCorps(_enfant.Prenom))))
                 return;
 
             var courant = (_enfants.FirstOrDefault(e => e.Id == _modalEnfantId)?.ParentsLies
@@ -1231,11 +1227,11 @@ public partial class ConfigurationFoyer
             // handler réécrit le rôle sans dupliquer le lien. Sur le PREMIER refus, on s'arrête (modal ouverte).
             foreach (var (acteurId, role) in _selectionParents
                          .Where(kv => !courant.TryGetValue(kv.Key, out var r) || r != kv.Value).ToList())
-                if (!await PosterEnfant("api/canal/lier-enfant-parent", new LierEnfantParentRequete(_modalEnfantId!, acteurId, role)))
+                if (!await PosterEnfant(() => Canal.PutAsJsonAsync($"api/foyer/enfants/{_modalEnfantId!}/parents/{acteurId}", new LierEnfantParentCorps(role))))
                     return;
 
             foreach (var acteurId in courant.Keys.Where(id => !_selectionParents.ContainsKey(id)).ToList())
-                if (!await PosterEnfant("api/canal/delier-enfant-parent", new DelierEnfantParentRequete(_modalEnfantId!, acteurId)))
+                if (!await PosterEnfant(() => Canal.DeleteAsync($"api/foyer/enfants/{_modalEnfantId!}/parents/{acteurId}")))
                     return;
         }
 
@@ -1246,12 +1242,12 @@ public partial class ConfigurationFoyer
     /// <summary>Émet une écriture enfant (ajouter / éditer / lier / délier) via le canal HTTP réel et renvoie
     /// <c>true</c> en succès. Sur service injoignable ou refus métier, pose le motif dans la modal
     /// (<c>_motifEchecEnfant</c>) et renvoie <c>false</c> — la modal reste ouverte, aucun tableau relu.</summary>
-    private async Task<bool> PosterEnfant<TRequete>(string route, TRequete requete)
+    private async Task<bool> PosterEnfant(Func<Task<HttpResponseMessage>> envoi)
     {
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(route, requete);
+            reponse = await envoi();
         }
         catch (HttpRequestException)
         {
@@ -1291,7 +1287,7 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Crée / associe un compte à un acteur via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/canal/creer-compte</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
+    /// (<c>POST /api/foyer/comptes</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
     /// ré-énumère les comptes pour que le compte associé apparaisse <b>sans rechargement</b>, avec son
     /// statut « inactif » (Sc.7). Le front n'émet que l'acteur et l'email ; l'id stable neuf et le statut
     /// sont posés côté handler. Sur refus métier (email vide / doublon, Sc.2) ou <b>service injoignable</b>
@@ -1306,7 +1302,7 @@ public partial class ConfigurationFoyer
         try
         {
             reponse = await Canal.PostAsJsonAsync(
-                "api/canal/creer-compte",
+                "api/foyer/comptes",
                 new CreerCompteRequete(acteurId, EmailCompte(acteurId)));
         }
         catch (HttpRequestException)

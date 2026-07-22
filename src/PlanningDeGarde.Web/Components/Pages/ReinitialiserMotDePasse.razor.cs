@@ -8,7 +8,7 @@ namespace PlanningDeGarde.Web.Components.Pages;
 /// <summary>
 /// Écran « redéfinir par jeton » (front <b>WASM</b>, s28, volet 1) : le jeton de réinitialisation reçu par
 /// mail est porté par l'URL (<c>?jeton=…</c>). L'utilisateur saisit un nouveau mot de passe → redéfinition
-/// via le <b>canal requête/réponse</b> HTTP (<c>POST /api/canal/redefinir-mot-de-passe</c>) — le jeton est
+/// via le <b>canal requête/réponse</b> HTTP (<c>POST /api/comptes/reinitialisation</c>) — le jeton est
 /// consommé (usage unique) côté handler. Sur succès, un message invite à se connecter ; sur refus (jeton
 /// invalide / consommé / expiré), le motif est surfacé. Le front ne porte AUCUNE règle métier.
 /// </summary>
@@ -43,7 +43,7 @@ public partial class ReinitialiserMotDePasse
         // (haché côté serveur) et le jeton consommé (usage unique) : on invite à se connecter. Sur refus
         // (jeton inconnu / déjà consommé / expiré), le motif renvoyé est surfacé — usage unique observable.
         var reponse = await Canal.PostAsJsonAsync(
-            "api/canal/redefinir-mot-de-passe", new RedefinirMotDePasseRequete(_jeton, _nouveauMotDePasse));
+            "api/comptes/reinitialisation", new RedefinirMotDePasseRequete(_jeton, _nouveauMotDePasse));
         if (reponse.IsSuccessStatusCode)
             _messageSucces = "Votre mot de passe a été redéfini. Vous pouvez vous connecter.";
         else

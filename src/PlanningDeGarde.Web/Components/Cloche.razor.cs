@@ -284,7 +284,7 @@ public partial class Cloche : IAsyncDisposable
     private async Task MarquerLu(string evenementId)
     {
         var reponse = await Canal.PostAsJsonAsync(
-            "api/canal/marquer-notifications-lues", new MarquerNotificationsLuesRequete(MonId, evenementId));
+            "api/notifications/lues", new MarquerNotificationsLuesRequete(MonId, evenementId));
         if (!reponse.IsSuccessStatusCode)
             return;
         // État lu/non-lu PRIVÉ (aucune diffusion) : le badge décroît sur la reprojection LOCALE de l'acteur.
@@ -295,7 +295,7 @@ public partial class Cloche : IAsyncDisposable
     private async Task MarquerToutLu()
     {
         var reponse = await Canal.PostAsJsonAsync(
-            "api/canal/marquer-notifications-lues", new MarquerNotificationsLuesRequete(MonId, null));
+            "api/notifications/lues", new MarquerNotificationsLuesRequete(MonId, null));
         if (!reponse.IsSuccessStatusCode)
             return;
         // « Marquer tout lu » ne concerne que les événements du journal (les propositions restent actionnables).
@@ -338,10 +338,11 @@ public partial class Cloche : IAsyncDisposable
     {
         var propositionId = _confirmPropositionId!;
         _confirmPropositionId = null;
-        var endpoint = _confirmAccepter ? "api/canal/accepter-proposition" : "api/canal/refuser-proposition";
+        var sousRessource = _confirmAccepter ? "acceptation" : "refus";
         // Émission par le CANAL D'ÉCRITURE (jamais la diffusion). La convergence de la notif (accepté / retirée)
         // arrive par REPROJECTION depuis la diffusion Proposition (le serveur re-diffuse à tous, dont l'émetteur).
-        await Canal.PostAsJsonAsync(endpoint, new RepondrePropositionRequete(propositionId));
+        // REST : la proposition est la ressource, l'action une sous-ressource (POST, corps vide).
+        await Canal.PostAsJsonAsync($"api/propositions/{propositionId}/{sousRessource}", new { });
     }
 
     private string Nom(string id) => _acteurs.FirstOrDefault(a => a.Id == id)?.Nom ?? id;

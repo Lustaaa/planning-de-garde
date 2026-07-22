@@ -9,7 +9,7 @@ namespace PlanningDeGarde.Web.Components;
 
 /// <summary>
 /// Mini-dialog « Reprendre ce jour » (s46) : confirmation de l'annulation de la délégation d'UN jour, émise
-/// via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/canal/annuler-delegation</c>) — JAMAIS le canal
+/// via le <b>canal requête/réponse</b> (endpoint HTTP <c>DELETE /api/delegations</c>) — JAMAIS le canal
 /// de diffusion. Aucune règle métier ici : le use case COMPOSE la suppression de surcharge existante (s16).
 /// Issues : succès → <see cref="OnValide"/> ; API injoignable → message <b>dans</b> la dialog, dialog restée
 /// OUVERTE. Portée par <c>ModalConfig</c> : Échap = « Annuler » (port <see cref="IEcouteurEchapModal"/> s33).
@@ -41,8 +41,8 @@ public partial class ReprendreJourDialog
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.PostAsJsonAsync(
-                "api/canal/annuler-delegation", new AnnulerDelegationRequete(DateContexte, EnfantId));
+            reponse = await Canal.DeleteAsync(
+                $"api/delegations?jour={DateContexte:yyyy-MM-dd}&enfant={Uri.EscapeDataString(EnfantId)}");
         }
         catch (HttpRequestException)
         {

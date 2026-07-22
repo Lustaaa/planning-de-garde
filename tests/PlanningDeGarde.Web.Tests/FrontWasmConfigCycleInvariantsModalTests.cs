@@ -96,7 +96,7 @@ public sealed class FrontWasmConfigCycleInvariantsModalTests : TestContext
         // Given — un cycle déclaré ; le canal /definir-cycle subit un échec de transport déterministe.
         using var api = new ApiDistanteFactory();
         SemerCycle(api);
-        var config = RendreConfig(api, client: GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "definir-cycle"));
+        var config = RendreConfig(api, client: GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/cycles"));
         config.WaitForState(() => config.FindAll("[data-testid='cycle-foyer']").Count == 2, TimeSpan.FromSeconds(10));
 
         this.SurDispatcher(() => config.Find("[data-testid='crayon-cycle']").Click());
