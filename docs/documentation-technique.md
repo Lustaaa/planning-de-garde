@@ -21,20 +21,40 @@ comportement d'exécution est strictement inchangé, seule l'émission de la doc
 
 ## Générer la doc
 
+### Voie officielle : service `docfx` du docker compose (http://localhost:8089)
+
+`docker compose up` démarre **aussi** la doc technique, servie sur **http://localhost:8089** (service
+`docfx`). Aucune manip : c'est la voie recommandée. Le service dépend de `build`
+(`service_completed_successfully`) et extrait les métadonnées depuis les **binaires déjà compilés**
+(DLL + XML de doc du volume `/artifacts`), **pas** depuis les `.csproj` — donc **aucun MSBuild** n'est
+déclenché et **aucun `obj` n'est écrit**, ce qui reste compatible avec la source montée en **lecture
+seule** (`./:/src:ro`). Les deux seules sorties DocFX (`docfx/api`, `docfx/_site`) sont des **volumes
+nommés en écriture** (`docfx-api`, `docfx-site`) superposés par-dessus la source read-only.
+
+Cette voie utilise la config dédiée **`docfx/docfx.docker.json`** (identique à `docfx.json`, sauf la
+source d'extraction = DLL au lieu de csproj). Pour servir une doc **fraîche** après un changement de
+code : `docker compose up build --force-recreate` puis `docker compose up -d --force-recreate docfx`.
+
+### Génération hôte (toujours valable)
+
 ```bash
 # 1. Restaurer le tool DocFX épinglé (une fois par clone / en CI)
 dotnet tool restore
 
-# 2. Générer le site statique (métadonnées depuis les XML docs + build HTML)
+# 2. Générer le site statique (métadonnées depuis les .csproj + build HTML)
 dotnet docfx docfx/docfx.json
 
 # 3. (option) générer ET servir sur http://localhost:8080
 dotnet docfx docfx/docfx.json --serve
 ```
 
+`docfx/docfx.json` (extraction **via les .csproj**, MSBuild sur l'hôte) reste la voie hôte de
+référence ; `docfx/docfx.docker.json` (extraction **via les DLL+XML**) est réservée au conteneur.
+
 Sortie : `docfx/_site/` (HTML statique) + `docfx/api/` (métadonnées `.yml` intermédiaires). Ces deux
-dossiers sont **git-ignorés** : on ne versionne que la CONFIG (`docfx/docfx.json`, `docfx/toc.yml`,
-`docfx/index.md`, `.config/dotnet-tools.json`, `src/Directory.Build.props`).
+dossiers sont **git-ignorés** : on ne versionne que la CONFIG (`docfx/docfx.json`,
+`docfx/docfx.docker.json`, `docfx/toc.yml`, `docfx/index.md`, `.config/dotnet-tools.json`,
+`src/Directory.Build.props`).
 
 ## Périmètre de la référence API
 

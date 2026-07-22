@@ -10,6 +10,9 @@
 #             quand deux hôtes recompilent en parallèle Domain.dll/Application.dll partagés.
 #   - api   : hôte d'API détaché (Kestrel :5180). Démarre APRÈS build (--no-build) et mongo.
 #   - web   : front Blazor WASM via le dev server (:5292). Démarre APRÈS build (--no-build).
+#   - docfx : doc technique auto-générée (http://localhost:8089). Démarre APRÈS build : extrait les
+#             métadonnées depuis les DLL+XML de /artifacts (pas les .csproj → aucun MSBuild, aucune
+#             écriture obj) puis sert le site statique. Config dédiée docfx/docfx.docker.json.
 #
 # ISOLATION des binaires : tout passe par `--artifacts-path /artifacts` (volume nommé) → les bin/obj
 # du conteneur Linux NE polluent PAS les bin/obj de l'hôte Windows (et réciproquement). La source est
@@ -125,7 +128,38 @@ services:
       dotnet run --project src/PlanningDeGarde.Web/PlanningDeGarde.Web.csproj
       --no-build --no-restore --no-launch-profile --artifacts-path /artifacts
 
+  # Doc technique auto-générée (DocFX) — http://localhost:8089. Extraction des métadonnées depuis les
+  # ASSEMBLIES compilées par 'build' (DLL + XML de doc dans /artifacts), PAS depuis les .csproj : aucun
+  # MSBuild, donc aucun obj à écrire → compatible avec la source montée en LECTURE SEULE. Les deux seules
+  # sorties DocFX (docfx/api = métadonnées .yml, docfx/_site = HTML) sont des volumes nommés rw superposés
+  # sur la source ro (ces dossiers sont git-ignorés). Le reste de /src reste intact et non modifiable.
+  docfx:
+    <<: *dotnet-common
+    depends_on:
+      build:
+        condition: service_completed_successfully
+    environment:
+      NUGET_PACKAGES: /nuget
+      DOTNET_CLI_TELEMETRY_OPTOUT: "1"
+    volumes:
+      - ./:/src:ro                       # source ro (identique au reste ; sorties redirigées ci-dessous)
+      - build-artifacts:/artifacts:ro    # DLL+XML de doc produits par 'build' (source de l'extraction)
+      - nuget-cache:/nuget
+      - docfx-api:/src/docfx/api         # métadonnées .yml — volume rw superposé sur la source ro
+      - docfx-site:/src/docfx/_site      # site HTML statique — volume rw superposé sur la source ro
+    ports:
+      - "8089:8089"
+    command:
+      - sh
+      - -c
+      - |
+        set -e
+        dotnet tool restore --configfile nuget.docker.config
+        dotnet docfx docfx/docfx.docker.json --serve -n 0.0.0.0 -p 8089
+
 volumes:
   mongo-data:
   build-artifacts:
   nuget-cache:
+  docfx-api:
+  docfx-site:

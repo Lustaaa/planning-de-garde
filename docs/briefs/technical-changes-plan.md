@@ -233,6 +233,20 @@ Comportement d'exécution inchangé sur tout le programme ; suite complète **91
       Preuve : suite complète **917/917 verte**, `dotnet docfx` 0 erreur, aucun `sNN`/`Sc.N` dans
       `docfx/_site/api/`.
 
+- [x] **Suite hors-programme — écosystème local + doc DocFX dans le compose** : (1) page humaine
+      `docs/ecosysteme-local.md` listant tous les services qui démarrent (front 5292, api 5180 +
+      Scalar/OpenAPI, mongo 27017, mongo-express 8081, smtp4dev 2525/5081, docfx 8089), le « comment
+      lancer » et le piège du build servi périmé ; (2) **service `docfx` ajouté au `docker-compose.yml`**
+      (http://localhost:8089) : `docker compose up` démarre désormais AUSSI la doc technique. **Crux
+      read-only résolu** : extraction des métadonnées depuis les **DLL+XML de `/artifacts`** (produits
+      par `build`) via une config dédiée `docfx/docfx.docker.json` → **aucun MSBuild, aucun `obj`** →
+      compatible avec `./:/src:ro`. Les 2 seules sorties (`docfx/api`, `docfx/_site`) sont des **volumes
+      nommés rw** (`docfx-api`, `docfx-site`) superposés sur la source ro. `depends_on: build
+      (service_completed_successfully)`, `--serve -n 0.0.0.0 -p 8089`. La génération hôte
+      (`docfx/docfx.json`, extraction csproj) reste inchangée et valable. Preuve : `docker compose config`
+      valide + `curl http://localhost:8089/` → HTTP 200 (page DocFX, 0 marqueur de sprint), build DocFX
+      0 erreur (377 pages). Aucun code touché.
+
 ---
 
 ## Carte des bounded contexts (FIGÉE — à réutiliser par les lots InMemory/Mongo/Web)
