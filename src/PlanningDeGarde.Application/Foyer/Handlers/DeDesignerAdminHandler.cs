@@ -4,11 +4,11 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Foyer.Handlers;
 
 /// <summary>
-/// Commande de <b>dé-désignation</b> d'un acteur admin du foyer (sens OFF du toggle admin, s41 —
-/// débloque le verrou ON s33). Cible un acteur par son id stable et retire sa désignation d'admin
+/// Commande de <b>dé-désignation</b> d'un acteur admin du foyer (sens OFF du toggle admin, —
+/// débloque le verrou ON). Cible un acteur par son id stable et retire sa désignation d'admin
 /// via l'agrégat <see cref="AdministrationFoyer"/> (Domain pur, Tell-Don't-Ask) puis le port
 /// d'écriture <see cref="IEditeurAdminsFoyer"/>. Aucun nouvel agrégat, aucun store neuf : réutilise
-/// le référentiel d'admins s22. Le sens ON (<see cref="DesignerAdminHandler"/>, invariant admin=parent)
+/// le référentiel d'admins. Le sens ON (<see cref="DesignerAdminHandler"/>, invariant admin=parent)
 /// reste strictement inchangé.
 /// </summary>
 public sealed record DeDesignerAdminCommand(string ActeurId);

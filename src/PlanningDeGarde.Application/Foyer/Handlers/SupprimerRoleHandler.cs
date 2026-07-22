@@ -5,7 +5,7 @@ namespace PlanningDeGarde.Application.Foyer.Handlers;
 
 /// <summary>
 /// Commande de suppression d'un rôle du référentiel du foyer (config). Miroir du repli acteur
-/// orphelin (s13/s19) : les acteurs qui portaient ce rôle retombent « sans rôle » (repli neutre),
+/// orphelin : les acteurs qui portaient ce rôle retombent « sans rôle » (repli neutre),
 /// jamais de rôle fantôme. Idempotente : supprimer un rôle absent est un no-op qui réussit.
 /// </summary>
 public sealed record SupprimerRoleCommand(string RoleId);

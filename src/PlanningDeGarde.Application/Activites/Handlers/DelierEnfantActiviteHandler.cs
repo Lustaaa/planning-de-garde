@@ -3,7 +3,7 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Activites.Handlers;
 
 /// <summary>
-/// Commande de retrait du lien d'un enfant vers une <b>activité</b> (s35 Sc.3). Retire le lien via
+/// Commande de retrait du lien d'un enfant vers une <b>activité</b>. Retire le lien via
 /// <see cref="IEditeurActivites.DelierEnfant"/> — les ids de l'enfant et de l'activité et les autres
 /// liens restent inchangés. Relu ensuite par la query dans <see cref="ActiviteFoyer.EnfantsLies"/>.
 /// </summary>
@@ -13,7 +13,7 @@ public sealed record DelierEnfantActiviteCommand(string EnfantId, string Activit
 public sealed record DelierEnfantActiviteResultat(string EnfantId, string ActiviteId);
 
 /// <summary>
-/// Use case : délier un enfant d'une activité (s35 Sc.3). <b>Idempotent</b> : délier un lien déjà absent
+/// Use case : délier un enfant d'une activité. <b>Idempotent</b> : délier un lien déjà absent
 /// est neutre (aucune écriture, aucune erreur) — la neutralité est portée par le store (retrait tolérant
 /// à l'absence).
 /// </summary>

@@ -4,11 +4,11 @@ using PlanningDeGarde.Web.State;
 namespace PlanningDeGarde.Web;
 
 /// <summary>
-/// Restaure la session de consultation au démarrage du client (volet 1 Login F5, s31) : relit le jeton
+/// Restaure la session de consultation au démarrage du client (Login F5) : relit le jeton
 /// persisté via <see cref="IPersistanceSession"/> et, s'il est valide, ré-ouvre la session en mémoire
 /// (<see cref="SessionPlanning.Connecter"/>) SANS repasser par le flux de connexion. Un jeton absent ou
 /// invalide n'ouvre AUCUNE session (pas de session fantôme). Ne persiste rien de neuf : il ne fait que
-/// rejouer l'amorçage d'identité déjà résolu serveur, la session reste en mémoire (borne R30 tenue).
+/// rejouer l'amorçage d'identité déjà résolu serveur, la session reste en mémoire (borne tenue).
 /// </summary>
 public sealed class RestaurateurSession
 {

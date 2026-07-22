@@ -18,7 +18,7 @@ public sealed class SlotsDuJourQuery
 
     public SlotsDuJourQuery(ISlotRepository slots) => _slots = slots;
 
-    /// <summary>Slots dont l'intervalle [Debut..Fin] couvre la <paramref name="date"/> (jours bornes inclus).</summary>
+    /// <summary>Slots dont l'intervalle [Debut.Fin] couvre la <paramref name="date"/> (jours bornes inclus).</summary>
     public IReadOnlyList<SlotSnapshot> Lister(DateOnly date)
     {
         return _slots.AllSnapshots()

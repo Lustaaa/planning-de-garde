@@ -29,7 +29,7 @@ public sealed class PeriodeDeGarde
     }
 
     /// <summary>
-    /// Affecte un responsable sur l'intervalle. <paramref name="enfantId"/> (s53) SCOPE la surcharge à
+    /// Affecte un responsable sur l'intervalle. <paramref name="enfantId"/> SCOPE la surcharge à
     /// un enfant : elle n'entre dans la résolution que de CET enfant. Absent (<c>""</c>) = surcharge
     /// partagée/legacy (mono-enfant antérieur).
     /// </summary>

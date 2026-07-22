@@ -6,7 +6,7 @@ namespace PlanningDeGarde.Web;
 /// Fabrique du client HTTP d'écriture du front <b>WASM</b>. Le front s'exécutant dans le
 /// navigateur, il émet ses écritures vers une <b>API distante</b> dont l'URL est <b>configurable</b>
 /// (clé « Api:BaseUrl »), et non plus vers son propre hôte (<c>nav.BaseUri</c>, valable seulement
-/// quand le front était rendu côté serveur). C'est ce câblage runtime que le Sc.2 prouve.
+/// quand le front était rendu côté serveur). C'est ce câblage runtime que le prouve.
 /// </summary>
 public static class ClientCanalEcriture
 {

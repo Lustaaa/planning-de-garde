@@ -9,13 +9,13 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Slots;
 
 /// <summary>
-/// Dialog (modal) « Supprimer un slot » ouverte depuis le menu d'actions d'une case (palier 7, écriture
+/// Dialog (modal) « Supprimer un slot » ouverte depuis le menu d'actions d'une case (écriture
 /// en contexte — 6ᵉ usage du menu clic-case). À l'ouverture elle LIT les slots couvrant la date via le
 /// <b>canal de lecture</b> HTTP (<c>GET /api/slots/…</c>) ; supprimer une ligne émet la commande via le
 /// <b>canal requête/réponse</b> (<c>DELETE /api/slots/{id}</c>) — JAMAIS un handler en DI direct
 /// ni le canal de diffusion. Aucune règle métier ici : la clé envoyée est l'<b>identifiant stable</b> du
 /// slot. Issues : succès → <see cref="OnValide"/> (le parent ferme, accuse et relit la grille) ; refus
-/// métier (4xx) ou API injoignable → message <b>dans</b> la dialog, la dialog reste ouverte (Sc.9).
+/// métier (4xx) ou API injoignable → message <b>dans</b> la dialog, la dialog reste ouverte.
 /// </summary>
 public partial class SupprimerSlotDialog
 {

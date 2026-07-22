@@ -10,11 +10,11 @@ using Foyer = PlanningDeGarde.Application.Foyer.Seed.Foyer;
 
 /// <summary>
 /// Store mutable en mémoire du référentiel de lieux du foyer (petit agrégat de config foyer, miroir
-/// strict du référentiel de rôles s21). <b>Seedé</b> à la construction depuis le <see cref="Foyer.Activites"/>
+/// strict du référentiel de rôles). <b>Seedé</b> à la construction depuis le <see cref="Foyer.Activites"/>
 /// en dur (parité seed acteurs InMemory) — les lieux historiques du foyer restent disponibles à la
-/// saisie —, puis éditable en session. Réalise le port de lecture <see cref="IEnumerationActivites"/> et
+/// saisie, puis éditable en session. Réalise le port de lecture <see cref="IEnumerationActivites"/> et
 /// le port d'écriture <see cref="IEditeurActivites"/> sur un dictionnaire id→libellé. Volatile (re-seedé
-/// au redémarrage) ; le remplaçant durable est <c>ReferentielActivitesMongo</c> (sans seed, S4). Les lieux
+/// au redémarrage) ; le remplaçant durable est <c>ReferentielActivitesMongo</c> (sans seed). Les lieux
 /// historiques portent leur libellé comme identifiant stable (préserve les slots déjà posés).
 /// </summary>
 public sealed class ReferentielActivitesEnMemoire : IEnumerationActivites, IEditeurActivites

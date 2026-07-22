@@ -9,7 +9,7 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.Periodes.Repositories;
 
 /// <summary>
 /// Adaptateur de droite <b>durable</b> (Mongo) du port <see cref="IPeriodeRepository"/> : les périodes
-/// de garde (responsable, intervalle) survivent au redémarrage de l'hôte (Sc.9, s15). Remplaçant durable
+/// de garde (responsable, intervalle) survivent au redémarrage de l'hôte. Remplaçant durable
 /// de <see cref="InMemoryPeriodeRepository"/> derrière le <b>port inchangé</b> ; choisi par DI en runtime
 /// (« Foyer:Persistance = Mongo »).
 ///

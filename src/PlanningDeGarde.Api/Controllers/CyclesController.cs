@@ -2,13 +2,13 @@ namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
 /// Ressource <b>Cycles de fond</b> (BC CyclesDeFond) — controller MVC REST. Le cycle est clé PAR
-/// ENFANT (s53) : lecture et écriture portent l'enfant en paramètre/corps, jamais dans l'URL de ressource.
+/// ENFANT : lecture et écriture portent l'enfant en paramètre/corps, jamais dans l'URL de ressource.
 /// Une nouvelle définition remplace intégralement le cycle courant de l'enfant (dernière écriture gagne).
 /// </summary>
 [ApiController]
 public sealed class CyclesController(DefinirCycleHandler definir, CyclesFoyerQuery query) : ControllerBase
 {
-    /// <summary>Cycles DÉCLARÉS lus depuis le store (s33). Paramètre optionnel « enfant » (s53) : cycle
+    /// <summary>Cycles DÉCLARÉS lus depuis le store. Paramètre optionnel « enfant » : cycle
     /// par enfant ; absent = cycle partagé/legacy (compat ascendante).</summary>
     [HttpGet("/api/foyer/cycles")]
     public IActionResult Lire([FromQuery] string? enfant)

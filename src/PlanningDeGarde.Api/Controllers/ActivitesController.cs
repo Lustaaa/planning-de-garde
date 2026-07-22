@@ -1,7 +1,7 @@
 namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
-/// Ressource <b>Activités du foyer</b> (BC Activites, ex-« lieux » s27→s35) — controller MVC REST. CRUD des
+/// Ressource <b>Activités du foyer</b> (BC Activites, ex-« lieux ») — controller MVC REST. CRUD des
 /// activités + liaison d'un enfant (sous-ressource <c>/enfants/{enfantId}</c>). Écritures via handlers
 /// inchangés + diffusion temps réel (lecture seule) sur succès.
 /// </summary>
@@ -25,7 +25,7 @@ public sealed class ActivitesController(
         return Ok(vues);
     }
 
-    /// <summary>Ajout d'une activité (POST, s35). L'id stable neuf est posé côté handler.</summary>
+    /// <summary>Ajout d'une activité (POST). L'id stable neuf est posé côté handler.</summary>
     [HttpPost("/api/foyer/activites")]
     public IActionResult Ajouter([FromBody] AjouterActiviteRequete requete)
     {
@@ -33,7 +33,7 @@ public sealed class ActivitesController(
         return Diffuser(resultat);
     }
 
-    /// <summary>Édition d'une activité par id (PUT, s35) : libellé + adresse optionnels indépendants.</summary>
+    /// <summary>Édition d'une activité par id (PUT) : libellé + adresse optionnels indépendants.</summary>
     [HttpPut("/api/foyer/activites/{id}")]
     public IActionResult Editer(string id, [FromBody] EditerActiviteCorps corps)
     {
@@ -41,7 +41,7 @@ public sealed class ActivitesController(
         return Diffuser(resultat);
     }
 
-    /// <summary>Suppression d'une activité par id (DELETE, s35). Idempotente ; slots déjà posés conservent leur lieu.</summary>
+    /// <summary>Suppression d'une activité par id (DELETE). Idempotente ; slots déjà posés conservent leur lieu.</summary>
     [HttpDelete("/api/foyer/activites/{id}")]
     public IActionResult Supprimer(string id)
     {
@@ -49,7 +49,7 @@ public sealed class ActivitesController(
         return Diffuser(resultat);
     }
 
-    /// <summary>Liaison d'un enfant à une activité (PUT sous-ressource, s35). Lien N-M ; déjà lié = neutre.</summary>
+    /// <summary>Liaison d'un enfant à une activité (PUT sous-ressource). Lien N-M ; déjà lié = neutre.</summary>
     [HttpPut("/api/foyer/activites/{id}/enfants/{enfantId}")]
     public IActionResult LierEnfant(string id, string enfantId)
     {
@@ -57,7 +57,7 @@ public sealed class ActivitesController(
         return Diffuser(resultat);
     }
 
-    /// <summary>Retrait du lien enfant↔activité (DELETE sous-ressource, s35). Idempotent côté handler.</summary>
+    /// <summary>Retrait du lien enfant↔activité (DELETE sous-ressource). Idempotent côté handler.</summary>
     [HttpDelete("/api/foyer/activites/{id}/enfants/{enfantId}")]
     public IActionResult DelierEnfant(string id, string enfantId)
     {

@@ -3,9 +3,9 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Comptes.Handlers;
 
 /// <summary>
-/// Commande de <b>définition</b> d'un mot de passe local sur un compte (s28, volet 2) : pose un mot de
-/// passe (haché PBKDF2) sur un compte jusqu'ici sans mot de passe (email-only s23) ou en remplace le
-/// condensat. Distincte de la redéfinition par jeton (volet 1) : ici la cible est directement le compte,
+/// Commande de <b>définition</b> d'un mot de passe local sur un compte : pose un mot de
+/// passe (haché PBKDF2) sur un compte jusqu'ici sans mot de passe (email-only) ou en remplace le
+/// condensat. Distincte de la redéfinition par jeton : ici la cible est directement le compte,
 /// sans jeton de réinitialisation. Le mot de passe en clair ne transite que dans la commande, jamais ailleurs.
 /// </summary>
 public sealed record DefinirMotDePasseCommand(string CompteId, string MotDePasse);

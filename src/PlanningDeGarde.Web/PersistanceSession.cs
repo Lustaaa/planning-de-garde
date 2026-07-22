@@ -6,16 +6,16 @@ using PlanningDeGarde.Application;
 namespace PlanningDeGarde.Web;
 
 /// <summary>
-/// Jeton de session persisté côté client (volet 1 Login F5, s31) : l'identité du compte connecté
+/// Jeton de session persisté côté client (Login F5) : l'identité du compte connecté
 /// re-hydratable au démarrage (id d'acteur stable + nom d'affichage + type). C'est le strict minimum
 /// pour ré-ouvrir la même session sans repasser par le flux de connexion. Aucune donnée domaine, aucun
-/// secret : ce n'est que l'ancrage d'identité déjà résolu serveur à la connexion (s23/s25).
+/// secret : ce n'est que l'ancrage d'identité déjà résolu serveur à la connexion.
 /// </summary>
 public sealed record SessionPersistee(string ActeurId, string Nom, TypeActeur Type);
 
 /// <summary>
-/// Port de persistance durable de la session côté client (s31, volet 1). Distinct de
-/// <see cref="State.SessionPlanning"/> qui reste en MÉMOIRE (borne anti-cliquet R30) : ce port ne fait que
+/// Port de persistance durable de la session côté client. Distinct de
+/// <see cref="State.SessionPlanning"/> qui reste en MÉMOIRE (borne anti-cliquet) : ce port ne fait que
 /// persister/relire le jeton d'amorçage à travers un stockage qui survit au rechargement (F5). Adaptateur de
 /// bord (JS localStorage) — jamais doublé en dehors du test ; côté test, on double ce port à la main.
 /// </summary>
@@ -27,16 +27,16 @@ public interface IPersistanceSession
     /// <summary>Relit le jeton persisté (au démarrage), ou <c>null</c> si le stockage est vide.</summary>
     ValueTask<SessionPersistee?> LireAsync();
 
-    /// <summary>Purge le jeton persisté (au logout s23) : le stockage durable est vidé, si bien qu'un F5
+    /// <summary>Purge le jeton persisté (au logout) : le stockage durable est vidé, si bien qu'un F5
     /// ultérieur ne restaure AUCUNE session (le logout reste effectif au rechargement).</summary>
     ValueTask PurgerAsync();
 }
 
 /// <summary>
-/// Adaptateur JS interop du port de persistance de session (s31) : délègue au module <c>window.pdgSession</c>
+/// Adaptateur JS interop du port de persistance de session : délègue au module <c>window.pdgSession</c>
 /// défini inline dans index.html (localStorage['pdg-session']). Le jeton est sérialisé/désérialisé en JSON à
 /// la frontière JS. Adaptateur de bord : jamais doublé côté test (on double le port). Un jeton relu illisible
-/// (JSON corrompu) est traité comme absent — la restauration n'ouvrira aucune session (jeton invalide, Sc.2).
+/// (JSON corrompu) est traité comme absent — la restauration n'ouvrira aucune session (jeton invalide).
 /// </summary>
 public sealed class PersistanceSessionJs : IPersistanceSession
 {

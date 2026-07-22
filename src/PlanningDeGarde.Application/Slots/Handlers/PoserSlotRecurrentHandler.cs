@@ -5,9 +5,9 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Slots.Handlers;
 
 /// <summary>Commande de pose d'un slot récurrent hebdomadaire par un Parent. Le slot peut être
-/// <b>conditionné à la garde</b> (D1, s31) — « seulement les jours où l'enfant est chez moi » — auquel cas
+/// <b>conditionné à la garde</b> — « seulement les jours où l'enfant est chez moi » — auquel cas
 /// il porte l'identité du <paramref name="PoseurId"/> (parent courant) qui pilote son conditionnement. Non
-/// conditionné par défaut (comportement s29 strictement inchangé).</summary>
+/// conditionné par défaut (comportement strictement inchangé).</summary>
 public sealed record PoserSlotRecurrentCommand(
     string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
     bool ConditionneGarde = false, string PoseurId = "");

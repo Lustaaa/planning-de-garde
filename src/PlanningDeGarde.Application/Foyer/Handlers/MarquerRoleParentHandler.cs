@@ -4,10 +4,10 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Foyer.Handlers;
 
 /// <summary>
-/// Commande de bascule du flag « est un rôle parent » d'un rôle du référentiel (s36, B1) : l'identifiant
+/// Commande de bascule du flag « est un rôle parent » d'un rôle du référentiel : l'identifiant
 /// stable désigne le rôle, <see cref="EstParent"/> l'état voulu (coche/décoche pilotée par l'utilisateur).
 /// Le flag est la <b>source de vérité</b> de l'éligibilité au lien enfant↔parent (jamais le libellé,
-/// anti-piège s35). Mute le référentiel via le port d'écriture <see cref="IEditeurReferentielRoles"/>.
+/// anti-piège). Mute le référentiel via le port d'écriture <see cref="IEditeurReferentielRoles"/>.
 /// </summary>
 public sealed record MarquerRoleParentCommand(string RoleId, bool EstParent);
 

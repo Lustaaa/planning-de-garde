@@ -9,14 +9,14 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Periodes;
 
 /// <summary>
-/// Dialog (modal) « Supprimer une période » ouverte depuis le menu d'actions d'une case (palier 7,
+/// Dialog (modal) « Supprimer une période » ouverte depuis le menu d'actions d'une case (
 /// écriture en contexte — 4ᵉ usage du menu clic-case). À l'ouverture elle LIT les périodes couvrant la
 /// date via le <b>canal de lecture</b> HTTP (<c>GET /api/periodes/…</c>) ; supprimer une ligne émet la
 /// commande via le <b>canal requête/réponse</b> (<c>DELETE /api/periodes/{id}</c>) — JAMAIS un
 /// handler en DI direct ni le canal de diffusion. Aucune règle métier ici : la clé envoyée est
 /// l'<b>identifiant stable</b> de la période. Issues : succès → <see cref="OnValide"/> (le parent ferme,
 /// accuse et relit la grille) ; refus métier (4xx) ou API injoignable → message <b>dans</b> la dialog,
-/// la dialog reste ouverte (Sc.9).
+/// la dialog reste ouverte.
 /// </summary>
 public partial class SupprimerPeriodeDialog
 {

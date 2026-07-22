@@ -10,14 +10,14 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Imprevus;
 
 /// <summary>
-/// Mini-dialog « Signaler un imprévu » (s48) : choix du TYPE (malade / retard) + motif OPTIONNEL, émission de la
+/// Mini-dialog « Signaler un imprévu » : choix du TYPE (malade / retard) + motif OPTIONNEL, émission de la
 /// commande via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/imprevus</c>) — JAMAIS le
 /// canal de diffusion. Aucune règle métier ici (le refus « type inconnu » est tranché côté domaine, AVANT toute
 /// écriture). Le signalement est purement INFORMATIF : il N'ÉCRIT AUCUNE surcharge, la résolution du planning
-/// reste inchangée (invariant s48) ; la cloche des concernés reprojette la notification. L'acteur SIGNALANT est
+/// reste inchangée (invariant) ; la cloche des concernés reprojette la notification. L'acteur SIGNALANT est
 /// l'identité effective de la session (jamais un champ saisi). Issues : succès → <see cref="OnValide"/> ; refus
 /// métier (motif propagé) ou API injoignable → message <b>dans</b> la dialog, saisie <b>conservée</b>, dialog
-/// restée OUVERTE. Portée par <c>ModalConfig</c> : Échap = « Annuler » (port <see cref="IEcouteurEchapModal"/> s33).
+/// restée OUVERTE. Portée par <c>ModalConfig</c> : Échap = « Annuler » (port <see cref="IEcouteurEchapModal"/>).
 /// </summary>
 public partial class SignalerImprevuDialog
 {
@@ -36,7 +36,7 @@ public partial class SignalerImprevuDialog
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
-    /// <summary>Enfant sélectionné (parité s44/s47) concerné par l'imprévu ce jour-là.</summary>
+    /// <summary>Enfant sélectionné (parité) concerné par l'imprévu ce jour-là.</summary>
     [Parameter, EditorRequired]
     public string EnfantId { get; set; } = "";
 

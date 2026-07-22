@@ -5,7 +5,7 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Comptes.Handlers;
 
 /// <summary>
-/// Commande de <b>demande de récupération</b> de mot de passe (volet 5, s25) : sur un email, déclenche
+/// Commande de <b>demande de récupération</b> de mot de passe : sur un email, déclenche
 /// l'émission d'un jeton de réinitialisation + d'un mail — SANS jamais révéler au client si l'email
 /// existe (anti-énumération). Le câblage SMTP réel n'est pas testable en runtime local (entorse assumée
 /// G2) : la logique est prouvée contre une doublure du port <see cref="IEnvoiMail"/>.
@@ -14,7 +14,7 @@ public sealed record DemanderRecuperationMotDePasseCommand(string Email);
 
 /// <summary>Réponse NEUTRE d'une demande de récupération : ne porte AUCUNE information sur l'existence
 /// du compte ni le jeton (qui ne transite que par le canal mail). Un succès sec, identique que l'email
-/// soit connu (Sc.11) ou inconnu (Sc.12) — anti-énumération.</summary>
+/// soit connu ou inconnu — anti-énumération.</summary>
 public sealed record RecuperationDemandee;
 
 /// <summary>

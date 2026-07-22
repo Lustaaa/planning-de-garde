@@ -4,11 +4,11 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Comptes.Handlers;
 
 /// <summary>
-/// Commande de <b>désactivation</b> d'un compte utilisateur du foyer (sens OFF du toggle actif, s41 —
-/// débloque le verrou ON s33). Cible un compte par son id stable opaque (s22) et fait passer son statut
+/// Commande de <b>désactivation</b> d'un compte utilisateur du foyer (sens OFF du toggle actif, —
+/// débloque le verrou ON). Cible un compte par son id stable opaque et fait passer son statut
 /// Actif→Inactif via le port d'écriture <see cref="IEditeurComptes"/>. La mutation de statut est portée
 /// par l'agrégat <see cref="CompteUtilisateur"/> (Domain pur, Tell-Don't-Ask). Aucun nouvel agrégat,
-/// aucun store neuf : réutilise le référentiel de comptes s22. Le sens ON
+/// aucun store neuf : réutilise le référentiel de comptes. Le sens ON
 /// (<see cref="ActiverCompteHandler"/>) reste strictement inchangé.
 /// </summary>
 public sealed record DesactiverCompteCommand(string CompteId);

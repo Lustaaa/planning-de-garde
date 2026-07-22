@@ -13,8 +13,8 @@ internal sealed class CompteDocument
     public StatutCompte Statut { get; set; }
     public string? ActeurId { get; set; }
 
-    /// <summary>Condensat du mot de passe local (volet 3 s25 ; jamais le clair). Null pour un
-    /// compte sans mot de passe (email-only s23 / OAuth).</summary>
+    /// <summary>Condensat du mot de passe local (jamais le clair). Null pour un
+    /// compte sans mot de passe (email-only / OAuth).</summary>
     [BsonIgnoreIfNull]
     public string? MotDePasseHache { get; set; }
 }

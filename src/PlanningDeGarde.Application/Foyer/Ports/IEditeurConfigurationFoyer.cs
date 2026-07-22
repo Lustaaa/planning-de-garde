@@ -5,7 +5,7 @@ namespace PlanningDeGarde.Application.Foyer.Ports;
 /// sur son identifiant stable (l'id n'est jamais éditable — il est la clé). Miroir écriture
 /// du port de lecture <see cref="IReferentielResponsables"/> ; réalisé par le store mutable
 /// en Infrastructure, consommé par le handler d'édition. Dernière écriture gagne (le store
-/// écrase la valeur, sans version ni rejet — préparé pour la concurrence Sc.7).
+/// écrase la valeur, sans version ni rejet — préparé pour la concurrence).
 /// </summary>
 public interface IEditeurConfigurationFoyer
 {
@@ -38,8 +38,8 @@ public interface IEditeurConfigurationFoyer
 
     /// <summary>Retire le rôle porté par l'acteur identifié de façon stable : l'attribut rôle redevient
     /// non renseigné (« sans rôle » = neutre assumé). Tolérant à l'absence (un acteur déjà sans rôle
-    /// reste sans rôle) — aucun rôle fantôme. Sert au retrait explicite (Sc.5) et au repli des porteurs
-    /// d'un rôle supprimé (Sc.6).</summary>
+    /// reste sans rôle) — aucun rôle fantôme. Sert au retrait explicite et au repli des porteurs
+    /// d'un rôle supprimé.</summary>
     void RetirerRole(string acteurId);
 
     /// <summary>Retire l'acteur identifié de façon stable de la configuration : son <b>nom</b>

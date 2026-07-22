@@ -2,7 +2,7 @@ namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
 /// Ressource <b>Enfants du foyer</b> (BC Enfants) — controller MVC REST. CRUD des enfants + liaison à un
-/// parent-acteur (sous-ressource <c>/parents/{acteurId}</c>, s34/s37). La diffusion temps réel de l'ajout /
+/// parent-acteur (sous-ressource <c>/parents/{acteurId}</c>). La diffusion temps réel de l'ajout /
 /// édition est déclenchée PAR LE HANDLER ; la liaison/déliaison de parent notifie ici (lecture seule).
 /// </summary>
 [ApiController]
@@ -24,7 +24,7 @@ public sealed class EnfantsController(
         return Ok(vues);
     }
 
-    /// <summary>Ajout d'un enfant (POST, s30). L'id stable opaque neuf est généré côté handler.</summary>
+    /// <summary>Ajout d'un enfant (POST). L'id stable opaque neuf est généré côté handler.</summary>
     [HttpPost("/api/foyer/enfants")]
     public IActionResult Ajouter([FromBody] AjouterEnfantRequete requete)
     {
@@ -32,7 +32,7 @@ public sealed class EnfantsController(
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 
-    /// <summary>Édition du prénom d'un enfant par id (PUT, s30).</summary>
+    /// <summary>Édition du prénom d'un enfant par id (PUT).</summary>
     [HttpPut("/api/foyer/enfants/{id}")]
     public IActionResult Editer(string id, [FromBody] EditerEnfantCorps corps)
     {
@@ -40,7 +40,7 @@ public sealed class EnfantsController(
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 
-    /// <summary>Liaison d'un enfant à un parent-acteur (PUT sous-ressource, s34/s37) : rôle-du-lien en corps.
+    /// <summary>Liaison d'un enfant à un parent-acteur (PUT sous-ressource) : rôle-du-lien en corps.
     /// Déjà lié = maj du rôle. Diffusion temps réel sur succès.</summary>
     [HttpPut("/api/foyer/enfants/{id}/parents/{acteurId}")]
     public IActionResult LierParent(string id, string acteurId, [FromBody] LierEnfantParentCorps corps)
@@ -53,7 +53,7 @@ public sealed class EnfantsController(
         return Ok();
     }
 
-    /// <summary>Retrait du lien enfant↔parent (DELETE sous-ressource, s34). Idempotent côté handler.</summary>
+    /// <summary>Retrait du lien enfant↔parent (DELETE sous-ressource). Idempotent côté handler.</summary>
     [HttpDelete("/api/foyer/enfants/{id}/parents/{acteurId}")]
     public IActionResult DelierParent(string id, string acteurId)
     {

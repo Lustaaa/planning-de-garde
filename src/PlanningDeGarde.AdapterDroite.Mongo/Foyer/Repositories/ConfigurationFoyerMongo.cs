@@ -16,9 +16,9 @@ using Foyer = PlanningDeGarde.Application.Foyer.Seed.Foyer;
 /// (<see cref="IReferentielResponsables"/> / <see cref="IPaletteCouleurs"/> /
 /// <see cref="IEnumerationActeursFoyer"/>) et l'écriture (<see cref="IEditeurConfigurationFoyer"/>).
 /// Remplaçant <b>durable</b> de <see cref="ConfigurationFoyerEnMemoire"/> : l'ajout comme l'édition
-/// survivent au redémarrage du serveur (pivot Sc.3), prouvé contre un store Mongo réel (Docker).
+/// survivent au redémarrage du serveur (pivot), prouvé contre un store Mongo réel (Docker).
 ///
-/// <para><b>Aucun seed</b> (Sc.8, s15 — inversion exacte du seed-once s09) : Mongo ne s'amorce
+/// <para><b>Aucun seed</b> (inversion exacte du seed-once) : Mongo ne s'amorce
 /// <b>jamais</b>, même vide. Au tout premier lancement sur une base vierge, l'application ouvre
 /// totalement vide (aucun acteur) ; dès qu'on saisit, c'est durable et rechargé aux lancements
 /// suivants. <b>Asymétrie assumée</b> : seul l'InMemory garde son seed (pour la non-régression).</para>

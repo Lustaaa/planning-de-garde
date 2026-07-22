@@ -53,7 +53,7 @@ public sealed class GrilleAgendaQuery
     /// pure : chaque case se re-résout à sa propre date (surcharge &gt; fond &gt; neutre).
     /// </summary>
     /// <summary>
-    /// Projette la grille pour l'enfant <paramref name="enfantId"/> (s53) : la résolution ne voit que le
+    /// Projette la grille pour l'enfant <paramref name="enfantId"/> : la résolution ne voit que le
     /// cycle de fond ET les surcharges (périodes) de CET enfant — ISOLATION STRICTE, aucune écriture d'un
     /// autre enfant ne fuit dans cette grille. <paramref name="enfantId"/> absent (<c>null</c>) = comportement
     /// mono-enfant antérieur (aucun filtrage : toutes les périodes, cycle partagé).
@@ -165,14 +165,14 @@ public sealed class GrilleAgendaQuery
     }
 
     /// <summary>
-    /// Transfert AUTO-dérivé du <b>relais de responsabilité résolue</b> (Sc.15, rework G3 — option A) : quand
+    /// Transfert AUTO-dérivé du <b>relais de responsabilité résolue</b> (rework G3 — option A) : quand
     /// le responsable RÉSOLU (surcharge &gt; fond) du jour <paramref name="date"/> diffère de celui de la
     /// veille, la garde bascule ce jour-là (cédant = résolu de la veille, recevant = résolu du jour). Ce
     /// chemin lit la RÉSOLUTION (il voit donc les bascules du cycle de fond que le chemin « période-existence »
     /// ne trace pas), sans la modifier. Contrairement au chemin période (orphelin neutralisé par existence),
     /// il s'appuie sur des responsables déjà filtrés par le contrat d'existence (<see cref="ResoudreResponsable"/>
     /// applique <see cref="Resolvable"/>) : un côté neutre (résolution nulle) ⇒ aucune bascule dérivée (pas de
-    /// fantôme, cohérent avec la retombée neutre Sc.7 / Sc.9). Distinct du chemin période : il n'est consulté
+    /// fantôme, cohérent avec la retombée neutre). Distinct du chemin période : il n'est consulté
     /// qu'en second (le période-existence prime), donc aucun doublon.
     /// </summary>
     private InfoTransfert? TransfertDeriveDuCycle(IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date, string? enfantId = null)
@@ -188,13 +188,13 @@ public sealed class GrilleAgendaQuery
     }
 
     /// <summary>
-    /// Transfert AUTO-dérivé (D3, Sc.5) de la succession de périodes : si une période <b>débute</b> le jour
+    /// Transfert AUTO-dérivé de la succession de périodes : si une période <b>débute</b> le jour
     /// <paramref name="date"/> ET qu'une période <b>se termine la veille</b>, la responsabilité bascule du
     /// Cédant (déposant, période finissante) vers le Recevant (récupérant, période débutante) — c'est le
     /// jour de bascule. Dérivation de LECTURE pure : aucune écriture, aucun transfert persisté. Le jour de
     /// bascule est le premier jour du successeur ; s'il tombe hors de la fenêtre projetée, il n'est
-    /// simplement pas rendu (pas de dérivation fantôme, Sc.8). Retombée <c>null</c> (neutre) sans successeur
-    /// (fin de garde, Sc.7). Les couleurs orphelines (acteur supprimé) retombent sur le neutre (Sc.9).
+    /// simplement pas rendu (pas de dérivation fantôme). Retombée <c>null</c> (neutre) sans successeur
+    /// (fin de garde). Les couleurs orphelines (acteur supprimé) retombent sur le neutre.
     /// </summary>
     private InfoTransfert? TransfertDeriveDuJour(IReadOnlyList<PeriodeSnapshot> periodes, DateOnly date)
     {
@@ -216,8 +216,8 @@ public sealed class GrilleAgendaQuery
         => Resolvable(acteurId) is null ? _palette.CouleurNeutre : _palette.CouleurDe(acteurId);
 
     /// <summary>Nom d'un acteur existant, ou chaîne vide s'il est orphelin (supprimé) — repli sans nom
-    /// fantôme (filtre <see cref="Resolvable"/>, miroir R5/R6). Surfacé pour la composition en lecture de
-    /// la carte du jour (s42) : un transfert cédant/recevant y est restitué avec ses noms résolus.</summary>
+    /// fantôme (filtre <see cref="Resolvable"/>, miroir). Surfacé pour la composition en lecture de
+    /// la carte du jour : un transfert cédant/recevant y est restitué avec ses noms résolus.</summary>
     private string NomActeurResolu(string acteurId)
         => Resolvable(acteurId) is null ? "" : _referentiel.NomDe(acteurId);
 
@@ -226,10 +226,10 @@ public sealed class GrilleAgendaQuery
     /// daté (même enfant / lieu, bornes = date + plage horaire) par récurrent dont le jour de semaine
     /// correspond. Ne persiste rien : matérialisation de lecture pure, réévaluée à chaque projection.
     ///
-    /// <para>D1 (s31, Sc.11) : un slot <b>conditionné à la garde</b> n'est matérialisé que les jours où la
+    /// <para> : un slot <b>conditionné à la garde</b> n'est matérialisé que les jours où la
     /// résolution de responsabilité (surcharge &gt; fond) désigne son <b>parent poseur</b> — il LIT la
     /// résolution sans la modifier. Un slot non conditionné (défaut) est matérialisé sur tous ses jours de
-    /// récurrence (comportement s29 strictement inchangé, Sc.13).</para>
+    /// récurrence (comportement strictement inchangé).</para>
     /// </summary>
     private IEnumerable<SlotSnapshot> OccurrencesRecurrentes(
         IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, string? enfantId = null)
@@ -245,7 +245,7 @@ public sealed class GrilleAgendaQuery
     /// INDÉPENDAMMENT à chaque source AVANT le repli, jamais au responsableId combiné (un faux raccourci
     /// ferait retomber une surcharge orpheline sur le neutre au lieu du fond) : une surcharge orpheline
     /// retombe sur le fond ; un fond orphelin est traité comme un index non mappé → null → neutre, sans nom
-    /// fantôme. Source unique de la responsabilité d'un jour (case ET conditionnement des slots D1).
+    /// fantôme. Source unique de la responsabilité d'un jour (case ET conditionnement des slots).
     /// </summary>
     private string? ResoudreResponsable(DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, string? enfantId = null)
     {
@@ -256,9 +256,9 @@ public sealed class GrilleAgendaQuery
     }
 
     /// <summary>
-    /// Périodes (surcharges) visibles pour l'enfant <paramref name="enfantId"/> (s53) : quand un enfant est
+    /// Périodes (surcharges) visibles pour l'enfant <paramref name="enfantId"/> : quand un enfant est
     /// ciblé, ISOLATION STRICTE — seules SES surcharges (<c>EnfantId == enfantId</c>) entrent dans la
-    /// résolution, celles d'un AUTRE enfant OU sans enfant (legacy "") sont exclues (gate G3 s53 : le repli
+    /// résolution, celles d'un AUTRE enfant OU sans enfant (legacy "") sont exclues (le repli
     /// sur le bucket partagé "" était une FUITE — une période sans enfant n'apparaît dans AUCUNE vue enfant).
     /// Le chemin d'écriture estampille désormais toujours l'enfant, donc aucune période "" n'est plus créée.
     /// <paramref name="enfantId"/> null = mono-enfant antérieur (aucun filtrage : toutes les périodes du store).
@@ -269,7 +269,7 @@ public sealed class GrilleAgendaQuery
             : _periodes.AllSnapshots().Where(p => p.EnfantId == enfantId).ToList();
 
     /// <summary>
-    /// Transferts SAISIS visibles pour l'enfant <paramref name="enfantId"/> (s53, gate G3) : ISOLATION STRICTE
+    /// Transferts SAISIS visibles pour l'enfant <paramref name="enfantId"/> : ISOLATION STRICTE
     /// — seuls SES transferts (<c>EnfantId == enfantId</c>), jamais ceux d'un AUTRE enfant OU sans enfant
     /// (legacy "") — miroir EXACT du filtrage des périodes (aucun repli global "" : c'était la fuite du transfert
     /// de « Mia » chez « Charlie »). <paramref name="enfantId"/> null = mono-enfant antérieur (aucun filtrage).
@@ -295,7 +295,7 @@ public sealed class GrilleAgendaQuery
     /// <summary>
     /// Contrat d'existence : restitue l'identifiant s'il désigne un acteur <b>existant</b> du foyer,
     /// sinon <c>null</c> (acteur supprimé = orphelin → neutralisé à la résolution). Contrat porté par
-    /// le port de lecture EXISTANT <see cref="IEnumerationActeursFoyer"/> (décision CP) ; absent
+    /// le port de lecture EXISTANT <see cref="IEnumerationActeursFoyer"/> ; absent
     /// (<c>_acteurs is null</c>) → pas de filtrage (comportement antérieur préservé).
     /// </summary>
     private string? Resolvable(string? acteurId)
@@ -305,7 +305,7 @@ public sealed class GrilleAgendaQuery
 
     /// <summary>
     /// Légende = responsables présents dans la fenêtre, dédoublonnés par identifiant stable (jamais
-    /// le libellé — règle 17), avec nom et couleur résolus côte à côte. Présents = responsables des
+    /// le libellé —), avec nom et couleur résolus côte à côte. Présents = responsables des
     /// périodes intersectant l'intervalle affiché ET responsables de fond couvrant un jour de la
     /// fenêtre (« en case comme en légende »). Vide si aucun ne couvre la fenêtre.
     /// </summary>
@@ -337,7 +337,7 @@ public sealed class GrilleAgendaQuery
     /// <summary>
     /// Légende des motifs de rendu : une entrée « Transfert » (motif bicolore) si au moins un transfert
     /// est présent dans la fenêtre [<paramref name="premierJour"/>, <paramref name="dernierJour"/>], qu'il
-    /// soit <b>saisi</b> OU <b>AUTO-dérivé</b> d'une succession de périodes (D3, Sc.10 : « en case comme en
+    /// soit <b>saisi</b> OU <b>AUTO-dérivé</b> d'une succession de périodes (: « en case comme en
     /// légende » — un transfert dérivé rendu bicolore sur une case surface le même motif que le saisi).
     /// Sinon vide (signalé seulement quand le motif est effectivement présent).
     /// </summary>

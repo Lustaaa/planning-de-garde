@@ -13,7 +13,7 @@ public interface IEditeurAdminsFoyer
     /// admin reste un unique admin).</summary>
     void DesignerAdmin(string acteurId);
 
-    /// <summary>Retire la désignation d'admin de l'acteur identifié (sens OFF, s41) : il cesse d'être
+    /// <summary>Retire la désignation d'admin de l'acteur identifié (sens OFF) : il cesse d'être
     /// admin du foyer. Miroir écriture de <see cref="DesignerAdmin"/>. Tolérant à l'absence / à un
     /// acteur déjà non-admin (no-op qui réussit — idempotence). La borne « dernier admin » et le refus
     /// d'un acteur inconnu sont portés par le handler / l'agrégat AVANT écriture (le store ne fait que

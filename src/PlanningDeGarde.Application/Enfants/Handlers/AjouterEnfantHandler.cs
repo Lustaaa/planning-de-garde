@@ -6,7 +6,7 @@ namespace PlanningDeGarde.Application.Enfants.Handlers;
 
 /// <summary>
 /// Commande d'ajout d'un enfant au référentiel du foyer (config). Le handler génère un identifiant
-/// stable neuf opaque (jamais dérivé du prénom, anti-pattern s06) et persiste le prénom via le port
+/// stable neuf opaque (jamais dérivé du prénom, anti-pattern) et persiste le prénom via le port
 /// d'écriture <see cref="IEditeurEnfants"/>, pour que l'enfant devienne disponible à la saisie
 /// (validation de pose + sélecteur d'enfant).
 /// </summary>

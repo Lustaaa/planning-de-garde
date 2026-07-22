@@ -221,6 +221,18 @@ Comportement d'exécution inchangé sur tout le programme ; suite complète **91
         statique au build → intégration au site DocFX **documentée** (comment produire le `.json` puis le
         référencer) plutôt que câblée. Cf. `docs/documentation-technique.md`.
 
+- [x] **Finition — nettoyage des `///` (post-lot 8)** : purge de **toute référence au process de
+      sprint passé** dans les commentaires de documentation `///` de `src/` (169 fichiers), car ils
+      alimentent la doc DocFX destinée à un humain. Retirés : numéros de sprint (`sNN`), scénarios
+      (`Sc.N`, `S1/S2`), paliers, règles numérotées, étiquettes internes (`B1/B2/D3/R3`, `volet N`,
+      `cadrage (B)`), et le vocabulaire pipeline (`gate G3/visuel`, `décision CP/SM`, `retour PO`,
+      `épic ÉN`). **Conservé** : invariants métier, contrats CQRS, sémantique des ports, `<see cref>`,
+      et les rationales d'ingénierie génériques (YAGNI, anti-flake, Tell-Don't-Ask). Phrases réparées
+      (pas de parenthèse vide / virgule orpheline / espace double) ; phrases n'existant que pour tracer
+      un scénario supprimées. Commentaires `//` (hors `///`) **non touchés** (contexte dev interne).
+      Preuve : suite complète **917/917 verte**, `dotnet docfx` 0 erreur, aucun `sNN`/`Sc.N` dans
+      `docfx/_site/api/`.
+
 ---
 
 ## Carte des bounded contexts (FIGÉE — à réutiliser par les lots InMemory/Mongo/Web)

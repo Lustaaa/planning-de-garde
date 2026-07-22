@@ -6,7 +6,7 @@ namespace PlanningDeGarde.Application.Slots.Handlers;
 /// <summary>
 /// Commande de suppression d'un slot récurrent du planning partagé. Le <paramref name="SlotId"/> est
 /// l'identifiant stable du slot récurrent (clé du store, jamais un libellé). La suppression est
-/// <b>idempotente</b> : un identifiant absent / déjà supprimé est un no-op qui réussit (S7).
+/// <b>idempotente</b> : un identifiant absent / déjà supprimé est un no-op qui réussit.
 /// </summary>
 public sealed record SupprimerSlotRecurrentCommand(string SlotId);
 

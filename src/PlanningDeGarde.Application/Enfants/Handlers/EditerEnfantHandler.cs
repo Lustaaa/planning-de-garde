@@ -15,7 +15,7 @@ public sealed record EditerEnfantResultat(string EnfantId, string Prenom);
 
 /// <summary>
 /// Use case : éditer le prénom d'un enfant du référentiel du foyer. Applique le nouveau prénom sur
-/// l'identifiant stable via le port d'écriture — l'id reste inchangé —, puis diffuse la mise à jour.
+/// l'identifiant stable via le port d'écriture — l'id reste inchangé, puis diffuse la mise à jour.
 /// </summary>
 public sealed class EditerEnfantHandler
 {

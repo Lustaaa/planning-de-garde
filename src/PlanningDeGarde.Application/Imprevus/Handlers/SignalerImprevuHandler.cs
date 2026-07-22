@@ -4,20 +4,20 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Imprevus.Handlers;
 
 /// <summary>
-/// Commande task-orientée « signaler un imprévu » (s48) : un parent SIGNALE un fait subi non-négocié —
+/// Commande task-orientée « signaler un imprévu » : un parent SIGNALE un fait subi non-négocié —
 /// l'enfant <paramref name="EnfantId"/> est <see cref="TypeImprevu.Malade"/> ou le parent sera
 /// <see cref="TypeImprevu.Retard"/> le jour <paramref name="Jour"/>. Purement INFORMATIF : le signalement
-/// consigne une trace au journal (cloche s47) mais N'ÉCRIT AUCUNE surcharge et ne touche JAMAIS la
-/// résolution (le cas actionnable / négocié est l'échange s47). Le <paramref name="Motif"/> est OPTIONNEL.
+/// consigne une trace au journal (cloche) mais N'ÉCRIT AUCUNE surcharge et ne touche JAMAIS la
+/// résolution (le cas actionnable / négocié est l'échange). Le <paramref name="Motif"/> est OPTIONNEL.
 /// </summary>
 public sealed record SignalerImprevuCommand(
     DateOnly Jour, string EnfantId, TypeImprevu Type, string SignalantId, string Motif = "");
 
 /// <summary>
-/// Use case de SIGNALEMENT d'imprévu (s48) : consigne un <see cref="EvenementChangementSnapshot"/> de type
-/// <see cref="TypeChangement.Imprevu"/> au JOURNAL DE CHANGEMENTS existant (s47, trace de LECTURE horodatée),
+/// Use case de SIGNALEMENT d'imprévu : consigne un <see cref="EvenementChangementSnapshot"/> de type
+/// <see cref="TypeChangement.Imprevu"/> au JOURNAL DE CHANGEMENTS existant (trace de LECTURE horodatée),
 /// SANS aucune écriture de surcharge ni dérivation de transfert — la résolution du planning n'est JAMAIS
-/// modifiée (invariant central s48). Le journal n'est jamais lu par la résolution.
+/// modifiée (invariant central). Le journal n'est jamais lu par la résolution.
 /// </summary>
 public sealed class SignalerImprevuHandler
 {

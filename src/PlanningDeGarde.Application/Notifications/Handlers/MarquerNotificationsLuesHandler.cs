@@ -3,7 +3,7 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Notifications.Handlers;
 
 /// <summary>
-/// Commande « marquer lu » de la cloche (s47) : <paramref name="EvenementId"/> renseigné = marquer UNE
+/// Commande « marquer lu » de la cloche : <paramref name="EvenementId"/> renseigné = marquer UNE
 /// notification lue ; <paramref name="EvenementId"/> null = marquer TOUTES les notifications de l'utilisateur
 /// comme lues.
 /// </summary>

@@ -6,7 +6,7 @@ namespace PlanningDeGarde.Application.Comptes.Handlers;
 
 /// <summary>
 /// Commande de création d'un compte utilisateur dans le référentiel du foyer (config). Le handler
-/// génère un identifiant stable neuf opaque (jamais dérivé de l'email, anti-pattern s06) et persiste
+/// génère un identifiant stable neuf opaque (jamais dérivé de l'email, anti-pattern) et persiste
 /// l'email, le statut « inactif » par défaut et l'id de l'acteur associé (association 1-1) via le
 /// port d'écriture <see cref="IEditeurComptes"/>.
 /// </summary>

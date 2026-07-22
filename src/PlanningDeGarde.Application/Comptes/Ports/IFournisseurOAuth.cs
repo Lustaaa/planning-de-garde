@@ -1,7 +1,7 @@
 namespace PlanningDeGarde.Application.Comptes.Ports;
 
 /// <summary>
-/// Port de droite d'un <b>fournisseur OAuth externe</b> (Google / Microsoft / Apple, volet 4 s25) :
+/// Port de droite d'un <b>fournisseur OAuth externe</b> (Google / Microsoft / Apple) :
 /// résout le retour de callback du provider en une <b>identité externe</b> (au minimum l'email vérifié
 /// par le provider). Réalisé par un adaptateur concret en runtime (secrets, redirections, callbacks —
 /// <b>non testable en runtime local</b>, vérifié MANUELLEMENT au G3) et par une doublure dans les tests
@@ -16,5 +16,5 @@ public interface IFournisseurOAuth
 }
 
 /// <summary>Une identité externe restituée par un fournisseur OAuth : l'email vérifié par le provider,
-/// qui sert de clé de résolution vers un compte du foyer (même résolution que la connexion locale s23).</summary>
+/// qui sert de clé de résolution vers un compte du foyer (même résolution que la connexion locale).</summary>
 public sealed record IdentiteExterne(string Email);

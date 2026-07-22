@@ -4,7 +4,7 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Transferts.Handlers;
 
 /// <summary>Commande de définition d'un transfert de bascule entre deux parents. <paramref name="EnfantId"/>
-/// (s53) SCOPE le transfert à l'enfant courant (hérité du sélecteur de vue, Option A).</summary>
+/// SCOPE le transfert à l'enfant courant (hérité du sélecteur de vue, Option A).</summary>
 public sealed record DefinirTransfertCommand(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date, string EnfantId = "");
 
 /// <summary>Use case : définir un transfert de bascule (point A↔B) dans le planning partagé.</summary>

@@ -6,14 +6,14 @@ using PlanningDeGarde.Application;
 namespace PlanningDeGarde.AdapterDroite.Mongo.Activites.Repositories;
 
 /// <summary>
-/// Adaptateur de droite <b>durable</b> (Mongo) du référentiel de lieux du foyer (s27) — réalise,
+/// Adaptateur de droite <b>durable</b> (Mongo) du référentiel de lieux du foyer — réalise,
 /// derrière les <b>ports inchangés</b>, la lecture (<see cref="IEnumerationActivites"/>) et l'écriture
 /// (<see cref="IEditeurActivites"/>). Remplaçant durable de <c>ReferentielActivitesEnMemoire</c> : un lieu
 /// ajouté survit au redémarrage du serveur (une instance fraîche = un redémarrage relit l'état
 /// persisté), prouvé contre un store Mongo réel (Docker).
 ///
 /// <para><b>Borné à la config foyer</b> : réutilise le socle Mongo config déjà acquis (même base),
-/// collection dédiée « lieux ». <b>Aucun seed</b> (parité asymétrie seed s15, comme rôles/config
+/// collection dédiée « lieux ». <b>Aucun seed</b> (parité asymétrie seed, comme rôles/config
 /// acteurs) : la base ouvre vide et se peuple par les écritures write-through — l'InMemory conserve
 /// son seed pour la non-régression, jamais le Mongo. La clé est l'identifiant stable du lieu.</para>
 /// </summary>

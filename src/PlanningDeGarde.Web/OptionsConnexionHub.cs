@@ -8,7 +8,7 @@ namespace PlanningDeGarde.Web;
 /// En WASM réel, la configuration est <b>neutre</b> (le navigateur négocie en WebSocket vers l'API
 /// distante, comportement par défaut inchangé). Un hôte de <b>test</b> peut la surcharger pour
 /// rediriger la connexion vers son serveur en mémoire (TestServer) — seul moyen d'asserter au
-/// <b>runtime</b> que la grille suit la diffusion temps réel (Sc.4) sans reconstruire le hub.
+/// <b>runtime</b> que la grille suit la diffusion temps réel sans reconstruire le hub.
 /// </summary>
 public sealed class OptionsConnexionHub
 {

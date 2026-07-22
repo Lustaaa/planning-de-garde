@@ -3,9 +3,9 @@ using System;
 namespace PlanningDeGarde.Application.Comptes.Ports;
 
 /// <summary>
-/// Port de droite du <b>stockage serveur des jetons de réinitialisation</b> de mot de passe (volet 5,
-/// s25) : enregistre un jeton émis (Sc.11), le retrouve pour validation, et le consomme (usage unique,
-/// Sc.13). Réalisé par un store en Infrastructure (doublé à la main dans les tests) ; l'Application n'en
+/// Port de droite du <b>stockage serveur des jetons de réinitialisation</b> de mot de passe
+/// : enregistre un jeton émis, le retrouve pour validation, et le consomme (usage unique).
+/// Réalisé par un store en Infrastructure (doublé à la main dans les tests) ; l'Application n'en
 /// dépend que par ce port. Le contrôle d'expiration se fait à la lecture, contre l'horloge injectée
 /// (<see cref="IDateTimeProvider"/>), à partir de l'instant d'expiration porté par le jeton.
 /// </summary>

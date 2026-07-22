@@ -14,7 +14,7 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Notifications;
 
 /// <summary>
-/// CLOCHE de notifications (s47) dans la BARRE D'APPLICATION (MainLayout, retour PO au gate visuel) : badge du
+/// CLOCHE de notifications dans la BARRE D'APPLICATION (MainLayout) : badge du
 /// compteur de non-lus + panneau déroulant listant les changements récents (délégations / reprises / transferts
 /// — informationnels, lu/non-lu) et les propositions d'échange ACTIONNABLES (Accepter / Refuser via mini-dialog
 /// de confirmation). Gating identique au menu utilisateur (rien hors session) + Parent-gated (un Invité ne voit
@@ -25,7 +25,7 @@ namespace PlanningDeGarde.Web.Components.Notifications;
 /// compteur/flux est chargé à l'ouverture (GET initial), puis CONVERGE en temps réel par REPROJECTION depuis la
 /// diffusion PORTEUSE DE PAYLOAD (SignalR) — AUCUN GET sur push (garde-fou anti-flake). L'écriture (marquer-lu /
 /// accepter / refuser) transite par le canal requête/réponse, jamais la diffusion. Échap ferme le mini-dialog
-/// puis le panneau (port <see cref="IEcouteurEchapModal"/> s33).
+/// puis le panneau (port <see cref="IEcouteurEchapModal"/>).
 /// </summary>
 public partial class Cloche : IAsyncDisposable
 {
@@ -142,7 +142,7 @@ public partial class Cloche : IAsyncDisposable
         }
     }
 
-    /// <summary>Réagit à un changement d'état de connexion (Sc.11 pattern menu utilisateur). À l'ouverture d'une
+    /// <summary>Réagit à un changement d'état de connexion (pattern menu utilisateur). À l'ouverture d'une
     /// session Parent : charge le flux + référentiel puis re-rend (le rendu déclenche le démarrage du hub). À la
     /// déconnexion : réinitialise (aucune notif fantôme, hub fermé) pour repartir propre à la prochaine session.</summary>
     private async void SurChangementConnexion()
@@ -257,7 +257,7 @@ public partial class Cloche : IAsyncDisposable
             await DetacherEchap();
     }
 
-    /// <summary>Échap (port document s33) : ferme d'abord le mini-dialog de confirmation s'il est ouvert,
+    /// <summary>Échap (port document) : ferme d'abord le mini-dialog de confirmation s'il est ouvert,
     /// sinon ferme le panneau — sans aucune commande (Annuler).</summary>
     private async Task SurEchap()
     {
@@ -303,9 +303,9 @@ public partial class Cloche : IAsyncDisposable
         RecalculerNonLus();
     }
 
-    /// <summary>Action de suivi s51 : ouvre la mini-dialog « proposer un échange » greffée sur une notif d'imprévu
+    /// <summary>Action de suivi : ouvre la mini-dialog « proposer un échange » greffée sur une notif d'imprévu
     /// (pré-remplie jour + enfant de l'imprévu). La mini-dialog (ModalConfig) attache SON PROPRE écouteur Échap
-    /// document (s33) ; on détache d'abord celui du panneau pour qu'UN SEUL écouteur soit actif — Échap ferme la
+    /// document ; on détache d'abord celui du panneau pour qu'UN SEUL écouteur soit actif — Échap ferme la
     /// mini-dialog (Annuler), jamais deux gestes en un (parité double / adaptateur JS réel, anti vert-qui-ment).</summary>
     private async Task OuvrirProposerSuiteImprevu(NotificationCloche n)
     {

@@ -5,10 +5,10 @@ namespace PlanningDeGarde.Application.Comptes.Handlers;
 
 /// <summary>
 /// Commande d'activation d'un compte utilisateur du foyer (canal requête/réponse, comme toute
-/// écriture) : cible un compte par son identifiant stable opaque (s22) et fait passer son statut
+/// écriture) : cible un compte par son identifiant stable opaque et fait passer son statut
 /// Inactif→Actif via le port d'écriture <see cref="IEditeurComptes"/>. La mutation de statut est
 /// portée par l'agrégat <see cref="CompteUtilisateur"/> (Domain pur, Tell-Don't-Ask). Aucun nouvel
-/// agrégat, aucun store neuf : réutilise le référentiel de comptes s22 (InMemory + Mongo config foyer).
+/// agrégat, aucun store neuf : réutilise le référentiel de comptes (InMemory + Mongo config foyer).
 /// </summary>
 public sealed record ActiverCompteCommand(string CompteId);
 

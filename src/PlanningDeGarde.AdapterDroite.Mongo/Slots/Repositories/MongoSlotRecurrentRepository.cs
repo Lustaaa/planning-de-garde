@@ -10,9 +10,9 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.Slots.Repositories;
 /// <summary>
 /// Adaptateur de droite <b>durable</b> (Mongo) du port <see cref="ISlotRecurrentRepository"/> : les slots
 /// récurrents hebdo (enfant → lieu, jour de semaine, plage horaire) survivent au redémarrage de l'hôte
-/// (parité slot ponctuel s15). Remplaçant durable de <see cref="InMemorySlotRecurrentRepository"/> derrière
+/// (parité slot ponctuel). Remplaçant durable de <see cref="InMemorySlotRecurrentRepository"/> derrière
 /// le <b>port inchangé</b> ; choisi par DI en runtime (« Foyer:Persistance = Mongo »), l'InMemory restant
-/// le défaut. <b>Aucun seed Mongo</b> (parité asymétrie seed s15) : au 1er lancement la collection est vide.
+/// le défaut. <b>Aucun seed Mongo</b> (parité asymétrie seed) : au 1er lancement la collection est vide.
 ///
 /// <para><b>Write-through + relecture directe</b> : chaque <see cref="Enregistrer"/> insère le snapshot ;
 /// <see cref="AllSnapshots"/> relit le store tel quel (une nouvelle instance = un redémarrage qui retrouve

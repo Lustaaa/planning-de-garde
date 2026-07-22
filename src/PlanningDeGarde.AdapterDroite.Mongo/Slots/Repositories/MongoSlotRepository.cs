@@ -9,7 +9,7 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.Slots.Repositories;
 
 /// <summary>
 /// Adaptateur de droite <b>durable</b> (Mongo) du port <see cref="ISlotRepository"/> : les slots de
-/// localisation (enfant → lieu, intervalle) survivent au redémarrage de l'hôte (Sc.9, s15). Remplaçant
+/// localisation (enfant → lieu, intervalle) survivent au redémarrage de l'hôte. Remplaçant
 /// durable de <see cref="InMemorySlotRepository"/> derrière le <b>port inchangé</b> ; choisi par DI en
 /// runtime (« Foyer:Persistance = Mongo »), l'InMemory restant le défaut des tests.
 ///

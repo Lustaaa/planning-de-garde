@@ -133,10 +133,10 @@ public partial class PlanningPartage
     }
 
     /// <summary>Identifiant stable de l'acteur incarné via le sélecteur d'incarnation (impersonation
-    /// bornée, sprint 14). Vide = identité réelle. La sélection lit le <b>référentiel réel</b> chargé
+    /// bornée). Vide = identité réelle. La sélection lit le <b>référentiel réel</b> chargé
     /// dans la session (id + type surfacé read-only) : Parent/Admin incarné garde le menu d'écriture,
-    /// Autre le masque (règle 8) ; la valeur vide revient à l'identité réelle (Sc.2). Aucune écriture,
-    /// aucune persistance : l'état d'incarnation reste en session (borne anti-cliquet règle 30).</summary>
+    /// Autre le masque ; la valeur vide revient à l'identité réelle. Aucune écriture,
+    /// aucune persistance : l'état d'incarnation reste en session (borne anti-cliquet).</summary>
     private string IncarnationSelectionnee
     {
         get => Session.IncarnationActive ? Session.IdentiteEffective.Id : "";
@@ -153,12 +153,12 @@ public partial class PlanningPartage
     // NE rend AUCUN contenu (pas de flash de grille). Vrai tant que la session n'est pas connectée.
     private bool _redirigeVersConnexion;
 
-    /// <summary>Résolution OPTIONNELLE du port d'écoute Échap document (s33) : présent (app réelle / test qui
-    /// double le port) il capte Échap au niveau document pour ANNULER une sélection de plage (Sc.7) ; absent
+    /// <summary>Résolution OPTIONNELLE du port d'écoute Échap document : présent (app réelle / test qui
+    /// double le port) il capte Échap au niveau document pour ANNULER une sélection de plage ; absent
     /// (tests de lecture pure qui ne l'enregistrent pas) la grille reste fonctionnelle sans écoute Échap.</summary>
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
-    /// <summary>État CLIENT partagé du digest « immédiat » de la cloche (s50) : la grille — seule à faire le GET
+    /// <summary>État CLIENT partagé du digest « immédiat » de la cloche : la grille — seule à faire le GET
     /// grille — y PUBLIE le digest reprojeté de la fenêtre chargée (composition pure), la cloche s'y abonne pour
     /// le rendre SANS aucun GET (ni dédié, ni sur push). Canal de LECTURE stricte. Résolu PARESSEUSEMENT (comme le
     /// port Échap) : un hôte de test qui ne l'enregistre pas ne casse pas le rendu de la grille (digest inerte).</summary>
@@ -227,7 +227,7 @@ public partial class PlanningPartage
     }
 
     /// <summary>Charge les activités du référentiel du foyer depuis le store vivant via le canal de lecture HTTP
-    /// (<c>GET /api/foyer/activites</c>, s35 — ex-« lieux ») : alimente le sélecteur de lieu (axe LOCALISATION du
+    /// (<c>GET /api/foyer/activites</c>, — ex-« lieux ») : alimente le sélecteur de lieu (axe LOCALISATION du
     /// slot, préservé) des dialogs. Lecture seule ; sur référentiel distant injoignable, la liste reste inchangée.</summary>
     private async Task ChargerLieuxAsync()
     {
@@ -324,8 +324,8 @@ public partial class PlanningPartage
         }
     }
 
-    /// <summary>Attache PARESSEUSEMENT l'écouteur Échap document (port s33) au PREMIER armement d'une sélection
-    /// de plage (Sc.7) — pas en permanence : ainsi une page qui n'entame aucune sélection n'attache rien (les
+    /// <summary>Attache PARESSEUSEMENT l'écouteur Échap document (port) au PREMIER armement d'une sélection
+    /// de plage — pas en permanence : ainsi une page qui n'entame aucune sélection n'attache rien (les
     /// autres modals, ex. mini-dialogs, gardent la maîtrise exclusive d'Échap). Résolution OPTIONNELLE du port
     /// (tests de lecture pure / sans port restent fonctionnels). L'abonnement est conservé pour la durée de vie
     /// de la page et détaché à sa fermeture (DisposeAsync) — aucune fuite, aucun double abonnement.</summary>
@@ -339,8 +339,8 @@ public partial class PlanningPartage
             _abonnementEchap = await ecouteur.EcouterAsync(AnnulerSelectionPlage);
     }
 
-    /// <summary>Attache l'écouteur de relâchement du pointeur au niveau <b>document</b> (port s49, correctif du
-    /// gate G3). Résolution OPTIONNELLE : absent (tests de lecture pure), la grille reste fonctionnelle sans
+    /// <summary>Attache l'écouteur de relâchement du pointeur au niveau <b>document</b> (port).
+    /// Résolution OPTIONNELLE : absent (tests de lecture pure), la grille reste fonctionnelle sans
     /// finalisation par relâchement document (les tests qui l'exercent doublent le port). Idempotent.</summary>
     private async Task AssurerEcouteRelachementAsync()
     {
@@ -352,8 +352,8 @@ public partial class PlanningPartage
             _abonnementRelachement = await ecouteur.EcouterAsync(FinSelectionPlage);
     }
 
-    /// <summary>Attache l'écouteur de MOUVEMENT du pointeur au niveau <b>document</b> (port s49, 2ᵉ correctif du
-    /// gate G3). Résolution OPTIONNELLE : absent (tests de lecture pure), la grille reste fonctionnelle sans
+    /// <summary>Attache l'écouteur de MOUVEMENT du pointeur au niveau <b>document</b> (port).
+    /// Résolution OPTIONNELLE : absent (tests de lecture pure), la grille reste fonctionnelle sans
     /// suivi de curseur par mouvement document (les tests qui l'exercent doublent le port). Idempotent.</summary>
     private async Task AssurerEcouteMouvementAsync()
     {
@@ -397,7 +397,7 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Bascule du sélecteur d'enfant (s53, Sc.7) : RELIT la grille du BON enfant via le canal de lecture (le
+    /// Bascule du sélecteur d'enfant : RELIT la grille du BON enfant via le canal de lecture (le
     /// paramètre enfant isole la résolution — aucune case ne conserve la résolution de l'autre enfant) et
     /// republie le digest cloche filtré. Parent-gated par la visibilité du sélecteur (Invité ne le voit pas).
     /// Lecture seule : la sélection n'écrit rien, elle re-projette.
@@ -409,14 +409,14 @@ public partial class PlanningPartage
     }
 
     /// <summary>Prénom d'affichage de l'enfant d'identifiant stable <paramref name="enfantId"/> (référentiel
-    /// chargé), pour l'affichage LECTURE SEULE « Pour : … » de la dialog d'affectation (s53). Repli sur l'id
+    /// chargé), pour l'affichage LECTURE SEULE « Pour : … » de la dialog d'affectation. Repli sur l'id
     /// si absent (jamais de fantôme).</summary>
     private string PrenomEnfant(string enfantId)
         => _enfantsFoyer.FirstOrDefault(e => e.Id == enfantId)?.Prenom ?? enfantId;
 
     /// <summary>Code de la vue prédéfinie passé en paramètre de lecture (CQRS) : <c>semaine</c> /
     /// <c>4semaines</c> (défaut) / <c>mois</c>. Le défaut couvre la compatibilité ascendante de
-    /// l'endpoint (sans vue → 4 semaines glissantes, Sc.3).</summary>
+    /// l'endpoint (sans vue → 4 semaines glissantes).</summary>
     private static string CodeVue(VuePlanning vue) => vue switch
     {
         VuePlanning.Semaine => "semaine",
@@ -433,10 +433,10 @@ public partial class PlanningPartage
         _ => VuePlanning.QuatreSemaines,
     };
 
-    /// <summary>« Changer de vue » (Sc.2/Sc.3, sélecteur de vue) : fixe la vue choisie puis re-projette en
+    /// <summary>« Changer de vue » (sélecteur de vue) : fixe la vue choisie puis re-projette en
     /// re-requêtant l'API distante avec le paramètre de vue. L'ancre lundi est conservée (seul le span
     /// change). Sur échec de la re-requête, la vue est <b>restaurée</b> (la fenêtre affichée ne diverge
-    /// pas de l'état) et le bandeau d'échec levé — même pivot que la navigation (Sc.6). Aucune écriture.</summary>
+    /// pas de l'état) et le bandeau d'échec levé — même pivot que la navigation. Aucune écriture.</summary>
     private async Task ChangerVueAsync(ChangeEventArgs e)
     {
         // La sélection de plage est un état d'interaction VOLATILE (borne anti-cliquet, s49 Sc.6) : elle ne
@@ -449,24 +449,24 @@ public partial class PlanningPartage
         await ReprojeterAsync(() => Session.Vue = vueAvant);
     }
 
-    /// <summary>« Semaine suivante » (Sc.1) : décale l'ancre de +7 jours puis re-projette en
+    /// <summary>« Semaine suivante » : décale l'ancre de +7 jours puis re-projette en
     /// re-requêtant l'API distante à la date naviguée. Aucune écriture (lecture seule).</summary>
     private Task DemanderSemaineSuivante() => NaviguerAsync(Session.SemaineSuivante);
 
-    /// <summary>« Semaine précédente » (Sc.1) : décale l'ancre de −7 jours puis re-projette.</summary>
+    /// <summary>« Semaine précédente » : décale l'ancre de −7 jours puis re-projette.</summary>
     private Task DemanderSemainePrecedente() => NaviguerAsync(Session.SemainePrecedente);
 
-    /// <summary>« Aujourd'hui » (Sc.4) : réinitialise l'ancre à la semaine en cours (lundi de la date du
+    /// <summary>« Aujourd'hui » : réinitialise l'ancre à la semaine en cours (lundi de la date du
     /// jour, via le port d'horloge injecté), quel que soit le décalage de navigation accumulé, puis
     /// re-projette en re-requêtant l'API distante à l'ancre réinitialisée. Aucune écriture (lecture seule).</summary>
     private Task DemanderRetourAujourdhui() => NaviguerAsync(() => Session.RevenirAujourdhui(Horloge.Aujourdhui));
 
     /// <summary>
-    /// Pivot commun de navigation (Sc.1/Sc.4/Sc.6) : décale l'ancre via <paramref name="decalerAncre"/>
-    /// puis re-projette en re-requêtant l'API distante à la date naviguée. <b>Gestion d'échec (Sc.6)</b> :
+    /// Pivot commun de navigation : décale l'ancre via <paramref name="decalerAncre"/>
+    /// puis re-projette en re-requêtant l'API distante à la date naviguée. <b>Gestion d'échec </b> :
     /// si la re-requête échoue (API distante injoignable), l'ancre est <b>restaurée</b> à celle de la
     /// fenêtre affichée — l'affichage et l'état de navigation ne divergent pas — et un <b>bandeau d'échec
-    /// clair</b> est levé. La navigation échouée n'est <b>ni mise en file ni rejouée</b> (règle 28). Un
+    /// clair</b> est levé. La navigation échouée n'est <b>ni mise en file ni rejouée</b>. Un
     /// succès efface tout échec antérieur. Aucune écriture : la navigation ne fait que re-projeter.
     /// </summary>
     private async Task NaviguerAsync(Action decalerAncre)
@@ -477,12 +477,12 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Pivot de re-projection partagé entre la navigation (décalage d'ancre, Sc.1/Sc.4) et le changement
-    /// de vue (Sc.2/Sc.3) : re-requête l'API distante à l'état courant (ancre + vue). Sur <b>échec</b> de
+    /// Pivot de re-projection partagé entre la navigation (décalage d'ancre) et le changement
+    /// de vue : re-requête l'API distante à l'état courant (ancre + vue). Sur <b>échec</b> de
     /// la re-requête (API distante injoignable), exécute <paramref name="restaurerSiEchec"/> pour ramener
     /// l'état (ancre ou vue) à celui de la fenêtre affichée — affichage et état ne divergent pas — et lève
-    /// le bandeau d'échec clair (Sc.6) ; l'opération échouée n'est <b>ni mise en file ni rejouée</b>
-    /// (règle 28). Un succès efface tout échec antérieur. Aucune écriture : pure re-projection en lecture.
+    /// le bandeau d'échec clair ; l'opération échouée n'est <b>ni mise en file ni rejouée</b>.
+    /// Un succès efface tout échec antérieur. Aucune écriture : pure re-projection en lecture.
     /// </summary>
     private async Task ReprojeterAsync(Action restaurerSiEchec)
     {
@@ -497,10 +497,10 @@ public partial class PlanningPartage
         }
     }
 
-    /// <summary>Referme le bandeau d'échec de navigation (Sc.6, non bloquant).</summary>
+    /// <summary>Referme le bandeau d'échec de navigation (non bloquant).</summary>
     private void FermerEchecNavigation() => _echecNavigation = false;
 
-    /// <summary>Revient à l'identité réelle (bouton du bandeau d'incarnation, Sc.2) : l'incarnation est
+    /// <summary>Revient à l'identité réelle (bouton du bandeau d'incarnation) : l'incarnation est
     /// levée, la vue restaurée à l'identité réelle de l'utilisateur principal. Aucune écriture.</summary>
     private void RevenirIdentiteReelle()
     {
@@ -509,8 +509,8 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Ouvre le <b>menu d'actions</b> de la case cliquée (décision CP, palier 7) : un seul déclencheur
-    /// d'écriture par case, deux entrées (poser un slot / affecter une période). Gating Invité (règle 9)
+    /// Ouvre le <b>menu d'actions</b> de la case cliquée : un seul déclencheur
+    /// d'écriture par case, deux entrées (poser un slot / affecter une période). Gating Invité 
     /// mutualisé ici : en consultation seule, le clic n'ouvre rien — le déclencheur est gardé à l'entrée.
     /// Aucune écriture : le menu et les dialogs portent la commande, la grille reste en lecture seule.
     /// </summary>
@@ -531,9 +531,9 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Bascule le <b>mode sélection de plage</b> (Sc.5). Gardé <see cref="SessionPlanning.EstParent"/> :
-    /// le déclencheur de plage est réservé Parent/Admin (règle 9), mutualisant le gating Invité du menu
-    /// clic-case — c'est ce gate partagé que Sc.7 caractérise (en consultation, le bouton n'est même pas
+    /// Bascule le <b>mode sélection de plage</b>. Gardé <see cref="SessionPlanning.EstParent"/> :
+    /// le déclencheur de plage est réservé Parent/Admin, mutualisant le gating Invité du menu
+    /// clic-case — c'est ce gate partagé que caractérise (en consultation, le bouton n'est même pas
     /// rendu). Toute (dé)activation repart d'une sélection vierge. État de présentation, aucune écriture.
     /// </summary>
     private void BasculerModePlage()
@@ -548,7 +548,7 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Alimente la sélection de plage (Sc.5) : le 1ᵉʳ clic-case fixe le début ; le 2ᵉ borne l'intervalle
+    /// Alimente la sélection de plage : le 1ᵉʳ clic-case fixe le début ; le 2ᵉ borne l'intervalle
     /// <c>[min, max]</c> des deux dates contiguës puis ouvre l'affectation <b>pré-remplie sur l'intervalle</b>
     /// (une seule commande <c>AffecterPeriode</c> couvrant la plage — backend inchangé). Re-cliquer la
     /// même case avant la 2ᵉ borne ne fait rien (intervalle dégénéré ignoré, variantes riches → tranche 2).
@@ -581,9 +581,9 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// mousedown sur une case : pose l'<b>ANCRE</b> de la sélection de plage par drag (s49) et arme l'état
-    /// volatile. Parent-gated à la SOURCE (règle 9, mutualisé avec le menu clic-case) : en consultation seule,
-    /// aucun état n'est armé → geste inerte (Sc.8). Neutralisé pendant le mode-plage bouton (tranche 1) pour
+    /// mousedown sur une case : pose l'<b>ANCRE</b> de la sélection de plage par drag et arme l'état
+    /// volatile. Parent-gated à la SOURCE (mutualisé avec le menu clic-case) : en consultation seule,
+    /// aucun état n'est armé → geste inerte. Neutralisé pendant le mode-plage bouton (tranche 1) pour
     /// ne pas interférer avec son flux clic-début / clic-fin. Aucune écriture (état de présentation).
     /// </summary>
     private async Task DebutSelectionPlage(DateOnly date)
@@ -598,13 +598,13 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Mouvement du pointeur pendant le geste (callback du port document s49, résolu par <c>elementFromPoint</c>
+    /// Mouvement du pointeur pendant le geste (callback du port document, résolu par <c>elementFromPoint</c>
     /// côté JS : <paramref name="dateCase"/> est le <c>data-date</c> « yyyy-MM-dd » de la case sous le curseur, ou
-    /// <c>null</c> hors d'une case) : met à jour le <b>CURSEUR</b> (la surbrillance [ancre..curseur] est recalculée).
-    /// Sans ancre armée, le mouvement est ignoré (aucune sélection hors geste — gate Invité tenu à la source, Sc.8).
+    /// <c>null</c> hors d'une case) : met à jour le <b>CURSEUR</b> (la surbrillance [ancre.curseur] est recalculée).
+    /// Sans ancre armée, le mouvement est ignoré (aucune sélection hors geste — gate Invité tenu à la source).
     /// Hors case (null / non parsable) le curseur est CONSERVÉ. Le curseur est naturellement <b>borné à la vue</b> :
     /// seules les cases RENDUES portent un <c>data-date</c>, un débordement au-delà du bord ne résout aucune case
-    /// hors-vue et ne navigue pas (Sc.6). Le re-render est forcé (callback hors cycle Blazor).
+    /// hors-vue et ne navigue pas. Le re-render est forcé (callback hors cycle Blazor).
     /// </summary>
     private async Task SurvolerCasePlageParDate(string? dateCase)
     {
@@ -622,14 +622,14 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Relâchement du pointeur (<c>pointerup</c> capté au niveau <b>document</b>, port s49 — jamais un
+    /// Relâchement du pointeur (<c>pointerup</c> capté au niveau <b>document</b>, port — jamais un
     /// <c>@onpointerup</c> sur la case, qui manquerait un relâchement HORS case en navigateur réel) : fin du
     /// geste. Distingue <b>clic vs drag par les CASES</b> (jamais les pixels) : si le curseur est resté sur
-    /// l'ancre → CLIC SIMPLE → menu clic-case existant, INCHANGÉ (Sc.4) ; sinon → PLAGE → ouvre la dialog
-    /// « Affecter une période » EXISTANTE (s06) pré-remplie sur l'intervalle <b>NORMALISÉ</b> <c>[min, max]</c>
-    /// (début ≤ fin garanti, jamais vide/inversée — Sc.3/Sc.5). La surbrillance disparaît (état d'ancre/curseur
+    /// l'ancre → CLIC SIMPLE → menu clic-case existant, INCHANGÉ ; sinon → PLAGE → ouvre la dialog
+    /// « Affecter une période » EXISTANTE pré-remplie sur l'intervalle <b>NORMALISÉ</b> <c>[min, max]</c>
+    /// (début ≤ fin garanti, jamais vide/inversée —). La surbrillance disparaît (état d'ancre/curseur
     /// vidé). Sans sélection armée (relâchement hors geste), c'est un NO-OP (garde de portée). Aucune écriture
-    /// ici : la dialog porte la commande (réemploi strict s06). Le re-render est forcé (callback hors cycle Blazor).
+    /// ici : la dialog porte la commande (réemploi strict). Le re-render est forcé (callback hors cycle Blazor).
     /// </summary>
     private async Task FinSelectionPlage()
     {
@@ -670,7 +670,7 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Échap (port document s33) ANNULE la sélection de plage (Sc.7) : pendant le drag OU sur la plage
+    /// Échap (port document) ANNULE la sélection de plage : pendant le drag OU sur la plage
     /// relâchée (dialog pré-remplie ouverte AVANT validation), vide l'état d'ancre/curseur et de bornes, retire
     /// la surbrillance et FERME la dialog de plage — AUCUNE écriture (store intact). N'agit QUE sur la
     /// sélection de plage : sans sélection en cours, Échap est laissé aux autres surfaces (garde de portée).
@@ -692,10 +692,10 @@ public partial class PlanningPartage
     private void FermerMenu() => _dateMenu = null;
 
     /// <summary>
-    /// Ouvre le mini-dialog « déléguer ce jour » (s44) sur la <paramref name="date"/> de la case, depuis
-    /// l'entrée « déléguer ce jour » du <b>menu clic-case</b> (surface tranchée par le PO au gate G3 :
-    /// SEULE surface d'écriture de la délégation ; les cartes de lecture s42/s43 n'en portent plus).
-    /// Gating Invité (règle 9) mutualisé avec le menu (il ne s'ouvre que pour un Parent, OuvrirMenu) et
+    /// Ouvre le mini-dialog « déléguer ce jour » sur la <paramref name="date"/> de la case, depuis
+    /// l'entrée « déléguer ce jour » du <b>menu clic-case</b>
+    /// (SEULE surface d'écriture de la délégation ; les cartes de lecture n'en portent plus).
+    /// Gating Invité mutualisé avec le menu (il ne s'ouvre que pour un Parent, OuvrirMenu) et
     /// re-gardé ici par sécurité. La grille reste en LECTURE SEULE : la dialog porte l'écriture (canal
     /// requête/réponse). Ferme le menu à l'ouverture de la dialog, comme les autres entrées.
     /// </summary>
@@ -708,8 +708,8 @@ public partial class PlanningPartage
         _dateDialogDeleguer = date;
     }
 
-    /// <summary>Ouvre le mini-dialog « proposer un échange » (s47) sur la <paramref name="date"/> de la case,
-    /// depuis l'entrée « proposer un échange » du menu clic-case. Gating Invité (règle 9) mutualisé avec le menu
+    /// <summary>Ouvre le mini-dialog « proposer un échange » sur la <paramref name="date"/> de la case,
+    /// depuis l'entrée « proposer un échange » du menu clic-case. Gating Invité mutualisé avec le menu
     /// (il ne s'ouvre que pour un Parent) et re-gardé ici. PROPOSER n'écrit rien (canal de consentement) : la
     /// case reste inchangée tant que le recevant n'a pas accepté depuis sa cloche.</summary>
     private void OuvrirProposer(DateOnly date)
@@ -721,10 +721,10 @@ public partial class PlanningPartage
         _dateDialogProposer = date;
     }
 
-    /// <summary>Ouvre le mini-dialog « signaler un imprévu » (s48) sur la <paramref name="date"/> de la case, depuis
-    /// l'entrée « signaler un imprévu » du menu clic-case. Gating Invité (règle 9) mutualisé avec le menu (il ne
+    /// <summary>Ouvre le mini-dialog « signaler un imprévu » sur la <paramref name="date"/> de la case, depuis
+    /// l'entrée « signaler un imprévu » du menu clic-case. Gating Invité mutualisé avec le menu (il ne
     /// s'ouvre que pour un Parent) et re-gardé ici. Purement INFORMATIF : le signalement n'écrit AUCUNE surcharge —
-    /// la résolution reste inchangée (invariant s48), seule la cloche des concernés est notifiée.</summary>
+    /// la résolution reste inchangée (invariant), seule la cloche des concernés est notifiée.</summary>
     private void OuvrirSignalerImprevu(DateOnly date)
     {
         if (!Session.EstParent)
@@ -735,9 +735,9 @@ public partial class PlanningPartage
     }
 
     /// <summary>
-    /// Ouvre le mini-dialog « reprendre ce jour » (s46) sur la <paramref name="date"/> de la case, depuis
+    /// Ouvre le mini-dialog « reprendre ce jour » sur la <paramref name="date"/> de la case, depuis
     /// l'entrée CONDITIONNELLE du menu clic-case (visible seulement sur une case portant une délégation active).
-    /// Gating Invité (règle 9) mutualisé avec le menu (il ne s'ouvre que pour un Parent, OuvrirMenu) et re-gardé
+    /// Gating Invité mutualisé avec le menu (il ne s'ouvre que pour un Parent, OuvrirMenu) et re-gardé
     /// ici par sécurité. La grille reste en LECTURE SEULE : la dialog porte l'écriture (canal requête/réponse).
     /// </summary>
     private void OuvrirReprendre(DateOnly date)
@@ -750,8 +750,8 @@ public partial class PlanningPartage
     }
 
     /// <summary>Vrai si la case de la <paramref name="date"/> porte une DÉLÉGATION ACTIVE (surcharge résolvable
-    /// couvrant ce jour, PorteSurcharge du read model) — condition d'affichage de l'entrée « reprendre ce jour »
-    /// (s46). Pur affichage : la décision de résolution vient de la projection distante, jamais recalculée ici.</summary>
+    /// couvrant ce jour, PorteSurcharge du read model) — condition d'affichage de l'entrée « reprendre ce jour ».
+    /// Pur affichage : la décision de résolution vient de la projection distante, jamais recalculée ici.</summary>
     private bool CasePorteDelegationActive(DateOnly date)
         => _grille.Jours.FirstOrDefault(j => j.Date == date)?.PorteSurcharge == true;
 
@@ -774,7 +774,7 @@ public partial class PlanningPartage
     }
 
     /// <summary>Depuis le menu (3ᵉ entrée), ouvre la dialog « Définir un transfert » pré-remplie sur la
-    /// date de la case (Sc.1). Un accusé précédent ne survit pas à une nouvelle saisie.</summary>
+    /// date de la case. Un accusé précédent ne survit pas à une nouvelle saisie.</summary>
     private void OuvrirDefinirTransfert(DateOnly date)
     {
         _dateMenu = null;
@@ -782,7 +782,7 @@ public partial class PlanningPartage
         _dateDialogDefinirTransfert = date;
     }
 
-    /// <summary>Depuis le menu (4ᵉ entrée, Sc.6), ouvre la dialog « Supprimer une période » sur la date de
+    /// <summary>Depuis le menu (4ᵉ entrée), ouvre la dialog « Supprimer une période » sur la date de
     /// la case : elle listera les périodes couvrant ce jour. Un accusé précédent ne survit pas à l'ouverture.</summary>
     private void OuvrirSupprimerPeriode(DateOnly date)
     {
@@ -791,7 +791,7 @@ public partial class PlanningPartage
         _dateDialogSupprimerPeriode = date;
     }
 
-    /// <summary>Depuis le menu (6ᵉ entrée, s18 Sc.6), ouvre la dialog « Supprimer un slot » sur la date de la
+    /// <summary>Depuis le menu (6ᵉ entrée), ouvre la dialog « Supprimer un slot » sur la date de la
     /// case : elle listera les slots couvrant ce jour. Un accusé précédent ne survit pas à l'ouverture.</summary>
     private void OuvrirSupprimerSlot(DateOnly date)
     {
@@ -800,7 +800,7 @@ public partial class PlanningPartage
         _dateDialogSupprimerSlot = date;
     }
 
-    /// <summary>Issue succès de la suppression de slot (s18 Sc.6) : ferme la dialog, <b>relit</b> la grille
+    /// <summary>Issue succès de la suppression de slot : ferme la dialog, <b>relit</b> la grille
     /// distante (la case ne rend plus le slot retiré, les autres slots demeurent) et lève l'accusé « Slot
     /// supprimé » à part, non bloquant. Le retrait provient de la relecture, jamais d'une mutation locale.</summary>
     private async Task FermerSuppressionSlotEtAccuser()
@@ -812,7 +812,7 @@ public partial class PlanningPartage
     /// <summary>Referme l'accusé « Slot supprimé » (non bloquant).</summary>
     private void FermerAccuseSlotSupprime() => _accuseSlotSupprime = false;
 
-    /// <summary>Depuis le menu (5ᵉ entrée, Sc.7), ouvre la dialog « Éditer une période » sur la date de la
+    /// <summary>Depuis le menu (5ᵉ entrée), ouvre la dialog « Éditer une période » sur la date de la
     /// case : elle listera les périodes couvrant ce jour, chaque ligne ouvrant un formulaire pré-rempli. Un
     /// accusé précédent ne survit pas à l'ouverture.</summary>
     private void OuvrirEditerPeriode(DateOnly date)
@@ -822,7 +822,7 @@ public partial class PlanningPartage
         _dateDialogEditerPeriode = date;
     }
 
-    /// <summary>Issue succès de l'édition (Sc.7) : ferme la dialog, <b>relit</b> la grille distante (la case
+    /// <summary>Issue succès de l'édition : ferme la dialog, <b>relit</b> la grille distante (la case
     /// affiche le nouveau responsable ; une portion libérée retombe sur le fond / le neutre sans nom fantôme)
     /// et lève l'accusé « Période modifiée » à part, non bloquant. La re-résolution provient de la relecture,
     /// jamais d'une mutation locale de la grille.</summary>
@@ -835,7 +835,7 @@ public partial class PlanningPartage
     /// <summary>Referme l'accusé « Période modifiée » (non bloquant).</summary>
     private void FermerAccusePeriodeModifiee() => _accusePeriodeModifiee = false;
 
-    /// <summary>Issue succès de la suppression (Sc.6) : ferme la dialog, <b>relit</b> la grille distante
+    /// <summary>Issue succès de la suppression : ferme la dialog, <b>relit</b> la grille distante
     /// (la case re-résolue retombe sur le fond ou le neutre, sans nom fantôme) et lève l'accusé « Période
     /// supprimée » à part, non bloquant. La re-résolution provient de la relecture, jamais d'une mutation
     /// locale de la grille.</summary>
@@ -857,8 +857,8 @@ public partial class PlanningPartage
         await ChargerAsync();
     }
 
-    /// <summary>Issue succès de la pose (Sc.7) : ferme la dialog, relit la grille, et lève le bandeau
-    /// d'avertissement « à part » <b>si</b> l'outcome de la commande a signalé un chevauchement (règle 16,
+    /// <summary>Issue succès de la pose : ferme la dialog, relit la grille, et lève le bandeau
+    /// d'avertissement « à part » <b>si</b> l'outcome de la commande a signalé un chevauchement (
     /// accepté + averti). Le drapeau vient de l'API (read model existant) — jamais recalculé ici.</summary>
     private async Task FermerPoserSlotEtRecharger(bool chevauchement)
     {
@@ -869,8 +869,8 @@ public partial class PlanningPartage
     /// <summary>Referme le bandeau d'avertissement de chevauchement (non bloquant).</summary>
     private void FermerAvertissement() => _avertissementChevauchement = false;
 
-    /// <summary>Issue succès du transfert (Sc.1) : ferme la dialog SANS relire la grille (le transfert
-    /// n'est pas projeté en case — règle 27, panneau cloche hors scope) et lève l'accusé « Transfert
+    /// <summary>Issue succès du transfert : ferme la dialog SANS relire la grille (le transfert
+    /// n'est pas projeté en case, panneau cloche hors scope) et lève l'accusé « Transfert
     /// défini » à part, non bloquant. L'accusé se déclenche sur le simple succès HTTP du canal.</summary>
     private void FermerTransfertEtAccuser()
     {
@@ -900,7 +900,7 @@ public partial class PlanningPartage
     }
 
     /// <summary>Vrai si la case correspond à la date du jour (port d'horloge injecté) — sert au marquage
-    /// visuel « aujourd'hui » (Sc.4). Pur affichage : aucune règle métier, aucun observable de domaine.</summary>
+    /// visuel « aujourd'hui ». Pur affichage : aucune règle métier, aucun observable de domaine.</summary>
     private bool EstAujourdhui(DateOnly date) => date == Horloge.Aujourdhui;
 
     /// <summary>Couleur PLEINE d'un acteur (responsable de case en pastille, ou créneau) via le thème

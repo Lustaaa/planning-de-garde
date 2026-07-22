@@ -1,10 +1,10 @@
 namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
-/// Ressource <b>OAuth externe</b> (BC Comptes, s28 volet 3) — controller MVC. <c>GET api/oauth/google/demarrer</c>
+/// Ressource <b>OAuth externe</b> (BC Comptes) — controller MVC. <c>GET api/oauth/google/demarrer</c>
 /// démarre le flux (redirection vers l'authorize Google, URL publique construite depuis la config — aucun
 /// secret) ; <c>GET api/oauth/google/callback</c> route le retour du provider vers <see cref="ConnexionOAuthHandler"/>
-/// (même chemin de session que la connexion locale s23).
+/// (même chemin de session que la connexion locale).
 ///
 /// <para><b>Dette de câblage (P0, G3)</b> : l'échange du code contre l'identité vérifiée (Google) n'est pas
 /// réalisé en runtime local — le port est un placeholder. La logique de rapprochement est prouvée par doublure.</para>
@@ -26,7 +26,7 @@ public sealed class OAuthController(ConnexionOAuthHandler handler, IConfiguratio
         return Redirect(authorize);
     }
 
-    /// <summary>Callback du provider routé vers ConnexionOAuthHandler : ouvre ou refuse la session (chemin s23),
+    /// <summary>Callback du provider routé vers ConnexionOAuthHandler : ouvre ou refuse la session (chemin),
     /// puis redirige le navigateur vers le planning (succès) ou la connexion (échec).</summary>
     [HttpGet("/api/oauth/google/callback")]
     public IActionResult Callback([FromQuery] string? code)

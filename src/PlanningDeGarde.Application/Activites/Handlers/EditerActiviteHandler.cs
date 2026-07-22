@@ -3,8 +3,8 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Activites.Handlers;
 
 /// <summary>
-/// Commande d'édition d'une activité du référentiel du foyer (s35 Sc.2, miroir strict d'<see cref="EditerActeurCommand"/>
-/// s33). L'identifiant stable est la clé (jamais éditable). Le libellé et l'adresse sont deux champs
+/// Commande d'édition d'une activité du référentiel du foyer (miroir strict d'<see cref="EditerActeurCommand"/>).
+/// L'identifiant stable est la clé (jamais éditable). Le libellé et l'adresse sont deux champs
 /// <b>optionnels et indépendants</b> : un champ absent (<c>null</c>) n'est pas appliqué — la surface
 /// correspondante du store n'est pas touchée (aucune écriture partielle croisée).
 /// </summary>
@@ -17,7 +17,7 @@ public sealed record EditerActiviteResultat(string ActiviteId, string? Libelle, 
 /// <summary>
 /// Use case : éditer une activité du foyer (libellé et/ou adresse). Mute le référentiel via le port
 /// d'écriture. Le libellé et l'adresse sont deux surfaces indépendantes — éditer l'une ne touche jamais
-/// l'autre (miroir strict de l'édition acteur s33).
+/// l'autre (miroir strict de l'édition acteur).
 /// </summary>
 public sealed class EditerActiviteHandler
 {

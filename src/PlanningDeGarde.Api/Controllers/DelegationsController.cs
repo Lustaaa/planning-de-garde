@@ -4,7 +4,7 @@ namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
 /// Ressource <b>Délégations</b> (BC Delegation) — controller MVC REST. Déléguer COMPOSE l'écriture
-/// surcharge multi-jours (s06) ; reprendre (DELETE) COMPOSE la suppression de surcharge (s16). Diffusion
+/// surcharge multi-jours ; reprendre (DELETE) COMPOSE la suppression de surcharge. Diffusion
 /// temps réel (lecture seule) sur succès ; jamais d'écriture par le canal de diffusion.
 /// </summary>
 [ApiController]
@@ -13,7 +13,7 @@ public sealed class DelegationsController(
     AnnulerDelegationHandler annuler,
     INotificateurPlanning notificateur) : ControllerBase
 {
-    /// <summary>Délégation de la récupération d'une PLAGE (POST, s44→s45). Refus métier avec motif.</summary>
+    /// <summary>Délégation de la récupération d'une PLAGE (POST). Refus métier avec motif.</summary>
     [HttpPost("/api/delegations")]
     public IActionResult Deleguer([FromBody] DeleguerRecuperationRequete requete)
     {
@@ -26,7 +26,7 @@ public sealed class DelegationsController(
         return Ok();
     }
 
-    /// <summary>« Reprendre ce jour » (DELETE, s46) : jour + enfant en query (l'enfant peut être vide en
+    /// <summary>« Reprendre ce jour » (DELETE) : jour + enfant en query (l'enfant peut être vide en
     /// mono-enfant). No-op idempotent (jour sans délégation active) = succès.</summary>
     [HttpDelete("/api/delegations")]
     public IActionResult Annuler([FromQuery] string jour, [FromQuery] string? enfant)

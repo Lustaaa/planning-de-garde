@@ -5,17 +5,17 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Comptes.Handlers;
 
 /// <summary>
-/// Commande d'inscription <b>libre-service</b> (volet 3, s25) : un visiteur « qui n'a pas encore de
-/// compte » s'enregistre lui-même avec un email et un mot de passe. Distincte de la création admin s22
+/// Commande d'inscription <b>libre-service</b> : un visiteur « qui n'a pas encore de
+/// compte » s'enregistre lui-même avec un email et un mot de passe. Distincte de la création admin 
 /// (<see cref="CreerCompteCommand"/>, qui exige un acteur déclaré) : ici PAS d'acteur — l'association
-/// et l'activation viennent plus tard (s22/s24). Le mot de passe est haché avant persistance.
+/// et l'activation viennent plus tard. Le mot de passe est haché avant persistance.
 /// </summary>
 public sealed record CreerCompteLibreServiceCommand(string Email, string MotDePasse);
 
 /// <summary>
 /// Use case : inscription libre-service. Valide l'email et le mot de passe requis, hache le mot de
 /// passe, génère un identifiant stable neuf opaque, puis persiste un compte <b>Inactif</b> sans acteur
-/// (ActeurId null) via le port d'écriture du référentiel. L'unicité de l'email est portée par Sc.10.
+/// (ActeurId null) via le port d'écriture du référentiel. L'unicité de l'email est portée par.
 /// </summary>
 public sealed class CreerCompteLibreServiceHandler
 {

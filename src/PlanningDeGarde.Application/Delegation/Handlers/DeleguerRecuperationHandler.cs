@@ -5,24 +5,24 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Delegation.Handlers;
 
 /// <summary>
-/// Commande task-orientée « je ne récupère pas ces jours-là, X le fera » (s44 → s45) : déléguer la
-/// récupération de la PLAGE <c>[<paramref name="Jour"/>..<paramref name="JourFin"/>]</c> de l'enfant
+/// Commande task-orientée « je ne récupère pas ces jours-là, X le fera » : déléguer la
+/// récupération de la PLAGE <c>[<paramref name="Jour"/>.<paramref name="JourFin"/>]</c> de l'enfant
 /// <paramref name="EnfantId"/> à l'acteur <paramref name="VersActeurId"/>. <paramref name="JourFin"/> est
 /// la date de fin (INCLUSE) ; <b>absente (null) = plage réduite à UN jour</b> (<c>fin = début</c>) → parité
-/// STRICTE avec la délégation d'un jour s44. EXPOSE l'écriture « surcharge » EXISTANTE (une période
-/// <c>[début..fin]</c>, s06) — ce n'est PAS un mécanisme neuf. Les transferts bicolores aux frontières de
-/// la plage restent AUTO-DÉRIVÉS par s31 (R24), jamais réécrits.
+/// STRICTE avec la délégation d'un jour. EXPOSE l'écriture « surcharge » EXISTANTE (une période
+/// <c>[début.fin]</c>) — ce n'est PAS un mécanisme neuf. Les transferts bicolores aux frontières de
+/// la plage restent AUTO-DÉRIVÉS, jamais réécrits.
 /// </summary>
 public sealed record DeleguerRecuperationCommand(
     DateOnly Jour, string EnfantId, string VersActeurId, DateOnly? JourFin = null);
 
 /// <summary>
 /// Use case de COMPOSITION : « déléguer la récupération d'UN jour » COMPOSE le chemin d'écriture
-/// « affecter une période » (surcharge d'UN jour, s06) avec le délégataire comme responsable — il
+/// « affecter une période » (surcharge d'UN jour) avec le délégataire comme responsable — il
 /// COMPOSE la résolution existante portée par <see cref="GrilleAgendaQuery"/> en lecture, sans la
 /// réimplémenter. Aucun nouveau modèle de résolution (surcharge &gt; fond
 /// &gt; neutre inchangée), aucun store neuf, aucune nouvelle dérivation de transfert : le bicolore sort
-/// de s31 par construction dès que la surcharge fait basculer la responsabilité du jour.
+/// de par construction dès que la surcharge fait basculer la responsabilité du jour.
 /// </summary>
 public sealed class DeleguerRecuperationHandler
 {

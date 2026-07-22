@@ -5,10 +5,10 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.Comptes.Repositories;
 
 /// <summary>
 /// Adaptateur de droite <b>durable</b> (Mongo) du stockage serveur des jetons de réinitialisation de
-/// mot de passe (s28, volet 1) — réalise, derrière le <b>port inchangé</b>
+/// mot de passe — réalise, derrière le <b>port inchangé</b>
 /// <see cref="IReferentielJetonsReset"/>, l'émission (<c>Enregistrer</c>), la relecture
 /// (<c>Trouver</c>) et la consommation usage-unique (<c>Consommer</c>). Remplaçant durable de la
-/// doublure s25 : un jeton émis survit au redémarrage du serveur (une instance fraîche relit l'état
+/// doublure : un jeton émis survit au redémarrage du serveur (une instance fraîche relit l'état
 /// persisté), et sa consommation est durable — un jeton consommé une fois ne redevient jamais valide.
 /// Prouvé contre un store Mongo réel (Docker).
 ///

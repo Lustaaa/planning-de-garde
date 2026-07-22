@@ -17,7 +17,7 @@ public sealed class PeriodesDuJourQuery
 
     public PeriodesDuJourQuery(IPeriodeRepository periodes) => _periodes = periodes;
 
-    /// <summary>Périodes dont l'intervalle [Debut..Fin] couvre la <paramref name="date"/> (bornes incluses).</summary>
+    /// <summary>Périodes dont l'intervalle [Debut.Fin] couvre la <paramref name="date"/> (bornes incluses).</summary>
     public IReadOnlyList<PeriodeSnapshot> Lister(DateOnly date)
     {
         return _periodes.AllSnapshots()

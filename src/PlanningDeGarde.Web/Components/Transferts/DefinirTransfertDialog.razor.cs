@@ -10,10 +10,10 @@ namespace PlanningDeGarde.Web.Components.Transferts;
 
 /// <summary>
 /// Dialog (modal) « Définir un transfert » réutilisable, ouverte depuis le menu d'actions d'une case
-/// (palier 7, écriture en contexte — 3ᵉ dialog qui referme l'épic É12). L'écriture passe par le
+/// (écriture en contexte). L'écriture passe par le
 /// <b>canal requête/réponse</b> (endpoint HTTP <c>/api/transferts</c>) — JAMAIS un handler
 /// en DI direct ni le canal de diffusion. Aucune règle métier ici. Les sélecteurs dépose/récupère
-/// bindent l'<b>identifiant stable</b> (clé atteignable du référentiel, règle 19), jamais le libellé.
+/// bindent l'<b>identifiant stable</b> (clé atteignable du référentiel), jamais le libellé.
 /// Issues : succès → <see cref="OnValide"/> (le parent ferme la dialog, l'accusé « Transfert défini »
 /// s'affiche à part) ; refus métier (4xx, motif propagé) ou API injoignable → message <b>dans</b> la
 /// dialog, saisie conservée, aucune fermeture.
@@ -34,30 +34,30 @@ public partial class DefinirTransfertDialog
 
     /// <summary>Acteurs DÉCLARÉS du foyer (id stable + nom), fournis par le parent depuis le store vivant :
     /// les sélecteurs dépose/récupère ne proposent que ces acteurs réels (jamais un libellé en dur), y
-    /// compris un acteur fraîchement ajouté (sprint 19, Sc.5).</summary>
+    /// compris un acteur fraîchement ajouté.</summary>
     [Parameter]
     public IReadOnlyList<ActeurFoyer> Acteurs { get; set; } = Array.Empty<ActeurFoyer>();
 
     /// <summary>Vrai une fois l'énumération du store chargée par le parent : distingue « en cours de
     /// chargement » de « chargé et vide » (store sans acteur, 1er lancement) — qui seul déclenche l'invite
-    /// à ajouter un acteur (sprint 19, Sc.6), sans flash transitoire.</summary>
+    /// à ajouter un acteur, sans flash transitoire.</summary>
     [Parameter]
     public bool ActeursCharges { get; set; }
 
     /// <summary>Date de la case cliquée : elle ancre le transfert sur ce seul jour (la date de
-    /// contexte prime sur le défaut « aujourd'hui », règle 17 composée, Sc.2).</summary>
+    /// contexte prime sur le défaut « aujourd'hui », composée).</summary>
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
     /// <summary>Activités du référentiel du foyer (id stable + libellé), fournies par le parent depuis le store
-    /// vivant (GET /api/foyer/activites, s35) : le sélecteur de lieu (axe LOCALISATION du slot, préservé) ne
+    /// vivant (GET /api/foyer/activites) : le sélecteur de lieu (axe LOCALISATION du slot, préservé) ne
     /// propose que ces activités réelles (jamais la liste en dur), suivant en temps réel un ajout / une
-    /// suppression en config (S6).</summary>
+    /// suppression en config.</summary>
     [Parameter]
     public IReadOnlyList<ActiviteFoyer> Lieux { get; set; } = Array.Empty<ActiviteFoyer>();
 
-    /// <summary>Enfant COURANT (s53, Option A) : hérité du sélecteur de vue, le transfert saisi lui est SCOPÉ
-    /// (il n'apparaît que dans SA grille — gate G3 : « le transfert de Mia ne doit plus fuir chez Charlie »).
+    /// <summary>Enfant COURANT (Option A) : hérité du sélecteur de vue, le transfert saisi lui est SCOPÉ
+    /// (il n'apparaît que dans SA grille).
     /// Aucun choix ici (cohérent avec la vue mono-enfant P1) — affiché en lecture seule.</summary>
     [Parameter, EditorRequired]
     public string EnfantId { get; set; } = "";

@@ -9,13 +9,13 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Echanges;
 
 /// <summary>
-/// Mini-dialog « Proposer un échange » (s47) : choix de l'acteur RECEVANT, émission de la commande de proposition
+/// Mini-dialog « Proposer un échange » : choix de l'acteur RECEVANT, émission de la commande de proposition
 /// via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/propositions</c>) — JAMAIS le canal de
 /// diffusion. Aucune règle métier ici (le refus « à soi-même » / « inconnu » est tranché côté domaine, AVANT toute
 /// écriture). PROPOSER n'écrit AUCUNE surcharge : c'est un canal de consentement, la case reste inchangée tant que
 /// le recevant n'a pas accepté depuis sa cloche. Issues : succès → <see cref="OnValide"/> ; refus métier (motif
 /// propagé) ou API injoignable → message <b>dans</b> la dialog, saisie <b>conservée</b>, dialog restée OUVERTE.
-/// Portée par <c>ModalConfig</c> : Échap = « Annuler » (port <see cref="IEcouteurEchapModal"/> s33).
+/// Portée par <c>ModalConfig</c> : Échap = « Annuler » (port <see cref="IEcouteurEchapModal"/>).
 /// </summary>
 public partial class ProposerEchangeDialog
 {
@@ -23,8 +23,8 @@ public partial class ProposerEchangeDialog
     {
         public string VersActeurId { get; set; } = "";
 
-        /// <summary>Borne de FIN (INCLUSE) de la plage proposée (champ « jusqu'au » du mini-dialog, s52, miroir
-        /// EXACT de la délégation s45). Défaut = le jour cliqué (fin = début) → l'échange d'UN jour (s47) inchangé.</summary>
+        /// <summary>Borne de FIN (INCLUSE) de la plage proposée (champ « jusqu'au » du mini-dialog, miroir
+        /// EXACT de la délégation). Défaut = le jour cliqué (fin = début) → l'échange d'UN jour inchangé.</summary>
         public DateTime Jusqu { get; set; }
     }
 
@@ -49,14 +49,14 @@ public partial class ProposerEchangeDialog
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
-    /// <summary>Enfant sélectionné (parité s44) dont on propose l'échange ce jour-là.</summary>
+    /// <summary>Enfant sélectionné (parité) dont on propose l'échange ce jour-là.</summary>
     [Parameter, EditorRequired]
     public string EnfantId { get; set; } = "";
 
-    /// <summary>OPTIONNEL (s51) : identifiant de l'ÉVÉNEMENT d'imprévu journalisé (s48) quand la mini-dialog est
+    /// <summary>OPTIONNEL : identifiant de l'ÉVÉNEMENT d'imprévu journalisé quand la mini-dialog est
     /// ouverte comme ACTION DE SUIVI depuis la notif d'imprévu de la cloche. Non-null → la proposition est émise
     /// par le use case de COMPOSITION (POST /api/propositions/suite-imprevu), qui hérite le jour + l'enfant
-    /// de l'imprévu. Null / vide → proposition d'échange autonome s47 (POST /api/propositions).</summary>
+    /// de l'imprévu. Null / vide → proposition d'échange autonome (POST /api/propositions).</summary>
     [Parameter]
     public string? ImprevuEvenementId { get; set; }
 

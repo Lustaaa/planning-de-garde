@@ -7,7 +7,7 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.Notifications.Repositories;
 
 /// <summary>
 /// Adaptateur de droite <b>durable</b> (Mongo) du port <see cref="IEtatLectureNotifications"/> : l'état LU /
-/// non-lu par utilisateur (cloche s47) survit au redémarrage. Un document par couple (utilisateur, événement) —
+/// non-lu par utilisateur (cloche) survit au redémarrage. Un document par couple (utilisateur, événement) —
 /// clé composite stable ; l'upsert rend <see cref="MarquerLu"/> idempotent (aucun doublon).
 /// </summary>
 public sealed class MongoEtatLectureNotifications : IEtatLectureNotifications

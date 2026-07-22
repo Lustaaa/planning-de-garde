@@ -5,7 +5,7 @@ namespace PlanningDeGarde.Application.Slots.Handlers;
 /// <summary>
 /// Commande de suppression d'un slot de localisation du planning partagé. Le <paramref name="SlotId"/>
 /// est l'identifiant stable du slot (clé du store, jamais un libellé). La suppression est
-/// <b>idempotente</b> : un identifiant absent / déjà supprimé est un no-op qui réussit (Sc.5).
+/// <b>idempotente</b> : un identifiant absent / déjà supprimé est un no-op qui réussit.
 /// </summary>
 public sealed record SupprimerSlotCommand(string SlotId);
 

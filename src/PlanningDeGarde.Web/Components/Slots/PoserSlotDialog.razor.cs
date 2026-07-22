@@ -11,10 +11,10 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Slots;
 
 /// <summary>
-/// Dialog (modal) « Poser un slot » <b>unifiée</b>, ouverte depuis une case du planning (palier 7, écriture
-/// en contexte). Elle porte DEUX chemins d'écriture derrière un seul formulaire (retour PO G3) : un slot
+/// Dialog (modal) « Poser un slot » <b>unifiée</b>, ouverte depuis une case du planning (écriture
+/// en contexte). Elle porte DEUX chemins d'écriture derrière un seul formulaire : un slot
 /// <b>ponctuel</b> (endpoint <c>/api/slots</c>, inchangé) ou — si « Répéter chaque semaine » est
-/// coché — un slot <b>récurrent</b> hebdomadaire (endpoint <c>/api/slots/recurrents</c>, s29) dont
+/// coché — un slot <b>récurrent</b> hebdomadaire (endpoint <c>/api/slots/recurrents</c>) dont
 /// le jour de semaine est celui de la case cliquée. L'enfant n'est plus affiché (dette « déclaration des
 /// enfants », backlog P1) mais reste transmis implicitement au back (<see cref="SessionPlanning.EnfantId"/>),
 /// contrat inchangé. Aucune règle métier ici. Issues : succès → <see cref="OnValide"/> (le parent ferme et
@@ -52,22 +52,22 @@ public partial class PoserSlotDialog
     public DateOnly DateContexte { get; set; }
 
     /// <summary>Activités du référentiel du foyer (id stable + libellé), fournies par le parent depuis le store
-    /// vivant (GET /api/foyer/activites, s35) : le sélecteur de lieu (axe LOCALISATION du slot, préservé) ne
+    /// vivant (GET /api/foyer/activites) : le sélecteur de lieu (axe LOCALISATION du slot, préservé) ne
     /// propose que ces activités réelles (jamais la liste en dur), y compris une activité fraîchement ajoutée /
-    /// privée d'une activité supprimée, propagée en temps réel par le parent (S6).</summary>
+    /// privée d'une activité supprimée, propagée en temps réel par le parent.</summary>
     [Parameter]
     public IReadOnlyList<ActiviteFoyer> Lieux { get; set; } = Array.Empty<ActiviteFoyer>();
 
     /// <summary>Enfants du référentiel du foyer (id stable opaque + prénom), fournis par le parent depuis le
     /// store vivant (GET /api/foyer/enfants) : le sélecteur d'enfant ne propose que ces enfants réels (jamais
-    /// un enfant en dur / fantôme), y compris un enfant fraîchement ajouté en config, propagé en temps réel
-    /// (S9/S10). L'enfant choisi remplace <c>Session.EnfantId</c> transmis à l'aveugle (s29).</summary>
+    /// un enfant en dur / fantôme), y compris un enfant fraîchement ajouté en config, propagé en temps réel.
+    /// L'enfant choisi remplace <c>Session.EnfantId</c> transmis à l'aveugle.</summary>
     [Parameter]
     public IReadOnlyList<EnfantFoyer> Enfants { get; set; } = Array.Empty<EnfantFoyer>();
 
     /// <summary>Notifié sur écriture aboutie (succès) : le parent ferme la dialog et relit la grille.
-    /// L'argument <c>bool</c> = un <b>chevauchement</b> a été signalé par l'outcome de la commande (règle 16,
-    /// accepté + averti) → le parent affiche un bandeau à part, non bloquant (Sc.7). Un slot récurrent ne
+    /// L'argument <c>bool</c> = un <b>chevauchement</b> a été signalé par l'outcome de la commande (
+    /// accepté + averti) → le parent affiche un bandeau à part, non bloquant. Un slot récurrent ne
     /// porte pas de chevauchement (présentation d'occurrences) : l'argument est alors <c>false</c>.</summary>
     [Parameter]
     public EventCallback<bool> OnValide { get; set; }

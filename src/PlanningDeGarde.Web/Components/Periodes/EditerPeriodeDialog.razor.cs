@@ -9,7 +9,7 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Periodes;
 
 /// <summary>
-/// Dialog (modal) « Éditer une période » ouverte depuis le menu d'actions d'une case (palier 7, écriture
+/// Dialog (modal) « Éditer une période » ouverte depuis le menu d'actions d'une case (écriture
 /// en contexte — 5ᵉ usage du menu clic-case). À l'ouverture elle LIT les périodes couvrant la date via le
 /// <b>canal de lecture</b> HTTP (<c>GET /api/periodes/…</c>) et les acteurs du foyer (<c>GET
 /// /api/foyer/acteurs</c>) pour le sélecteur. « Éditer » une ligne ouvre un formulaire <b>pré-rempli</b>

@@ -16,7 +16,7 @@ public static class Foyer
     /// <summary>
     /// Identifiants stables des responsables du foyer (clés du set <see cref="CouleursParActeur"/>).
     /// La validation d'existence et le seed s'appuient sur ces identifiants — et non sur les libellés
-    /// d'affichage — pour que le canal reçoive l'id atteignable par le set de couleurs (cadrage (B)).
+    /// d'affichage — pour que le canal reçoive l'id atteignable par le set de couleurs.
     /// </summary>
     public static readonly IReadOnlyList<string> Responsables = new[]
     {
@@ -25,9 +25,9 @@ public static class Foyer
 
     /// <summary>
     /// Set de couleurs par défaut acteur → couleur (source de vérité avant personnalisation
-    /// par utilisateur — règle 16 hors périmètre). Tout acteur absent reçoit le repli neutre
-    /// <see cref="CouleurNeutre"/> (règle 15, exercée au Sc.8). Étendu aux acteurs
-    /// non-responsables (nounou, école) aux Sc.4/Sc.8.
+    /// par utilisateur — hors périmètre). Tout acteur absent reçoit le repli neutre
+    /// <see cref="CouleurNeutre"/> (exercée au). Étendu aux acteurs
+    /// non-responsables (nounou, école) aux.
     /// </summary>
     public static readonly IReadOnlyDictionary<string, string> CouleursParActeur =
         new Dictionary<string, string>
@@ -66,10 +66,10 @@ public static class Foyer
 
     /// <summary>
     /// Type déclaré (Admin / Parent / Autre) par acteur, surfacé en <b>lecture seule</b> depuis ce seed
-    /// (D3, sprint 14) pour piloter le rôle de l'identité effective lors d'une impersonation bornée.
+    /// pour piloter le rôle de l'identité effective lors d'une impersonation bornée.
     /// Un acteur absent de ce dictionnaire — typiquement un acteur ajouté en session — est traité comme
     /// <see cref="TypeActeur.Parent"/> par défaut (aucune saisie ni persistance neuve de type, borne
-    /// anti-cliquet règle 30). Source de vérité du type : la déclaration du foyer, jamais persistée.
+    /// anti-cliquet). Source de vérité du type : la déclaration du foyer, jamais persistée.
     /// </summary>
     public static readonly IReadOnlyDictionary<string, TypeActeur> TypesParActeur =
         new Dictionary<string, TypeActeur>
@@ -82,17 +82,17 @@ public static class Foyer
         };
 
     /// <summary>Type par défaut d'un acteur non déclaré dans <see cref="TypesParActeur"/> (acteur ajouté
-    /// en session) : Parent (aucune saisie de type, borne anti-cliquet règle 30).</summary>
+    /// en session) : Parent (aucune saisie de type, borne anti-cliquet).</summary>
     public const TypeActeur TypeParDefaut = TypeActeur.Parent;
 
     /// <summary>
-    /// Rôles pré-définis du foyer au SEED (amorçage B2, s36) : identifiant stable opaque + libellé +
+    /// Rôles pré-définis du foyer au SEED (amorçage) : identifiant stable opaque + libellé +
     /// flag « est un rôle parent ». Les rôles Papa / Maman / Parent démarrent <b>pré-cochés parent</b>
     /// (source de vérité de l'éligibilité au lien enfant↔parent) ; Nounou / Grand-parent démarrent
     /// non-parent. Le pré-cochage ne vaut QUE pour ce seed initial : un rôle créé ensuite via
     /// <c>CreerRole</c> démarre non-parent, même si son libellé est « Papa/Maman/Parent » (le flag reste
-    /// posé explicitement, jamais reconnu au libellé — anti-piège s35). Amorcé au composition root
-    /// (parité seed InMemory enfants/acteurs, asymétrie s15 : jamais côté Mongo).
+    /// posé explicitement, jamais reconnu au libellé — anti-piège). Amorcé au composition root
+    /// (parité seed InMemory enfants/acteurs, asymétrie : jamais côté Mongo).
     /// </summary>
     public static readonly IReadOnlyList<RoleSeed> RolesSeed = new[]
     {
@@ -104,7 +104,7 @@ public static class Foyer
     };
 
     /// <summary>
-    /// Affectation de rôle par acteur au SEED (amorçage B2, s36) : les acteurs-parents portent un
+    /// Affectation de rôle par acteur au SEED (amorçage) : les acteurs-parents portent un
     /// rôle marqué parent (Alice → Papa, Bruno → Maman) pour rester <b>liables</b> sous l'éligibilité
     /// role-based ; les intervenants portent un rôle non-parent (Nina → Nounou, grand-père →
     /// Grand-parent) donc <b>non liables</b>. Marie-Hélène (Admin) ne porte aucun rôle-parent (absente
@@ -120,6 +120,6 @@ public static class Foyer
         };
 }
 
-/// <summary>Un rôle pré-défini du foyer au seed (B2, s36) : id stable opaque, libellé, et flag
+/// <summary>Un rôle pré-défini du foyer au seed : id stable opaque, libellé, et flag
 /// « est un rôle parent » posé à l'amorçage.</summary>
 public sealed record RoleSeed(string Id, string Libelle, bool EstRoleParent);

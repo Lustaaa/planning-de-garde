@@ -8,7 +8,7 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.Notifications.Repositories;
 
 /// <summary>
 /// Adaptateur de droite <b>durable</b> (Mongo) du port <see cref="IJournalChangements"/> : les événements
-/// de changement (cloche s47) survivent au redémarrage. Append-only : chaque écriture est insérée, jamais
+/// de changement (cloche) survivent au redémarrage. Append-only : chaque écriture est insérée, jamais
 /// modifiée (trace de lecture horodatée). Remplaçant durable de <see cref="InMemoryJournalChangements"/>
 /// derrière le <b>port inchangé</b>.
 /// </summary>

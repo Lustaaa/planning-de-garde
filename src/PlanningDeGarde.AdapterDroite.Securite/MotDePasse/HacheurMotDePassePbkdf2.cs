@@ -5,7 +5,7 @@ using PlanningDeGarde.Application.Comptes.Ports;
 namespace PlanningDeGarde.AdapterDroite.Securite;
 
 /// <summary>
-/// Adaptateur de droite RÉEL du facteur mot de passe (volet 3, s25) : réalise
+/// Adaptateur de droite RÉEL du facteur mot de passe : réalise
 /// <see cref="IHacheurMotDePasse"/> par <b>PBKDF2</b> (SHA-256) avec sel aléatoire par mot de passe.
 /// Le condensat est auto-descriptif — <c>iterations.selBase64.hashBase64</c> — de sorte que la
 /// vérification n'a besoin d'aucun paramètre externe (le sel et le coût sont relus du condensat).

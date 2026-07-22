@@ -3,7 +3,7 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Enfants.Handlers;
 
 /// <summary>
-/// Commande de retrait du lien d'un enfant vers un <b>parent-acteur</b> (config, s34). Retire le lien
+/// Commande de retrait du lien d'un enfant vers un <b>parent-acteur</b> (config). Retire le lien
 /// via le port d'écriture <see cref="IEditeurEnfants.DelierParent"/> — l'id de l'enfant et ses autres
 /// liens restent inchangés. Relu ensuite par la query dans <see cref="EnfantFoyer.ParentsLies"/>.
 /// </summary>

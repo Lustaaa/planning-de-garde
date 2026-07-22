@@ -3,7 +3,7 @@ namespace PlanningDeGarde.Api.Controllers;
 /// <summary>
 /// Ressource <b>Propositions d'échange</b> (BC Echanges) — controller MVC REST. Proposer n'écrit AUCUNE
 /// surcharge (canal de consentement) mais DIFFUSE la proposition (payload) à la cloche du recevant ;
-/// accepter COMPOSE la délégation s44 (+ diffusion MiseAJour) ; refuser clôt sans écriture. La diffusion
+/// accepter COMPOSE la délégation (+ diffusion MiseAJour) ; refuser clôt sans écriture. La diffusion
 /// suit une écriture aboutie, jamais l'inverse.
 /// </summary>
 [ApiController]
@@ -15,7 +15,7 @@ public sealed class PropositionsController(
     INotificateurChangement notificateur,
     INotificateurPlanning planning) : ControllerBase
 {
-    /// <summary>Proposer un échange sur une PLAGE (POST, s47→s52).</summary>
+    /// <summary>Proposer un échange sur une PLAGE (POST).</summary>
     [HttpPost("/api/propositions")]
     public IActionResult Proposer([FromBody] ProposerEchangeRequete requete)
     {
@@ -27,7 +27,7 @@ public sealed class PropositionsController(
         return Ok();
     }
 
-    /// <summary>Action de suivi : proposer un échange en réaction à un imprévu journalisé (POST, s51).</summary>
+    /// <summary>Action de suivi : proposer un échange en réaction à un imprévu journalisé (POST).</summary>
     [HttpPost("/api/propositions/suite-imprevu")]
     public IActionResult ProposerSuiteImprevu([FromBody] ProposerEchangeSuiteImprevuRequete requete)
     {
@@ -39,7 +39,7 @@ public sealed class PropositionsController(
         return Ok();
     }
 
-    /// <summary>Accepter une proposition (POST, s47) : COMPOSE la délégation s44 + diffusion MiseAJour.</summary>
+    /// <summary>Accepter une proposition (POST) : COMPOSE la délégation + diffusion MiseAJour.</summary>
     [HttpPost("/api/propositions/{id}/acceptation")]
     public IActionResult Accepter(string id)
     {
@@ -52,7 +52,7 @@ public sealed class PropositionsController(
         return Ok();
     }
 
-    /// <summary>Refuser une proposition (POST, s47) : clôt sans aucune écriture de surcharge.</summary>
+    /// <summary>Refuser une proposition (POST) : clôt sans aucune écriture de surcharge.</summary>
     [HttpPost("/api/propositions/{id}/refus")]
     public IActionResult Refuser(string id)
     {

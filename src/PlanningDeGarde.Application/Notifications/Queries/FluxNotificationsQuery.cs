@@ -8,7 +8,7 @@ namespace PlanningDeGarde.Application.Notifications.Queries;
 public sealed record NotificationVue(EvenementChangementSnapshot Evenement, bool Lu);
 
 /// <summary>
-/// Projection de lecture (CQRS) de la cloche (s47) : le FLUX de notifications d'un utilisateur, dérivé du
+/// Projection de lecture (CQRS) de la cloche : le FLUX de notifications d'un utilisateur, dérivé du
 /// JOURNAL DE CHANGEMENTS (trace de lecture) et enrichi de l'état LU / non-lu PAR utilisateur. Retient les
 /// événements où l'utilisateur figure comme cédant OU recevant (« le concernant »), triés par RÉCENCE de
 /// l'écriture (le plus récent en tête). N'écrit jamais : lecture pure du journal + de l'état de lecture.

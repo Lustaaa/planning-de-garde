@@ -2,7 +2,7 @@ using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application.Echanges.Handlers;
 
-/// <summary>Commande « je décline l'échange qu'on m'a proposé » (s47) : le recevant REFUSE la proposition
+/// <summary>Commande « je décline l'échange qu'on m'a proposé » : le recevant REFUSE la proposition
 /// <paramref name="PropositionId"/> — elle se clôt sans aucune écriture.</summary>
 public sealed record RefuserPropositionCommand(string PropositionId);
 

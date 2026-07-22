@@ -3,8 +3,8 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Comptes.Handlers;
 
 /// <summary>
-/// Commande de <b>redéfinition</b> de mot de passe par jeton de réinitialisation (volet 5, s25) :
-/// soumet un nouveau mot de passe accompagné du jeton reçu par mail (Sc.11). Le jeton doit être VALIDE
+/// Commande de <b>redéfinition</b> de mot de passe par jeton de réinitialisation :
+/// soumet un nouveau mot de passe accompagné du jeton reçu par mail. Le jeton doit être VALIDE
 /// (connu, non consommé, non expiré) ; sinon la redéfinition est rejetée sans aucune mutation.
 /// </summary>
 public sealed record RedefinirMotDePasseCommand(string Jeton, string NouveauMotDePasse);

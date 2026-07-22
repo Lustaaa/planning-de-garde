@@ -4,7 +4,7 @@ namespace PlanningDeGarde.Application.Enfants.Ports;
 /// Port d'<b>écriture</b> du référentiel d'enfants du foyer (miroir écriture d'<see cref="IEnumerationEnfants"/>) :
 /// enregistre un enfant neuf sur un identifiant stable opaque. Réalisé par le store mutable en
 /// Infrastructure (InMemory tests-runtime / Mongo runtime), consommé par le handler de gestion du
-/// référentiel. L'édition du prénom sera ajoutée au scénario suivant (borne YAGNI : S1 ne fait
+/// référentiel. L'édition du prénom sera ajoutée au scénario suivant (borne YAGNI : ne fait
 /// qu'<see cref="Ajouter"/>).
 /// </summary>
 public interface IEditeurEnfants
@@ -20,8 +20,8 @@ public interface IEditeurEnfants
 
     /// <summary>Lie un <b>parent-acteur</b> (identifiant stable) à l'enfant identifié de façon stable
     /// (enrichissement, jamais recréation — l'id de l'enfant est la clé inchangée), avec son
-    /// <b>rôle-du-lien</b> (père / mère / parent-libre, s37 — défaut « parent-libre » si absent,
-    /// comportement s34 préservé). Upsert par acteur : re-lier un parent déjà lié <b>met à jour son
+    /// <b>rôle-du-lien</b> (père / mère / parent-libre, — défaut « parent-libre » si absent,
+    /// comportement préservé). Upsert par acteur : re-lier un parent déjà lié <b>met à jour son
     /// rôle-du-lien</b> sans dupliquer le lien. Persisté ; relu via <see cref="EnfantFoyer.ParentsLies"/>.</summary>
     void LierParent(string enfantId, string acteurId, RoleDuLien role = RoleDuLien.ParentLibre);
 

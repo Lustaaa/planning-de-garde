@@ -15,7 +15,7 @@ public sealed class SlotsController(
     SlotsDuJourQuery slots,
     INotificateurPlanning notificateur) : ControllerBase
 {
-    /// <summary>Pose ponctuelle d'un slot (règle 16 : chevauchement accepté + averti, porté par l'outcome).</summary>
+    /// <summary>Pose ponctuelle d'un slot (: chevauchement accepté + averti, porté par l'outcome).</summary>
     [HttpPost("/api/slots")]
     public IActionResult Poser([FromBody] PoserSlotRequete requete)
     {
@@ -27,7 +27,7 @@ public sealed class SlotsController(
         return Ok(new PoserSlotReponse(chevauchement));
     }
 
-    /// <summary>Pose d'un slot RÉCURRENT hebdo (s29). Refus miroir de la pose ponctuelle avec son motif.</summary>
+    /// <summary>Pose d'un slot RÉCURRENT hebdo. Refus miroir de la pose ponctuelle avec son motif.</summary>
     [HttpPost("/api/slots/recurrents")]
     public IActionResult PoserRecurrent([FromBody] PoserSlotRecurrentRequete requete)
     {
@@ -51,7 +51,7 @@ public sealed class SlotsController(
         return Ok();
     }
 
-    /// <summary>Suppression d'un slot récurrent par son identifiant stable (s29, idempotente).</summary>
+    /// <summary>Suppression d'un slot récurrent par son identifiant stable (idempotente).</summary>
     [HttpDelete("/api/slots/recurrents/{id}")]
     public IActionResult SupprimerRecurrent(string id)
     {

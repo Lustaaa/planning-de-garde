@@ -6,9 +6,9 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Comptes;
 
 /// <summary>
-/// Écran « mot de passe oublié » (front <b>WASM</b>, s28, volet 1) : émet une demande de récupération de
+/// Écran « mot de passe oublié » (front <b>WASM</b>) : émet une demande de récupération de
 /// mot de passe via le <b>canal requête/réponse</b> HTTP (<c>POST /api/comptes/recuperation</c>,
-/// règle 27 — aucune vue n'écrit le domaine en direct) puis affiche un <b>message neutre fixe</b>. Anti
+/// — aucune vue n'écrit le domaine en direct) puis affiche un <b>message neutre fixe</b>. Anti
 /// énumération : le message est le même que l'email soit connu ou non (l'API répond toujours par un succès
 /// neutre, jeton + mail restant hors du canal de réponse). Le front ne porte AUCUNE règle métier.
 /// </summary>

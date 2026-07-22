@@ -17,10 +17,10 @@ internal sealed class EvenementDocument
     public string RecevantId { get; set; } = default!;
     public DateTime Horodatage { get; set; }
 
-    /// <summary>Sous-type d'imprévu (s48) — présent seulement quand <see cref="Type"/> vaut Imprevu (null sinon).</summary>
+    /// <summary>Sous-type d'imprévu — présent seulement quand <see cref="Type"/> vaut Imprevu (null sinon).</summary>
     public string? Imprevu { get; set; }
 
-    /// <summary>Motif optionnel d'un imprévu (s48) — vide par défaut.</summary>
+    /// <summary>Motif optionnel d'un imprévu — vide par défaut.</summary>
     public string Motif { get; set; } = "";
 
     public static EvenementDocument De(EvenementChangementSnapshot e)

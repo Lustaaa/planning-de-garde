@@ -2,15 +2,15 @@ using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application.Echanges.Handlers;
 
-/// <summary>Commande « j'accepte l'échange qu'on m'a proposé » (s47) : le recevant CONSENT à la proposition
-/// <paramref name="PropositionId"/> — c'est ce consentement qui déclenche l'écriture (composition s44).</summary>
+/// <summary>Commande « j'accepte l'échange qu'on m'a proposé » : le recevant CONSENT à la proposition
+/// <paramref name="PropositionId"/> — c'est ce consentement qui déclenche l'écriture (composition).</summary>
 public sealed record AccepterPropositionCommand(string PropositionId);
 
 /// <summary>
-/// Use case de CONSENTEMENT : ACCEPTER une proposition <c>pending</c> COMPOSE la délégation EXISTANTE s44/s45
-/// (<see cref="DeleguerRecuperationHandler"/>) sur la PLAGE <c>[Jour..JourFin]</c> portée par la proposition —
-/// surcharge multi-jours écrite via le chemin s06, le recevant prime (surcharge &gt; fond), les transferts
-/// bicolores cédant → recevant sortent AUTO-DÉRIVÉS de s31 (R24) aux deux frontières de la plage. La
+/// Use case de CONSENTEMENT : ACCEPTER une proposition <c>pending</c> COMPOSE la délégation EXISTANTE 
+/// (<see cref="DeleguerRecuperationHandler"/>) sur la PLAGE <c>[Jour.JourFin]</c> portée par la proposition —
+/// surcharge multi-jours écrite via le chemin, le recevant prime (surcharge &gt; fond), les transferts
+/// bicolores cédant → recevant sortent AUTO-DÉRIVÉS de aux deux frontières de la plage. La
 /// proposition passe alors à <see cref="StatutProposition.Acceptee"/>. Aucune nouvelle écriture ni dérivation :
 /// l'accord n'est que le déclencheur de la délégation déjà éprouvée.
 /// </summary>

@@ -5,7 +5,7 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Infrastructure;
 
 /// <summary>
-/// Adaptateur réel du port <see cref="INotificateurChangement"/> (s47) : diffuse le PAYLOAD (snapshot d'un
+/// Adaptateur réel du port <see cref="INotificateurChangement"/> : diffuse le PAYLOAD (snapshot d'un
 /// changement / d'une proposition DÉJÀ écrit) à tous les clients via le hub SignalR. Le client reprojette sa
 /// cloche depuis ce payload SANS aucun GET sur push (garde-fou anti-flake). Lecture seule : la donnée
 /// transportée est une trace de lecture ; l'écriture reste exclusivement sur le canal requête/réponse.

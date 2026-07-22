@@ -3,7 +3,7 @@ namespace PlanningDeGarde.Api.Controllers;
 /// <summary>
 /// Ressource <b>Grille</b> (BC Planning) — controller MVC REST de LECTURE (CQRS). Projette la grille
 /// agenda à une ANCRE (segments yyyy/MM/dd, déterminisme côté front) selon une VUE (semaine / 4 semaines /
-/// mois). Paramètre optionnel « enfant » (s53) : isolation multi-enfants. Lecture seule — jamais de diffusion.
+/// mois). Paramètre optionnel « enfant » : isolation multi-enfants. Lecture seule — jamais de diffusion.
 /// </summary>
 [ApiController]
 public sealed class GrilleController(GrilleAgendaQuery projection) : ControllerBase

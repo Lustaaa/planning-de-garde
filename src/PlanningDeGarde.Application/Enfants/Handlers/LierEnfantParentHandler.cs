@@ -5,7 +5,7 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Enfants.Handlers;
 
 /// <summary>
-/// Commande de liaison d'un enfant du foyer à un <b>parent-acteur</b> (config, s34). Le lien est un
+/// Commande de liaison d'un enfant du foyer à un <b>parent-acteur</b> (config). Le lien est un
 /// enrichissement du modèle enfant (jamais une recréation — l'id de l'enfant reste la clé) : le handler
 /// persiste le lien via le port d'écriture <see cref="IEditeurEnfants.LierParent"/>, relu ensuite par
 /// la query de configuration dans <see cref="EnfantFoyer.ParentsLies"/>.
@@ -17,13 +17,13 @@ public sealed record LierEnfantParentResultat(string EnfantId, string ActeurId);
 
 /// <summary>
 /// Use case : lier un enfant à un parent-acteur. Persiste le lien via le port d'écriture du référentiel,
-/// sous les règles du lien (S2) — TOUTES vérifiées AVANT toute écriture (aucune écriture partielle en
-/// cas de refus) : l'acteur doit exister, <b>porter un rôle marqué « est rôle parent »</b> (option B1,
-/// s36 — le <b>flag</b> du rôle est la source de vérité de l'éligibilité, jamais le libellé ni le
+/// sous les règles du lien — TOUTES vérifiées AVANT toute écriture (aucune écriture partielle en
+/// cas de refus) : l'acteur doit exister, <b>porter un rôle marqué « est rôle parent »</b> (option,
+/// — le <b>flag</b> du rôle est la source de vérité de l'éligibilité, jamais le libellé ni le
 /// <see cref="TypeActeur"/>), lier un parent déjà lié est neutre (idempotent, pas de doublon), et borne
 /// « 2 parents max ». Un acteur sans rôle, ou à rôle non marqué (Nounou/Grand-parent), n'est PAS liable.
-/// Le <see cref="TypeActeur"/> reste au seul service du gating d'écriture R8/R9 (inchangé). Familles
-/// recomposées / exactement-2-parents restent hors scope (spec R2/R3).
+/// Le <see cref="TypeActeur"/> reste au seul service du gating d'écriture (inchangé). Familles
+/// recomposées / exactement-2-parents restent hors scope (spec).
 /// </summary>
 public sealed class LierEnfantParentHandler
 {

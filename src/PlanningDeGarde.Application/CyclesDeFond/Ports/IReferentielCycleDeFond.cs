@@ -12,7 +12,7 @@ namespace PlanningDeGarde.Application.CyclesDeFond.Ports;
 public interface IReferentielCycleDeFond
 {
     /// <summary>
-    /// Cycle de fond courant de l'enfant <paramref name="enfantId"/> (s53 : un cycle par enfant), ou
+    /// Cycle de fond courant de l'enfant <paramref name="enfantId"/> (: un cycle par enfant), ou
     /// <c>null</c> si aucun n'a été défini. <paramref name="enfantId"/> absent (<c>null</c>) = cycle
     /// partagé/legacy (mono-enfant antérieur). Un enfant sans cycle propre retombe sur le cycle partagé.
     /// </summary>

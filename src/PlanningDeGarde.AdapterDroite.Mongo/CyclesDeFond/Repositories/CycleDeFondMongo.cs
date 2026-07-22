@@ -8,7 +8,7 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.CyclesDeFond.Repositories;
 
 /// <summary>
 /// Adaptateur de droite <b>durable</b> (Mongo) du port <see cref="IReferentielCycleDeFond"/> : le cycle
-/// de fond (nombre de semaines + mapping index→responsable) survit au redémarrage de l'hôte (Sc.9, s15) —
+/// de fond (nombre de semaines + mapping index→responsable) survit au redémarrage de l'hôte —
 /// le fond se re-résout après relance. Remplaçant durable de <see cref="CycleDeFondEnMemoire"/> derrière
 /// le <b>port inchangé</b> ; choisi par DI en runtime (« Foyer:Persistance = Mongo »).
 ///

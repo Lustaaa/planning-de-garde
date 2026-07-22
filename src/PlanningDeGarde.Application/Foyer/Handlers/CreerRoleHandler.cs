@@ -6,7 +6,7 @@ namespace PlanningDeGarde.Application.Foyer.Handlers;
 
 /// <summary>
 /// Commande de création d'un rôle dans le référentiel du foyer (config). Le handler génère un
-/// identifiant stable neuf opaque (jamais dérivé du libellé, anti-pattern s06) et persiste le
+/// identifiant stable neuf opaque (jamais dérivé du libellé, anti-pattern) et persiste le
 /// libellé via le port d'écriture <see cref="IEditeurReferentielRoles"/>.
 /// </summary>
 public sealed record CreerRoleCommand(string Libelle);

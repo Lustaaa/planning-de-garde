@@ -12,7 +12,7 @@ internal sealed class PropositionDocument
     public string Id { get; set; } = default!;
     public DateTime Jour { get; set; }
 
-    /// <summary>Fin de plage INCLUSE (s52). Absente sur les documents antérieurs (échange d'UN jour) → repli sur <see cref="Jour"/>.</summary>
+    /// <summary>Fin de plage INCLUSE. Absente sur les documents antérieurs (échange d'UN jour) → repli sur <see cref="Jour"/>.</summary>
     [BsonIgnoreIfNull]
     public DateTime? JourFin { get; set; }
     public string EnfantId { get; set; } = default!;

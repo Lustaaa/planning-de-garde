@@ -4,7 +4,7 @@ namespace PlanningDeGarde.Application.Foyer.Handlers;
 
 /// <summary>
 /// Commande de désignation d'un acteur comme admin du foyer (config). Le handler lit le type de
-/// l'acteur (read-only, s14), reconstitue l'agrégat <see cref="AdministrationFoyer"/> depuis les
+/// l'acteur (read-only), reconstitue l'agrégat <see cref="AdministrationFoyer"/> depuis les
 /// admins persistés, lui demande de désigner l'admin (invariant admin=parent), et ne persiste QUE
 /// si l'invariant est tenu.
 /// </summary>

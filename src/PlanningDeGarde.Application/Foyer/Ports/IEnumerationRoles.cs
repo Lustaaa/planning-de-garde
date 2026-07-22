@@ -17,7 +17,7 @@ public interface IEnumerationRoles
 
 /// <summary>Un rôle du référentiel du foyer : identifiant stable opaque (clé, jamais dérivé du
 /// libellé) + libellé d'affichage éditable + flag <see cref="EstRoleParent"/> « est un rôle parent »
-/// (s36, option B1). Le flag est la <b>source de vérité</b> de l'éligibilité au lien enfant↔parent
-/// (jamais le libellé, anti-piège s35) : défaut <c>false</c> = neutre (une donnée antérieure sans flag
+/// (option). Le flag est la <b>source de vérité</b> de l'éligibilité au lien enfant↔parent
+/// (jamais le libellé, anti-piège) : défaut <c>false</c> = neutre (une donnée antérieure sans flag
 /// se relit non-parent, sans crash).</summary>
 public sealed record RoleFoyer(string Id, string Libelle, bool EstRoleParent = false);

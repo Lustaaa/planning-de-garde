@@ -4,8 +4,8 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Activites.Handlers;
 
 /// <summary>
-/// Commande de liaison d'un enfant du foyer (référentiel s30) à une <b>activité</b> du référentiel
-/// (s35 Sc.3). Lien <b>N-M</b> (plusieurs enfants partagent une activité ; un enfant porte plusieurs
+/// Commande de liaison d'un enfant du foyer (référentiel) à une <b>activité</b> du référentiel.
+/// Lien <b>N-M</b> (plusieurs enfants partagent une activité ; un enfant porte plusieurs
 /// activités) — enrichissement du modèle activité (jamais une recréation : l'id de l'activité reste la
 /// clé). Le handler persiste le lien via <see cref="IEditeurActivites.LierEnfant"/>, relu ensuite par
 /// la query de configuration dans <see cref="ActiviteFoyer.EnfantsLies"/>.
@@ -16,10 +16,10 @@ public sealed record LierEnfantActiviteCommand(string EnfantId, string ActiviteI
 public sealed record LierEnfantActiviteResultat(string EnfantId, string ActiviteId);
 
 /// <summary>
-/// Use case : lier un enfant à une activité (lien N-M, s35 Sc.3, miroir du lien enfant↔parent s34).
+/// Use case : lier un enfant à une activité (lien N-M, miroir du lien enfant↔parent).
 /// Existence de l'enfant ET de l'activité vérifiées AVANT toute écriture (aucune écriture partielle en
 /// cas de refus) ; lier un enfant déjà lié est neutre (idempotent, pas de doublon). Aucune borne de
-/// cardinalité (0..N des deux côtés).
+/// cardinalité (0.N des deux côtés).
 /// </summary>
 public sealed class LierEnfantActiviteHandler
 {

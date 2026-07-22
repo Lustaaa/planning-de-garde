@@ -4,7 +4,7 @@ using PlanningDeGarde.Application;
 namespace PlanningDeGarde.AdapterDroite.InMemory.Comptes.Repositories;
 
 /// <summary>
-/// Store mutable en mémoire des jetons de réinitialisation de mot de passe (s28, volet 1), réalisant
+/// Store mutable en mémoire des jetons de réinitialisation de mot de passe, réalisant
 /// <see cref="IReferentielJetonsReset"/> sur un dictionnaire jeton→enregistrement : émission
 /// (<c>Enregistrer</c>), relecture (<c>Trouver</c>) et consommation usage-unique (<c>Consommer</c>).
 /// Volatile (re-parti vide au redémarrage) — le remplaçant durable est <c>ReferentielJetonsResetMongo</c>.

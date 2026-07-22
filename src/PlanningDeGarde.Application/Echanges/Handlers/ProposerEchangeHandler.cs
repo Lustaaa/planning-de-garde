@@ -5,9 +5,9 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Echanges.Handlers;
 
 /// <summary>
-/// Commande task-orientée « je ne peux pas récupérer ce jour, échange-le avec moi » (s47) : PROPOSER
+/// Commande task-orientée « je ne peux pas récupérer ce jour, échange-le avec moi » : PROPOSER
 /// l'échange du jour <paramref name="Jour"/> (enfant <paramref name="EnfantId"/>) vers l'acteur tiers
-/// <paramref name="VersActeurId"/>. Contrairement à la délégation s44 (unilatérale, effet immédiat), la
+/// <paramref name="VersActeurId"/>. Contrairement à la délégation (unilatérale, effet immédiat), la
 /// proposition n'écrit RIEN et ne change pas la résolution : seul le consentement du recevant (Accepter)
 /// déclenchera l'écriture.
 /// </summary>
@@ -18,7 +18,7 @@ public sealed record ProposerEchangeCommand(
 /// Use case de PROPOSITION : enregistre une <see cref="PropositionEchange"/> <c>pending</c> notifiée au
 /// recevant, SANS aucune écriture de surcharge (le store des surcharges reste intact, la résolution de la
 /// case est inchangée). Refuse AVANT écriture un recevant inconnu/orphelin ou une proposition à soi-même.
-/// Last-write-wins R11 : une seule proposition pending subsiste par jour/enfant, sans doublon.
+/// Last-write-wins : une seule proposition pending subsiste par jour/enfant, sans doublon.
 /// </summary>
 public sealed class ProposerEchangeHandler
 {

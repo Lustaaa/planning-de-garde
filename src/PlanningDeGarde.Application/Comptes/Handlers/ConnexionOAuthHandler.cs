@@ -3,7 +3,7 @@ using PlanningDeGarde.Domain;
 namespace PlanningDeGarde.Application.Comptes.Handlers;
 
 /// <summary>
-/// Commande de traitement d'un <b>callback OAuth</b> (volet 4, s25) : le retour du provider externe
+/// Commande de traitement d'un <b>callback OAuth</b> : le retour du provider externe
 /// (Google/Microsoft/Apple) est passé au serveur qui le résout en identité puis ouvre une session. Le
 /// callback opaque est fourni tel quel ; sa résolution est déléguée au port <see cref="IFournisseurOAuth"/>.
 /// </summary>
@@ -12,8 +12,8 @@ public sealed record CallbackOAuthCommand(string Callback);
 /// <summary>
 /// Use case : connexion via OAuth externe. Résout le callback en une identité externe (email vérifié)
 /// via le port <see cref="IFournisseurOAuth"/>, puis ouvre la session par le <b>MÊME chemin</b> que la
-/// connexion locale s23 — il délègue à <see cref="SeConnecterHandler"/> (résolution compte→acteur,
-/// contrôle Actif, ancrage de l'identité réelle sur l'acteur du compte, cf. Sc.5). AUCUN agrégat durable
+/// connexion locale — il délègue à <see cref="SeConnecterHandler"/> (résolution compte→acteur,
+/// contrôle Actif, ancrage de l'identité réelle sur l'acteur du compte, cf.). AUCUN agrégat durable
 /// neuf : OAuth est un facteur d'entrée supplémentaire branché DEVANT le même chemin de session.
 /// </summary>
 public sealed class ConnexionOAuthHandler

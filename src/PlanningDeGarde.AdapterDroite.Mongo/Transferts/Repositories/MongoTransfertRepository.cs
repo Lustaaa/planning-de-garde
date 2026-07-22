@@ -8,7 +8,7 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.Transferts.Repositories;
 
 /// <summary>
 /// Adaptateur de droite <b>durable</b> (Mongo) du port <see cref="ITransfertRepository"/> : les transferts
-/// de bascule (déposant, récupérant, lieu, heure, date) survivent au redémarrage de l'hôte (Sc.9, s15).
+/// de bascule (déposant, récupérant, lieu, heure, date) survivent au redémarrage de l'hôte.
 /// Remplaçant durable de <see cref="InMemoryTransfertRepository"/> derrière le <b>port inchangé</b> ;
 /// choisi par DI en runtime (« Foyer:Persistance = Mongo »). Write-through + relecture directe.
 /// </summary>

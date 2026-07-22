@@ -4,11 +4,11 @@ namespace PlanningDeGarde.Application.Enfants.Ports;
 
 /// <summary>
 /// Port de <b>lecture</b> du référentiel d'enfants du foyer (petit agrégat de config foyer hissé en
-/// 1er rang, s30 — miroir strict du référentiel de lieux s27) : énumère les enfants du foyer, chacun
+/// 1er rang, — miroir strict du référentiel de lieux) : énumère les enfants du foyer, chacun
 /// porté par un identifiant stable opaque (jamais dérivé du prénom) et un prénom. Réalisé par le store
 /// en Infrastructure (InMemory seedé tests-runtime / Mongo durable runtime, bornés à la config foyer) ;
 /// l'Application n'en dépend pas. Alimente À LA FOIS la validation de pose d'un slot (l'enfant visé
-/// existe-t-il ?, s30 S7) et le sélecteur d'enfant des dialogs de pose (jamais d'enfant en dur / fantôme).
+/// existe-t-il ?) et le sélecteur d'enfant des dialogs de pose (jamais d'enfant en dur / fantôme).
 /// </summary>
 public interface IEnumerationEnfants
 {
@@ -17,8 +17,8 @@ public interface IEnumerationEnfants
 }
 
 /// <summary>Un enfant du référentiel du foyer : identifiant stable opaque (clé, jamais dérivé du
-/// prénom), prénom d'affichage éditable et la <b>liste de ses parents liés</b> (0..2 liens, s34),
-/// chacun enrichi de son <b>rôle-du-lien</b> (père / mère / parent-libre, s37). Le lien est
+/// prénom), prénom d'affichage éditable et la <b>liste de ses parents liés</b> (0.2 liens),
+/// chacun enrichi de son <b>rôle-du-lien</b> (père / mère / parent-libre). Le lien est
 /// <b>optionnel</b> : un enfant sans aucun parent lié est valide (<see cref="ParentsLies"/> vide).</summary>
 public sealed record EnfantFoyer(string Id, string Prenom, IReadOnlyCollection<ParentLie> ParentsLies)
 {
@@ -26,7 +26,7 @@ public sealed record EnfantFoyer(string Id, string Prenom, IReadOnlyCollection<P
     public EnfantFoyer(string Id, string Prenom) : this(Id, Prenom, System.Array.Empty<ParentLie>()) { }
 }
 
-/// <summary>Un lien enfant→parent (s34) enrichi de son <b>rôle-du-lien</b> (s37) : l'identifiant stable
+/// <summary>Un lien enfant→parent enrichi de son <b>rôle-du-lien</b> : l'identifiant stable
 /// du parent-acteur lié + le rôle-du-lien (père / mère / parent-libre) qui distingue les deux parents.
 /// Défaut neutre <see cref="RoleDuLien.ParentLibre"/> (compat des liens déjà persistés sans attribut).
 /// Constructeur unique (sérialisation JSON du canal de lecture : un seul ctor paramétré, pas d'ambiguïté).</summary>

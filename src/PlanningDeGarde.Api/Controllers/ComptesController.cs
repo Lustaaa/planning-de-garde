@@ -1,7 +1,7 @@
 namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
-/// Ressource <b>Comptes</b> (BC Comptes, s22/s24/s28/s41) — controller MVC REST. Énumération + création
+/// Ressource <b>Comptes</b> (BC Comptes) — controller MVC REST. Énumération + création
 /// de comptes, activation/désactivation (sous-ressource <c>/activation</c>), pose de mot de passe
 /// (sous-ressource <c>/mot-de-passe</c>) et flux mot-de-passe-oublié (<c>/api/comptes/recuperation</c> +
 /// <c>/reinitialisation</c>). Écritures via handlers inchangés ; certaines diffusent (lecture seule).
@@ -27,7 +27,7 @@ public sealed class ComptesController(
         return Ok(vues);
     }
 
-    /// <summary>Création / association d'un compte à un acteur (POST, s22) + diffusion temps réel.</summary>
+    /// <summary>Création / association d'un compte à un acteur (POST) + diffusion temps réel.</summary>
     [HttpPost("/api/foyer/comptes")]
     public IActionResult Creer([FromBody] CreerCompteRequete requete)
     {
@@ -39,7 +39,7 @@ public sealed class ComptesController(
         return Ok();
     }
 
-    /// <summary>Activation d'un compte (POST sous-ressource /activation, s24) + diffusion temps réel.</summary>
+    /// <summary>Activation d'un compte (POST sous-ressource /activation) + diffusion temps réel.</summary>
     [HttpPost("/api/foyer/comptes/{id}/activation")]
     public IActionResult Activer(string id)
     {
@@ -51,7 +51,7 @@ public sealed class ComptesController(
         return Ok();
     }
 
-    /// <summary>Désactivation d'un compte (DELETE sous-ressource /activation, s41) + diffusion temps réel.</summary>
+    /// <summary>Désactivation d'un compte (DELETE sous-ressource /activation) + diffusion temps réel.</summary>
     [HttpDelete("/api/foyer/comptes/{id}/activation")]
     public IActionResult Desactiver(string id)
     {
@@ -63,7 +63,7 @@ public sealed class ComptesController(
         return Ok();
     }
 
-    /// <summary>Pose du mot de passe d'un compte (PUT sous-ressource /mot-de-passe, s28) — haché côté serveur.</summary>
+    /// <summary>Pose du mot de passe d'un compte (PUT sous-ressource /mot-de-passe) — haché côté serveur.</summary>
     [HttpPut("/api/foyer/comptes/{id}/mot-de-passe")]
     public IActionResult DefinirMotDePasse(string id, [FromBody] DefinirMotDePasseCorps corps)
     {
@@ -71,7 +71,7 @@ public sealed class ComptesController(
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 
-    /// <summary>Demande de récupération de mot de passe (POST, s28) : réponse TOUJOURS neutre (anti-énumération).</summary>
+    /// <summary>Demande de récupération de mot de passe (POST) : réponse TOUJOURS neutre (anti-énumération).</summary>
     [HttpPost("/api/comptes/recuperation")]
     public IActionResult DemanderRecuperation([FromBody] DemanderRecuperationRequete requete)
     {
@@ -79,7 +79,7 @@ public sealed class ComptesController(
         return Ok();
     }
 
-    /// <summary>Redéfinition de mot de passe par jeton (POST, s28) : jeton usage unique consommé sur succès.</summary>
+    /// <summary>Redéfinition de mot de passe par jeton (POST) : jeton usage unique consommé sur succès.</summary>
     [HttpPost("/api/comptes/reinitialisation")]
     public IActionResult Reinitialiser([FromBody] RedefinirMotDePasseRequete requete)
     {

@@ -9,12 +9,12 @@ namespace PlanningDeGarde.Web.State;
 /// Contexte de la session de consultation (scoped = par circuit Blazor). Distingue une <b>identité
 /// réelle</b> (fixe = l'utilisateur principal, le configurateur, de type Parent) d'une <b>identité
 /// effective</b> (l'acteur <b>incarné</b> s'il y en a un, sinon <b>repli sur l'identité réelle</b>) —
-/// impersonation bornée, lecture seule (sprint 14). <see cref="EstParent"/> dérive désormais de
-/// l'identité EFFECTIVE (règle 8) : un acteur incarné de type Parent/Admin conserve les actions
+/// impersonation bornée, lecture seule. <see cref="EstParent"/> dérive désormais de
+/// l'identité EFFECTIVE : un acteur incarné de type Parent/Admin conserve les actions
 /// d'écriture, un acteur de type Autre les masque. Le sélecteur de rôle démo (<see cref="Role"/>
 /// Parent/Invité) reste honoré <b>en plus</b> : un Invité reste en consultation seule quelle que soit
 /// l'identité effective. L'incarnation est <b>mémoire / session uniquement</b> — zéro persistance
-/// neuve (borne anti-cliquet règle 30).
+/// neuve (borne anti-cliquet).
 /// </summary>
 public sealed class SessionPlanning
 {
@@ -30,7 +30,7 @@ public sealed class SessionPlanning
 
     private DateOnly? _ancre;
 
-    /// <summary>Vue prédéfinie courante de la fenêtre projetée (défaut = 4 semaines glissantes, Sc.3).
+    /// <summary>Vue prédéfinie courante de la fenêtre projetée (défaut = 4 semaines glissantes).
     /// En session/mémoire — ne persiste pas. Base réutilisable du sélecteur de vue.</summary>
     public VuePlanning Vue { get; set; } = VuePlanning.QuatreSemaines;
 
@@ -44,20 +44,20 @@ public sealed class SessionPlanning
     public DateOnly Ancre => _ancre
         ?? throw new InvalidOperationException("Ancre de navigation non initialisée : appeler InitialiserAncre d'abord.");
 
-    /// <summary>Avance l'ancre d'une semaine (Sc.1, « Semaine suivante ») : +7 jours, l'ancre reste un
+    /// <summary>Avance l'ancre d'une semaine (« Semaine suivante ») : +7 jours, l'ancre reste un
     /// lundi. Re-projection pure : la grille se re-résout à la date naviguée, aucune écriture émise.</summary>
     public void SemaineSuivante() => _ancre = Ancre.AddDays(7);
 
-    /// <summary>Recule l'ancre d'une semaine (Sc.1, « Semaine précédente ») : −7 jours, l'ancre reste un
+    /// <summary>Recule l'ancre d'une semaine (« Semaine précédente ») : −7 jours, l'ancre reste un
     /// lundi. Re-projection pure (lecture seule).</summary>
     public void SemainePrecedente() => _ancre = Ancre.AddDays(-7);
 
-    /// <summary>Restaure l'ancre à une valeur antérieurement capturée (Sc.6) : après une navigation dont la
+    /// <summary>Restaure l'ancre à une valeur antérieurement capturée : après une navigation dont la
     /// re-requête de l'API distante a échoué, l'ancre est ramenée à celle de la fenêtre affichée — l'état de
     /// navigation et l'affichage ne divergent pas, et la navigation échouée n'est ni mise en file ni rejouée.</summary>
     public void RestaurerAncre(DateOnly ancre) => _ancre = ancre;
 
-    /// <summary>Réinitialise l'ancre à la <b>semaine en cours</b> (Sc.4, « Aujourd'hui ») : l'ancre
+    /// <summary>Réinitialise l'ancre à la <b>semaine en cours</b> (« Aujourd'hui ») : l'ancre
     /// re-cale sur le lundi de <paramref name="aujourdHui"/> (date du jour via le port d'horloge,
     /// jamais <c>DateTime.Now</c>), quel que soit le décalage de navigation accumulé. Re-projection
     /// pure : la grille se re-résout à la semaine en cours, aucune écriture émise.</summary>
@@ -73,7 +73,7 @@ public sealed class SessionPlanning
     }
 
     /// <summary>Identité réelle de la session = l'acteur du <b>compte connecté</b> (ancrée à la connexion,
-    /// s25 Sc.5 : id stable + nom + type résolus côté serveur). C'est l'état de repli quand aucune incarnation
+    /// : id stable + nom + type résolus côté serveur). C'est l'état de repli quand aucune incarnation
     /// n'est active. Avant toute connexion, valeur d'amorçage neutre (le configurateur) — remplacée dès
     /// <see cref="Connecter"/> par l'acteur réel du compte, de sorte que le rôle/gating suive son type RÉEL
     /// (Autre → pas les droits Parent), et non un rôle Parent hérité du configurateur en dur.</summary>
@@ -87,7 +87,7 @@ public sealed class SessionPlanning
 
     /// <summary>Acteurs incarnables, alimentés par la page depuis le <b>référentiel réel</b> (canal de
     /// lecture HTTP, avec le type surfacé read-only). C'est ce catalogue que résout <see cref="Incarner"/>
-    /// (refus silencieux si l'identifiant est absent — Sc.3).</summary>
+    /// (refus silencieux si l'identifiant est absent —).</summary>
     public IReadOnlyList<IdentiteActeur> ActeursIncarnables { get; set; } =
         Array.Empty<IdentiteActeur>();
 
@@ -99,7 +99,7 @@ public sealed class SessionPlanning
         IncarnationActive ? $"Vous incarnez {IdentiteEffective.Nom}" : null;
 
     /// <summary>
-    /// Droit d'écriture (règle 9) dérivé de l'identité EFFECTIVE (règle 8) : vrai si son type ∈
+    /// Droit d'écriture dérivé de l'identité EFFECTIVE : vrai si son type ∈
     /// {Parent, Admin}, faux si Autre. Composé avec le sélecteur de rôle démo : un Invité reste en
     /// consultation seule. Hors incarnation, l'effective EST la réelle (Parent) → comportement antérieur
     /// préservé (<see cref="Role"/> seul décide).
@@ -111,7 +111,7 @@ public sealed class SessionPlanning
     /// <summary>
     /// Incarne l'acteur d'identifiant stable <paramref name="acteurId"/> : l'identité effective devient
     /// celle de l'acteur (id, nom, type lu read-only). <b>Refus silencieux</b> si l'identifiant est
-    /// absent du catalogue (acteur inconnu / supprimé — Sc.3) : l'identité réelle est conservée. La
+    /// absent du catalogue (acteur inconnu / supprimé —) : l'identité réelle est conservée. La
     /// résolution se fait sur l'identifiant stable, jamais sur le libellé (règles 5/19).
     /// </summary>
     public void Incarner(string acteurId)
@@ -122,7 +122,7 @@ public sealed class SessionPlanning
         IdentiteEffective = acteur;
     }
 
-    /// <summary>Revient à l'identité réelle : l'incarnation est levée, l'état restauré (Sc.2).</summary>
+    /// <summary>Revient à l'identité réelle : l'incarnation est levée, l'état restauré.</summary>
     public void RevenirIdentiteReelle() => IdentiteEffective = IdentiteReelle;
 
     // --- État de connexion (s24, Sc.8/Sc.11) : PARTAGÉ dans la session scoped (survit à la navigation
@@ -130,25 +130,25 @@ public sealed class SessionPlanning
     //     anti-cliquet règle 30). L'admission (compte existant ET Actif) reste tranchée côté handler ;
     //     le front ne fait que refléter la session ouverte (nom résolu serveur s23). ---
 
-    /// <summary>Nom d'affichage du compte connecté (résolu côté serveur, s23), ou <c>null</c> hors
-    /// connexion. Surface le menu utilisateur (« nom / acteur », Sc.11).</summary>
+    /// <summary>Nom d'affichage du compte connecté (résolu côté serveur), ou <c>null</c> hors
+    /// connexion. Surface le menu utilisateur (« nom / acteur »).</summary>
     public string? CompteConnecteNom { get; private set; }
 
     /// <summary>Vrai si une session est ouverte (un compte est connecté) — condition d'affichage du menu
-    /// utilisateur (Sc.11).</summary>
+    /// utilisateur.</summary>
     public bool EstConnecte => CompteConnecteNom is not null;
 
-    /// <summary>Notifie un changement d'état de connexion (Sc.11) : le menu utilisateur, consommateur de la
+    /// <summary>Notifie un changement d'état de connexion : le menu utilisateur, consommateur de la
     /// session partagée mais rendu séparément (dans le layout), s'y abonne pour se re-rendre quand la
     /// connexion / déconnexion est déclenchée depuis un AUTRE composant (la page de connexion dédiée).</summary>
     public event Action? EtatConnexionChange;
 
-    /// <summary>Ouvre la session pour le compte connecté (Sc.8 ; identité ancrée s25 Sc.5) : mémorise le nom
+    /// <summary>Ouvre la session pour le compte connecté (identité ancrée) : mémorise le nom
     /// résolu serveur et <b>ancre l'identité RÉELLE de la session sur l'acteur du compte connecté</b> (id
     /// stable + nom + type résolus côté serveur), et non plus par une impersonation par-dessus le
     /// configurateur en dur. L'identité effective repart de cette identité réelle (aucune incarnation active
     /// à l'ouverture) : le rôle/gating d'écriture suit le type RÉEL de l'acteur (Autre → pas les droits
-    /// Parent). L'impersonation bornée s14 reste possible AU-DESSUS ensuite. Aucune persistance neuve.</summary>
+    /// Parent). L'impersonation bornée reste possible AU-DESSUS ensuite. Aucune persistance neuve.</summary>
     public void Connecter(string nom, string acteurId, TypeActeur type)
     {
         CompteConnecteNom = nom;
@@ -157,7 +157,7 @@ public sealed class SessionPlanning
         EtatConnexionChange?.Invoke();
     }
 
-    /// <summary>Détruit la session (logout s23, Sc.11) : efface le nom connecté et fait retomber le
+    /// <summary>Détruit la session (logout) : efface le nom connecté et fait retomber le
     /// sélecteur d'acteur sur l'identité réelle — aucune identité résiduelle. Aucune écriture domaine.</summary>
     public void Deconnecter()
     {
@@ -167,10 +167,10 @@ public sealed class SessionPlanning
     }
 
     /// <summary>
-    /// Repli automatique sur l'identité réelle (D2, projection des règles 6/18/19) : si une incarnation est
+    /// Repli automatique sur l'identité réelle (projection des règles 6/18/19) : si une incarnation est
     /// active mais que l'acteur incarné <b>n'est plus présent</b> dans le catalogue
     /// (<see cref="ActeursIncarnables"/>, rafraîchi depuis le référentiel réel) — typiquement supprimé
-    /// concurremment depuis un autre écran —, la référence orpheline cesse de primer → retour à l'identité
+    /// concurremment depuis un autre écran, la référence orpheline cesse de primer → retour à l'identité
     /// réelle, sans nom fantôme. Hors incarnation, ou si l'acteur incarné existe toujours, no-op. Retourne
     /// <c>true</c> si un repli a eu lieu (l'appelant peut re-rendre).
     /// </summary>

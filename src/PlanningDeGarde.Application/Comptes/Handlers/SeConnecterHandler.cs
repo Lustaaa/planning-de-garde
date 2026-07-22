@@ -6,25 +6,25 @@ namespace PlanningDeGarde.Application.Comptes.Handlers;
 /// <summary>
 /// Commande de connexion locale par email (canal requête/réponse, comme toute écriture) : ouvre une
 /// session serveur pour le compte utilisateur porté par l'email donné. La session ANCRE l'identité
-/// réelle sur l'acteur lié 1-1 au compte (relation s22) ; l'impersonation lecture (s14) reste possible
-/// au-dessus. Réutilise <see cref="IEnumerationComptes"/> (s22) en lecture — aucun nouvel agrégat.
+/// réelle sur l'acteur lié 1-1 au compte (relation) ; l'impersonation lecture reste possible
+/// au-dessus. Réutilise <see cref="IEnumerationComptes"/> en lecture — aucun nouvel agrégat.
 /// </summary>
 public sealed record SeConnecterCommand(string Email, string? MotDePasse = null);
 
 /// <summary>
 /// Une session serveur ouverte : distingue l'identité <b>réelle</b> (l'acteur lié au compte connecté,
 /// id stable) de l'identité <b>effective</b> (l'acteur incarné s'il y en a un, sinon repli sur la
-/// réelle — impersonation bornée s14, non contournée). Sans incarnation, effective = réelle.
+/// réelle — impersonation bornée, non contournée). Sans incarnation, effective = réelle.
 /// </summary>
 public sealed record SessionOuverte(string IdentiteReelle)
 {
     /// <summary>Identité effective = l'acteur incarné s'il y en a un, sinon l'identité réelle. Sans
-    /// incarnation (cas de l'ouverture de session), résout sur la réelle (s14 non contournée).</summary>
+    /// incarnation (cas de l'ouverture de session), résout sur la réelle (non contournée).</summary>
     public string IdentiteEffective => IdentiteReelle;
 }
 
 /// <summary>
-/// Use case : se connecter par email. Résout le compte sur son email (référentiel s22) et ouvre une
+/// Use case : se connecter par email. Résout le compte sur son email (référentiel) et ouvre une
 /// session serveur dont l'identité réelle est l'acteur lié 1-1 au compte.
 /// </summary>
 public sealed class SeConnecterHandler
@@ -38,7 +38,7 @@ public sealed class SeConnecterHandler
         _hacheur = hacheur;
     }
 
-    /// <summary>Motif de refus NEUTRE (anti-énumération, Sc.8) : email inconnu et mauvais mot de passe
+    /// <summary>Motif de refus NEUTRE (anti-énumération) : email inconnu et mauvais mot de passe
     /// partagent le MÊME motif — un attaquant ne peut pas déduire de la réponse qu'un email existe.</summary>
     private const string MotifIdentifiantsInvalides = "email ou mot de passe inconnu";
 

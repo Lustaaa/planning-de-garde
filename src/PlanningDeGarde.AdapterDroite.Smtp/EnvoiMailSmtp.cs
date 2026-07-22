@@ -4,10 +4,10 @@ using PlanningDeGarde.Application.Comptes.Ports;
 namespace PlanningDeGarde.AdapterDroite.Smtp;
 
 /// <summary>
-/// Adaptateur de droite <b>SMTP concret</b> (s28, volet 1) réalisant <see cref="IEnvoiMail"/> : remet
+/// Adaptateur de droite <b>SMTP concret</b> réalisant <see cref="IEnvoiMail"/> : remet
 /// réellement au serveur SMTP configuré (Smtp4dev en dev, Docker ; relais réel en déploiement) un mail
 /// de récupération de mot de passe adressé au destinataire et porteur du jeton de réinitialisation.
-/// Remplace la doublure/Spy des scénarios s25 : l'Application ne connaît toujours que le port, jamais
+/// Remplace la doublure/Spy des scénarios : l'Application ne connaît toujours que le port, jamais
 /// SMTP ni le format concret du mail. Sans état hors configuration → enregistrable en singleton
 /// (aucune connexion n'est ouverte hors de l'envoi effectif).
 /// </summary>

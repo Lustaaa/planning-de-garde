@@ -6,19 +6,19 @@ using PlanningDeGarde.Application;
 namespace PlanningDeGarde.AdapterDroite.Mongo.Enfants.Repositories;
 
 /// <summary>
-/// Adaptateur de droite <b>durable</b> (Mongo) du référentiel d'enfants du foyer (s30) — réalise,
+/// Adaptateur de droite <b>durable</b> (Mongo) du référentiel d'enfants du foyer — réalise,
 /// derrière les <b>ports inchangés</b>, la lecture (<see cref="IEnumerationEnfants"/>) et l'écriture
 /// (<see cref="IEditeurEnfants"/>). Remplaçant durable de <c>ReferentielEnfantsEnMemoire</c> : un enfant
 /// ajouté/édité/lié survit au redémarrage du serveur (une instance fraîche = un redémarrage relit l'état
 /// persisté), prouvé contre un store Mongo réel (Docker).
 ///
 /// <para><b>Borné à la config foyer</b> : réutilise le socle Mongo config déjà acquis (même base),
-/// collection dédiée « enfants ». <b>Aucun seed</b> (parité asymétrie seed s15). La clé est l'identifiant
+/// collection dédiée « enfants ». <b>Aucun seed</b> (parité asymétrie seed). La clé est l'identifiant
 /// stable opaque de l'enfant.</para>
 ///
-/// <para><b>Rôle-du-lien (s37) — enrichissement ADDITIF, compat non destructive.</b> La forme s34 du lien
+/// <para><b>Rôle-du-lien — enrichissement ADDITIF, compat non destructive.</b> La forme du lien
 /// (<c>ParentsLies</c> = liste d'ids d'acteurs) est <b>conservée telle quelle</b> ; le rôle-du-lien est
-/// porté par un champ parallèle <c>RolesDesLiens</c> (id d'acteur → rôle), ABSENT sur les documents s34
+/// porté par un champ parallèle <c>RolesDesLiens</c> (id d'acteur → rôle), ABSENT sur les documents 
 /// déjà persistés. À la lecture, un parent sans entrée dans <c>RolesDesLiens</c> est relu à
 /// <see cref="RoleDuLien.ParentLibre"/> (défaut neutre) — jamais un crash de désérialisation, aucune
 /// migration destructive du store.</para>
@@ -99,7 +99,7 @@ public sealed class ReferentielEnfantsMongo : IEnumerationEnfants, IEditeurEnfan
         => _cache.Values.Select(d => new EnfantFoyer(d.Id, d.Prenom, ParentsDe(d))).ToList();
 
     /// <summary>Relit les parents liés d'un document AVEC leur rôle-du-lien : le rôle est cherché dans le
-    /// champ additif <c>RolesDesLiens</c> ; un parent sans entrée (document s34 sans le champ) est relu à
+    /// champ additif <c>RolesDesLiens</c> ; un parent sans entrée (document sans le champ) est relu à
     /// <see cref="RoleDuLien.ParentLibre"/> (défaut neutre, compat non destructive).</summary>
     private static IReadOnlyCollection<ParentLie> ParentsDe(EnfantDocument doc)
         => doc.ParentsLies

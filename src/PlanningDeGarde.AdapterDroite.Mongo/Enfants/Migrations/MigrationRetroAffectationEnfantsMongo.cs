@@ -5,8 +5,8 @@ using PlanningDeGarde.Application;
 namespace PlanningDeGarde.AdapterDroite.Mongo.Enfants.Migrations;
 
 /// <summary>
-/// Migration de <b>rétro-affectation</b> (s30 S8) des slots existants attachés au <b>fantôme</b> d'enfant.
-/// Les slots posés avant le hissage de l'enfant (s30) portent un <c>EnfantId</c> fantôme transmis par la
+/// Migration de <b>rétro-affectation</b> des slots existants attachés au <b>fantôme</b> d'enfant.
+/// Les slots posés avant le hissage de l'enfant portent un <c>EnfantId</c> fantôme transmis par la
 /// <c>Session</c> : la valeur littérale du <b>prénom</b> (« Léa »), jamais choisie ni validée. Cette
 /// migration <b>réconcilie une dette de données</b> sur le store Mongo durable : elle réattache chaque
 /// slot dont l'<c>EnfantId</c> vaut le <b>prénom</b> d'un enfant réel du référentiel à l'<b>identifiant

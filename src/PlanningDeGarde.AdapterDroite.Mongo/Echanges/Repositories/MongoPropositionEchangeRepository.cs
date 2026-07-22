@@ -8,7 +8,7 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.Echanges.Repositories;
 
 /// <summary>
 /// Adaptateur de droite <b>durable</b> (Mongo) du port <see cref="IPropositionEchangeRepository"/> : les
-/// propositions d'échange (s47) survivent au redémarrage. Remplaçant durable de
+/// propositions d'échange survivent au redémarrage. Remplaçant durable de
 /// <see cref="InMemoryPropositionEchangeRepository"/> derrière le <b>port inchangé</b>. Upsert par
 /// identifiant stable (clé métier générée par l'agrégat) — la transition de statut (proposé → accepté /
 /// refusé) remplace le document, jamais ne duplique.

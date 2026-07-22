@@ -5,7 +5,7 @@ namespace PlanningDeGarde.Application.Foyer.Handlers;
 /// <summary>
 /// Commande d'édition volatile d'un acteur du foyer (config). L'identifiant stable est la
 /// clé (jamais éditable). Le nom et la couleur sont deux champs <b>optionnels et indépendants</b> :
-/// une édition peut ne porter que le nom (Sc.1), que la couleur (Sc.2), un champ absent (null)
+/// une édition peut ne porter que le nom, que la couleur, un champ absent (null)
 /// n'est pas appliqué — la surface correspondante du store n'est pas touchée.
 /// </summary>
 public sealed record EditerActeurCommand(string ActeurId, string? Nom = null, string? Couleur = null, string? Adresse = null);

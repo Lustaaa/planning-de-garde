@@ -6,7 +6,7 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Comptes;
 
 /// <summary>
-/// Écran « redéfinir par jeton » (front <b>WASM</b>, s28, volet 1) : le jeton de réinitialisation reçu par
+/// Écran « redéfinir par jeton » (front <b>WASM</b>) : le jeton de réinitialisation reçu par
 /// mail est porté par l'URL (<c>?jeton=…</c>). L'utilisateur saisit un nouveau mot de passe → redéfinition
 /// via le <b>canal requête/réponse</b> HTTP (<c>POST /api/comptes/reinitialisation</c>) — le jeton est
 /// consommé (usage unique) côté handler. Sur succès, un message invite à se connecter ; sur refus (jeton

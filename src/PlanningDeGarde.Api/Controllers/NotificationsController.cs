@@ -1,7 +1,7 @@
 namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
-/// Ressource <b>Notifications</b> (BC Notifications, cloche s47) — controller MVC REST. Lecture du flux
+/// Ressource <b>Notifications</b> (BC Notifications, cloche) — controller MVC REST. Lecture du flux
 /// de l'utilisateur courant (événements du journal enrichis lu/non-lu PAR utilisateur + propositions le
 /// concernant) ; « marquer lu » mute l'état de lecture PAR utilisateur (privé, aucune diffusion).
 /// </summary>
@@ -40,7 +40,7 @@ public sealed class NotificationsController(
         return Ok(new ClocheVue(nonLus, toutes));
     }
 
-    /// <summary>Marquer lu (POST, s47) : un événement précis ou TOUTES ses notifications (EvenementId null).
+    /// <summary>Marquer lu (POST) : un événement précis ou TOUTES ses notifications (EvenementId null).
     /// Idempotent côté handler ; aucune diffusion (état lu/non-lu privé à l'utilisateur).</summary>
     [HttpPost("/api/notifications/lues")]
     public IActionResult MarquerLues([FromBody] MarquerNotificationsLuesRequete requete)

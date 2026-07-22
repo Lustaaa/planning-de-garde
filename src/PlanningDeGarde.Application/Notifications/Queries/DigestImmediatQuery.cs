@@ -5,11 +5,11 @@ using System.Linq;
 namespace PlanningDeGarde.Application.Notifications.Queries;
 
 /// <summary>
-/// Query PURE de composition (CQRS) du digest « immédiat » de la cloche (s50) : (a) « qui récupère
+/// Query PURE de composition (CQRS) du digest « immédiat » de la cloche : (a) « qui récupère
 /// aujourd'hui / ce soir » + (b) les « transferts à venir » des N prochains jours de la fenêtre de grille
-/// chargée. Miroir des ex-read-models <c>CarteDuJourQuery</c> (s42) et <c>AVenirQuery</c> (s43) retirés s44 :
-/// elle COMPOSE la résolution EXISTANTE (surcharge &gt; fond &gt; neutre, transferts saisis/dérivés s31,
-/// slots s29) portée par <see cref="GrilleAgendaQuery"/>, sans la réimplémenter — aucune mutation, aucun
+/// chargée. Miroir des ex-read-models <c>CarteDuJourQuery</c> et <c>AVenirQuery</c> retirés :
+/// elle COMPOSE la résolution EXISTANTE (surcharge &gt; fond &gt; neutre, transferts saisis/dérivés,
+/// slots) portée par <see cref="GrilleAgendaQuery"/>, sans la réimplémenter — aucune mutation, aucun
 /// store neuf, aucune persistance neuve. Résultat IDENTIQUE sur les deux adaptateurs (InMemory / Mongo), la
 /// grille composée étant elle-même adaptateur-agnostique. Lecture stricte : aucune action.
 /// </summary>

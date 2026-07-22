@@ -8,11 +8,11 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Delegation;
 
 /// <summary>
-/// Mini-dialog « Reprendre ce jour » (s46) : confirmation de l'annulation de la délégation d'UN jour, émise
+/// Mini-dialog « Reprendre ce jour » : confirmation de l'annulation de la délégation d'UN jour, émise
 /// via le <b>canal requête/réponse</b> (endpoint HTTP <c>DELETE /api/delegations</c>) — JAMAIS le canal
-/// de diffusion. Aucune règle métier ici : le use case COMPOSE la suppression de surcharge existante (s16).
+/// de diffusion. Aucune règle métier ici : le use case COMPOSE la suppression de surcharge existante.
 /// Issues : succès → <see cref="OnValide"/> ; API injoignable → message <b>dans</b> la dialog, dialog restée
-/// OUVERTE. Portée par <c>ModalConfig</c> : Échap = « Annuler » (port <see cref="IEcouteurEchapModal"/> s33).
+/// OUVERTE. Portée par <c>ModalConfig</c> : Échap = « Annuler » (port <see cref="IEcouteurEchapModal"/>).
 /// </summary>
 public partial class ReprendreJourDialog
 {
@@ -22,7 +22,7 @@ public partial class ReprendreJourDialog
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
-    /// <summary>Enfant sélectionné (parité s44) dont on reprend la récupération ce jour-là.</summary>
+    /// <summary>Enfant sélectionné (parité) dont on reprend la récupération ce jour-là.</summary>
     [Parameter]
     public string EnfantId { get; set; } = "";
 

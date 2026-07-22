@@ -5,7 +5,7 @@ namespace PlanningDeGarde.Application.Periodes.Handlers;
 /// <summary>
 /// Commande d'édition d'une période existante depuis la dialog (re-bornage et/ou réaffectation).
 /// <paramref name="EtatObserve"/> est le snapshot affiché par l'auteur : il porte l'<b>identifiant stable</b>
-/// (clé du store, jamais un libellé) ET sert de jeton de version (concurrence optimiste réutilisée, Sc.10 s01).
+/// (clé du store, jamais un libellé) ET sert de jeton de version (concurrence optimiste réutilisée).
 /// <paramref name="NouveauResponsableId"/> et les nouvelles bornes décrivent l'état voulu.
 /// </summary>
 public sealed record EditerPeriodeCommand(
@@ -16,9 +16,9 @@ public sealed record EditerPeriodeResultat(PeriodeSnapshot Periode);
 
 /// <summary>
 /// Use case : éditer une période existante (re-borner et/ou réaffecter). Réutilise le port d'écriture
-/// optimiste <see cref="IPeriodeRepository.Modifier"/> — aucune règle de concurrence neuve (décision CP,
-/// un seul modèle par agrégat). La case re-résout après édition (priorité surcharge &gt; fond &gt; neutre,
-/// palier 6) via le read model, sans logique de résolution neuve.
+/// optimiste <see cref="IPeriodeRepository.Modifier"/> — aucune règle de concurrence neuve (un seul
+/// modèle par agrégat). La case re-résout après édition (priorité surcharge &gt; fond &gt; neutre)
+/// via le read model, sans logique de résolution neuve.
 /// </summary>
 public sealed class EditerPeriodeHandler
 {

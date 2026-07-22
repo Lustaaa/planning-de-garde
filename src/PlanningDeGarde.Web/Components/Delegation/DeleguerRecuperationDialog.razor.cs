@@ -9,12 +9,12 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Delegation;
 
 /// <summary>
-/// Mini-dialog « Déléguer ce jour » (s44) : choix de l'acteur RECEVANT, émission de la commande de
+/// Mini-dialog « Déléguer ce jour » : choix de l'acteur RECEVANT, émission de la commande de
 /// délégation via le <b>canal requête/réponse</b> (endpoint HTTP <c>/api/delegations</c>)
 /// — JAMAIS le canal de diffusion. Aucune règle métier ici (le refus « soi-même » / « inconnu » est tranché
 /// côté domaine). Issues : succès → <see cref="OnValide"/> ; refus métier (motif propagé) ou API injoignable
-/// → message <b>dans</b> la dialog, saisie <b>conservée</b>, dialog restée OUVERTE (Sc.5). Portée par
-/// <c>ModalConfig</c> : Échap = « Annuler » (port <see cref="IEcouteurEchapModal"/> s33).
+/// → message <b>dans</b> la dialog, saisie <b>conservée</b>, dialog restée OUVERTE. Portée par
+/// <c>ModalConfig</c> : Échap = « Annuler » (port <see cref="IEcouteurEchapModal"/>).
 /// </summary>
 public partial class DeleguerRecuperationDialog
 {
@@ -22,8 +22,8 @@ public partial class DeleguerRecuperationDialog
     {
         public string VersActeurId { get; set; } = "";
 
-        /// <summary>Borne de FIN (INCLUSE) de la plage déléguée (champ « jusqu'au » du mini-dialog, s45).
-        /// Défaut = le jour cliqué (fin = début) → la délégation d'UN jour (s44) reste inchangée.</summary>
+        /// <summary>Borne de FIN (INCLUSE) de la plage déléguée (champ « jusqu'au » du mini-dialog).
+        /// Défaut = le jour cliqué (fin = début) → la délégation d'UN jour reste inchangée.</summary>
         public DateTime Jusqu { get; set; }
     }
 
@@ -48,7 +48,7 @@ public partial class DeleguerRecuperationDialog
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
-    /// <summary>Enfant sélectionné (s42/s43) dont on délègue la récupération ce jour-là.</summary>
+    /// <summary>Enfant sélectionné dont on délègue la récupération ce jour-là.</summary>
     [Parameter, EditorRequired]
     public string EnfantId { get; set; } = "";
 

@@ -1,7 +1,7 @@
 namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
-/// Ressource <b>Admins du foyer</b> (BC Foyer, s22/s41) — controller MVC REST. Désigner (PUT {acteurId})
+/// Ressource <b>Admins du foyer</b> (BC Foyer) — controller MVC REST. Désigner (PUT {acteurId})
 /// exige un parent (invariant Domain) ; dé-désigner (DELETE {acteurId}) respecte la borne « dernier admin ».
 /// Diffusion temps réel (lecture seule) sur succès.
 /// </summary>
@@ -28,7 +28,7 @@ public sealed class AdminsController(
         return Ok();
     }
 
-    /// <summary>Dé-désignation d'un admin (DELETE, s41) : borne « dernier admin » tranchée côté Domain.</summary>
+    /// <summary>Dé-désignation d'un admin (DELETE) : borne « dernier admin » tranchée côté Domain.</summary>
     [HttpDelete("/api/foyer/admins/{acteurId}")]
     public IActionResult DeDesigner(string acteurId)
     {

@@ -13,7 +13,7 @@ using Foyer = PlanningDeGarde.Application.Foyer.Seed.Foyer;
 /// (re)construction depuis le <see cref="Foyer"/> (miroir du seed en dur), puis éditable
 /// en session : réalise le port de lecture <see cref="IReferentielResponsables"/> (le nom
 /// résolu reflète la dernière écriture) et le port d'écriture
-/// <see cref="IEditeurConfigurationFoyer"/>. Volatile = re-seedé au redémarrage (Sc.10).
+/// <see cref="IEditeurConfigurationFoyer"/>. Volatile = re-seedé au redémarrage.
 /// Remplaçant éditable du dictionnaire <c>static readonly</c> lu par
 /// <see cref="FoyerReferentielResponsables"/> — la résolution reste sur l'identifiant stable.
 /// </summary>

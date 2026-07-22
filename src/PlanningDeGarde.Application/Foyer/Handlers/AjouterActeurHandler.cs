@@ -8,7 +8,7 @@ namespace PlanningDeGarde.Application.Foyer.Handlers;
 /// mute un acteur déjà semé sur son id stable), l'ajout <b>crée</b> un acteur neuf : le handler
 /// génère un identifiant stable neuf opaque (jamais dérivé du libellé) et persiste le nom
 /// (+ couleur fournie, sinon repli neutre par contrat <see cref="IPaletteCouleurs"/>) via le port
-/// d'écriture. La couleur est optionnelle (Sc.5) ; le nom non vide sera exigé au Sc.8.
+/// d'écriture. La couleur est optionnelle ; le nom non vide sera exigé au.
 /// </summary>
 public sealed record AjouterActeurCommand(string Nom, string? Couleur = null);
 

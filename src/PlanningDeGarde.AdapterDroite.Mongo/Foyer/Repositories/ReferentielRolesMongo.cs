@@ -13,7 +13,7 @@ namespace PlanningDeGarde.AdapterDroite.Mongo.Foyer.Repositories;
 /// persisté), prouvé contre un store Mongo réel (Docker).
 ///
 /// <para><b>Borné à la config foyer</b> : réutilise le socle Mongo config déjà acquis (même base),
-/// collection dédiée « roles ». Aucun seed (comme la config acteurs, s15) : la base ouvre vide et se
+/// collection dédiée « roles ». Aucun seed (comme la config acteurs) : la base ouvre vide et se
 /// peuple par les écritures write-through. La clé est l'identifiant stable opaque, jamais le libellé.</para>
 /// </summary>
 public sealed class ReferentielRolesMongo : IEnumerationRoles, IEditeurReferentielRoles

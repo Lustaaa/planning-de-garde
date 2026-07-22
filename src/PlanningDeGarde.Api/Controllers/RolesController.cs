@@ -1,7 +1,7 @@
 namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
-/// Ressource <b>Rôles du référentiel</b> (BC Foyer, s21/s36) — controller MVC REST. CRUD des rôles +
+/// Ressource <b>Rôles du référentiel</b> (BC Foyer) — controller MVC REST. CRUD des rôles +
 /// bascule du flag « est rôle parent » (sous-ressource <c>/parent</c>, source de vérité de l'éligibilité
 /// au lien enfant↔parent). Écritures via handlers inchangés ; diffusion temps réel sur le flag parent.
 /// </summary>
@@ -48,7 +48,7 @@ public sealed class RolesController(
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 
-    /// <summary>Bascule du flag « est rôle parent » (PUT sous-ressource /parent, s36) + diffusion temps réel.</summary>
+    /// <summary>Bascule du flag « est rôle parent » (PUT sous-ressource /parent) + diffusion temps réel.</summary>
     [HttpPut("/api/foyer/roles/{id}/parent")]
     public IActionResult MarquerParent(string id, [FromBody] MarquerRoleParentCorps corps)
     {

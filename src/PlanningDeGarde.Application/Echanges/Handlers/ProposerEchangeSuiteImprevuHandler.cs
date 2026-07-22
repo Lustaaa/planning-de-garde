@@ -3,18 +3,18 @@ using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application.Echanges.Handlers;
 
-/// <summary>Commande « action de suivi sur un imprévu : proposer un échange » (s51) : EN RÉACTION à un imprévu
-/// déjà consigné au journal (<paramref name="ImprevuEvenementId"/>, s48), un parent PROPOSE un échange vers
+/// <summary>Commande « action de suivi sur un imprévu : proposer un échange » : EN RÉACTION à un imprévu
+/// déjà consigné au journal (<paramref name="ImprevuEvenementId"/>), un parent PROPOSE un échange vers
 /// <paramref name="VersActeurId"/>. Le jour + l'enfant sont HÉRITÉS de l'imprévu (le proposant ne choisit que le
 /// recevant) — l'imprévu lui-même n'est jamais muté (il reste un FAIT informatif au journal).</summary>
 public sealed record ProposerEchangeSuiteImprevuCommand(string ImprevuEvenementId, string VersActeurId);
 
 /// <summary>
-/// Use case de COMPOSITION (s51) : greffe <see cref="ProposerEchangeHandler"/> (s47) EN RÉACTION à un imprévu
-/// journalisé (s48). Lit l'imprévu au JOURNAL (trace de LECTURE, jamais mutée) pour en hériter le jour + l'enfant,
-/// puis délègue à la proposition d'échange s47 — une <see cref="PropositionEchange"/> <c>pending</c> pré-remplie,
-/// SANS aucune écriture de surcharge. AUCUN modèle/store neuf : réemploi intégral du journal s48 et de la
-/// proposition s47. GARDE DE DISTINCTION : l'imprévu (fait) et la proposition (échange) restent SÉPARÉS — la
+/// Use case de COMPOSITION : greffe <see cref="ProposerEchangeHandler"/> EN RÉACTION à un imprévu
+/// journalisé. Lit l'imprévu au JOURNAL (trace de LECTURE, jamais mutée) pour en hériter le jour + l'enfant,
+/// puis délègue à la proposition d'échange — une <see cref="PropositionEchange"/> <c>pending</c> pré-remplie,
+/// SANS aucune écriture de surcharge. AUCUN modèle/store neuf : réemploi intégral du journal et de la
+/// proposition. GARDE DE DISTINCTION : l'imprévu (fait) et la proposition (échange) restent SÉPARÉS — la
 /// composition ne « résout » pas l'imprévu, elle crée un SECOND événement distinct (la proposition).
 /// </summary>
 public sealed class ProposerEchangeSuiteImprevuHandler

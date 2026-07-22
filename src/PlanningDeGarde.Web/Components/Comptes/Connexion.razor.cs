@@ -9,13 +9,13 @@ using static PlanningDeGarde.Web.CanalEcriture;
 namespace PlanningDeGarde.Web.Components.Comptes;
 
 /// <summary>
-/// Page de connexion dédiée (front <b>WASM</b>, s24) : landing par défaut et <b>seul chemin d'entrée</b>
-/// (Sc.8/Sc.10). Emballe la connexion locale par email (<see cref="SeConnecterCommand"/> s23) via le
-/// <b>canal requête/réponse</b> HTTP (<c>POST /api/session</c>, règle 27 — aucune vue n'écrit le
+/// Page de connexion dédiée (front <b>WASM</b>) : landing par défaut et <b>seul chemin d'entrée</b>.
+/// Emballe la connexion locale par email (<see cref="SeConnecterCommand"/>) via le
+/// <b>canal requête/réponse</b> HTTP (<c>POST /api/session</c> — aucune vue n'écrit le
 /// domaine en direct). Le front ne porte AUCUNE règle d'admission : l'admission (compte existant ET Actif)
-/// est tranchée par le handler. Sur succès, la session pré-positionne l'acteur du compte (incarnation bornée
-/// s14, lecture seule, aucune persistance neuve) puis <b>redirige vers le planning</b>. Sur refus (email
-/// inconnu / compte non activé), le motif clair est surfacé, on reste sur la page (Sc.9).
+/// est tranchée par le handler. Sur succès, la session pré-positionne l'acteur du compte (incarnation bornée,
+/// lecture seule, aucune persistance neuve) puis <b>redirige vers le planning</b>. Sur refus (email
+/// inconnu / compte non activé), le motif clair est surfacé, on reste sur la page.
 /// </summary>
 public partial class Connexion
 {
@@ -23,16 +23,16 @@ public partial class Connexion
     private string _motDePasse = "";
     private string? _motif;
 
-    /// <summary>Visibilité en clair du mot de passe (Sc.4) : faux = champ masqué (type password, défaut),
+    /// <summary>Visibilité en clair du mot de passe : faux = champ masqué (type password, défaut),
     /// vrai = champ visible (type text). Pur état de présentation, aucune règle métier.</summary>
     private bool _motDePasseVisible;
 
-    /// <summary>Bascule l'affichage/masquage du mot de passe (bouton œil, Sc.4).</summary>
+    /// <summary>Bascule l'affichage/masquage du mot de passe (bouton œil).</summary>
     private void BasculerVisibiliteMotDePasse() => _motDePasseVisible = !_motDePasseVisible;
 
     /// <summary>Au montage, charge le catalogue d'acteurs incarnables depuis le référentiel réel
     /// (GET /api/foyer/acteurs) et le dépose dans la session : c'est ce catalogue que résout l'incarnation
-    /// du compte connecté (pré-positionnement du sélecteur d'acteur, s23 Sc.8). Lecture seule.</summary>
+    /// du compte connecté (pré-positionnement du sélecteur d'acteur). Lecture seule.</summary>
     protected override async Task OnInitializedAsync()
     {
         try
@@ -49,12 +49,12 @@ public partial class Connexion
         }
     }
 
-    /// <summary>Déclenche le flux OAuth du provider (volet 4, s25) : navigue vers l'endpoint de
+    /// <summary>Déclenche le flux OAuth du provider : navigue vers l'endpoint de
     /// démarrage OAuth côté serveur (<c>api/oauth/{provider}/demarrer</c>), qui redirige le navigateur
     /// vers l'authorize réel du provider (Google/Microsoft/Apple — secrets/callbacks vérifiés
     /// manuellement au G3). La vue ne porte AUCUNE règle métier : elle ne fait que déclencher le flux ;
     /// la résolution de l'identité externe et l'ouverture de session sont tranchées côté serveur
-    /// (ConnexionOAuthHandler, Sc.14/Sc.15).</summary>
+    /// (ConnexionOAuthHandler).</summary>
     private void DemarrerOAuth(string provider)
         => Nav.NavigateTo($"api/oauth/{provider}/demarrer", forceLoad: true);
 

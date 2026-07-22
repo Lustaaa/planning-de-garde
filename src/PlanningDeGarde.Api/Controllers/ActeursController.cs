@@ -51,7 +51,7 @@ public sealed class ActeursController(
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 
-    /// <summary>Affectation d'un rôle du référentiel à un acteur (PUT sous-ressource /role, s21).</summary>
+    /// <summary>Affectation d'un rôle du référentiel à un acteur (PUT sous-ressource /role).</summary>
     [HttpPut("/api/foyer/acteurs/{id}/role")]
     public IActionResult AffecterRole(string id, [FromBody] AffecterRoleCorps corps)
     {
@@ -59,7 +59,7 @@ public sealed class ActeursController(
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 
-    /// <summary>Retrait du rôle d'un acteur (DELETE sous-ressource /role, s21) : retombe « sans rôle ».</summary>
+    /// <summary>Retrait du rôle d'un acteur (DELETE sous-ressource /role) : retombe « sans rôle ».</summary>
     [HttpDelete("/api/foyer/acteurs/{id}/role")]
     public IActionResult RetirerRole(string id)
     {

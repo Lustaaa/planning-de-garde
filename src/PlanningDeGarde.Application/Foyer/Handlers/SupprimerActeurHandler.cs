@@ -7,7 +7,7 @@ namespace PlanningDeGarde.Application.Foyer.Handlers;
 /// Commande de suppression d'un acteur du foyer (config). L'identifiant stable opaque
 /// (<c>acteur-…</c>) est la clé — jamais le libellé. La suppression est <b>autorisée sans
 /// condition de références</b> (pas de refus « si l'acteur est utilisé ») et <b>idempotente</b>
-/// (id absent / déjà supprimé = no-op qui réussit, exercé au Sc.5).
+/// (id absent / déjà supprimé = no-op qui réussit, exercé au).
 /// </summary>
 public sealed record SupprimerActeurCommand(string ActeurId);
 

@@ -16,7 +16,7 @@ namespace PlanningDeGarde.Web.Components.Foyer;
 /// Écran de configuration du foyer (front <b>WASM</b>) : renomme un acteur déjà semé. L'écriture
 /// passe par le <b>canal requête/réponse</b> (endpoint HTTP <c>PUT /api/foyer/acteurs/{id}</c>),
 /// JAMAIS par un appel de handler en DI direct ni par le canal de diffusion (SignalR, lecture
-/// seule) — règle 27. Sur succès, la vue confirme l'effet et <b>reste</b> sur l'écran (l'édition
+/// seule) —. Sur succès, la vue confirme l'effet et <b>reste</b> sur l'écran (l'édition
 /// est volatile, on peut en enchaîner d'autres) : la grille partagée suit sans rechargement via la
 /// diffusion temps réel déclenchée par l'édition aboutie côté API. Sur refus, le motif métier
 /// propagé est affiché. Aucune règle métier dans l'UI : l'identifiant stable est la clé (jamais
@@ -112,12 +112,12 @@ public partial class ConfigurationFoyer
     private string? _motifEchecAjout;
 
     /// <summary>Accusé non bloquant de suppression (registre avertissement-à-part, aligné « Transfert
-    /// défini » — D5) : affiché à côté de la liste sans interrompre la consultation, effacé à la
+    /// défini » —) : affiché à côté de la liste sans interrompre la consultation, effacé à la
     /// suppression suivante.</summary>
     private string? _accuseSuppression;
 
-    /// <summary>Motif d'échec de suppression (service injoignable, règle 28) — surface distincte de
-    /// l'accusé : la liste/grille/légende restent inchangées, aucune mise en file (Sc.8).</summary>
+    /// <summary>Motif d'échec de suppression (service injoignable) — surface distincte de
+    /// l'accusé : la liste/grille/légende restent inchangées, aucune mise en file.</summary>
     private string? _motifEchecSuppression;
 
     private sealed class FormulaireCycle
@@ -130,9 +130,9 @@ public partial class ConfigurationFoyer
     private string? _confirmationCycle;
     private string? _motifEchecCycle;
 
-    /// <summary>Affectations déclarées du cycle de fond lues depuis le store (GET /api/foyer/cycles, Sc.3) :
-    /// alimentent le TABLEAU lecture seule de l'onglet Cycle (Sc.10), qui rend visibles toutes les semaines
-    /// affectées — y compris celles auparavant invisibles (retour PO gate s32).</summary>
+    /// <summary>Affectations déclarées du cycle de fond lues depuis le store (GET /api/foyer/cycles) :
+    /// alimentent le TABLEAU lecture seule de l'onglet Cycle, qui rend visibles toutes les semaines
+    /// affectées — y compris celles auparavant invisibles.</summary>
     private IReadOnlyList<CycleFoyer> _cyclesDeclares = Array.Empty<CycleFoyer>();
 
     // ── État de la MODAL cycle (refonte s33, Sc.10 — patron crayon → modal) ──
@@ -158,11 +158,11 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Résout le nom d'affichage du responsable d'une semaine du cycle (sur l'identifiant stable,
-    /// jamais un libellé en dur), pour le tableau lecture seule (Sc.10) ; repli sur l'id brut si non résolu.</summary>
+    /// jamais un libellé en dur), pour le tableau lecture seule ; repli sur l'id brut si non résolu.</summary>
     private string NomResponsableCycle(string responsableId)
         => _acteurs.FirstOrDefault(a => a.Id == responsableId)?.Nom ?? responsableId;
 
-    /// <summary>Libellé lisible d'une semaine du cycle (finition PO s33) : par parité pour le cas courant
+    /// <summary>Libellé lisible d'une semaine du cycle (finition PO) : par parité pour le cas courant
     /// (cycle ISO 2 semaines) — index 0 = « Semaine paire », index 1 = « Semaine impaire ». Pour un cycle
     /// plus long (N &gt; 2), les index ≥ 2 conservent « Semaine d'index k » afin d'éviter des libellés paire/
     /// impaire dupliqués et ambigus.</summary>
@@ -174,7 +174,7 @@ public partial class ConfigurationFoyer
     };
 
     /// <summary>Affecte (ou retire, si vide) un responsable à un index de semaine du cycle en cours de
-    /// saisie. La valeur bindée est l'identifiant stable de l'acteur (jamais le libellé, règle 19).</summary>
+    /// saisie. La valeur bindée est l'identifiant stable de l'acteur (jamais le libellé).</summary>
     private void AffecterIndex(int index, string? responsableId)
     {
         if (string.IsNullOrWhiteSpace(responsableId))
@@ -184,10 +184,10 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Acteurs du foyer énumérés <b>depuis le store durable</b> (canal de lecture HTTP), et non
-    /// la liste statique front : c'est cette énumération qui fait apparaître un acteur ajouté (Sc.1).</summary>
+    /// la liste statique front : c'est cette énumération qui fait apparaître un acteur ajouté.</summary>
     private IReadOnlyList<ActeurFoyer> _acteurs = Array.Empty<ActeurFoyer>();
 
-    /// <summary>Formulaire de saisie du libellé d'un rôle à créer (référentiel du foyer, s21). Le front
+    /// <summary>Formulaire de saisie du libellé d'un rôle à créer (référentiel du foyer). Le front
     /// n'émet que le libellé ; l'identifiant stable neuf opaque est généré côté handler.</summary>
     private sealed class FormulaireRole
     {
@@ -239,30 +239,30 @@ public partial class ConfigurationFoyer
 
     /// <summary>Rôles du référentiel du foyer énumérés <b>depuis le store durable</b> (GET /api/foyer/roles),
     /// jamais un rôle en dur : alimente la liste des rôles de l'onglet Acteurs (créés / renommés / supprimés
-    /// suivent sans rechargement, Sc.7).</summary>
+    /// suivent sans rechargement).</summary>
     private IReadOnlyList<RoleFoyer> _roles = Array.Empty<RoleFoyer>();
 
     /// <summary>Comptes utilisateurs du foyer énumérés <b>depuis le store durable</b> (GET /api/foyer/comptes),
     /// jamais en dur : alimente l'affichage du compte associé à chaque acteur et de son statut dans l'onglet
-    /// Acteurs (créés / désassociés suivent sans rechargement, Sc.7).</summary>
+    /// Acteurs (créés / désassociés suivent sans rechargement).</summary>
     private IReadOnlyList<CompteFoyer> _comptes = Array.Empty<CompteFoyer>();
 
     /// <summary>Tampon de saisie de l'email de création de compte, par ligne d'acteur : clé = id stable de
-    /// l'acteur, valeur = email saisi. La clé n'est jamais éditable (règle 19).</summary>
+    /// l'acteur, valeur = email saisi. La clé n'est jamais éditable.</summary>
     private readonly Dictionary<string, string> _emailCompte = new();
 
     /// <summary>Motif d'échec de création de compte, par ligne d'acteur (clé = id stable de l'acteur) : sur
-    /// refus métier (email vide / doublon, Sc.2) ou service injoignable, le formulaire de la ligne reste
-    /// ouvert avec ce motif clair, sans compte créé (Sc.7).</summary>
+    /// refus métier (email vide / doublon) ou service injoignable, le formulaire de la ligne reste
+    /// ouvert avec ce motif clair, sans compte créé.</summary>
     private readonly Dictionary<string, string> _motifEchecCompte = new();
 
     /// <summary>Ids stables des acteurs admins du foyer énumérés <b>depuis le store durable</b> (GET
     /// /api/foyer/admins), jamais en dur : marque l'acteur admin dans l'onglet Acteurs ; suit une désignation
-    /// aboutie ailleurs sans rechargement (temps réel SignalR, Sc.9).</summary>
+    /// aboutie ailleurs sans rechargement (temps réel SignalR).</summary>
     private IReadOnlyList<string> _admins = Array.Empty<string>();
 
-    /// <summary>Formulaire d'édition / création d'une activité (référentiel du foyer, s35, patron crayon →
-    /// modal miroir Acteurs s32 / Enfants s34) : libellé + adresse (optionnelle). L'identifiant stable est
+    /// <summary>Formulaire d'édition / création d'une activité (référentiel du foyer, patron crayon →
+    /// modal miroir Acteurs / Enfants) : libellé + adresse (optionnelle). L'identifiant stable est
     /// posé côté handler en création (jamais dérivé du libellé) ; en édition il est porté par la modal.</summary>
     private sealed class FormulaireActivite
     {
@@ -279,13 +279,13 @@ public partial class ConfigurationFoyer
     // Modal ouverte en mode CRÉATION (bouton « Ajouter une activité ») : champs vides, aucune activité portée.
     private bool _modalActiviteAjout;
 
-    /// <summary>Sélection des enfants à lier dans la modal activité (Sc.5) : initialisée aux enfants COURANTS de
+    /// <summary>Sélection des enfants à lier dans la modal activité : initialisée aux enfants COURANTS de
     /// l'activité à l'ouverture (pré-cochés). À l'« Enregistrer », les diffs vis-à-vis des enfants courants
-    /// émettent lier / délier. Lien N-M : AUCUNE borne de cardinalité (0..N des deux côtés, cadrage SM).</summary>
+    /// émettent lier / délier. Lien N-M : AUCUNE borne de cardinalité (0.N des deux côtés).</summary>
     private readonly HashSet<string> _selectionEnfants = new();
 
     /// <summary>Ouvre la modal d'ÉDITION sur une activité (clic crayon) : porte son id stable, pré-remplit son
-    /// libellé + adresse courants et la sélection d'enfants sur les enfants liés COURANTS (pré-cochés, Sc.5),
+    /// libellé + adresse courants et la sélection d'enfants sur les enfants liés COURANTS (pré-cochés),
     /// efface le motif d'échec précédent.</summary>
     private void OuvrirEditionActivite(string activiteId)
     {
@@ -321,7 +321,7 @@ public partial class ConfigurationFoyer
         _motifEchecActivite = null;
     }
 
-    /// <summary>Bascule la sélection d'un enfant dans la modal activité (Sc.5). Lien N-M : aucune borne — on
+    /// <summary>Bascule la sélection d'un enfant dans la modal activité. Lien N-M : aucune borne — on
     /// ajoute / retire librement l'id stable de l'enfant (jamais son prénom).</summary>
     private void BasculerEnfant(string enfantId, bool lie)
     {
@@ -331,8 +331,8 @@ public partial class ConfigurationFoyer
             _selectionEnfants.Remove(enfantId);
     }
 
-    /// <summary>Libellé de lecture des enfants liés d'une activité (Sc.4) : les identifiants stables des enfants
-    /// résolus en prénoms (jamais un libellé en dur), séparés par « , » ; « — » si aucun enfant lié.</summary>
+    /// <summary>Libellé de lecture des enfants liés d'une activité : les identifiants stables des enfants
+    /// résolus en prénoms (jamais un libellé en dur), séparés par «, » ; « — » si aucun enfant lié.</summary>
     private string LibelleEnfantsLies(ActiviteFoyer activite)
     {
         var noms = activite.EnfantsLies
@@ -341,7 +341,7 @@ public partial class ConfigurationFoyer
         return noms.Count == 0 ? "—" : string.Join(", ", noms);
     }
 
-    /// <summary>Formulaire de saisie du prénom d'un enfant à ajouter (référentiel du foyer, s30). Le front
+    /// <summary>Formulaire de saisie du prénom d'un enfant à ajouter (référentiel du foyer). Le front
     /// n'émet que le prénom ; l'identifiant stable opaque est généré côté handler.</summary>
     private sealed class FormulaireEnfant
     {
@@ -357,8 +357,8 @@ public partial class ConfigurationFoyer
     // Modal ouverte en mode CRÉATION (bouton « Ajouter un enfant ») : champ vide, aucun enfant porté.
     private bool _modalEnfantAjout;
 
-    /// <summary>Sélection des parents-acteurs à lier dans la modal (Sc.5), chacun avec son <b>rôle-du-lien</b>
-    /// choisi (père / mère / parent-libre, s37) : initialisée aux parents COURANTS de l'enfant à l'ouverture
+    /// <summary>Sélection des parents-acteurs à lier dans la modal, chacun avec son <b>rôle-du-lien</b>
+    /// choisi (père / mère / parent-libre) : initialisée aux parents COURANTS de l'enfant à l'ouverture
     /// (pré-cochés, rôle pré-réglé sur le rôle courant). À l'« Enregistrer », les diffs vis-à-vis des parents
     /// courants (présence OU rôle) émettent lier (rôle inclus) / délier. Bornée à 2 (l'UI désactive une case
     /// non cochée quand 2 sont sélectionnés).</summary>
@@ -366,7 +366,7 @@ public partial class ConfigurationFoyer
 
     /// <summary>Ouvre la modal d'ÉDITION sur un enfant (clic crayon) : porte son id stable, pré-remplit son
     /// prénom courant et la sélection de parents sur les parents liés COURANTS (pré-cochés, rôle-du-lien
-    /// pré-réglé, Sc.5/s37), efface le motif d'échec précédent.</summary>
+    /// pré-réglé), efface le motif d'échec précédent.</summary>
     private void OuvrirEditionEnfant(string enfantId)
     {
         _modalEnfantAjout = false;
@@ -399,7 +399,7 @@ public partial class ConfigurationFoyer
         _motifEchecEnfant = null;
     }
 
-    /// <summary>Acteurs candidats au lien parent (s34 Sc.5, éligibilité role-based s36 Sc.4/Sc.5) : exactement
+    /// <summary>Acteurs candidats au lien parent (éligibilité role-based) : exactement
     /// ceux dont le rôle affecté est marqué « est rôle parent » (le FLAG du rôle, résolu sur l'id, jamais le
     /// libellé ni le TypeActeur). L'IHM suit EXACTEMENT la règle back (<c>LierEnfantParentHandler</c>) — aucun
     /// critère divergent. Un acteur sans rôle, ou à rôle non marqué (Nounou/Grand-parent), n'apparaît pas.</summary>
@@ -407,9 +407,9 @@ public partial class ConfigurationFoyer
         => _acteurs.Where(a => a.RoleId is { } roleId
             && _roles.FirstOrDefault(r => r.Id == roleId)?.EstRoleParent == true);
 
-    /// <summary>Bascule la sélection d'un parent dans la modal (Sc.5). Borne « 2 parents max » reflétée à
+    /// <summary>Bascule la sélection d'un parent dans la modal. Borne « 2 parents max » reflétée à
     /// l'écran : on n'ajoute pas au-delà de 2 (les cases non cochées sont d'ailleurs désactivées). Un parent
-    /// nouvellement coché démarre au rôle-du-lien neutre « parent-libre » (s37), ajustable ensuite.</summary>
+    /// nouvellement coché démarre au rôle-du-lien neutre « parent-libre », ajustable ensuite.</summary>
     private void BasculerParent(string acteurId, bool lie)
     {
         if (lie)
@@ -423,7 +423,7 @@ public partial class ConfigurationFoyer
         }
     }
 
-    /// <summary>Choisit le rôle-du-lien (père / mère / parent-libre, s37) d'un parent SÉLECTIONNÉ dans la modal :
+    /// <summary>Choisit le rôle-du-lien (père / mère / parent-libre) d'un parent SÉLECTIONNÉ dans la modal :
     /// mémorisé dans la sélection, émis à l'« Enregistrer » via la commande « lier » (rôle inclus).</summary>
     private void ChoisirRoleParent(string acteurId, RoleDuLien role)
     {
@@ -432,11 +432,11 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Rôle-du-lien courant choisi pour un parent sélectionné (pré-réglé sur son rôle courant à
-    /// l'ouverture, s37), défaut « parent-libre » si non sélectionné — pour pré-régler le sélecteur.</summary>
+    /// l'ouverture), défaut « parent-libre » si non sélectionné — pour pré-régler le sélecteur.</summary>
     private RoleDuLien RoleDeParent(string acteurId)
         => _selectionParents.TryGetValue(acteurId, out var role) ? role : RoleDuLien.ParentLibre;
 
-    /// <summary>Libellé d'affichage d'un rôle-du-lien (s37) : « père » / « mère » / « parent » (parent-libre).</summary>
+    /// <summary>Libellé d'affichage d'un rôle-du-lien : « père » / « mère » / « parent » (parent-libre).</summary>
     private static string LibelleRoleDuLien(RoleDuLien role) => role switch
     {
         RoleDuLien.Pere => "père",
@@ -444,9 +444,9 @@ public partial class ConfigurationFoyer
         _ => "parent",
     };
 
-    /// <summary>Libellé de lecture des parents liés d'un enfant (Sc.4/Sc.5) : chaque parent résolu en NOM
+    /// <summary>Libellé de lecture des parents liés d'un enfant : chaque parent résolu en NOM
     /// d'acteur (jamais un libellé en dur) suivi de son <b>rôle-du-lien</b> entre parenthèses
-    /// (« Alice (père) », s37), séparés par « , » ; « — » si aucun parent lié.</summary>
+    /// (« Alice (père) »), séparés par «, » ; « — » si aucun parent lié.</summary>
     private string LibelleParentsLies(EnfantFoyer enfant)
     {
         var libelles = enfant.ParentsLies
@@ -457,21 +457,21 @@ public partial class ConfigurationFoyer
 
     /// <summary>Enfants du référentiel du foyer énumérés <b>depuis le store vivant</b> (GET /api/foyer/enfants),
     /// jamais un enfant en dur : alimente la liste de l'onglet Enfants (ajoutés / édités suivent sans
-    /// rechargement, S9) — même source que le sélecteur d'enfant de la dialog de pose (S10).</summary>
+    /// rechargement) — même source que le sélecteur d'enfant de la dialog de pose.</summary>
     private IReadOnlyList<EnfantFoyer> _enfants = Array.Empty<EnfantFoyer>();
 
-    /// <summary>Graphe foyer « enfant-racine » lu <b>depuis le store vivant</b> (GET /api/foyer/graphe, s38) :
+    /// <summary>Graphe foyer « enfant-racine » lu <b>depuis le store vivant</b> (GET /api/foyer/graphe) :
     /// vue LECTURE SEULE affichée à l'arrivée sur la Config foyer — chaque enfant en racine, ses parents liés
     /// (nom résolu + rôle-du-lien) en branches, déjà filtrés des orphelins côté API (reflet fidèle, zéro
     /// fantôme). Ré-énuméré à la diffusion SignalR (un lien modifié dans la modal Enfants converge le graphe).</summary>
     private IReadOnlyList<GrapheEnfant> _graphe = Array.Empty<GrapheEnfant>();
 
-    /// <summary>Libellé d'une branche parent du graphe (s38) : « nom (rôle-du-lien) » — le nom déjà résolu côté
-    /// API + le rôle-du-lien en clair (père / mère / parent), miroir de la colonne « Parents liés » (Sc.5 s37).</summary>
+    /// <summary>Libellé d'une branche parent du graphe : « nom (rôle-du-lien) » — le nom déjà résolu côté
+    /// API + le rôle-du-lien en clair (père / mère / parent), miroir de la colonne « Parents liés ».</summary>
     private static string LibelleBrancheParent(GrapheParent parent)
         => $"{parent.Nom} ({LibelleRoleDuLien(parent.Role)})";
 
-    /// <summary>Libellé du badge de complétude du couple R3 (s40, Sc.4) — présentation seule : « couple complet »
+    /// <summary>Libellé du badge de complétude du couple — présentation seule : « couple complet »
     /// / « couple incomplet » / « aucun parent » (état neutre pour une racine isolée, distinct d'une anomalie).
     /// Le statut est déjà calculé côté API (GrapheFoyerQuery), l'UI ne fait que le libeller (aucune règle métier).</summary>
     private static string LibelleBadgeCouple(StatutCoupleR3 statut) => statut switch
@@ -481,7 +481,7 @@ public partial class ConfigurationFoyer
         _ => "aucun parent",
     };
 
-    /// <summary>Suffixe de classe CSS du badge de complétude (s40) : « complet » / « incomplet » / « vide »
+    /// <summary>Suffixe de classe CSS du badge de complétude : « complet » / « incomplet » / « vide »
     /// — pilote uniquement l'apparence (couleur/ton), jamais une règle métier.</summary>
     private static string BadgeCoupleClasse(StatutCoupleR3 statut) => statut switch
     {
@@ -490,14 +490,14 @@ public partial class ConfigurationFoyer
         _ => "vide",
     };
 
-    /// <summary>Activités du référentiel du foyer énumérées <b>depuis le store vivant</b> (GET /api/foyer/activites,
-    /// s35), jamais une activité en dur : alimente le tableau de l'onglet Activités (ajoutées / éditées / supprimées
-    /// suivent sans rechargement, S6) — même source que les sélecteurs de lieu des dialogs.</summary>
+    /// <summary>Activités du référentiel du foyer énumérées <b>depuis le store vivant</b> (GET /api/foyer/activites),
+    /// jamais une activité en dur : alimente le tableau de l'onglet Activités (ajoutées / éditées / supprimées
+    /// suivent sans rechargement) — même source que les sélecteurs de lieu des dialogs.</summary>
     private IReadOnlyList<ActiviteFoyer> _activites = Array.Empty<ActiviteFoyer>();
 
     /// <summary>Fournisseur de services pour résoudre <see cref="OptionsConnexionHub"/> de façon
-    /// <b>optionnelle</b> : présent, il redirige la connexion au hub vers le TestServer (acceptation runtime
-    /// Sc.6) ; absent (écrans de config qui n'observent pas le temps réel), la connexion reste neutre et son
+    /// <b>optionnelle</b> : présent, il redirige la connexion au hub vers le TestServer (acceptation runtime)
+    /// ; absent (écrans de config qui n'observent pas le temps réel), la connexion reste neutre et son
     /// éventuel échec est simplement avalé — l'écran demeure fonctionnel.</summary>
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
@@ -517,18 +517,18 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Charge le graphe foyer « enfant-racine » À L'ARRIVÉE depuis le store vivant via la query
-    /// AGRÉGÉE serveur (GET /api/foyer/graphe → <c>GrapheFoyerQuery</c>, s38 Sc.1/Sc.2) : source CANONIQUE de
+    /// AGRÉGÉE serveur (GET /api/foyer/graphe → <c>GrapheFoyerQuery</c>) : source CANONIQUE de
     /// la vue lecture seule (orphelins filtrés côté serveur, contrat d'existence). C'est le chemin de lecture
     /// consommé à l'arrivée sur la Config foyer (goal : « quand on arrive… »).</summary>
     private async Task RechargerGraphe()
         => _graphe = await Canal.GetFromJsonAsync<List<GrapheEnfant>>("api/foyer/graphe")
             ?? new List<GrapheEnfant>();
 
-    /// <summary>Reprojette le graphe EN TEMPS RÉEL (convergence Sc.5) à partir des données DÉJÀ rechargées sur la
+    /// <summary>Reprojette le graphe EN TEMPS RÉEL (convergence) à partir des données DÉJÀ rechargées sur la
     /// diffusion (<see cref="_enfants"/> avec liens + rôles-du-lien, <see cref="_acteurs"/> pour existence + nom) —
     /// SANS aller-retour HTTP supplémentaire par diffusion (le canal SignalR pousse à haute fréquence ; un GET de
     /// plus par push alourdit inutilement le trafic de lecture). Miroir EXACT des règles de <c>GrapheFoyerQuery</c>
-    /// (Sc.1/Sc.2) : mêmes branches, même filtre d'orphelin (contrat d'existence = l'acteur figure dans
+    /// : mêmes branches, même filtre d'orphelin (contrat d'existence = l'acteur figure dans
     /// <see cref="_acteurs"/>), même nom résolu, même rôle-du-lien — aucune sémantique divergente, la source
     /// canonique reste la query serveur consommée à l'arrivée. Lecture PURE, aucune écriture.</summary>
     private void ReprojeterGraphe()
@@ -551,8 +551,8 @@ public partial class ConfigurationFoyer
             })
             .ToList();
 
-    /// <summary>Statut de complétude du couple R3 (s40) reprojeté côté client — MIROIR EXACT de la règle
-    /// serveur (<c>GrapheFoyerQuery</c>, Sc.1/Sc.2) : aucune sémantique divergente, la source canonique reste
+    /// <summary>Statut de complétude du couple reprojeté côté client — MIROIR EXACT de la règle
+    /// serveur (<c>GrapheFoyerQuery</c>) : aucune sémantique divergente, la source canonique reste
     /// la query serveur consommée à l'arrivée. Aucune règle métier neuve dans l'UI — pure recomposition
     /// lecture seule à partir du payload déjà diffusé.</summary>
     private static StatutCoupleR3 StatutCoupleReprojete(int nbLiensBruts, IReadOnlyList<GrapheParent> parents)
@@ -564,12 +564,12 @@ public partial class ConfigurationFoyer
         return aPere && aMere ? StatutCoupleR3.Complet : StatutCoupleR3.Incomplet;
     }
 
-    /// <summary>Ré-énumère les affectations déclarées du cycle de fond depuis le store (GET /api/foyer/cycles,
-    /// Sc.3) : alimente le tableau lecture seule de l'onglet Cycle (Sc.10). Quand la modal cycle n'est pas
+    /// <summary>Ré-énumère les affectations déclarées du cycle de fond depuis le store (GET /api/foyer/cycles)
+    /// : alimente le tableau lecture seule de l'onglet Cycle. Quand la modal cycle n'est pas
     /// ouverte, synchronise aussi l'éditeur <see cref="_cycle"/> sur le cycle courant (N dérivé de la plus
     /// grande semaine affectée + 1, cas nominal « un responsable par semaine »), pour qu'un clic « Éditer le
     /// cycle » l'ouvre pré-rempli — sans écraser une saisie en cours si la modal est ouverte.</summary>
-    /// <summary>Enfant COURANT de l'onglet Cycle (s53, gate G3) : chaque enfant a SON cycle de fond propre
+    /// <summary>Enfant COURANT de l'onglet Cycle : chaque enfant a SON cycle de fond propre
     /// (familles recomposées). Le tableau + l'éditeur du cycle sont scopés à cet enfant, hérité du sélecteur de
     /// l'onglet (Option A) ; éditer en vue X ne change QUE le cycle de X. null tant qu'aucun enfant n'est chargé.</summary>
     private string? _cycleEnfantSelectionne;
@@ -606,13 +606,13 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Ré-énumère les enfants du référentiel depuis le store vivant (GET /api/foyer/enfants) : c'est
-    /// cette relecture qui fait suivre la liste des enfants après ajout / édition (S9), sans rechargement.</summary>
+    /// cette relecture qui fait suivre la liste des enfants après ajout / édition, sans rechargement.</summary>
     private async Task RechargerEnfants()
         => _enfants = await Canal.GetFromJsonAsync<List<EnfantFoyer>>("api/foyer/enfants")
             ?? new List<EnfantFoyer>();
 
-    /// <summary>Ré-énumère les activités du référentiel depuis le store vivant (GET /api/foyer/activites, s35) :
-    /// c'est cette relecture qui fait suivre le tableau des activités après ajout / édition / suppression (S6),
+    /// <summary>Ré-énumère les activités du référentiel depuis le store vivant (GET /api/foyer/activites) :
+    /// c'est cette relecture qui fait suivre le tableau des activités après ajout / édition / suppression,
     /// sans rechargement.</summary>
     private async Task RechargerActivites()
         => _activites = await Canal.GetFromJsonAsync<List<ActiviteFoyer>>("api/foyer/activites")
@@ -623,27 +623,27 @@ public partial class ConfigurationFoyer
             ?? new List<ActeurFoyer>();
 
     /// <summary>Ré-énumère les rôles du référentiel depuis le store durable (GET /api/foyer/roles) : c'est
-    /// cette relecture qui fait suivre la liste des rôles après création / renommage / suppression (Sc.7).</summary>
+    /// cette relecture qui fait suivre la liste des rôles après création / renommage / suppression.</summary>
     private async Task RechargerRoles()
         => _roles = await Canal.GetFromJsonAsync<List<RoleFoyer>>("api/foyer/roles")
             ?? new List<RoleFoyer>();
 
     /// <summary>Ré-énumère les comptes du foyer depuis le store durable (GET /api/foyer/comptes) : c'est
-    /// cette relecture qui fait suivre l'affichage du compte associé à un acteur après création / désassociation
-    /// (Sc.7), sans rechargement.</summary>
+    /// cette relecture qui fait suivre l'affichage du compte associé à un acteur après création / désassociation,
+    /// sans rechargement.</summary>
     private async Task RechargerComptes()
         => _comptes = await Canal.GetFromJsonAsync<List<CompteFoyer>>("api/foyer/comptes")
             ?? new List<CompteFoyer>();
 
     /// <summary>Ré-énumère les admins du foyer depuis le store durable (GET /api/foyer/admins) : c'est cette
-    /// relecture qui fait suivre le marqueur d'admin après une désignation aboutie, sans rechargement (Sc.9).</summary>
+    /// relecture qui fait suivre le marqueur d'admin après une désignation aboutie, sans rechargement.</summary>
     private async Task RechargerAdmins()
         => _admins = await Canal.GetFromJsonAsync<List<string>>("api/foyer/admins")
             ?? new List<string>();
 
     /// <summary>
     /// S'abonne au <b>hub SignalR de lecture</b> de l'API distante (même hôte que le canal) pour préserver
-    /// le <b>temps réel</b> sur l'écran de configuration (Sc.6) : une écriture aboutie ailleurs — typiquement
+    /// le <b>temps réel</b> sur l'écran de configuration : une écriture aboutie ailleurs — typiquement
     /// un acteur ajouté ou renommé depuis un second écran (store partagé) — <b>ré-énumère</b> les acteurs
     /// depuis le store unifié, si bien que le sélecteur d'édition (onglet Acteurs) et la liste suivent
     /// <b>sans rechargement</b>, cohérents avec la grille, la légende et les sélecteurs des dialogs. Lecture
@@ -707,7 +707,7 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Revient à l'identité réelle depuis le bandeau d'incarnation de l'écran de configuration
-    /// (sprint 14, cohérence inter-écrans, Sc.2) : l'incarnation est levée → les écritures config
+    /// (cohérence inter-écrans) : l'incarnation est levée → les écritures config
     /// redeviennent visibles (gating sur l'identité effective). Aucune écriture domaine.</summary>
     private void RevenirIdentiteReelle() => Session.RevenirIdentiteReelle();
 
@@ -806,7 +806,7 @@ public partial class ConfigurationFoyer
         FermerModal();
     }
 
-    /// <summary>Émet une commande de toggle (Sc.4) via le canal HTTP réel et renvoie <c>true</c> en succès.
+    /// <summary>Émet une commande de toggle via le canal HTTP réel et renvoie <c>true</c> en succès.
     /// Sur service injoignable ou refus métier, pose le motif dans la modal (<c>_motifEchec</c>) et renvoie
     /// <c>false</c> — la modal reste ouverte, aucun tableau relu (pas d'écriture partielle affichée).</summary>
     private async Task<bool> AppliquerToggle(Func<Task<HttpResponseMessage>> envoi)
@@ -833,10 +833,10 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Ajoute un acteur neuf au foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/foyer/acteurs</c>, règle 27 — aucune vue n'écrit le domaine en direct),
-    /// puis ré-énumère le store pour faire apparaître l'acteur ajouté <b>sans rechargement</b> (Sc.1).
-    /// Sur refus métier (Sc.8, nom vide), le motif renvoyé par le canal est surfacé sans muter la liste.
-    /// Sur <b>service injoignable</b> (Sc.9 s09, échec de transport <see cref="HttpRequestException"/> avant
+    /// (<c>POST /api/foyer/acteurs</c>, — aucune vue n'écrit le domaine en direct),
+    /// puis ré-énumère le store pour faire apparaître l'acteur ajouté <b>sans rechargement</b>.
+    /// Sur refus métier (nom vide), le motif renvoyé par le canal est surfacé sans muter la liste.
+    /// Sur <b>service injoignable</b> (échec de transport <see cref="HttpRequestException"/> avant
     /// que le handler ne tourne), un message dédié s'affiche, la saisie est conservée et rien n'est enregistré.
     /// </summary>
     private async Task Ajouter()
@@ -878,14 +878,14 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Supprime un acteur du foyer via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>DELETE /api/foyer/acteurs/{id}</c>, règle 27 — aucune vue n'écrit le domaine en direct),
-    /// puis ré-énumère le store pour que l'acteur supprimé <b>quitte la liste sans rechargement</b> (Sc.6).
-    /// Sur succès, un accusé <b>« Acteur supprimé »</b> non bloquant s'affiche à part (D5) et le handler a
+    /// (<c>DELETE /api/foyer/acteurs/{id}</c>, — aucune vue n'écrit le domaine en direct),
+    /// puis ré-énumère le store pour que l'acteur supprimé <b>quitte la liste sans rechargement</b>.
+    /// Sur succès, un accusé <b>« Acteur supprimé »</b> non bloquant s'affiche à part et le handler a
     /// muté le store ET déclenché la diffusion temps réel (grilles et légende dédoublonnée suivent — le
     /// filtre d'existence côté projection neutralise l'acteur orphelin). Sur <b>service injoignable</b>
-    /// (échec de transport <see cref="HttpRequestException"/>, règle 28), un message dédié s'affiche, la
-    /// liste/grille/légende restent inchangées, rien n'est mis en file (Sc.8). La clé est l'identifiant
-    /// stable opaque (jamais le libellé, règle 19) ; aucune règle métier dans l'UI (idempotence côté handler).
+    /// (échec de transport <see cref="HttpRequestException"/>), un message dédié s'affiche, la
+    /// liste/grille/légende restent inchangées, rien n'est mis en file. La clé est l'identifiant
+    /// stable opaque (jamais le libellé) ; aucune règle métier dans l'UI (idempotence côté handler).
     /// </summary>
     private async Task Supprimer(string acteurId)
     {
@@ -931,7 +931,7 @@ public partial class ConfigurationFoyer
         FermerModal();
     }
 
-    /// <summary>Libellé d'affichage du rôle courant d'un acteur (Sc.8) : le libellé du rôle du référentiel
+    /// <summary>Libellé d'affichage du rôle courant d'un acteur : le libellé du rôle du référentiel
     /// porté (résolu sur son id stable, jamais un libellé en dur), ou « sans rôle » si aucun (attribut
     /// optionnel non renseigné = neutre assumé).</summary>
     private string LibelleRoleActeur(string? roleId)
@@ -942,9 +942,9 @@ public partial class ConfigurationFoyer
     /// <summary>
     /// Affecte (ou retire, si l'option « sans rôle » est choisie = valeur vide) un rôle du référentiel à un
     /// acteur via le <b>canal d'écriture HTTP</b> de l'API distante (PUT /api/foyer/acteurs/{id}/role ou
-    /// /retirer-role, règle 27 — aucune vue n'écrit le domaine en direct). La valeur émise est l'<b>id de
-    /// rôle du référentiel</b> (jamais un libellé en dur, Sc.8) ; sur succès, on relit les acteurs pour que
-    /// le rôle courant suive sans rechargement. Sur refus métier (id hors référentiel, Sc.4), le motif est surfacé.
+    /// /retirer-role, — aucune vue n'écrit le domaine en direct). La valeur émise est l'<b>id de
+    /// rôle du référentiel</b> (jamais un libellé en dur) ; sur succès, on relit les acteurs pour que
+    /// le rôle courant suive sans rechargement. Sur refus métier (id hors référentiel), le motif est surfacé.
     /// </summary>
     private async Task AffecterRole(string acteurId, string? roleId)
     {
@@ -973,12 +973,12 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>
-    /// Enregistre la modal rôle (Sc.8) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
+    /// Enregistre la modal rôle via le <b>canal d'écriture HTTP</b> de l'API distante :
     /// en mode CRÉATION émet <c>POST /api/foyer/roles</c> (id stable neuf généré côté handler), en mode
     /// ÉDITION émet <c>PUT /api/foyer/roles/{id}</c> sur l'id stable (jamais le libellé). Réutilise les
     /// commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le référentiel (le libellé suit sans
-    /// rechargement, Sc.2) et la modal se ferme. Sur refus métier (libellé vide / doublon) ou service
-    /// injoignable, le motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée (Sc.9).
+    /// rechargement) et la modal se ferme. Sur refus métier (libellé vide / doublon) ou service
+    /// injoignable, le motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée.
     /// </summary>
     private async Task SoumettreRole()
     {
@@ -1037,7 +1037,7 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Supprime un rôle du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>DELETE /api/foyer/roles/{id}</c>) depuis la modal d'édition (Sc.8) : la clé est l'identifiant
+    /// (<c>DELETE /api/foyer/roles/{id}</c>) depuis la modal d'édition : la clé est l'identifiant
     /// stable du rôle. Sur succès, on relit le référentiel (le rôle quitte la table sans rechargement) ET
     /// les acteurs (un porteur du rôle supprimé retombe « sans rôle »), puis la modal se ferme. Idempotence
     /// côté handler ; sur refus / service injoignable, le motif reste DANS la modal ouverte.</summary>
@@ -1069,8 +1069,8 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Définit / ré-édite le cycle de fond via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>PUT /api/foyer/cycles</c>, règle 27). Sur succès, la grille partagée suit sans
-    /// rechargement via la diffusion temps réel déclenchée côté API. Sur refus métier (N &lt; 1, Sc.7),
+    /// (<c>PUT /api/foyer/cycles</c>). Sur succès, la grille partagée suit sans
+    /// rechargement via la diffusion temps réel déclenchée côté API. Sur refus métier (N &lt; 1),
     /// le motif propagé est affiché.
     /// </summary>
     private async Task DefinirCycle()
@@ -1111,12 +1111,12 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>
-    /// Enregistre la modal activité (Sc.4) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
+    /// Enregistre la modal activité via le <b>canal d'écriture HTTP</b> de l'API distante :
     /// en mode CRÉATION émet <c>POST /api/foyer/activites</c> (id stable neuf posé côté handler), en mode
     /// ÉDITION émet <c>PUT /api/foyer/activites/{id}</c> sur l'id stable (jamais éditable) — libellé + adresse.
     /// Réutilise les commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le référentiel (le tableau
     /// suit sans rechargement) et la modal se ferme. Sur refus métier (libellé vide) ou service injoignable, le
-    /// motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée (Sc.6).
+    /// motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée.
     /// </summary>
     private async Task SoumettreActivite()
     {
@@ -1179,9 +1179,9 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Supprime une activité du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>DELETE /api/foyer/activites/{id}</c>) depuis la modal d'édition (Sc.4) : la clé est l'identifiant
+    /// (<c>DELETE /api/foyer/activites/{id}</c>) depuis la modal d'édition : la clé est l'identifiant
     /// stable. Sur succès, on relit le référentiel (l'activité quitte le tableau et n'est plus proposée à la
-    /// saisie, sans rechargement — S6), puis la modal se ferme. Idempotence côté handler ; borne : les slots
+    /// saisie, sans rechargement —), puis la modal se ferme. Idempotence côté handler ; borne : les slots
     /// déjà posés sur cette activité conservent leur lieu. Sur refus / injoignable, le motif reste DANS la modal.</summary>
     private async Task SupprimerActivite(string activiteId)
     {
@@ -1193,13 +1193,13 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>
-    /// Enregistre la modal enfant (Sc.4) via le <b>canal d'écriture HTTP</b> de l'API distante (règle 27) :
+    /// Enregistre la modal enfant via le <b>canal d'écriture HTTP</b> de l'API distante :
     /// en mode CRÉATION émet <c>POST /api/foyer/enfants</c> (id stable opaque neuf posé côté handler),
     /// en mode ÉDITION émet <c>PUT /api/foyer/enfants/{id}</c> sur l'id stable (jamais éditable, seul le
     /// prénom change). Réutilise les commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le
     /// référentiel (la table suit sans rechargement) et la modal se ferme. Sur refus métier (prénom vide /
     /// doublon) ou service injoignable, le motif est surfacé DANS la modal, qui reste ouverte et la saisie
-    /// conservée (Sc.6).
+    /// conservée.
     /// </summary>
     private async Task SoumettreEnfant()
     {
@@ -1265,12 +1265,12 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Compte utilisateur associé à un acteur (résolu sur son id stable), ou <c>null</c> s'il n'en
-    /// porte aucun. Un acteur porte au plus un compte (association 1-1, Sc.3).</summary>
+    /// porte aucun. Un acteur porte au plus un compte (association 1-1).</summary>
     private CompteFoyer? CompteDe(string acteurId)
         => _comptes.FirstOrDefault(c => c.ActeurId == acteurId);
 
     /// <summary>Vrai si l'acteur (résolu sur son id stable) est admin du foyer (énuméré depuis le store),
-    /// pour marquer sa ligne. Suit une désignation aboutie ailleurs sans rechargement (Sc.9).</summary>
+    /// pour marquer sa ligne. Suit une désignation aboutie ailleurs sans rechargement.</summary>
     private bool EstAdmin(string acteurId) => _admins.Contains(acteurId);
 
     /// <summary>Email courant du champ de création de compte d'une ligne d'acteur (tampon saisi, sinon vide).</summary>
@@ -1287,11 +1287,11 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Crée / associe un compte à un acteur via le <b>canal d'écriture HTTP</b> de l'API distante
-    /// (<c>POST /api/foyer/comptes</c>, règle 27 — aucune vue n'écrit le domaine en direct), puis
+    /// (<c>POST /api/foyer/comptes</c>, — aucune vue n'écrit le domaine en direct), puis
     /// ré-énumère les comptes pour que le compte associé apparaisse <b>sans rechargement</b>, avec son
-    /// statut « inactif » (Sc.7). Le front n'émet que l'acteur et l'email ; l'id stable neuf et le statut
-    /// sont posés côté handler. Sur refus métier (email vide / doublon, Sc.2) ou <b>service injoignable</b>
-    /// (échec de transport, règle 28), le motif est surfacé DANS la ligne, le formulaire reste ouvert et
+    /// statut « inactif ». Le front n'émet que l'acteur et l'email ; l'id stable neuf et le statut
+    /// sont posés côté handler. Sur refus métier (email vide / doublon) ou <b>service injoignable</b>
+    /// (échec de transport), le motif est surfacé DANS la ligne, le formulaire reste ouvert et
     /// la saisie conservée, aucun compte créé.
     /// </summary>
     private async Task CreerCompte(string acteurId)
@@ -1322,11 +1322,11 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Accusé non bloquant d'activation de compte (registre avertissement-à-part, aligné « Acteur
-    /// supprimé » — D5) : affiché sans interrompre la consultation, effacé à l'activation suivante.</summary>
+    /// supprimé » —) : affiché sans interrompre la consultation, effacé à l'activation suivante.</summary>
     private string? _accuseActivation;
 
     /// <summary>Vrai si le compte est de statut « inactif » (le statut est renvoyé en minuscules par le canal
-    /// de lecture) — pilote l'actionnabilité du toggle « actif » de la modal (Sc.4). Aucune règle métier dans
+    /// de lecture) — pilote l'actionnabilité du toggle « actif » de la modal. Aucune règle métier dans
     /// l'UI : simple lecture du statut projeté ; l'activation est tranchée côté handler.</summary>
     private static bool EstInactif(CompteFoyer compte)
         => string.Equals(compte.Statut, "inactif", StringComparison.OrdinalIgnoreCase);
