@@ -1,7 +1,7 @@
 using System;
 using PlanningDeGarde.Application;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Commun.Services;
 
 /// <summary>
 /// Implémentation système du port <see cref="IDateTimeProvider"/> : lit l'horloge réelle de la

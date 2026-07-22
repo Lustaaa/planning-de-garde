@@ -1,7 +1,7 @@
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.CyclesDeFond.Repositories;
 
 /// <summary>
 /// Adaptateur InMemory singleton du port <see cref="IReferentielCycleDeFond"/> : conserve le

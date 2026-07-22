@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PlanningDeGarde.Application;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Notifications.Repositories;
 
 /// <summary>État LU / non-lu des notifications par utilisateur, en mémoire (process unique). Idempotent (set).</summary>
 public sealed class InMemoryEtatLectureNotifications : IEtatLectureNotifications

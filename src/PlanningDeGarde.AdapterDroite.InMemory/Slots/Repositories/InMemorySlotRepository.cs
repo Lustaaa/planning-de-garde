@@ -4,7 +4,7 @@ using System.Linq;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Slots.Repositories;
 
 /// <summary>
 /// Persistance en mémoire des slots (process unique). Copy-on-read : stocke et rend des

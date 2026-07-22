@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PlanningDeGarde.Application;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Comptes.Repositories;
 
 /// <summary>
 /// Store mutable en mémoire du référentiel des comptes utilisateurs du foyer (nouveau petit agrégat

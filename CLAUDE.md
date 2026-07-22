@@ -14,7 +14,7 @@ Solution `PlanningDeGarde.slnx` — 8 projets `src/` + 3 projets `tests/`.
 
 - **Domain** — modèle métier pur, aucune dépendance techno.
 - **Application** — use cases (canal requête/réponse), ports gauche/droite. Organisée par **`[BoundedContext]/[Technical]`** (dossiers `Handlers`/`Queries`/`Ports`/`Models`, + `Services`/`Seed` ponctuels ; **plus de dossiers `Classes/` ni `Interfaces/`**), namespaces alignés `PlanningDeGarde.Application.<BC>.<Technical>`. Carte des BC figée dans `docs/briefs/technical-changes-plan.md`. Chaque projet consommateur porte un `GlobalUsings.cs` ré-exposant ces sous-namespaces (Web/Web.Tests excluent `Foyer.Seed`).
-- **AdapterDroite.InMemory** / **AdapterDroite.Mongo** — adaptateurs de droite par techno (dépôts ; config foyer persistée Mongo).
+- **AdapterDroite.InMemory** / **AdapterDroite.Mongo** — adaptateurs de droite par techno (dépôts ; config foyer persistée Mongo). **InMemory** réorganisé par **`[BoundedContext]/[Technical]`** (dépôts sous `Repositories/`, horloge sous `Commun/Services` ; `Classes/` supprimé), namespaces `PlanningDeGarde.AdapterDroite.InMemory.<BC>.Repositories`, mêmes BC que la carte figée (segment `CyclesDeFond` au pluriel ; alias `Foyer` scopé namespace là où le seed est lu). Mongo : même refonte à venir (lot 4).
 - **SignalR** — adaptateur de **gauche** (diffusion temps réel, lecture seule).
 - **Api** — hôte d'API **détaché** (démarre seul, expose OpenAPI + UI explorable, CORS).
 - **Web** — front **Blazor WebAssembly**, consomme l'API comme une **API distante**.

@@ -3,7 +3,7 @@ using System.Linq;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Transferts.Repositories;
 
 /// <summary>Persistance en mémoire des transferts de bascule (process unique).</summary>
 public sealed class InMemoryTransfertRepository : ITransfertRepository

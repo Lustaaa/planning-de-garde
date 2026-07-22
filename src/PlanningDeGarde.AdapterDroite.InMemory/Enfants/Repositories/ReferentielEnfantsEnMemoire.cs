@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PlanningDeGarde.Application;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Enfants.Repositories;
 
 /// <summary>
 /// Store mutable en mémoire du référentiel d'enfants du foyer (petit agrégat de config foyer hissé en

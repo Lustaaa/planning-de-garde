@@ -162,3 +162,14 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   usings Web (collision `Web.Foyer`). **Impact** : carte des BC figée
   (`docs/briefs/technical-changes-plan.md`, réutilisée par les lots Mongo/InMemory/Web), CLAUDE.md
   « Architecture » actualisé. **920/920 vert.** Aucune règle de gestion touchée.
+
+- **2026-07-22 — Refonte technique hors-sprint (architecte), lot 2/InMemory.** Réorganisation de
+  `PlanningDeGarde.AdapterDroite.InMemory` en `[BoundedContext]/[Technical]` (dossier `Classes/`
+  supprimé, namespaces `...InMemory.<BC>.Repositories`, horloge en `Commun/Services`) alignée sur
+  la carte des BC figée au lot 1. 19 fichiers déplacés, comportement inchangé. Points durs : ces
+  adaptateurs vivaient en `namespace Infrastructure` (anomalie, recalés) ; masquage de la classe
+  seed `Foyer` par le segment `.Foyer` → alias `using Foyer = ...Seed.Foyer;` **scopé dans le
+  namespace** (le global using alias perd face au membre de namespace externe), 7 fichiers.
+  **Impact** : plan lot 5 coché + note transverse « masquage Foyer » (à rejouer lot Mongo) ;
+  ripple absorbé par global usings (Infrastructure + Tests + Api.Tests). **920/920 vert.** Aucune
+  règle de gestion touchée.

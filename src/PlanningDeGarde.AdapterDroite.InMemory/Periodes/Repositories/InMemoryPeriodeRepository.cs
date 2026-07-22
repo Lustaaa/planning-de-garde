@@ -4,7 +4,7 @@ using System.Linq;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Periodes.Repositories;
 
 /// <summary>
 /// Persistance en mémoire des périodes de garde (process unique). Le contrôle d'écriture

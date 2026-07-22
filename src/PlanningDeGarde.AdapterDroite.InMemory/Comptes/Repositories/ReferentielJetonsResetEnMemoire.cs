@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using PlanningDeGarde.Application;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Comptes.Repositories;
 
 /// <summary>
 /// Store mutable en mémoire des jetons de réinitialisation de mot de passe (s28, volet 1), réalisant

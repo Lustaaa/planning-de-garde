@@ -3,7 +3,7 @@ using System.Linq;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Echanges.Repositories;
 
 /// <summary>Persistance en mémoire des propositions d'échange (process unique). Upsert par identifiant stable.</summary>
 public sealed class InMemoryPropositionEchangeRepository : IPropositionEchangeRepository

@@ -3,7 +3,7 @@ using System.Linq;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.InMemory.Notifications.Repositories;
 
 /// <summary>Journal de changements append-only en mémoire (process unique). Trace de lecture, jamais autorité.</summary>
 public sealed class InMemoryJournalChangements : IJournalChangements

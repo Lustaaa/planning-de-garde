@@ -17,8 +17,30 @@ Docker actif), branche `ia-refacto/lotN-…`, pas de merge/PR (le PO gère la po
 - [ ] **Lot 4 — `PlanningDeGarde.AdapterDroite.Mongo`** : arbo `[BC]/[Technical]`
       (`Slots/Repositories`, `Slots/DbModels`, …), namespaces `Mongo.Slots.Repositories`, sortir les
       documents embarqués (`AdminDocument`) dans `DbModels`, repos dans `Repositories`.
-- [ ] **Lot 5 — `PlanningDeGarde.AdapterDroite.InMemory`** : même arbo `[BC]/[Technical]`,
-      namespaces `InMemory.Slots.Repositories`, etc.
+- [x] **Lot 5 — `PlanningDeGarde.AdapterDroite.InMemory`** : arbo `[BC]/[Technical]`,
+      namespaces `PlanningDeGarde.AdapterDroite.InMemory.<BC>.Repositories`, dossier `Classes/`
+      supprimé. (920/920 vert) — livré comme 2e lot exécuté du programme, sur la branche
+      `ia-refacto/lot1-application-bc-technical`. **Décisions/écarts** :
+      - Aucun type d'état/document embarqué (1 classe adaptateur par fichier) → **pas de dossier
+        `DbModels/`/`Models/`** (rien à y ranger, on n'invente pas de dossier vide) ; tous les
+        dépôts sous `Repositories/`.
+      - `SystemDateTimeProvider` (BC **Commun**) n'est pas un dépôt : rangé sous `Commun/Services`
+        (`...InMemory.Commun.Services`) — catégorie technique cohérente pour un adaptateur d'horloge.
+      - **Anomalie corrigée en passant** : ces fichiers vivaient tous en `namespace
+        PlanningDeGarde.Infrastructure` (comme le seed `Foyer` en lot 1) ; recalés en
+        `...InMemory.<BC>.Repositories`.
+      - **Masquage `Foyer`** (miroir du cas `CycleDeFond`) : le segment de namespace
+        `...InMemory.Foyer` masque la classe seed `PlanningDeGarde.Application.Foyer.Seed.Foyer`
+        (CS0234 sur `Foyer.Activites`, `Foyer.CouleurNeutre`, …). Un **global using alias** ne
+        suffit pas (niveau unité de compilation → perd face au membre de namespace externe) : alias
+        `using Foyer = ...Seed.Foyer;` **scopé dans le namespace** (après la déclaration file-scoped)
+        des 7 fichiers qui lisent le seed (BC Foyer + `ReferentielActivitesEnMemoire`). **À
+        rejouer pour le lot Mongo (4)** si ses fichiers Foyer lisent aussi le seed.
+      - **Ripple** : seul `Infrastructure` référence l'assembly (les tests l'ont en transitif et le
+        voyaient via `using PlanningDeGarde.Infrastructure;`). Anti-churn : `global using
+        PlanningDeGarde.AdapterDroite.InMemory.<BC>.Repositories;` ajoutés aux `GlobalUsings.cs` de
+        `Infrastructure`, `PlanningDeGarde.Tests`, `PlanningDeGarde.Api.Tests`. `Web`/`Web.Tests`
+        intacts (ne référencent pas l'Infrastructure ; n'en citent les types qu'en commentaire).
 - [ ] **Lot 6 — `PlanningDeGarde.Web`** : réorganiser les composants par bounded context ;
       envisager un projet de librairie de composants.
 - [ ] **Lot 7 — Tests** : traquer les doublons, prouver qu'ils sont réellement en double, supprimer.
@@ -77,3 +99,11 @@ DOIVENT utiliser le même segment `CyclesDeFond`.
 5. **Références pleinement qualifiées** : un changement de namespace casse aussi les usages
    `PlanningDeGarde.Application.<Type>` en dur (pas couverts par les global usings). Les rechercher
    à chaque lot (`grep "PlanningDeGarde.<Assembly>.<Type>"`).
+6. **Masquage du seed `Foyer` par le segment de namespace `.Foyer`** (constaté au lot InMemory) :
+   tout fichier rangé sous un namespace contenant `.Foyer` et qui lit la classe seed
+   `PlanningDeGarde.Application.Foyer.Seed.Foyer` (ex. `Foyer.Activites`, `Foyer.CouleurNeutre`)
+   ne compile plus (le segment de namespace masque le type). Un global using alias **ne suffit
+   pas** (unité de compilation → perd face au membre de namespace externe) : poser
+   `using Foyer = PlanningDeGarde.Application.Foyer.Seed.Foyer;` **dans** le namespace file-scoped
+   du fichier. Idem si un jour un BC porte le segment `.CycleDeFond` (déjà évité via `CyclesDeFond`).
+   Le lot **Mongo (4)** doit vérifier ce point sur ses fichiers Foyer.

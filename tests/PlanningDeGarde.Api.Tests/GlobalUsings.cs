@@ -34,3 +34,18 @@ global using PlanningDeGarde.Application.Slots.Handlers;
 global using PlanningDeGarde.Application.Slots.Ports;
 global using PlanningDeGarde.Application.Transferts.Handlers;
 global using PlanningDeGarde.Application.Transferts.Ports;
+
+// Lot 2 (refacto hors-sprint) — l'AdapterDroite.InMemory est réorganisé en [BoundedContext]/[Technical]
+// (dossier Classes/ supprimé, namespaces PlanningDeGarde.AdapterDroite.InMemory.<BC>.<Technical>).
+// Ces global usings ré-exposent les sous-espaces pour les consommateurs (anti-churn).
+global using PlanningDeGarde.AdapterDroite.InMemory.Activites.Repositories;
+global using PlanningDeGarde.AdapterDroite.InMemory.Commun.Services;
+global using PlanningDeGarde.AdapterDroite.InMemory.Comptes.Repositories;
+global using PlanningDeGarde.AdapterDroite.InMemory.CyclesDeFond.Repositories;
+global using PlanningDeGarde.AdapterDroite.InMemory.Echanges.Repositories;
+global using PlanningDeGarde.AdapterDroite.InMemory.Enfants.Repositories;
+global using PlanningDeGarde.AdapterDroite.InMemory.Foyer.Repositories;
+global using PlanningDeGarde.AdapterDroite.InMemory.Notifications.Repositories;
+global using PlanningDeGarde.AdapterDroite.InMemory.Periodes.Repositories;
+global using PlanningDeGarde.AdapterDroite.InMemory.Slots.Repositories;
+global using PlanningDeGarde.AdapterDroite.InMemory.Transferts.Repositories;
