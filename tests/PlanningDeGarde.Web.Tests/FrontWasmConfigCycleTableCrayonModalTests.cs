@@ -5,7 +5,6 @@ using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 

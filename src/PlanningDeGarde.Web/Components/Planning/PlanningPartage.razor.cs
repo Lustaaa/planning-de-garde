@@ -12,7 +12,7 @@ using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web.State;
 
-namespace PlanningDeGarde.Web.Components.Pages;
+namespace PlanningDeGarde.Web.Components.Planning;
 
 /// <summary>
 /// Vue centrale du planning partagé (front <b>WASM</b>), rendue en grille agenda 5×7 en LECTURE

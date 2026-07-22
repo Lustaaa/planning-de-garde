@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components;
+namespace PlanningDeGarde.Web.Components.Delegation;
 
 /// <summary>
 /// Mini-dialog « Déléguer ce jour » (s44) : choix de l'acteur RECEVANT, émission de la commande de

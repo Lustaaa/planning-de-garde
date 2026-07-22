@@ -46,7 +46,7 @@ public sealed class FrontWasmGrilleCaseMiniCarteAujourdhuiTests : TestContext
 
         Assert.NotNull(dir);
         var razor = File.ReadAllText(Path.Combine(
-            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Pages", "PlanningPartage.razor"));
+            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Planning", "PlanningPartage.razor"));
 
         // Chrome de la carte tokenisé (fonctionne en clair ET en sombre).
         Assert.Contains("var(--pdg-border)", razor, StringComparison.Ordinal);

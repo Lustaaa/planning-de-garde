@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components;
+namespace PlanningDeGarde.Web.Components.Echanges;
 
 /// <summary>
 /// Mini-dialog « Proposer un échange » (s47) : choix de l'acteur RECEVANT, émission de la commande de proposition

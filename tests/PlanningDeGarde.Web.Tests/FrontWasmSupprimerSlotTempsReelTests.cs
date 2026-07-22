@@ -16,7 +16,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// rafraîchit un <b>second écran</b> affichant le même planning partagé, <b>sans rechargement</b>. Deux
 /// écrans câblés à la <b>MÊME API distante réelle</b> (<see cref="ApiDistanteFactory"/> unique → store
 /// singleton partagé, hub SignalR réel commun) : l'écran 2 est la <b>grille</b>
-/// (<see cref="Web.Components.Pages.PlanningPartage"/>), l'écran 1 émet la suppression sur le canal réel.
+/// (<see cref="Web.Components.Planning.PlanningPartage"/>), l'écran 1 émet la suppression sur le canal réel.
 ///
 /// Montage : un slot « École » 08h30-16h30 pour Léa le mardi 16/06/2026 est rendu dans la case du 16/06.
 /// Quand l'écran 1 supprime le slot (<c>POST /api/canal/supprimer-slot</c> → diffusion temps réel <b>sur

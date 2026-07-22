@@ -5,7 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Bunit;
 using PlanningDeGarde.Domain;
-using PlanningDeGarde.Web.Components.Pages;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;

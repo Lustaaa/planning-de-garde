@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components.Pages;
+namespace PlanningDeGarde.Web.Components.Comptes;
 
 /// <summary>
 /// Écran « mot de passe oublié » (front <b>WASM</b>, s28, volet 1) : émet une demande de récupération de

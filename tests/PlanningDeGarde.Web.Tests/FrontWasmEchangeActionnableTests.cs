@@ -10,7 +10,6 @@ using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web;
 using PlanningDeGarde.Web.Components;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 using static PlanningDeGarde.Web.CanalEcriture;

@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using AngleSharp.Dom;
 using Bunit;
 using PlanningDeGarde.Domain;
-using PlanningDeGarde.Web.Components.Pages;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;

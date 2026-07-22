@@ -11,7 +11,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// Acceptation de NIVEAU RUNTIME du Sc.6 (🖥️ scénario IHM, <c>@limite</c> 🏷️ caractérisation — palier 7,
 /// 3ᵉ dialog) : <b>caractérisation (filet)</b> de l'issue d'annulation (règle 14 — grille en lecture seule,
 /// annuler n'émet aucune commande). On rend la <b>vraie</b> grille
-/// <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
+/// <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
 /// (<see cref="ApiDistanteFactory"/>, store réel, canal HTTP réel). Un Parent ouvre la dialog depuis une
 /// case, choisit dépositaire/récupérateur, puis <b>annule sans valider</b> : la dialog se ferme, aucun
 /// accusé « Transfert défini » ne s'affiche, et — rempart anti vert-qui-ment — <b>aucune écriture n'a

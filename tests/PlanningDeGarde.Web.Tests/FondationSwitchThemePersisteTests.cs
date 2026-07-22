@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Layout;
+using PlanningDeGarde.Web.Components.Shared.Layout;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
@@ -41,7 +41,7 @@ public sealed class FondationSwitchThemePersisteTests : TestContext
         => File.ReadAllText(Path.Combine(RacineWeb(), "wwwroot", "index.html"));
 
     private static string LireMainLayout()
-        => File.ReadAllText(Path.Combine(RacineWeb(), "Components", "Layout", "MainLayout.razor"));
+        => File.ReadAllText(Path.Combine(RacineWeb(), "Components", "Shared", "Layout", "MainLayout.razor"));
 
     [Fact]
     public void Le_module_pdgTheme_definir_persiste_localStorage_et_applique_data_theme()

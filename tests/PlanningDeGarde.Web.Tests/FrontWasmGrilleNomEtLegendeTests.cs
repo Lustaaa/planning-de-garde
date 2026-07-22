@@ -8,7 +8,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <summary>
 /// Acceptation de NIVEAU RUNTIME du Sc.1 (🖥️ IHM, <c>@nominal</c>) — une période affectée à Alice
 /// affiche son <b>nom</b> dans la case (sur sa teinte de responsabilité) <b>et</b> entre dans la
-/// <b>légende</b>. La grille réelle <see cref="PlanningDeGarde.Web.Components.Pages.PlanningPartage"/>
+/// <b>légende</b>. La grille réelle <see cref="PlanningDeGarde.Web.Components.Planning.PlanningPartage"/>
 /// est rendue câblée à une API distante réelle (référentiel réel <c>parent-a → « Alice »</c>, palette
 /// réelle <c>parent-a → bleu</c>) : le nom rendu provient du référentiel réel, lu via HTTP.
 ///

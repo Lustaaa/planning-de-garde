@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components;
+namespace PlanningDeGarde.Web.Components.Delegation;
 
 /// <summary>
 /// Mini-dialog « Reprendre ce jour » (s46) : confirmation de l'annulation de la délégation d'UN jour, émise

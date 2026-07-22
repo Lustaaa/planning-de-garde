@@ -3,7 +3,7 @@ using System.Net.Http.Json;
 using System.Threading.Tasks;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components.Pages;
+namespace PlanningDeGarde.Web.Components.Comptes;
 
 /// <summary>
 /// Écran « redéfinir par jeton » (front <b>WASM</b>, s28, volet 1) : le jeton de réinitialisation reçu par

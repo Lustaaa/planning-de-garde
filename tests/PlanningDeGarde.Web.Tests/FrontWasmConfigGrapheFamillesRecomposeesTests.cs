@@ -3,7 +3,6 @@ using System.Linq;
 using Bunit;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Web.Components.Pages;
 using PlanningDeGarde.Web.State;
 using Xunit;
 

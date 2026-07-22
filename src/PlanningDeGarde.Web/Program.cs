@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components;
+using PlanningDeGarde.Web.Components.Shared;
 using PlanningDeGarde.Web.State;
 
 // Hôte Blazor WebAssembly RÉEL : l'application s'exécute dans le navigateur. Tout le rendu est

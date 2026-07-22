@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components;
+namespace PlanningDeGarde.Web.Components.Transferts;
 
 /// <summary>
 /// Dialog (modal) « Définir un transfert » réutilisable, ouverte depuis le menu d'actions d'une case

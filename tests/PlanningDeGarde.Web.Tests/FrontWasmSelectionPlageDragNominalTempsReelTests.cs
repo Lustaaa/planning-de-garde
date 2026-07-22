@@ -10,7 +10,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <summary>
 /// Sprint 49 — Sc.3 (🖥️ IHM, <c>@nominal</c>) — acceptation de NIVEAU RUNTIME de la <b>sélection de plage
 /// par DRAG</b> directement sur les cases de la grille agenda (affordance tranchée par le scrum-master).
-/// On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à
+/// On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à
 /// une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel, projection réelle
 /// <see cref="GrilleAgendaQuery"/>, palette + référentiel <b>réels</b> du foyer : <c>parent-a</c> → « Alice » / bleu).
 ///

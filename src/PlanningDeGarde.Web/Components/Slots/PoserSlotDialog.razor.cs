@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components;
 using PlanningDeGarde.Web.State;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components;
+namespace PlanningDeGarde.Web.Components.Slots;
 
 /// <summary>
 /// Dialog (modal) « Poser un slot » <b>unifiée</b>, ouverte depuis une case du planning (palier 7, écriture

@@ -10,7 +10,6 @@ using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web;
-using PlanningDeGarde.Web.Components.Pages;
 using Xunit;
 using static PlanningDeGarde.Web.CanalEcriture;
 

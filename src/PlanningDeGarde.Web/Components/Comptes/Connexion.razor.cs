@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using PlanningDeGarde.Web.State;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components.Pages;
+namespace PlanningDeGarde.Web.Components.Comptes;
 
 /// <summary>
 /// Page de connexion dédiée (front <b>WASM</b>, s24) : landing par défaut et <b>seul chemin d'entrée</b>

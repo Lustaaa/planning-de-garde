@@ -7,7 +7,7 @@ using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web.State;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components;
+namespace PlanningDeGarde.Web.Components.Imprevus;
 
 /// <summary>
 /// Mini-dialog « Signaler un imprévu » (s48) : choix du TYPE (malade / retard) + motif OPTIONNEL, émission de la

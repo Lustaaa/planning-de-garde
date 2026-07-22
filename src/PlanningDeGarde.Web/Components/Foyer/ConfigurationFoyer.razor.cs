@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components.Pages;
+namespace PlanningDeGarde.Web.Components.Foyer;
 
 /// <summary>
 /// Écran de configuration du foyer (front <b>WASM</b>) : renomme un acteur déjà semé. L'écriture

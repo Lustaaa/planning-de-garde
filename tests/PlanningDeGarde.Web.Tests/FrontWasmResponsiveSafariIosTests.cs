@@ -42,7 +42,7 @@ public sealed class FrontWasmResponsiveSafariIosTests
     [Fact]
     public void La_hauteur_pleine_page_est_robuste_et_respecte_les_zones_sures()
     {
-        var css = Lire("Components", "Layout", "MainLayout.razor.css");
+        var css = Lire("Components", "Shared", "Layout", "MainLayout.razor.css");
         Assert.Contains("100dvh", css, StringComparison.Ordinal);            // évite le piège 100vh iOS
         Assert.Contains("env(safe-area-inset-top", css, StringComparison.Ordinal); // encoche / sticky
     }

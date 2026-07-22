@@ -13,7 +13,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// d'actions</b> de la case (décision CP : un seul déclencheur, deux entrées), dont « Affecter une
 /// période » ouvre la dialog pré-remplie sur la date de la case ; l'affectation validée <b>colore et
 /// nomme</b> la case et <b>agrège la légende</b>. On rend la <b>vraie</b> grille
-/// <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
+/// <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à une <b>API distante réelle</b>
 /// (<see cref="ApiDistanteFactory"/>, store réel, projection réelle <see cref="GrilleAgendaQuery"/>,
 /// palette + référentiel <b>réels</b> du foyer : <c>parent-a</c> → « Alice » / « bleu »). Aucun handler ni
 /// règle backend neuf : réutilisation de la commande <c>AffecterPeriode</c> et de l'endpoint

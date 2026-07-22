@@ -19,7 +19,9 @@ Solution `PlanningDeGarde.slnx` — 10 projets `src/` + 3 projets `tests/`.
 - **AdapterDroite.Securite** — adaptateur de droite **sécurité** : `HacheurMotDePassePbkdf2` (`IHacheurMotDePasse`, PBKDF2/BCL) et `FournisseurOAuthGoogleNonCable` (`IFournisseurOAuth`, **placeholder** — dette de câblage OAuth assumée). Sous-dossiers `MotDePasse/`/`OAuth/`, namespace unique `PlanningDeGarde.AdapterDroite.Securite`.
 - **SignalR** — adaptateur de **gauche** (diffusion temps réel, lecture seule).
 - **Api** — hôte d'API **détaché** (démarre seul, expose OpenAPI + UI explorable, CORS). Surface HTTP en **controllers MVC REST** (`[ApiController]` attribute-routed, **un par ressource / bounded context** sous `Controllers/`, DTO sous `Dtos/`) : routes ressource + verbes HTTP (`POST /api/slots`, `DELETE /api/periodes/{id}`, `PUT /api/foyer/acteurs/{id}`, `GET /api/grille/…`). Écriture = canal requête/réponse (handlers inchangés), lecture = queries, diffusion = SignalR lecture seule.
-- **Web** — front **Blazor WebAssembly**, consomme l'API comme une **API distante**.
+- **Web** — front **Blazor WebAssembly**, consomme l'API comme une **API distante**. Composants
+  organisés **par bounded context** sous `Components/<BC>/` (+ `Components/Shared/` et `Shared/Layout/`),
+  namespace `PlanningDeGarde.Web.Components.<BC>` ; résolution des tags via `Components/_Imports.razor`.
 - **Infrastructure** — **composition root** (câblage / DI transverse), **pas un adaptateur** : porte `ServiceCollectionExtensions` (`AjouterPlanningDeGarde`) et compose les use cases avec tous les adaptateurs de droite (InMemory, Mongo, Smtp, Securite, SignalR).
 
 Règles d'or : le front n'appelle jamais le domaine en direct (tout passe par l'API) ; **écriture** = canal requête/réponse, **diffusion** = SignalR lecture seule, jamais confondus ; données derrière des ports (jamais figées dans le code).

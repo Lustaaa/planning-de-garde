@@ -14,7 +14,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// <b>plage de 2 cases contiguës</b>. Le comportement neuf vit dans le <c>.razor</c> (sélection de plage
 /// front + dialog pré-remplie sur l'intervalle) ; le <b>write réutilise <c>AffecterPeriode</c> existant</b>
 /// (backend early green : une période <c>[début, fin]</c> couvre déjà un intervalle, inclusif aux deux
-/// bornes). On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM)
+/// bornes). On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM)
 /// câblée à une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel, projection réelle
 /// <see cref="GrilleAgendaQuery"/>, palette + référentiel <b>réels</b> du foyer).
 ///
@@ -96,7 +96,7 @@ public sealed class FrontWasmAffecterPeriodePlageContigueTempsReelTests : TestCo
     }
 
     private static void AssertCase(
-        IRenderedComponent<Web.Components.Pages.PlanningPartage> grille, string jjMM, string nom, string couleur)
+        IRenderedComponent<Web.Components.Planning.PlanningPartage> grille, string jjMM, string nom, string couleur)
     {
         var caseJour = GrilleRuntimeHarness.CaseDuJour(grille, jjMM);
         Assert.Equal(nom, caseJour.QuerySelector("[data-testid='nom-responsable']")!.TextContent.Trim());

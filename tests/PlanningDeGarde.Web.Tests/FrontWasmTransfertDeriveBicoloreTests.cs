@@ -10,7 +10,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// AUTO-dérivé (volet back Sc.5) se rend avec la MÊME présentation bicolore qu'un transfert saisi (s29),
 /// sans aucune règle de rendu neuve. Le store réel de l'API distante ne porte AUCUN transfert saisi —
 /// seulement une SUCCESSION de périodes (fin A jour J + début B jour J+1). La grille réellement câblée
-/// (front WASM <see cref="Web.Components.Pages.PlanningPartage"/> + API distante réelle, projection réelle)
+/// (front WASM <see cref="Web.Components.Planning.PlanningPartage"/> + API distante réelle, projection réelle)
 /// dérive la bascule et coupe la pastille de date du jour de bascule par une diagonale bicolore
 /// (cédant → recevant), la légende signalant le motif « Transfert ». Un jour SANS bascule reste unicolore.
 ///

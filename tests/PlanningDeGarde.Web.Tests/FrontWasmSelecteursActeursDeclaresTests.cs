@@ -14,7 +14,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// store vivant via <c>GET /api/foyer/acteurs</c>, clé = identifiant stable), jamais une liste statique
 /// codée en dur (<c>Foyer.Responsables</c>) qui ignorait les acteurs réels ajoutés/supprimés.
 ///
-/// On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée
+/// On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée
 /// à une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel, canal HTTP réel) :
 /// un acteur RÉEL « Carla » est déclaré au runtime, puis on ouvre chaque dialog d'écriture et on
 /// vérifie que son sélecteur de responsable expose EXACTEMENT l'ensemble des acteurs déclarés (dont

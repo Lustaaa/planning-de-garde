@@ -56,7 +56,15 @@ public sealed class FrontWasmDialogsHabillageCoherentTests
     [InlineData("SupprimerSlotDialog")]
     public void Aucun_dialog_ne_redeclare_une_surface_blanche_codee_en_dur(string dialog)
     {
-        var razor = File.ReadAllText(Path.Combine(RacineWeb(), "Components", dialog + ".razor"));
+        // Lot 6 (refacto hors-sprint) : les dialogs sont rangés par bounded context sous Components/<BC>/.
+        var bc = dialog switch
+        {
+            "PoserSlotDialog" or "SupprimerSlotDialog" => "Slots",
+            "AffecterPeriodeDialog" or "EditerPeriodeDialog" or "SupprimerPeriodeDialog" => "Periodes",
+            "DefinirTransfertDialog" => "Transferts",
+            _ => throw new ArgumentOutOfRangeException(nameof(dialog), dialog, "bounded context inconnu"),
+        };
+        var razor = File.ReadAllText(Path.Combine(RacineWeb(), "Components", bc, dialog + ".razor"));
         Assert.DoesNotContain("background: #fff", razor, StringComparison.OrdinalIgnoreCase);
     }
 }

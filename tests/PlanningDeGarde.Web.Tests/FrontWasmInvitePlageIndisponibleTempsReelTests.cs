@@ -100,7 +100,7 @@ public sealed class FrontWasmInvitePlageIndisponibleTempsReelTests : TestContext
     }
 
     /// <summary>Date (« dd/MM ») de la première case-jour rendue — témoin du début de la fenêtre courante.</summary>
-    private static string PremiereCaseDate(IRenderedComponent<Web.Components.Pages.PlanningPartage> grille)
+    private static string PremiereCaseDate(IRenderedComponent<Web.Components.Planning.PlanningPartage> grille)
         => grille.FindAll("[data-testid='jour-case']")
             .First().QuerySelector(".grille-jour-date")!.TextContent.Trim();
 

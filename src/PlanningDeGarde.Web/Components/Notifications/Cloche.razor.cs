@@ -11,7 +11,7 @@ using PlanningDeGarde.Domain;
 using PlanningDeGarde.Web.State;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components;
+namespace PlanningDeGarde.Web.Components.Notifications;
 
 /// <summary>
 /// CLOCHE de notifications (s47) dans la BARRE D'APPLICATION (MainLayout, retour PO au gate visuel) : badge du

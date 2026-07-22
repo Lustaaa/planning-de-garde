@@ -208,3 +208,10 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   endpoint par endpoint des appels `NotifierMiseAJour()` (un oubli sur `DELETE /api/slots/{id}` cassait la diffusion
   temps réel du 2e écran). Plan lot 2 coché + **table de mapping des routes** ajoutée ; CLAUDE.md (architecture Api)
   resynchronisé. **920/920 vert** (dont 108 Api.Tests sur Mongo réel). Aucune règle de gestion touchée.
+- 2026-07-22 — Lot 6 refonte technique (architecte, hors-sprint) : `PlanningDeGarde.Web` — composants Blazor
+  réorganisés **par bounded context** sous `Components/<BC>/` (+ `Shared/` et `Shared/Layout/`), namespaces
+  alignés, **PAS de RCL** (décision PO). Anti-churn : nouveaux `@using ...Components.<BC>` au `_Imports.razor`
+  (tags) + `GlobalUsings.cs` de test (bUnit), stale `...Components.Pages`/`.Layout` recalés, 10 gardes d'asset
+  (habillage) rebranchées sur les chemins `Components/<BC>/…`. Routes `@page` inchangées. Read-models front
+  dupliqués (Web/Api déployables séparés) NON unifiés — dette assumée. Plan lot 6 coché ; CLAUDE.md (archi Web)
+  resynchronisé. **920/920 vert** (dont 347 Web.Tests). Aucune règle de gestion touchée.

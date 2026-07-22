@@ -42,7 +42,7 @@ public sealed class FrontWasmGrilleBarreNavRegroupeeTests : TestContext
 
         Assert.NotNull(dir);
         var razor = File.ReadAllText(Path.Combine(
-            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Pages", "PlanningPartage.razor"));
+            dir!.FullName, "src", "PlanningDeGarde.Web", "Components", "Planning", "PlanningPartage.razor"));
 
         // Repli responsive (pas de casse de la grille sur écran étroit) et groupe segmenté tokenisé.
         Assert.Contains("barre-nav-temporelle", razor, StringComparison.Ordinal);

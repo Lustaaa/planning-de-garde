@@ -18,7 +18,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// rafraîchit un <b>second écran</b> affichant le même planning partagé, <b>sans rechargement</b>. Deux
 /// écrans câblés à la <b>MÊME API distante réelle</b> (<see cref="ApiDistanteFactory"/> unique → store
 /// singleton partagé, hub SignalR réel commun) : l'écran 2 est la <b>grille</b>
-/// (<see cref="Web.Components.Pages.PlanningPartage"/>), l'écran 1 émet l'édition sur le canal réel.
+/// (<see cref="Web.Components.Planning.PlanningPartage"/>), l'écran 1 émet l'édition sur le canal réel.
 ///
 /// Montage : « Nina la nounou » garde le mardi 16/06/2026 (<b>surcharge</b>) ; aucun fond → la case du 16/06
 /// porte « Nina la nounou ». Quand l'écran 1 réaffecte la période à « Parent A » (<c>POST

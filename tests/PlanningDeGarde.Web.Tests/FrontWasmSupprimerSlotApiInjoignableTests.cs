@@ -15,7 +15,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// clair <b>dans</b> la dialog, <b>laisser la dialog ouverte</b>, ne <b>rien</b> appliquer (le slot reste,
 /// la case inchangée), et n'effectuer <b>aucune mise en file ni rejeu</b>.
 ///
-/// On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à
+/// On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à
 /// l'<b>API distante réelle</b> ; seule l'écriture de suppression est coupée au transport (la lecture des
 /// slots de la dialog transite normalement, comme en condition réelle). Anti « vert qui ment » : le slot
 /// est observé toujours présent dans le store distant après l'échec.

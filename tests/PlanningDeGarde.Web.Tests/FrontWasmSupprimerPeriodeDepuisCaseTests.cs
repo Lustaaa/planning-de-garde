@@ -17,7 +17,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// réel (<c>POST /api/canal/supprimer-periode</c>), lève un <b>accusé non bloquant « Période supprimée »</b>
 /// et fait <b>re-résoudre la case</b> (repli surcharge &gt; fond) à la relecture de la grille distante.
 ///
-/// On rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à
+/// On rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à
 /// une <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel, projection + référentiel
 /// réels). Anti « vert qui ment » : le baseline « Nina la nounou » est asserté avant ; si la dialog ne
 /// liste pas, si la suppression ne transite pas jusqu'au store distant, ou si la grille ne se re-résout

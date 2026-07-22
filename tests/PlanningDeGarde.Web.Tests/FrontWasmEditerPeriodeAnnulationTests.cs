@@ -13,7 +13,7 @@ namespace PlanningDeGarde.Web.Tests;
 /// Acceptation de NIVEAU RUNTIME du Sc.8 (🖥️ IHM, <c>@limite</c> — annulation). Ouvrir le formulaire
 /// d'édition, <b>modifier le responsable</b>, puis <b>fermer sans enregistrer</b> ne doit émettre
 /// <b>aucune</b> commande d'écriture : la période reste « Nina la nounou » et la case reste inchangée. On
-/// rend la <b>vraie</b> grille <see cref="Web.Components.Pages.PlanningPartage"/> (front WASM) câblée à une
+/// rend la <b>vraie</b> grille <see cref="Web.Components.Planning.PlanningPartage"/> (front WASM) câblée à une
 /// <b>API distante réelle</b> (<see cref="ApiDistanteFactory"/>, store réel). Le bouton « Fermer »
 /// (<c>OnAnnule</c> → <c>FermerDialog</c>) ne passe jamais par le canal d'écriture : preuve observable =
 /// aucun accusé « Période modifiée », la période toujours relue depuis le store distant avec son responsable

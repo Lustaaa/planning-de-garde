@@ -3,8 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Bunit;
 using Microsoft.AspNetCore.Components;
-using PlanningDeGarde.Web.Components.Layout;
-using PlanningDeGarde.Web.Components.Pages;
+using PlanningDeGarde.Web.Components.Shared.Layout;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;

@@ -120,8 +120,51 @@ Docker actif), branche `ia-refacto/lotN-…`, pas de merge/PR (le PO gère la po
         PlanningDeGarde.AdapterDroite.InMemory.<BC>.Repositories;` ajoutés aux `GlobalUsings.cs` de
         `Infrastructure`, `PlanningDeGarde.Tests`, `PlanningDeGarde.Api.Tests`. `Web`/`Web.Tests`
         intacts (ne référencent pas l'Infrastructure ; n'en citent les types qu'en commentaire).
-- [ ] **Lot 6 — `PlanningDeGarde.Web`** : réorganiser les composants par bounded context ;
-      envisager un projet de librairie de composants.
+- [x] **Lot 6 — `PlanningDeGarde.Web`** : composants Blazor réorganisés **par bounded context**
+      sous `Components/<BC>/` (**décision PO : dossiers par BC, PAS de RCL** — aucun nouveau projet).
+      (920/920 vert, dont 347 Web.Tests bUnit) — livré sur la branche `ia-refacto/lot1-application-bc-technical`.
+      **Arbo retenue** (`.razor` + partial `.razor.cs` déplacés PAR PAIRE, namespace = dossier
+      `PlanningDeGarde.Web.Components.<BC>`) :
+      - `Components/Shared/` : `App`, `Legende`, `ModalConfig` + `Shared/Layout/` (`BasculeTheme`,
+        `MainLayout`, `MenuUtilisateur`, `NavMenu` — sous-dossier Layout conservé, ns `...Shared.Layout`).
+      - `Components/Planning/` : `PlanningPartage`, `Home`.
+      - `Components/Periodes/` : `AffecterPeriodeDialog`, `EditerPeriodeDialog`, `SupprimerPeriodeDialog`.
+      - `Components/Slots/` : `PoserSlotDialog`, `SupprimerSlotDialog`.
+      - `Components/Transferts/` : `DefinirTransfertDialog`.
+      - `Components/Delegation/` : `DeleguerRecuperationDialog`, `ReprendreJourDialog`.
+      - `Components/Echanges/` : `ProposerEchangeDialog`. · `Components/Imprevus/` : `SignalerImprevuDialog`.
+      - `Components/Notifications/` : `Cloche`. · `Components/Foyer/` : `ConfigurationFoyer`.
+      - `Components/Comptes/` : `Connexion`, `MotDePasseOublie`, `ReinitialiserMotDePasse`.
+      - Les dossiers plats `Components/` et `Components/Pages/` **disparaissent** ; `Components/Layout/`
+        passe sous `Shared/Layout/`.
+      **Décisions/écarts** :
+      - **Anti-churn (résolution des tags Blazor)** : les nouveaux namespaces `@using
+        PlanningDeGarde.Web.Components.<BC>` sont ajoutés **au `Components/_Imports.razor`** (global au
+        dossier) — aucun `.razor` édité un par un. `_Imports` remplace `...Components.Layout` par
+        `...Components.Shared.Layout` et garde `...Components` (parent).
+      - **Routes INCHANGÉES** : les `@page "..."` ne bougent pas (le déplacement change le namespace,
+        pas l'URL) — zéro régression de navigation.
+      - **`Program.cs`** : `using PlanningDeGarde.Web.Components;` → `...Components.Shared` (composant
+        racine `App` déplacé sous Shared).
+      - **Ripple `Web.Tests` (347)** : anti-churn via `GlobalUsings.cs` de test qui ré-expose les
+        sous-namespaces BC (`...Planning`, `...Periodes`, …, `...Foyer`, `...Comptes`, `...Shared.Layout`) ;
+        `Shared` (App/Legende/ModalConfig) N'EST PAS mis en global (2 fichiers rendant `App` portent un
+        `using` per-file) pour ne pas exposer le segment `.Foyer` comme simple nom et masquer le type
+        `PlanningDeGarde.Web.Foyer` (cf. note 6). Les `using ...Components.Pages;` (129) devenus
+        inexistants sont **retirés** (types couverts par les global usings), `...Components.Layout` (6)
+        → `...Components.Shared.Layout`, refs pleinement qualifiées `Web.Components.Pages.PlanningPartage`
+        (code + `<see cref>`) recalées en `...Components.Planning.PlanningPartage`.
+      - **Gardes d'asset (habillage/tokenisation)** : 10 tests lisent des `.razor`/`.razor.css` **par
+        chemin codé en dur** (`Components/<X>.razor`) — chemins recalés vers `Components/<BC>/…` (dont un
+        `switch` dialog→BC dans `FrontWasmDialogsHabillageCoherentTests`). Contenu des feuilles inchangé.
+      - **Read-models front dupliqués** (`Foyer`, `RoleFoyer`, `EnfantFoyer`, `ActeurFoyer`,
+        `SlotDuJourVue`, `PeriodeDuJourVue`, `CycleFoyer`…) : **NON unifiés** — Web et Api sont des
+        déployables séparés (le front consomme l'API distante avec ses propres formes JSON) ; partager
+        les DTO les coupleraient. Laissés en l'état (dette assumée, cf. note ci-dessous).
+      - **Services/utilitaires à la racine du projet** (`CanalEcriture`, `ClientCanalEcriture`,
+        `MessagesEcriture`, `Foyer`, `State/`, thème, écouteurs interop, session) : **laissés à plat**
+        (namespace `PlanningDeGarde.Web`) — les ranger changerait le namespace et rippl­erait dans de
+        nombreux `.razor.cs`/tests pour un gain faible ; hors du périmètre « simple et sûr » retenu.
 - [ ] **Lot 7 — Tests** : traquer les doublons, prouver qu'ils sont réellement en double, supprimer.
 - [ ] **Lot 8 — Doc-gen** : auto-générer (à la compilation) la doc technique depuis les commentaires
       `///` + commentaires d'API.

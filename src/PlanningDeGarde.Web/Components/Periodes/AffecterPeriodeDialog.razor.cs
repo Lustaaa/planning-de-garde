@@ -10,7 +10,7 @@ using static PlanningDeGarde.Web.CanalEcriture;
 // parent (PlanningPartage), rafraîchie à l'ouverture (fetch-on-open) et en temps réel : la dialog ne
 // charge plus rien elle-même (aucun re-render async pendant la saisie).
 
-namespace PlanningDeGarde.Web.Components;
+namespace PlanningDeGarde.Web.Components.Periodes;
 
 /// <summary>
 /// Dialog (modal) « Affecter une période » réutilisable, ouverte depuis le menu d'actions d'une case

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Components;
 using static PlanningDeGarde.Web.CanalEcriture;
 
-namespace PlanningDeGarde.Web.Components;
+namespace PlanningDeGarde.Web.Components.Periodes;
 
 /// <summary>
 /// Dialog (modal) « Éditer une période » ouverte depuis le menu d'actions d'une case (palier 7, écriture

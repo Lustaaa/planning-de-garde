@@ -4,7 +4,6 @@ using Bunit;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using PlanningDeGarde.Application;
-using PlanningDeGarde.Web.Components.Pages;
 using Xunit;
 
 namespace PlanningDeGarde.Web.Tests;
