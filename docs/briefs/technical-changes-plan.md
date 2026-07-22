@@ -14,9 +14,38 @@ Docker actif), branche `ia-refacto/lotN-…`, pas de merge/PR (le PO gère la po
       fichier `.cs` par contrôleur.
 - [ ] **Lot 3 — `PlanningDeGarde.Infrastructure`** : le scinder en adaptateurs de droite par techno
       (Smtp, Auth) plutôt qu'un fourre-tout ; clarifier son statut d'adaptateur vs composition root.
-- [ ] **Lot 4 — `PlanningDeGarde.AdapterDroite.Mongo`** : arbo `[BC]/[Technical]`
-      (`Slots/Repositories`, `Slots/DbModels`, …), namespaces `Mongo.Slots.Repositories`, sortir les
-      documents embarqués (`AdminDocument`) dans `DbModels`, repos dans `Repositories`.
+- [x] **Lot 4 — `PlanningDeGarde.AdapterDroite.Mongo`** : arbo `[BC]/[Technical]`, namespaces
+      `PlanningDeGarde.AdapterDroite.Mongo.<BC>.<Technical>`, dossier `Classes/` supprimé, documents
+      embarqués sortis dans `DbModels`. (920/920 vert, dont 108 Api.Tests sur Mongo RÉEL — compat données
+      prouvée) — livré comme **3e lot exécuté** du programme, sur la branche
+      `ia-refacto/lot1-application-bc-technical`. **Décisions/écarts** :
+      - **17 dépôts** rangés sous `<BC>/Repositories/` (ns `...Mongo.<BC>.Repositories`), alignés sur la
+        carte figée (dont `CyclesDeFond` au pluriel).
+      - **15 documents embarqués SORTIS** (1 fichier/type) sous `<BC>/DbModels/` (ns `...Mongo.<BC>.DbModels`),
+        passés de `private sealed` à **`internal sealed`** (visibilité minimale : détail d'implémentation du
+        store, jamais consommé hors assembly) : `AdminDocument`, `ActeurDocument`, `RoleDocument` (Foyer) ;
+        `CycleDocument`, `AffectationDocument` (CyclesDeFond) ; `LectureDocument`, `EvenementDocument`
+        (Notifications) ; `PeriodeDocument` (Periodes) ; `PropositionDocument` (Echanges) ; `SlotDocument`,
+        `SlotRecurrentDocument` (Slots) ; `TransfertDocument` (Transferts) ; `ActiviteDocument` (Activites) ;
+        `CompteDocument`, `JetonDocument` (Comptes) ; `EnfantDocument` (Enfants). **Attributs BSON / noms de
+        collection INCHANGÉS** (invariant de compat des données existantes).
+      - **`DateTimeMongo`** (helper de sérialisation wall-clock) → `Commun/Serialization/`
+        (ns `...Mongo.Commun.Serialization`), `internal static` inchangé.
+      - **`MigrationRetroAffectationEnfantsMongo`** (migration de données, pas un dépôt) → `Enfants/Migrations/`
+        (ns `...Mongo.Enfants.Migrations`).
+      - **Masquage `Foyer`** (rejeu du cas InMemory lot 5) : seul `ConfigurationFoyerMongo` lit le seed
+        (`Foyer.CouleurNeutre` / `TypesParActeur` / `TypeParDefaut`) ; alias `using Foyer = ...Seed.Foyer;`
+        **scopé dans le namespace** file-scoped. Les autres fichiers Foyer ne lisent pas le seed. `CyclesDeFond`
+        déjà au pluriel → aucun masquage du type Domain.
+      - **Anomalie corrigée en passant** : les fichiers vivaient en `namespace PlanningDeGarde.Infrastructure`
+        (comme le seed en lot 1, l'InMemory en lot 5) ; recalés en `...Mongo.<BC>.<Technical>`.
+      - **Ripple** : `Infrastructure` (ServiceCollectionExtensions cite les 17 dépôts) + `Api.Tests` (nombreux
+        `*MongoTests`/durabilité + migration). Anti-churn : `global using ...Mongo.<BC>.Repositories;`
+        (+ `.Enfants.Migrations`) ajoutés aux `GlobalUsings.cs` d'`Infrastructure` et `Api.Tests`. INTRA-assembly,
+        le `GlobalUsings.cs` du projet Mongo ré-expose `...<BC>.DbModels` + `...Commun.Serialization` (les
+        dépôts voient leurs documents, les documents voient `DateTimeMongo`, sans using par fichier). Aucune
+        réf pleinement qualifiée `PlanningDeGarde.Infrastructure.<MongoType>` ni référence aux documents côté
+        tests. `PlanningDeGarde.Tests` / `Web` / `Web.Tests` intacts (ne citent aucun type Mongo).
 - [x] **Lot 5 — `PlanningDeGarde.AdapterDroite.InMemory`** : arbo `[BC]/[Technical]`,
       namespaces `PlanningDeGarde.AdapterDroite.InMemory.<BC>.Repositories`, dossier `Classes/`
       supprimé. (920/920 vert) — livré comme 2e lot exécuté du programme, sur la branche
@@ -106,4 +135,5 @@ DOIVENT utiliser le même segment `CyclesDeFond`.
    pas** (unité de compilation → perd face au membre de namespace externe) : poser
    `using Foyer = PlanningDeGarde.Application.Foyer.Seed.Foyer;` **dans** le namespace file-scoped
    du fichier. Idem si un jour un BC porte le segment `.CycleDeFond` (déjà évité via `CyclesDeFond`).
-   Le lot **Mongo (4)** doit vérifier ce point sur ses fichiers Foyer.
+   Le lot **Mongo (4)** a vérifié ce point : seul `ConfigurationFoyerMongo` lit le seed → alias scopé posé,
+   les autres fichiers Foyer/DbModels ne le lisent pas.

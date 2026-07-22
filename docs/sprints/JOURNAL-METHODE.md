@@ -173,3 +173,15 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   **Impact** : plan lot 5 coché + note transverse « masquage Foyer » (à rejouer lot Mongo) ;
   ripple absorbé par global usings (Infrastructure + Tests + Api.Tests). **920/920 vert.** Aucune
   règle de gestion touchée.
+- 2026-07-22 — Refonte technique hors-sprint, **lot 3 exécuté** (architecte, bypass BDD) :
+  `PlanningDeGarde.AdapterDroite.Mongo` réorganisé en `[BoundedContext]/[Technical]` (dossier
+  `Classes/` supprimé, namespaces `...Mongo.<BC>.<Technical>` alignés sur la carte figée, dont
+  `CyclesDeFond` au pluriel). Modélisation NoSQL réelle : les **15 documents embarqués** (`private
+  sealed` en fin de fichier de repo) SORTIS en fichiers dédiés sous `<BC>/DbModels/`, passés
+  `internal sealed` — attributs BSON / noms de collection INCHANGÉS (invariant compat données).
+  17 dépôts sous `<BC>/Repositories/` ; `DateTimeMongo` → `Commun/Serialization/` ; migration
+  `MigrationRetroAffectationEnfantsMongo` → `Enfants/Migrations/`. Masquage `Foyer` rejoué (alias
+  scopé sur le seul `ConfigurationFoyerMongo`). **Impact** : plan lot 4 coché + note transverse
+  mise à jour ; ripple absorbé par global usings (Infrastructure + Api.Tests) et par le
+  `GlobalUsings.cs` du projet Mongo (DbModels + Commun.Serialization intra-assembly). **920/920
+  vert** (dont 108 Api.Tests sur Mongo RÉEL = compat données prouvée). Aucune règle de gestion touchée.
