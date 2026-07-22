@@ -215,3 +215,10 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   (habillage) rebranchées sur les chemins `Components/<BC>/…`. Routes `@page` inchangées. Read-models front
   dupliqués (Web/Api déployables séparés) NON unifiés — dette assumée. Plan lot 6 coché ; CLAUDE.md (archi Web)
   resynchronisé. **920/920 vert** (dont 347 Web.Tests). Aucune règle de gestion touchée.
+- 2026-07-22 — Lot 7 refonte technique (architecte, hors-sprint) : **audit doublons de tests**. Audit
+  conservateur des 3 projets (899 faits, similarité nom + fichier-entier + fait-par-fait). **3 doublons
+  confirmés** (byte-identiques, même couche) supprimés de `Sprint41Sc2_BorneDernierAdmin` — gardien
+  `Sprint41Sc1_DeDesignerAdmin` (dé-désignation nominale + idempotence) ; Sc2 recentré sur la BORNE
+  « dernier admin ». Reste = `INTENTIONNEL_COUCHES` (domaine/API/Mongo/IHM) et `PROCHE_MAIS_DISTINCT`
+  (fond/neutre, nominal/plage) → gardés (conservatisme strict, zéro couverture perdue). Table d'audit
+  dans le plan lot 7. **920 → 917 vert** (462 + 108 + 347). Aucune règle de gestion touchée.

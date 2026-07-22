@@ -165,7 +165,32 @@ Docker actif), branche `ia-refacto/lotN-…`, pas de merge/PR (le PO gère la po
         `MessagesEcriture`, `Foyer`, `State/`, thème, écouteurs interop, session) : **laissés à plat**
         (namespace `PlanningDeGarde.Web`) — les ranger changerait le namespace et rippl­erait dans de
         nombreux `.razor.cs`/tests pour un gain faible ; hors du périmètre « simple et sûr » retenu.
-- [ ] **Lot 7 — Tests** : traquer les doublons, prouver qu'ils sont réellement en double, supprimer.
+- [x] **Lot 7 — Tests (audit doublons)** : audit conservateur des ~920 tests / 3 projets. **3 doublons
+      confirmés supprimés** (920 → 917), tous entre `Sprint41Sc1_DeDesignerAdmin` et
+      `Sprint41Sc2_BorneDernierAdmin` (même couche Domain/App, faits byte-identiques). Table d'audit
+      ci-dessous. Livré sur la branche `ia-refacto/lot1-application-bc-technical`.
+
+  **Démarche** : (1) doublons de NOM de méthode de test au sein d'un même projet → tous des helpers
+  (`Dispose`, `NotifierMiseAJour`, builders) ou des noms partagés ciblant des SUT différents (dialogs
+  Deleguer/Echange/Imprevu, plage vs jour) = intentionnels. (2) Similarité fichier-entier (Jaccard sur
+  lignes normalisées, même projet) : **max 0.75**, aucune copie littérale — les paires proches sont des
+  features sœurs (fond vs neutre, éditer vs supprimer, nominal vs plage). (3) Similarité **fait par fait**
+  (corps de méthode normalisé, même projet) : **exactement 3 paires à 1.00**, toutes Sc1↔Sc2 ci-dessous ;
+  aucune autre ≥ 0.95 dans toute la suite.
+
+  | Paire de faits examinée | Couche | Verdict | Preuve / gardien |
+  |---|---|---|---|
+  | `Sc2.Domain_Should_Reussir_When_il_reste_au_moins_un_admin_apres_le_retrait` ↔ `Sc1.Domain_Should_Retirer_l_admin_cible_When_on_le_de_designe` | Domain pur | **DOUBLON_CONFIRME (supprimé de Sc2)** | Setup `FromSnapshot([ParentA,ParentB])`, act `DeDesignerAdmin(ParentA)`, asserts `EstSucces` + `DoesNotContain(ParentA)` + `Contains(ParentB)` **identiques**. Gardien : Sc1 (dé-désignation nominale). |
+  | `Sc2.Domain_Should_Rester_no_op_When_l_acteur_deja_non_admin_et_un_seul_autre_admin_subsiste` ↔ `Sc1.Domain_Should_Reussir_en_no_op_sans_mutation_When_l_acteur_est_deja_non_admin` | Domain pur | **DOUBLON_CONFIRME (supprimé de Sc2)** | Setup `FromSnapshot([ParentB])`, act `DeDesignerAdmin(ParentA)`, asserts `EstSucces` + `Single` + `Contains(ParentB)` **identiques**. Gardien : Sc1 (idempotence no-op). |
+  | `Sc2.Acceptation_Should_Reussir_When_on_de_designe_l_un_de_deux_admins` ↔ `Sc1.Acceptation_Should_Retirer_l_admin_et_persister_When_on_de_designe_un_acteur_parmi_plusieurs_admins` | Application (handler + store InMemory) | **DOUBLON_CONFIRME (supprimé de Sc2)** | Deux admins A+B, `Handle(DeDesignerAdminCommand(A))`, asserts `EstSucces` + `DoesNotContain(A)` + `Contains(B)` **identiques**. Gardien : Sc1 (persistance nominale). |
+  | `Sc2` conserve `Domain_Should_Refuser_..._dernier_admin` + `Acceptation_Should_Refuser_..._dernier_admin` | Domain + App | **GARDÉ (unique)** | Cœur de la borne « dernier admin » — non couvert par Sc1. |
+  | `Scenario44_S3_DeleguerDelegataireInconnu` ↔ `Scenario45_S3_DeleguerPlageDelegataireInconnu` | App | **PROCHE_MAIS_DISTINCT** | 0.86 : commandes distinctes (délégation d'un jour vs d'une plage `[J1..J2]`). |
+  | `*CanalApiTests` / `*MongoIntegrationTests` / `Scenario*` ↔ `Scenario*MongoDurabiliteTests` / `FrontWasm*` | couches ≠ | **INTENTIONNEL_COUCHES** | Domaine/app vs contrat API vs store Mongo réel vs IHM runtime = stratégie backend-d'abord + acceptation runtime. |
+  | ~30 paires fichier 0.55–0.75 (fond/neutre, éditer/supprimer, convergence 2 écrans, nominal/plage) | idem | **PROCHE_MAIS_DISTINCT / SUSPECT_NON_CONCLUANT** | Setups/assertions divergents (cas limite ≠ nominal). Gardés (conservatisme). |
+
+  **Bilan** : familles examinées = 3 projets, 899 faits parsés ; verdicts = 3 `DOUBLON_CONFIRME`,
+  reste `INTENTIONNEL_COUCHES` / `PROCHE_MAIS_DISTINCT`. Aucune couverture perdue (chaque comportement
+  supprimé reste prouvé à l'identique par son gardien Sc1, même couche). Total **920 → 917**.
 - [ ] **Lot 8 — Doc-gen** : auto-générer (à la compilation) la doc technique depuis les commentaires
       `///` + commentaires d'API.
 
