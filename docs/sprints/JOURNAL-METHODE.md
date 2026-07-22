@@ -222,3 +222,10 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   « dernier admin ». Reste = `INTENTIONNEL_COUCHES` (domaine/API/Mongo/IHM) et `PROCHE_MAIS_DISTINCT`
   (fond/neutre, nominal/plage) → gardés (conservatisme strict, zéro couverture perdue). Table d'audit
   dans le plan lot 7. **920 → 917 vert** (462 + 108 + 347). Aucune règle de gestion touchée.
+
+- **2026-07-22 — refonte technique lot 8 (architecte, hors-sprint) : doc technique auto-générée** —
+  **DocFX** en tool local épinglé (`.config/dotnet-tools.json`) génère la référence API depuis les
+  commentaires `///` (émission XML activée via `src/Directory.Build.props`, ciblant les seuls projets
+  `src/`, `CS1591` masqué). Config sous `docfx/`, sortie git-ignorée. `Web` (Blazor) écarté de
+  l'extraction (Razor SG non exécuté par Roslyn) ; OpenAPI intégré sur chemin documenté (exposé au
+  runtime via Scalar). Génération prouvée (377 pages). **Programme de refonte COMPLET 8/8**, 917/917 vert.

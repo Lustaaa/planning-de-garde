@@ -5,6 +5,15 @@ Refonte technique **hors-sprint** (bypass BDD) pilotée par le PO depuis
 Chaque lot : comportement inchangé, non-régression = **suite complète verte** (skill `dotnet`,
 Docker actif), branche `ia-refacto/lotN-…`, pas de merge/PR (le PO gère la porte git).
 
+## Synthèse finale — programme COMPLET (8/8)
+
+Les 8 lots sont livrés verts sur la branche `ia-refacto/lot1-application-bc-technical` :
+réorganisation `[BoundedContext]/[Technical]` de `Application` (1), `Mongo` (4) et `InMemory` (5) ;
+Api passée en **REST + controllers MVC** par ressource (2) ; `Infrastructure` scindée en adaptateurs
+de droite `Smtp`/`Securite` et conservée comme composition root (3) ; composants `Web` rangés par
+bounded context (6) ; audit doublons de tests (7, 920→917) ; **doc technique auto-générée DocFX** (8).
+Comportement d'exécution inchangé sur tout le programme ; suite complète **917/917 verte** au dernier lot.
+
 ## Suivi des lots
 
 - [x] **Lot 1 — `PlanningDeGarde.Application`** : réorganisation `[BoundedContext]/[Technical]`,
@@ -191,8 +200,26 @@ Docker actif), branche `ia-refacto/lotN-…`, pas de merge/PR (le PO gère la po
   **Bilan** : familles examinées = 3 projets, 899 faits parsés ; verdicts = 3 `DOUBLON_CONFIRME`,
   reste `INTENTIONNEL_COUCHES` / `PROCHE_MAIS_DISTINCT`. Aucune couverture perdue (chaque comportement
   supprimé reste prouvé à l'identique par son gardien Sc1, même couche). Total **920 → 917**.
-- [ ] **Lot 8 — Doc-gen** : auto-générer (à la compilation) la doc technique depuis les commentaires
-      `///` + commentaires d'API.
+- [x] **Lot 8 — Doc-gen** : auto-générer la doc technique depuis les commentaires `///` (+ chemin
+      d'intégration OpenAPI documenté). Outil **DocFX** en tool local épinglé (`.config/dotnet-tools.json`,
+      v2.78.5) → génération reproductible (`dotnet tool restore && dotnet docfx docfx/docfx.json`).
+      Génération **réellement prouvée** : 377 pages de référence API produites dans `docfx/_site/`
+      (0 erreur). (917/917 vert) — livré sur la branche `ia-refacto/lot1-application-bc-technical`.
+      **Décisions/écarts** :
+      - **Émission XML activée via `src/Directory.Build.props`** (un seul fichier, pas 10 `.csproj`),
+        placé dans `src/` pour ne cibler QUE les projets de production (les projets `tests/` ne
+        remontent pas jusqu'à lui). `<GenerateDocumentationFile>true</...>` + `<NoWarn>$(NoWarn);CS1591</...>`
+        (aucun projet `src/` n'a `TreatWarningsAsErrors` → build non cassé, mais CS1591 masqué pour une
+        sortie propre et de la robustesse).
+      - **Config DocFX** sous `docfx/` (`docfx.json` métadonnées→`api/`, `toc.yml`, `index.md`). Sortie
+        générée (`docfx/_site/`, `docfx/api/`, `docfx/obj/`) **git-ignorée** : on ne versionne que la config.
+      - **`PlanningDeGarde.Web` EXCLU de l'extraction** : DocFX lit les métadonnées via Roslyn sans
+        exécuter le générateur de source Razor → les partials `.razor.cs` (Blazor) ne trouvent pas leur
+        base `ComponentBase` (CS0115/CS0234). Écarté via `exclude` ; son `.xml` reste émis. Périmètre
+        couvert : Domain, Application, adaptateurs droite, SignalR, Api, Infrastructure.
+      - **OpenAPI** : exposé à l'exécution (`/openapi/v1.json` + Scalar `/scalar`), donc pas de `.json`
+        statique au build → intégration au site DocFX **documentée** (comment produire le `.json` puis le
+        référencer) plutôt que câblée. Cf. `docs/documentation-technique.md`.
 
 ---
 
