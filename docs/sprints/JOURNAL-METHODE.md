@@ -185,3 +185,15 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   mise à jour ; ripple absorbé par global usings (Infrastructure + Api.Tests) et par le
   `GlobalUsings.cs` du projet Mongo (DbModels + Commun.Serialization intra-assembly). **920/920
   vert** (dont 108 Api.Tests sur Mongo RÉEL = compat données prouvée). Aucune règle de gestion touchée.
+
+- **2026-07-22 — architecte (hors-sprint, bypass BDD) — Lot 4/refonte technique : scission de
+  `PlanningDeGarde.Infrastructure`.** `EnvoiMailSmtp` → nouveau projet `PlanningDeGarde.AdapterDroite.Smtp`
+  (namespace idem, `System.Net.Mail` BCL, aucun package) ; `HacheurMotDePassePbkdf2` + `FournisseurOAuthGoogleNonCable`
+  → nouveau projet `PlanningDeGarde.AdapterDroite.Securite` (sous-dossiers `MotDePasse/`/`OAuth/`, namespace unique).
+  `Infrastructure` **conservé comme composition root** (garde `ServiceCollectionExtensions`, référence désormais
+  Smtp+Securite). **Impact** : 2 projets ajoutés à `slnx` (src passe de 8 à **10**) ; `using ...Application` →
+  `...Application.Comptes.Ports` dans les 3 fichiers déplacés (hors des global usings d'Infra) ; ripple absorbé par
+  global usings (Infrastructure + PlanningDeGarde.Tests + Api.Tests), assemblies atteintes en **transitif** (aucune
+  ProjectReference ajoutée aux tests, pattern lots Mongo/InMemory). Placeholder OAuth **inchangé** (dette assumée).
+  Plan lot 3/Infrastructure coché ; CLAUDE.md architecture (10 projets + rôle composition root) resynchronisé.
+  **920/920 vert**. Aucune règle de gestion touchée.

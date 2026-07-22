@@ -65,3 +65,10 @@ global using PlanningDeGarde.AdapterDroite.Mongo.Notifications.Repositories;
 global using PlanningDeGarde.AdapterDroite.Mongo.Periodes.Repositories;
 global using PlanningDeGarde.AdapterDroite.Mongo.Slots.Repositories;
 global using PlanningDeGarde.AdapterDroite.Mongo.Transferts.Repositories;
+
+// Lot 4 (refacto hors-sprint) — l'ancien fourre-tout Infrastructure est SCINDÉ en adaptateurs de droite
+// dédiés : PlanningDeGarde.AdapterDroite.Smtp (EnvoiMailSmtp) et PlanningDeGarde.AdapterDroite.Securite
+// (HacheurMotDePassePbkdf2 + FournisseurOAuthGoogleNonCable). Infrastructure reste la composition root
+// (câblage DI). Ces global usings ré-exposent les nouveaux namespaces à ServiceCollectionExtensions.
+global using PlanningDeGarde.AdapterDroite.Smtp;
+global using PlanningDeGarde.AdapterDroite.Securite;

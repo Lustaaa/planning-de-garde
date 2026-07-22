@@ -12,8 +12,34 @@ Docker actif), branche `ia-refacto/lotN-…`, pas de merge/PR (le PO gère la po
 - [ ] **Lot 2 — `PlanningDeGarde.Api`** : tendre vers REST, un `XxxController` par ressource
       (`api/notifications` → `NotificationsController`, `api/foyer` → `FoyerController`, …), un
       fichier `.cs` par contrôleur.
-- [ ] **Lot 3 — `PlanningDeGarde.Infrastructure`** : le scinder en adaptateurs de droite par techno
-      (Smtp, Auth) plutôt qu'un fourre-tout ; clarifier son statut d'adaptateur vs composition root.
+- [x] **Lot 3 — `PlanningDeGarde.Infrastructure`** : scindé en adaptateurs de droite par techno ;
+      `Infrastructure` CONSERVÉ comme **composition root** (câblage DI), pas un adaptateur. (920/920 vert) —
+      livré comme **4e lot exécuté** du programme, sur la branche `ia-refacto/lot1-application-bc-technical`.
+      **Décisions/écarts** :
+      - **2 nouveaux projets `src/`** (portés à **10**), namespaces alignés sur le style adaptateur existant
+        (`net10.0`/`Nullable`/`ImplicitUsings`, `ProjectReference` vers `Application` pour les ports) :
+        - `PlanningDeGarde.AdapterDroite.Smtp` — reçoit `EnvoiMailSmtp` (`IEnvoiMail`). **Aucun PackageReference** :
+          `System.Net.Mail` (`SmtpClient`/`MailMessage`) est dans la BCL du framework partagé.
+        - `PlanningDeGarde.AdapterDroite.Securite` — reçoit `HacheurMotDePassePbkdf2` (`IHacheurMotDePasse`,
+          PBKDF2 = BCL) et `FournisseurOAuthGoogleNonCable` (`IFournisseurOAuth`, **placeholder inchangé** :
+          la dette de câblage OAuth réel reste ouverte, non branchée). Organisés en sous-dossiers `MotDePasse/`
+          et `OAuth/` sous le **namespace unique** `PlanningDeGarde.AdapterDroite.Securite` (1 seul segment DI
+          à ré-exposer ; choix arrêté par le PO).
+      - **`Infrastructure` reste distinct** = composition root : garde `ServiceCollectionExtensions`
+        (`AjouterPlanningDeGarde`) + `GlobalUsings.cs`, référence désormais Smtp + Securite (en plus d'InMemory,
+        Mongo, SignalR, Application). Aucune ligne de DI modifiée dans son comportement (déplacement + plomberie).
+      - **`using PlanningDeGarde.Application;` → `...Comptes.Ports`** dans les 3 fichiers déplacés : hors de la
+        composition root ils ne bénéficient plus des global usings d'Infrastructure ; les ports
+        `IEnvoiMail`/`IHacheurMotDePasse`/`IFournisseurOAuth`/`IdentiteExterne` vivent en `Application.Comptes.Ports`
+        depuis le lot 1.
+      - **Ripple / anti-churn** : global usings `AdapterDroite.Smtp` + `AdapterDroite.Securite` ajoutés au
+        `GlobalUsings.cs` d'`Infrastructure` (résolution dans `ServiceCollectionExtensions`), de `PlanningDeGarde.Tests`
+        (consomme `HacheurMotDePassePbkdf2`) et d'`Api.Tests` (consomme `EnvoiMailSmtp` + `HacheurMotDePassePbkdf2`).
+        **Assemblies atteintes en transitif** (Tests → Infrastructure ; Api.Tests → Api → Infrastructure → Smtp/Securite) —
+        **aucune ProjectReference ajoutée aux tests** : reprend à l'identique le pattern des lots Mongo/InMemory
+        (les types Mongo sont consommés pareil) et l'esprit de la consigne Api (« ne pas toucher les références si le
+        transitif suffit »). `FournisseurOAuthGoogleNonCable` n'est consommé par AUCUN test (seul le fake OAuth l'est).
+      - **`slnx`** : les 2 projets ajoutés (le skill `dotnet` recompile toute la solution).
 - [x] **Lot 4 — `PlanningDeGarde.AdapterDroite.Mongo`** : arbo `[BC]/[Technical]`, namespaces
       `PlanningDeGarde.AdapterDroite.Mongo.<BC>.<Technical>`, dossier `Classes/` supprimé, documents
       embarqués sortis dans `DbModels`. (920/920 vert, dont 108 Api.Tests sur Mongo RÉEL — compat données

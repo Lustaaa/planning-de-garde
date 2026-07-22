@@ -1,8 +1,8 @@
 using System;
 using System.Security.Cryptography;
-using PlanningDeGarde.Application;
+using PlanningDeGarde.Application.Comptes.Ports;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.Securite;
 
 /// <summary>
 /// Adaptateur de droite RÉEL du facteur mot de passe (volet 3, s25) : réalise

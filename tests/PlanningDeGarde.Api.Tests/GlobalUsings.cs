@@ -65,3 +65,9 @@ global using PlanningDeGarde.AdapterDroite.Mongo.Notifications.Repositories;
 global using PlanningDeGarde.AdapterDroite.Mongo.Periodes.Repositories;
 global using PlanningDeGarde.AdapterDroite.Mongo.Slots.Repositories;
 global using PlanningDeGarde.AdapterDroite.Mongo.Transferts.Repositories;
+
+// Lot 4 (refacto hors-sprint) — Infrastructure scindé en adaptateurs dédiés (Smtp + Securite). Ces tests
+// instancient EnvoiMailSmtp et HacheurMotDePassePbkdf2 en direct : ré-exposition des deux namespaces
+// (assemblies atteintes en transitif via Api -> Infrastructure -> Smtp/Securite, comme les types Mongo).
+global using PlanningDeGarde.AdapterDroite.Smtp;
+global using PlanningDeGarde.AdapterDroite.Securite;

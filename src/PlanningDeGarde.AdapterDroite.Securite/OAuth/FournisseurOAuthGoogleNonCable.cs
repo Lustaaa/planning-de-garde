@@ -1,6 +1,6 @@
-using PlanningDeGarde.Application;
+using PlanningDeGarde.Application.Comptes.Ports;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.Securite;
 
 /// <summary>
 /// Réalisation DI du port <see cref="IFournisseurOAuth"/> (s28, volet 3) rendant

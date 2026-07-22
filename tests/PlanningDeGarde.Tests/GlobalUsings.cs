@@ -49,3 +49,8 @@ global using PlanningDeGarde.AdapterDroite.InMemory.Notifications.Repositories;
 global using PlanningDeGarde.AdapterDroite.InMemory.Periodes.Repositories;
 global using PlanningDeGarde.AdapterDroite.InMemory.Slots.Repositories;
 global using PlanningDeGarde.AdapterDroite.InMemory.Transferts.Repositories;
+
+// Lot 4 (refacto hors-sprint) — Infrastructure scindé en adaptateurs dédiés. Ces tests unitaires
+// instancient HacheurMotDePassePbkdf2 en direct : ré-exposition du namespace Securite (assembly atteint
+// en transitif via la ProjectReference Infrastructure). EnvoiMailSmtp/SMTP n'est pas consommé ici.
+global using PlanningDeGarde.AdapterDroite.Securite;

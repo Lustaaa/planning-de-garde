@@ -1,7 +1,7 @@
 using System.Net.Mail;
-using PlanningDeGarde.Application;
+using PlanningDeGarde.Application.Comptes.Ports;
 
-namespace PlanningDeGarde.Infrastructure;
+namespace PlanningDeGarde.AdapterDroite.Smtp;
 
 /// <summary>
 /// Adaptateur de droite <b>SMTP concret</b> (s28, volet 1) réalisant <see cref="IEnvoiMail"/> : remet
