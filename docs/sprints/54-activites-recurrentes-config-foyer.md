@@ -9,13 +9,13 @@
 > routes API + 17h sont en forte tension. Aucun scénario n'est optionnel ; l'**ordre** ci-dessous fait
 > tomber la valeur tôt si le temps venait malgré tout à manquer.
 
-## Avancement — 2/10
+## Avancement — 3/10
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Renommage **libellés IHM** « slot → activité » / référentiel « Activités → Lieux » (lot atomique) | 🖥️ IHM | ✅ |
 | 2 | Renommage **routes REST NESTED** `/api/slots* → /api/enfants/{id}/activites*` + client HTTP Web (lot atomique) | @back | ✅ |
-| 3 | Lister les activités récurrentes **d'un enfant** (query scopée `EnfantId`) | @back | ⏳ |
+| 3 | Lister les activités récurrentes **d'un enfant** (query scopée `EnfantId`) | @back | ✅ |
 | 4 | Récurrence **multi-jours** : un récurrent porte un **set de jours** (école lun/mar/jeu/ven) | @back | ⏳ |
 | 5 | **Éditer** une activité récurrente — **toute la série** (jours + plage + lieu) | @back | ⏳ |
 | 6 | Config foyer **par enfant** : liste + **créer / éditer / SUPPRIMER** (comble le trou s31) | 🖥️ IHM | ⏳ |
@@ -139,7 +139,7 @@ Scénario: cohérence REST (ressource + verbes)
   Et Api.Tests + Web.Tests sont migrés dans le MÊME commit (aucune coexistence ancien/nouveau)
 ```
 
-### 3. Lister les activités récurrentes d'un enfant `@back @pending`
+### 3. Lister les activités récurrentes d'un enfant `@back @vert`
 ```gherkin
 Scénario nominal: la query ne retourne que les récurrents de CET enfant
   Étant donné des activités récurrentes pour Léa et pour Tom
