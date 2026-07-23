@@ -107,6 +107,14 @@ script `commit.ps1` (garde-fous portés).
   concurrent). Refuse enfin un **HEAD détaché** (un `git checkout <sha>` concurrent a pu détacher HEAD
   hors de la branche de travail). *(Friction réelle s31 : un process concurrent a basculé hors branche +
   committé pendant un scénario.)*
+- **Hygiène worktree au démarrage d'un sprint** *(friction s54)* — avant de créer la branche d'un
+  sprint, `git worktree list` pour **détecter un worktree/branche DIVERGENT d'un plan antérieur** du
+  **même sprint** (ex. `.claude/worktrees/…+sNN-…` + branche `worktree-ia-feat+sNN-…` + un **autre**
+  fichier `docs/sprints/NN-…md`). Si un plan a **superséidé** une tentative abandonnée : **donor-porter**
+  d'abord les commits utiles (patch jetable), **puis** `git worktree remove` + `git branch -D` l'ancien
+  — un plan neuf ne code **jamais** à côté d'un worktree fantôme resté vivant. **Worktree VERROUILLÉ par
+  une session concurrente** (`git worktree remove` échoue, pid tiers) : **ne jamais forcer** ; **consigner
+  le cleanup en action explicite de `/cloture`** (à exécuter quand la session concurrente est fermée).
 - **Branche** — toujours `ia-{type}/{slug}`, créée depuis `main` à jour.
 - **Arbre propre exigé** par `sync` et `branch` (commit/stash avant).
 - **Trailers** — `Co-Authored-By` (commit) et Claude Code (PR) ajoutés si absents.
