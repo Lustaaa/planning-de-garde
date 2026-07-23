@@ -17,9 +17,17 @@ public static class CanalEcriture
     public sealed record PoserSlotReponse(bool Chevauchement);
 
     /// <summary>Corps de la pose d'une activité RÉCURRENTE hebdo
-    /// (POST /api/enfants/{enfantId}/activites/recurrentes) : l'EnfantId est porté par l'URL.</summary>
+    /// (POST /api/enfants/{enfantId}/activites/recurrentes) : l'EnfantId est porté par l'URL.
+    /// <see cref="JoursDeSemaine"/> (s54) : un set NON nul pose une série MULTI-JOURS.</summary>
     public sealed record PoserSlotRecurrentRequete(
         string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
+        bool ConditionneGarde = false, string PoseurId = "", IReadOnlyList<DayOfWeek>? JoursDeSemaine = null);
+
+    /// <summary>Corps de l'édition d'une activité récurrente — TOUTE la série
+    /// (PUT /api/enfants/{enfantId}/activites/recurrentes/{id}) : id + enfant portés par l'URL,
+    /// l'EnfantId n'est jamais réaffecté (relu du slot existant côté handler).</summary>
+    public sealed record ModifierSlotRecurrentCorps(
+        string LieuId, IReadOnlyList<DayOfWeek> JoursDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
         bool ConditionneGarde = false, string PoseurId = "");
 
     /// <summary>Corps de l'affectation de période (POST /api/periodes).</summary>

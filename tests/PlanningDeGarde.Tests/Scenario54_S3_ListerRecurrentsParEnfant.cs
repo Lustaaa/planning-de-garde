@@ -44,6 +44,27 @@ public sealed class Scenario54_S3_ListerRecurrentsParEnfant
     }
 
     [Fact]
+    public void Should_Exposer_le_set_complet_de_jours_When_le_recurrent_est_multi_jours()
+    {
+        // Given — un récurrent MULTI-JOURS de Léa (école lun/mar/jeu/ven).
+        var repo = new FakeSlotRecurrentRepository();
+        var referentiel = new FakeReferentielActivites();
+        referentiel.Ajouter("ecole", "École");
+        repo.Enregistrer(SlotRecurrent.Poser(
+            "Léa", "ecole",
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Thursday, DayOfWeek.Friday },
+            new TimeSpan(8, 30, 0), new TimeSpan(16, 30, 0)).Valeur!);
+
+        // When — on liste les récurrents de Léa.
+        var vue = Assert.Single(new SlotsRecurrentsParEnfantQuery(repo, referentiel).PourEnfant("Léa"));
+
+        // Then — la vue expose le SET COMPLET de jours (pas seulement le premier), pour la config par enfant.
+        Assert.Equal(
+            new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Thursday, DayOfWeek.Friday },
+            vue.Jours);
+    }
+
+    [Fact]
     public void Should_Retourner_une_liste_vide_sans_erreur_When_l_enfant_n_a_aucun_recurrent()
     {
         // Given — Léa a un récurrent, Tom n'en a aucun.

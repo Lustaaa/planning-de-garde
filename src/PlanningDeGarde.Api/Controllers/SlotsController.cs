@@ -13,10 +13,12 @@ namespace PlanningDeGarde.Api.Controllers;
 public sealed class SlotsController(
     PoserSlotHandler poserSlot,
     PoserSlotRecurrentHandler poserSlotRecurrent,
+    ModifierSlotRecurrentHandler modifierSlotRecurrent,
     SupprimerSlotHandler supprimerSlot,
     SupprimerSlotRecurrentHandler supprimerSlotRecurrent,
     JourneeEnfantQuery journee,
     SlotsDuJourQuery slots,
+    SlotsRecurrentsParEnfantQuery recurrentsParEnfant,
     ISlotRepository slotRepository,
     ISlotRecurrentRepository slotRecurrentRepository,
     INotificateurPlanning notificateur) : ControllerBase
@@ -39,7 +41,7 @@ public sealed class SlotsController(
     {
         var resultat = poserSlotRecurrent.Handle(new PoserSlotRecurrentCommand(
             enfantId, requete.LieuId, requete.JourDeSemaine, requete.HeureDebut, requete.HeureFin,
-            requete.ConditionneGarde, requete.PoseurId));
+            requete.ConditionneGarde, requete.PoseurId, requete.JoursDeSemaine));
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 
@@ -72,6 +74,28 @@ public sealed class SlotsController(
             return NotFound();
 
         var resultat = supprimerSlotRecurrent.Handle(new SupprimerSlotRecurrentCommand(id));
+        return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
+    }
+
+    /// <summary>Activités récurrentes de l'enfant (lecture seule, CQRS) — alimente la config foyer par
+    /// enfant. Filtrées sur l'enfant de l'URL (isolation par enfant, s53).</summary>
+    [HttpGet("/api/enfants/{enfantId}/activites/recurrentes")]
+    public IActionResult RecurrentesDeLEnfant(string enfantId)
+        => Ok(recurrentsParEnfant.PourEnfant(enfantId));
+
+    /// <summary>Édition d'une activité récurrente (PUT) — TOUTE la série (jours + plage + lieu). Scope
+    /// défensif : un id existant sous un AUTRE enfant → 404. L'EnfantId n'est jamais réaffecté (relu du slot).</summary>
+    [HttpPut("/api/enfants/{enfantId}/activites/recurrentes/{id}")]
+    public IActionResult ModifierRecurrent(string enfantId, string id, [FromBody] ModifierSlotRecurrentCorps corps)
+    {
+        var possede = slotRecurrentRepository.AllSnapshots().FirstOrDefault(s => s.Id == id);
+        if (possede is not null && possede.EnfantId != enfantId)
+            return NotFound();
+
+        // Le handler d'édition diffuse déjà la mise à jour temps réel (lecture seule) sur succès.
+        var resultat = modifierSlotRecurrent.Handle(new ModifierSlotRecurrentCommand(
+            id, corps.LieuId, corps.JoursDeSemaine, corps.HeureDebut, corps.HeureFin,
+            corps.ConditionneGarde, corps.PoseurId));
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 

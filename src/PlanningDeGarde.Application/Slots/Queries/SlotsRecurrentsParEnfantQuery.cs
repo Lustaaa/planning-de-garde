@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using PlanningDeGarde.Application.Activites.Ports;
 using PlanningDeGarde.Application.Slots.Ports;
+using PlanningDeGarde.Domain;
 
 namespace PlanningDeGarde.Application.Slots.Queries;
 
@@ -14,6 +15,7 @@ namespace PlanningDeGarde.Application.Slots.Queries;
 /// </summary>
 public sealed record ActiviteRecurrenteVue(
     string Id,
+    string LieuId,
     string ActiviteLibelle,
     IReadOnlyList<DayOfWeek> Jours,
     TimeSpan HeureDebut,
@@ -44,10 +46,16 @@ public sealed class SlotsRecurrentsParEnfantQuery
             .Where(s => s.EnfantId == enfantId)
             .Select(s => new ActiviteRecurrenteVue(
                 s.Id,
+                s.LieuId,
                 libelles.TryGetValue(s.LieuId, out var libelle) ? libelle : s.LieuId,
-                new[] { s.JourDeSemaine },
+                JoursDeLaSerie(s),
                 s.HeureDebut,
                 s.HeureFin))
             .ToList();
     }
+
+    /// <summary>Jours de récurrence effectifs d'une série : le SET (s54) s'il est renseigné, sinon la
+    /// retombée mono-jour héritée sur <see cref="SlotRecurrentSnapshot.JourDeSemaine"/>.</summary>
+    private static IReadOnlyList<DayOfWeek> JoursDeLaSerie(SlotRecurrentSnapshot s)
+        => s.JoursDeSemaine.Count > 0 ? s.JoursDeSemaine : new[] { s.JourDeSemaine };
 }

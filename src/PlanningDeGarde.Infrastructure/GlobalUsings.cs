@@ -32,6 +32,7 @@ global using PlanningDeGarde.Application.Planning.Models;
 global using PlanningDeGarde.Application.Planning.Queries;
 global using PlanningDeGarde.Application.Slots.Handlers;
 global using PlanningDeGarde.Application.Slots.Ports;
+global using PlanningDeGarde.Application.Slots.Queries;
 global using PlanningDeGarde.Application.Transferts.Handlers;
 global using PlanningDeGarde.Application.Transferts.Ports;
 
