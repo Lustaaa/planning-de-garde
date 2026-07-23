@@ -14,6 +14,14 @@ public interface ISlotRecurrentRepository
     IReadOnlyList<SlotRecurrentSnapshot> AllSnapshots();
 
     /// <summary>
+    /// Réécrit EN PLACE le slot récurrent d'identifiant stable <paramref name="slotId"/> avec l'état de
+    /// <paramref name="slot"/> — l'identifiant stable est <b>conservé</b> (édition d'une série s54, jamais
+    /// une réinsertion sous un nouvel identifiant). Un identifiant absent est un no-op (parité idempotente
+    /// avec <see cref="Supprimer"/>).
+    /// </summary>
+    void Remplacer(string slotId, SlotRecurrent slot);
+
+    /// <summary>
     /// Retire du store le slot récurrent d'identifiant stable <paramref name="slotId"/>. Idempotent :
     /// un identifiant absent / déjà supprimé est un no-op (jamais une erreur). Clé = l'identifiant
     /// stable, jamais un libellé.
