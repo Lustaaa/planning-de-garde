@@ -234,10 +234,17 @@ public sealed class GrilleAgendaQuery
     private IEnumerable<SlotSnapshot> OccurrencesRecurrentes(
         IReadOnlyList<SlotRecurrentSnapshot> recurrents, DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, string? enfantId = null)
         => recurrents
-            .Where(r => r.JourDeSemaine == date.DayOfWeek)
+            // MULTI-JOURS (s54) : une occurrence par jour du SET de la série tombant sur cette date. Un
+            // snapshot legacy au set vide (retombée mono-jour) est réconcilié sur son JourDeSemaine unique.
+            .Where(r => JoursDeLaSerie(r).Contains(date.DayOfWeek))
             .Where(r => !r.ConditionneGarde || ResoudreResponsable(date, periodes, enfantId) == r.PoseurId)
             .Select(r => new SlotSnapshot(
                 r.EnfantId, r.LieuId, date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureDebut)), date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureFin))));
+
+    /// <summary>Jours de récurrence effectifs d'une série : le SET (s54) s'il est renseigné, sinon la
+    /// retombée mono-jour héritée sur <see cref="SlotRecurrentSnapshot.JourDeSemaine"/>.</summary>
+    private static IReadOnlyList<DayOfWeek> JoursDeLaSerie(SlotRecurrentSnapshot r)
+        => r.JoursDeSemaine.Count > 0 ? r.JoursDeSemaine : new[] { r.JourDeSemaine };
 
     /// <summary>
     /// Résout le responsable d'un jour (priorité <b>surcharge (période saisie) &gt; fond (cycle) &gt;

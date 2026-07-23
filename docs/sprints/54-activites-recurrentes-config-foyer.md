@@ -9,14 +9,14 @@
 > routes API + 17h sont en forte tension. Aucun scénario n'est optionnel ; l'**ordre** ci-dessous fait
 > tomber la valeur tôt si le temps venait malgré tout à manquer.
 
-## Avancement — 3/10
+## Avancement — 4/10
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
 | 1 | Renommage **libellés IHM** « slot → activité » / référentiel « Activités → Lieux » (lot atomique) | 🖥️ IHM | ✅ |
 | 2 | Renommage **routes REST NESTED** `/api/slots* → /api/enfants/{id}/activites*` + client HTTP Web (lot atomique) | @back | ✅ |
 | 3 | Lister les activités récurrentes **d'un enfant** (query scopée `EnfantId`) | @back | ✅ |
-| 4 | Récurrence **multi-jours** : un récurrent porte un **set de jours** (école lun/mar/jeu/ven) | @back | ⏳ |
+| 4 | Récurrence **multi-jours** : un récurrent porte un **set de jours** (école lun/mar/jeu/ven) | @back | ✅ |
 | 5 | **Éditer** une activité récurrente — **toute la série** (jours + plage + lieu) | @back | ⏳ |
 | 6 | Config foyer **par enfant** : liste + **créer / éditer / SUPPRIMER** (comble le trou s31) | 🖥️ IHM | ⏳ |
 | 7 | Exclusion **vacances scolaires** : plages d'exclusion par activité récurrente, projection les saute | @back | ⏳ |
@@ -150,7 +150,7 @@ Scénario nominal: la query ne retourne que les récurrents de CET enfant
 Scénario limite: enfant sans récurrent → liste vide (aucune erreur)
 ```
 
-### 4. Récurrence multi-jours — set de jours `@back @pending`
+### 4. Récurrence multi-jours — set de jours `@back @vert`
 ```gherkin
 Scénario nominal: une activité « École » sur plusieurs jours
   Quand on pose une activité récurrente sur {lundi, mardi, jeudi, vendredi} 8h30→16h30

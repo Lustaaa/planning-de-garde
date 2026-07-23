@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using PlanningDeGarde.Domain;
@@ -21,6 +23,10 @@ internal sealed class SlotRecurrentDocument
     public bool ConditionneGarde { get; set; }
     [BsonDefaultValue("")]
     public string PoseurId { get; set; } = "";
+    // MULTI-JOURS (s54) : set de jours de la série (entiers stables). [BsonDefaultValue] vide pour les
+    // documents antérieurs (mono-jour) → réconciliés à la relecture sur JourDeSemaine (seed convergent).
+    [BsonDefaultValue(new int[0])]
+    public int[] JoursDeSemaine { get; set; } = Array.Empty<int>();
 
     public static SlotRecurrentDocument De(SlotRecurrentSnapshot s)
         // Plage horaire en ticks (round-trip exact, sans fuseau) ; jour de semaine en entier stable.
@@ -33,9 +39,16 @@ internal sealed class SlotRecurrentDocument
             HeureFinTicks = s.HeureFin.Ticks,
             ConditionneGarde = s.ConditionneGarde,
             PoseurId = s.PoseurId,
+            JoursDeSemaine = s.JoursDeSemaine.Select(j => (int)j).ToArray(),
         };
 
     public SlotRecurrentSnapshot VersSnapshot()
         => new(EnfantId, LieuId, (DayOfWeek)JourDeSemaine, TimeSpan.FromTicks(HeureDebutTicks), TimeSpan.FromTicks(HeureFinTicks),
-            ConditionneGarde, PoseurId, Id.ToString());
+            ConditionneGarde, PoseurId, Id.ToString())
+        {
+            // Réconciliation seed convergent : document mono-jour legacy (set vide) → set = son jour unique.
+            JoursDeSemaine = JoursDeSemaine.Length > 0
+                ? JoursDeSemaine.Select(j => (DayOfWeek)j).ToArray()
+                : new[] { (DayOfWeek)JourDeSemaine },
+        };
 }

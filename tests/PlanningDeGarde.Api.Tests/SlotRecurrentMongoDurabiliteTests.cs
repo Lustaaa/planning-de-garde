@@ -50,6 +50,27 @@ public sealed class SlotRecurrentMongoDurabiliteTests : IDisposable
         Assert.Equal(new TimeSpan(12, 15, 0), relu.HeureFin);
     }
 
+    // Sprint 54 — S4 — durabilité du SET de jours (multi-jours) : un récurrent multi-jours
+    // (École {lundi, mardi, jeudi, vendredi}) enregistré sur le store durable survit au redémarrage
+    // avec son set de jours intact (parité mono-jour). Prouvé contre un Mongo réel.
+    [MongoRequisFact]
+    public void Should_Relire_le_set_de_jours_intact_apres_un_redemarrage_When_un_recurrent_multi_jours_est_enregistre_sur_le_store_Mongo_reel()
+    {
+        var jours = new[] { DayOfWeek.Monday, DayOfWeek.Tuesday, DayOfWeek.Thursday, DayOfWeek.Friday };
+        {
+            var store1 = NouveauStore();
+            store1.Enregistrer(SlotRecurrent
+                .Poser("lea", "ecole", jours, new TimeSpan(8, 30, 0), new TimeSpan(16, 30, 0)).Valeur!);
+        }
+
+        var store2 = NouveauStore();
+
+        var relu = Assert.Single(store2.AllSnapshots());
+        Assert.Equal("lea", relu.EnfantId);
+        Assert.Equal("ecole", relu.LieuId);
+        Assert.Equal(jours, relu.JoursDeSemaine);
+    }
+
     public void Dispose()
     {
         try { new MongoClient(ConnectionString).DropDatabase(_baseDeTest); }
