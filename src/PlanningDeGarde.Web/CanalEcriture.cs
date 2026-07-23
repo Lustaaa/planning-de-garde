@@ -9,16 +9,30 @@ namespace PlanningDeGarde.Web;
 /// </summary>
 public static class CanalEcriture
 {
-    /// <summary>Corps de la pose de slot (POST /api/slots).</summary>
-    public sealed record PoserSlotRequete(string EnfantId, string LieuId, DateTime Debut, DateTime Fin);
+    /// <summary>Corps de la pose d'une activité (POST /api/enfants/{enfantId}/activites) : l'EnfantId
+    /// est porté par l'URL (sous-ressource de l'enfant, s54), plus dans le corps.</summary>
+    public sealed record PoserSlotRequete(string LieuId, DateTime Debut, DateTime Fin);
 
     /// <summary>Réponse de succès de la pose : l'avertissement de chevauchement, lu par la dialog.</summary>
     public sealed record PoserSlotReponse(bool Chevauchement);
 
-    /// <summary>Corps de la pose d'un slot RÉCURRENT hebdo (POST /api/slots/recurrents).</summary>
+    /// <summary>Corps de la pose d'une activité RÉCURRENTE hebdo
+    /// (POST /api/enfants/{enfantId}/activites/recurrentes) : l'EnfantId est porté par l'URL.
+    /// <see cref="JoursDeSemaine"/> (s54) : un set NON nul pose une série MULTI-JOURS.</summary>
     public sealed record PoserSlotRecurrentRequete(
-        string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
+        string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
+        bool ConditionneGarde = false, string PoseurId = "", IReadOnlyList<DayOfWeek>? JoursDeSemaine = null);
+
+    /// <summary>Corps de l'édition d'une activité récurrente — TOUTE la série
+    /// (PUT /api/enfants/{enfantId}/activites/recurrentes/{id}) : id + enfant portés par l'URL,
+    /// l'EnfantId n'est jamais réaffecté (relu du slot existant côté handler).</summary>
+    public sealed record ModifierSlotRecurrentCorps(
+        string LieuId, IReadOnlyList<DayOfWeek> JoursDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
         bool ConditionneGarde = false, string PoseurId = "");
+
+    /// <summary>Corps d'une plage d'exclusion (vacances) d'une activité récurrente
+    /// (POST/DELETE /api/enfants/{enfantId}/activites/recurrentes/{id}/exclusions) : bornes calendaires incluses.</summary>
+    public sealed record ExclusionCorps(DateOnly Debut, DateOnly Fin);
 
     /// <summary>Corps de l'affectation de période (POST /api/periodes).</summary>
     public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin, string EnfantId = "");

@@ -223,6 +223,15 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   (fond/neutre, nominal/plage) → gardés (conservatisme strict, zéro couverture perdue). Table d'audit
   dans le plan lot 7. **920 → 917 vert** (462 + 108 + 347). Aucune règle de gestion touchée.
 
+- 2026-07-23 — s54 : **worktree DIVERGENT d'un plan sprint 54 antérieur** (branche `worktree-ia-feat+s54-…`
+  + un autre fichier `54-…-cycle-de-vie.md`) a **coexisté** avec le nouveau plan → décision ad-hoc de
+  « donor-porting », **puis worktree resté VERROUILLÉ par une session claude concurrente** (pid 35768,
+  `git worktree remove`/`git branch -D` bloqués) → cleanup **reporté en clôture**. La discipline « commits
+  par scénario » a permis une **reprise propre** après une interruption limite-de-session (ça, c'est le
+  pipeline qui fonctionne — pas une friction). Fix : garde-fou **« hygiène worktree au démarrage d'un
+  sprint »** dans `git/SKILL.md` (détecter un worktree/branche divergent du même sprint via `git worktree
+  list` → donor-porter puis `worktree remove` + `branch -D` ; worktree verrouillé par une session
+  concurrente = **ne jamais forcer**, consigner le cleanup en action explicite de `/cloture`).
 - **2026-07-22 — refonte technique lot 8 (architecte, hors-sprint) : doc technique auto-générée** —
   **DocFX** en tool local épinglé (`.config/dotnet-tools.json`) génère la référence API depuis les
   commentaires `///` (émission XML activée via `src/Directory.Build.props`, ciblant les seuls projets

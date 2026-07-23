@@ -65,7 +65,7 @@ public sealed record RoleFoyer(string Id, string Libelle, bool EstRoleParent = f
 public sealed record CycleFoyer(int IndexSemaine, string ResponsableId);
 
 /// <summary>Une activité du référentiel du foyer <b>énumérée depuis le store vivant</b> via le canal de lecture
-/// (GET /api/foyer/activites — ex-« lieu ») : identifiant stable (clé, bindé par les sélecteurs) +
+/// (GET /api/foyer/lieux — ex-« lieu ») : identifiant stable (clé, bindé par les sélecteurs) +
 /// libellé d'affichage + <b>adresse</b> (optionnelle, vide par défaut) + <b>enfants liés</b> (ids
 /// stables résolus en prénoms par la colonne « Enfants liés »). Remplace la liste en dur <see cref="Foyer.Lieux"/>
 /// — alimente l'onglet Activités de la config ET les sélecteurs de lieu (axe LOCALISATION du slot, préservé)

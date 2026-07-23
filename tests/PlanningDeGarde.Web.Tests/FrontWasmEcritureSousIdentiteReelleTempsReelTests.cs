@@ -41,7 +41,7 @@ public sealed class FrontWasmEcritureSousIdentiteReelleTempsReelTests : TestCont
         // Given — la grille réellement câblée, avec un client dont on capte le corps de l'écriture émise
         // vers le canal de pose (puis relayé vers l'API live : le store est réellement muté).
         using var api = new ApiDistanteFactory();
-        var capture = new CaptureCorpsHandler(api.Server.CreateHandler(), "/api/slots");
+        var capture = new CaptureCorpsHandler(api.Server.CreateHandler(), "/activites");
         using var client = new HttpClient(capture) { BaseAddress = api.Server.BaseAddress };
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mardi_16_06_2026, client);
 
@@ -88,16 +88,16 @@ public sealed class FrontWasmEcritureSousIdentiteReelleTempsReelTests : TestCont
             Assert.Single(caseStore.Slots, s => s.Libelle == "école");
         }
 
-        // … ENFIN, la commande émise porte le contexte de l'IDENTITÉ RÉELLE (EnfantId « Léa ») et AUCUNE
-        // référence à l'acteur incarné : pas d'écriture « au nom de » Bruno (borne du sujet). On désérialise
-        // le corps réellement émis (robuste à l'échappement Unicode JSON de « Léa » → « Léa ») pour
-        // l'EnfantId, et on vérifie l'ABSENCE de toute trace ASCII de l'incarné dans le corps brut.
+        // … ENFIN, la commande émise porte le contexte de l'IDENTITÉ RÉELLE et AUCUNE référence à l'acteur
+        // incarné : pas d'écriture « au nom de » Bruno (borne du sujet). Depuis s54 l'activité est une
+        // sous-ressource de l'enfant : l'EnfantId (« Léa ») voyage par l'URL (plus dans le corps). On vérifie
+        // donc l'URL ciblée (enfant Léa, contexte inchangé par l'incarnation) et l'ABSENCE de toute trace
+        // ASCII de l'incarné dans l'URL comme dans le corps brut.
+        Assert.NotNull(capture.DerniereUri);
+        Assert.Contains("Léa", Uri.UnescapeDataString(capture.DerniereUri!.AbsolutePath)); // enfant réel, dans l'URL
+        Assert.DoesNotContain("parent-b", Uri.UnescapeDataString(capture.DerniereUri!.AbsolutePath));
+        Assert.DoesNotContain("Bruno", Uri.UnescapeDataString(capture.DerniereUri!.AbsolutePath));
         Assert.NotNull(capture.DernierCorps);
-        var requete = System.Text.Json.JsonSerializer.Deserialize<PlanningDeGarde.Web.CanalEcriture.PoserSlotRequete>(
-            capture.DernierCorps!,
-            new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
-        Assert.NotNull(requete);
-        Assert.Equal("Léa", requete!.EnfantId);     // contexte de l'identité réelle, inchangé par l'incarnation
         Assert.DoesNotContain("parent-b", capture.DernierCorps);
         Assert.DoesNotContain("Bruno", capture.DernierCorps);
     }
@@ -109,6 +109,7 @@ public sealed class FrontWasmEcritureSousIdentiteReelleTempsReelTests : TestCont
     {
         private readonly string _suffixeEndpoint;
         public string? DernierCorps { get; private set; }
+        public Uri? DerniereUri { get; private set; }
 
         public CaptureCorpsHandler(HttpMessageHandler inner, string suffixeEndpoint) : base(inner)
             => _suffixeEndpoint = suffixeEndpoint;
@@ -120,6 +121,7 @@ public sealed class FrontWasmEcritureSousIdentiteReelleTempsReelTests : TestCont
                 && (request.RequestUri?.AbsolutePath.EndsWith(_suffixeEndpoint, StringComparison.Ordinal) ?? false)
                 && request.Content is not null)
             {
+                DerniereUri = request.RequestUri;
                 var corps = await request.Content.ReadAsStringAsync(cancellationToken);
                 DernierCorps = corps;
                 // Rebufferise le corps pour que l'API live le relise intact (le contenu d'origine peut

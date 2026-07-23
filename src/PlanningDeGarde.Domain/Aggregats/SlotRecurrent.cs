@@ -1,16 +1,38 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace PlanningDeGarde.Domain;
 
 /// <summary>
 /// Snapshot immuable d'un slot récurrent — frontière publique pour les assertions / la persistance.
-/// La récurrence est <b>hebdomadaire simple</b> : un jour de semaine + une plage horaire (début→fin,
-/// sans date) + un lieu, pour un enfant. <paramref name="Id"/> est l'<b>identifiant stable</b> attribué
-/// par le store (clé de suppression, jamais un libellé) ; vide tant que le slot n'a pas été persisté.
+/// La récurrence est <b>hebdomadaire</b> : un <b>set de jours</b> de semaine (<see cref="JoursDeSemaine"/>,
+/// s54) + une plage horaire (début→fin, sans date) + un lieu, pour un enfant. <paramref name="Id"/> est
+/// l'<b>identifiant stable</b> attribué par le store (clé de suppression, jamais un libellé) ; vide tant
+/// que le slot n'a pas été persisté. <paramref name="JourDeSemaine"/> (positionnel, hérité s29) reste le
+/// premier jour du set, pour les consommateurs qui lisent encore un jour unique.
 /// </summary>
+/// <summary>Plage d'exclusion [<see cref="Debut"/>..<see cref="Fin"/>] (bornes incluses) d'une série
+/// récurrente (s54) : une activité type école ne produit AUCUNE occurrence sur cet intervalle (vacances
+/// scolaires saisies manuellement). Dates calendaires (pas d'heure).</summary>
+public sealed record PlageExclusion(DateOnly Debut, DateOnly Fin)
+{
+    /// <summary>Vrai si la <paramref name="date"/> tombe dans la plage (bornes incluses).</summary>
+    public bool Couvre(DateOnly date) => date >= Debut && date <= Fin;
+}
+
 public sealed record SlotRecurrentSnapshot(
     string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
-    bool ConditionneGarde = false, string PoseurId = "", string Id = "");
+    bool ConditionneGarde = false, string PoseurId = "", string Id = "")
+{
+    /// <summary>Jours de semaine de la série (set multi-jours s54). Vide par défaut (snapshot mono-jour
+    /// hérité : le jour effectif est porté par <see cref="JourDeSemaine"/>).</summary>
+    public IReadOnlyList<DayOfWeek> JoursDeSemaine { get; init; } = Array.Empty<DayOfWeek>();
+
+    /// <summary>Plages d'exclusion (vacances) de la série (s54). Vide par défaut : la projection matérialise
+    /// alors toutes les occurrences des jours de récurrence.</summary>
+    public IReadOnlyList<PlageExclusion> Exclusions { get; init; } = Array.Empty<PlageExclusion>();
+}
 
 /// <summary>
 /// Agrégat « où est l'enfant, chaque semaine » (axe localisation, orthogonal à la responsabilité —
@@ -28,36 +50,92 @@ public sealed class SlotRecurrent
 {
     private readonly string _enfantId;
     private readonly string _lieuId;
-    private readonly DayOfWeek _jourDeSemaine;
+    private readonly IReadOnlyList<DayOfWeek> _joursDeSemaine;
     private readonly TimeSpan _heureDebut;
     private readonly TimeSpan _heureFin;
     private readonly bool _conditionneGarde;
     private readonly string _poseurId;
+    private readonly IReadOnlyList<PlageExclusion> _exclusions;
 
     private SlotRecurrent(
-        string enfantId, string lieuId, DayOfWeek jourDeSemaine, TimeSpan heureDebut, TimeSpan heureFin,
-        bool conditionneGarde, string poseurId)
+        string enfantId, string lieuId, IReadOnlyList<DayOfWeek> joursDeSemaine, TimeSpan heureDebut, TimeSpan heureFin,
+        bool conditionneGarde, string poseurId, IReadOnlyList<PlageExclusion>? exclusions = null)
     {
         _enfantId = enfantId;
         _lieuId = lieuId;
-        _jourDeSemaine = jourDeSemaine;
+        _joursDeSemaine = joursDeSemaine;
         _heureDebut = heureDebut;
         _heureFin = heureFin;
         _conditionneGarde = conditionneGarde;
         _poseurId = poseurId;
+        _exclusions = exclusions ?? Array.Empty<PlageExclusion>();
     }
 
+    /// <summary>
+    /// Pose d'une série récurrente MULTI-JOURS (s54) : la récurrence porte un <b>set de jours</b> de la
+    /// semaine. Invariants portés dans l'agrégat : le set doit cibler <b>au moins un jour</b> (set vide
+    /// refusé AVANT écriture) et la plage horaire doit être strictement positive ; les jours dupliqués
+    /// sont <b>dédoublonnés</b> (une seule occurrence par jour), en conservant l'ordre de première apparition.
+    /// </summary>
     public static Result<SlotRecurrent> Poser(
-        string enfantId, string lieuId, DayOfWeek jourDeSemaine, TimeSpan heureDebut, TimeSpan heureFin,
+        string enfantId, string lieuId, IReadOnlyList<DayOfWeek> joursDeSemaine, TimeSpan heureDebut, TimeSpan heureFin,
         bool conditionneGarde = false, string poseurId = "")
     {
+        if (joursDeSemaine is null || joursDeSemaine.Count == 0)
+            return Result<SlotRecurrent>.Echec("Un slot récurrent doit cibler au moins un jour de la semaine.");
+
         if (heureFin <= heureDebut)
             return Result<SlotRecurrent>.Echec("La durée du slot récurrent doit être strictement positive.");
 
+        var joursUniques = joursDeSemaine.Distinct().ToList();
         return Result<SlotRecurrent>.Succes(
-            new SlotRecurrent(enfantId, lieuId, jourDeSemaine, heureDebut, heureFin, conditionneGarde, poseurId));
+            new SlotRecurrent(enfantId, lieuId, joursUniques, heureDebut, heureFin, conditionneGarde, poseurId));
+    }
+
+    /// <summary>Surcharge hebdo mono-jour (s29) : délègue à la pose multi-jours avec un set d'un seul jour —
+    /// comportement strictement inchangé (compatibilité des poses existantes).</summary>
+    public static Result<SlotRecurrent> Poser(
+        string enfantId, string lieuId, DayOfWeek jourDeSemaine, TimeSpan heureDebut, TimeSpan heureFin,
+        bool conditionneGarde = false, string poseurId = "")
+        => Poser(enfantId, lieuId, new[] { jourDeSemaine }, heureDebut, heureFin, conditionneGarde, poseurId);
+
+    /// <summary>Reconstruit l'agrégat depuis un snapshot persisté (édition / ajout d'exclusion s54) : le
+    /// set de jours et les exclusions sont restaurés (réconciliation mono-jour héritée si le set est vide).</summary>
+    public static SlotRecurrent FromSnapshot(SlotRecurrentSnapshot s)
+    {
+        var jours = s.JoursDeSemaine.Count > 0 ? s.JoursDeSemaine : new[] { s.JourDeSemaine };
+        return new SlotRecurrent(
+            s.EnfantId, s.LieuId, jours, s.HeureDebut, s.HeureFin, s.ConditionneGarde, s.PoseurId, s.Exclusions.ToList());
+    }
+
+    /// <summary>Ajoute une plage d'exclusion [<paramref name="debut"/>..<paramref name="fin"/>] (vacances) à la
+    /// série (s54). Idempotent : une plage identique déjà présente n'est pas dupliquée. Retourne l'agrégat muté.</summary>
+    public SlotRecurrent AjouterExclusion(DateOnly debut, DateOnly fin)
+    {
+        var plage = new PlageExclusion(debut, fin);
+        if (_exclusions.Contains(plage))
+            return this;
+        return new SlotRecurrent(
+            _enfantId, _lieuId, _joursDeSemaine, _heureDebut, _heureFin, _conditionneGarde, _poseurId,
+            _exclusions.Append(plage).ToList());
+    }
+
+    /// <summary>Retire la plage d'exclusion [<paramref name="debut"/>..<paramref name="fin"/>] de la série
+    /// (s54). Idempotent : une plage absente est un no-op. Retourne l'agrégat muté.</summary>
+    public SlotRecurrent RetirerExclusion(DateOnly debut, DateOnly fin)
+    {
+        var plage = new PlageExclusion(debut, fin);
+        return new SlotRecurrent(
+            _enfantId, _lieuId, _joursDeSemaine, _heureDebut, _heureFin, _conditionneGarde, _poseurId,
+            _exclusions.Where(p => p != plage).ToList());
     }
 
     public SlotRecurrentSnapshot ToSnapshot()
-        => new(_enfantId, _lieuId, _jourDeSemaine, _heureDebut, _heureFin, _conditionneGarde, _poseurId);
+        // JourDeSemaine (positionnel, mono-jour hérité) = premier jour du set — parité de persistance pour
+        // les consommateurs qui lisent encore le jour unique ; JoursDeSemaine porte le set complet.
+        => new(_enfantId, _lieuId, _joursDeSemaine[0], _heureDebut, _heureFin, _conditionneGarde, _poseurId)
+        {
+            JoursDeSemaine = _joursDeSemaine,
+            Exclusions = _exclusions,
+        };
 }

@@ -30,6 +30,17 @@ public sealed class MongoSlotRecurrentRepository : ISlotRecurrentRepository
     public IReadOnlyList<SlotRecurrentSnapshot> AllSnapshots()
         => _slots.Find(Builders<SlotRecurrentDocument>.Filter.Empty).ToList().Select(d => d.VersSnapshot()).ToList();
 
+    public void Remplacer(string slotId, SlotRecurrent slot)
+    {
+        // Réécriture en place : l'ObjectId (identifiant stable) est conservé, seul le contenu change.
+        // Idempotent sur identifiant absent / malformé (ReplaceOne sans upsert = no-op).
+        if (!ObjectId.TryParse(slotId, out var id))
+            return;
+        var doc = SlotRecurrentDocument.De(slot.ToSnapshot());
+        doc.Id = id;
+        _slots.ReplaceOne(Builders<SlotRecurrentDocument>.Filter.Eq(d => d.Id, id), doc);
+    }
+
     public void Supprimer(string slotId)
     {
         // Idempotent : un identifiant absent / malformé ne retire rien et ne lève pas (DeleteOne no-op).

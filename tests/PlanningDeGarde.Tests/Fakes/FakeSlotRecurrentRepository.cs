@@ -19,5 +19,11 @@ public sealed class FakeSlotRecurrentRepository : ISlotRecurrentRepository
 
     public IReadOnlyList<SlotRecurrentSnapshot> AllSnapshots() => _slots.ToList();
 
+    public void Remplacer(string slotId, SlotRecurrent slot)
+    {
+        var index = _slots.FindIndex(s => s.Id == slotId);
+        if (index >= 0) _slots[index] = slot.ToSnapshot() with { Id = slotId }; // id stable conservé
+    }
+
     public void Supprimer(string slotId) => _slots.RemoveAll(s => s.Id == slotId);
 }

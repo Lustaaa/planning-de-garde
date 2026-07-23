@@ -90,6 +90,44 @@ aucune persistance tirée en avant. Texte complet :
   ses jours de récurrence, la résolution **n'intervient pas** dans sa projection. **Hors scope s31** :
   multi-jours + config foyer (D2), édition d'un récurrent, **suppression d'un récurrent depuis l'IHM**
   (affordance IHM manquante, re-signalée gate s31 — candidat goal prochain).
+- **Activités récurrentes — multi-jours, édition de série, vacances & exceptions d'occurrence**
+  *(livré s54 — « terminer tout ce qui est lié aux activités (slot) », D2 + trou s31 soldés)*.
+  - **Vocabulaire « activité ».** Le « slot » devient une **« activité »** dans **toute l'IHM** (menu
+    clic-case : « Ajouter une activité », dialogs, accusé « Activité supprimée ») **ET dans les routes
+    REST** (cf. § routes nested ci-dessous). Le concept technique interne peut rester nommé « slot » ;
+    seule la **surface utilisateur** (libellés + routes) est renommée. Le **référentiel de lieux**
+    (« Activités » depuis s35) **redevient « Lieux »** — libellé ET route — pour **libérer le mot
+    « activités »** au profit de la ressource posée sur l'enfant (cf. `acteurs-et-config-foyer.md`).
+  - **Routes REST NESTED sous l'enfant** (swap atomique libellés + routes, aucune coexistence
+    ancien/nouveau ; tests Web/Api migrés dans le même commit) : toute **activité** (ponctuelle ou
+    récurrente) est une **sous-ressource de l'enfant** — l'`EnfantId` passe **du corps à l'URL**.
+    `POST/DELETE/GET /api/slots*` → `…/api/enfants/{enfantId}/activites*` ;
+    `POST/DELETE/PUT/GET …/activites/recurrentes[/{id}]` ; **plus aucune route `/api/slots*` ne
+    survit**. **Scope défensif** : cibler par id une activité sous un enfant **non propriétaire** → **404**.
+    Le **référentiel de lieux reste PLAT** (foyer-level) : `/api/foyer/activites*` → **`/api/foyer/lieux*`**.
+  - **Read model « activités récurrentes d'un enfant »** (`GET …/activites/recurrentes`) : query **scopée
+    `EnfantId`** (jamais de repli global, invariant isolation par enfant s53) — n'expose que les récurrentes
+    de CET enfant (jours, plage, `LieuId`, id stable) ; enfant sans récurrent → **liste vide** sans erreur.
+  - **Récurrence MULTI-JOURS** : une activité récurrente porte un **set de jours de semaine** (ex. École
+    lun/mar/jeu/ven), **sans date de fin**, projeté **une occurrence par jour** du set dans la fenêtre.
+    **Set vide refusé AVANT écriture** (store intact). Un set d'un seul jour = comportement s29 inchangé.
+  - **Éditer une série (toute la série)** (`PUT …/activites/recurrentes/{id}`) : jours + plage + lieu
+    modifiés en place, **l'`EnfantId` est PRÉSERVÉ** (jamais réaffecté par l'édition) ; **durée non
+    positive OU lieu inconnu → refus AVANT écriture**, série intacte.
+  - **Exclusion vacances scolaires** (`POST/DELETE …/activites/recurrentes/{id}/exclusions`) : des
+    **plages d'exclusion** saisies manuellement, **rattachées à la série** (pas d'import d'un calendrier
+    officiel) ; la projection **ne produit AUCUNE occurrence** sur l'intervalle exclu ; hors plage,
+    occurrences normales. *(Alternative écartée : calendrier de vacances partagé du foyer — backlog.)*
+  - **Exceptions d'occurrence « cette occurrence / toute la série »**
+    (`DELETE …/activites/recurrentes/{id}/occurrences/{a}/{m}/{j}`) : supprimer **une seule occurrence**
+    (une date précise) **sans toucher la série** — les autres jours du même jour-de-semaine restent
+    projetés, la série d'origine inchangée (**exception par date, persistée**) ; ré-exclure la même
+    occurrence = **idempotent (no-op)**. L'IHM propose la **portée** (« cette occurrence » = exception s54
+    · « toute la série » = édition en place) à l'édition/suppression depuis la grille.
+  - **Config foyer PAR ENFANT** (onglet « Activités récurrentes », sélecteur par enfant) : liste +
+    **créer / éditer / SUPPRIMER** par ligne, gating Invité — **comble le trou re-signalé s31** (le back
+    savait supprimer par id ; l'IHM ne l'exposait pas). Texte : [`acteurs-et-config-foyer.md`](acteurs-et-config-foyer.md).
+  Prouvé **store réel** (Mongo durable) ; isolation par enfant tenue sur chaque chemin (invariant s53).
 - **Déléguer la récupération d'UN jour** *(livré s44 — 1ᵉʳ écriture du noyau produit « qui récupère »)* → une
   **entrée « déléguer ce jour » du menu clic-case** (à côté d'« Affecter une période » / « Définir un transfert »)
   ouvre un **mini-dialog** de choix de l'acteur **recevant** parmi les acteurs éligibles du foyer. C'est l'**action

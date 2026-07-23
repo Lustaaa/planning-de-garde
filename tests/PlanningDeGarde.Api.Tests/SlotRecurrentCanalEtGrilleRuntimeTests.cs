@@ -33,9 +33,8 @@ public sealed class SlotRecurrentCanalEtGrilleRuntimeTests
         hote.Services.GetRequiredService<IEditeurEnfants>().Ajouter("lea", "lea");
 
         // When — un Parent pose un slot récurrent le samedi de 11h30 à 12h15 au lieu « piscine ».
-        var pose = await client.PostAsJsonAsync("/api/slots/recurrents", new
+        var pose = await client.PostAsJsonAsync("/api/enfants/lea/activites/recurrentes", new
         {
-            EnfantId = "lea",
             LieuId = "piscine",
             JourDeSemaine = DayOfWeek.Saturday,
             HeureDebut = TimeSpan.FromHours(11.5),

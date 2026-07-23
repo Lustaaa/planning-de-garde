@@ -52,11 +52,15 @@
             </button>
             <button type="button" class="config-nav-item @(_onglet == "activites" ? "actif" : null)"
                     data-testid="onglet-activites" @onclick='() => ChoisirOnglet("activites")'>
-                <span class="config-nav-ic" aria-hidden="true">📍</span>Activités
+                <span class="config-nav-ic" aria-hidden="true">📍</span>Lieux
             </button>
             <button type="button" class="config-nav-item @(_onglet == "enfants" ? "actif" : null)"
                     data-testid="onglet-enfants" @onclick='() => ChoisirOnglet("enfants")'>
                 <span class="config-nav-ic" aria-hidden="true">🧒</span>Enfants
+            </button>
+            <button type="button" class="config-nav-item @(_onglet == "recurrents" ? "actif" : null)"
+                    data-testid="onglet-recurrents" @onclick='() => ChoisirOnglet("recurrents")'>
+                <span class="config-nav-ic" aria-hidden="true">🔁</span>Activités récurrentes
             </button>
         </nav>
 
@@ -622,9 +626,9 @@
                    « Ajouter une activité » (création). Les activités disponibles à la saisie (sélecteurs des
                    dialogs Poser un slot / Définir un transfert, axe LOCALISATION du slot préservé) proviennent
                    EXCLUSIVEMENT de ce référentiel vivant. Écritures via le canal HTTP (POST
-                   /api/foyer/activites (POST/PUT/DELETE)). Gating d'identité EFFECTIVE (règle 9) : crayon,
+                   /api/foyer/lieux (POST/PUT/DELETE)). Gating d'identité EFFECTIVE (règle 9) : crayon,
                    bouton d'ajout et modal ne sont rendus que Parent ; la table reste visible en lecture pour tous. *@
-                <h2 class="config-panneau-titre">Activités du foyer</h2>
+                <h2 class="config-panneau-titre">Lieux du foyer</h2>
                 <p class="text-muted">Le référentiel d'activités (école, nounou, piscine…) et, pour chacune, son
                     adresse et les enfants liés. Une activité ajoutée devient aussitôt disponible à la saisie d'un
                     slot ou d'un transfert ; une activité supprimée n'est plus proposée. La table suit sans
@@ -909,6 +913,186 @@
                                 </div>
                             }
                         </ModalConfig>
+                    }
+                }
+            </section>
+
+            @* Activités récurrentes PAR ENFANT (s54 S6) : navigation par enfant → liste de SES récurrentes
+               (lieu + jours + plage) avec créer / éditer / supprimer par ligne (comble le trou s31). Écriture
+               via le canal HTTP réel (POST/PUT/DELETE /api/enfants/{id}/activites/recurrentes*), liste relue
+               depuis le store. Gating d'identité EFFECTIVE (règle 9) : sélecteur + table visibles pour tous,
+               affordances créer/éditer/supprimer rendues seulement Parent. *@
+            <section class="config-panneau @(_onglet == "recurrents" ? null : "cacher")"
+                     data-testid="panneau-recurrents" aria-label="Activités récurrentes">
+                <h2 class="config-panneau-titre">Activités récurrentes par enfant</h2>
+                <p class="text-muted">Choisissez un enfant pour voir ses activités récurrentes (lieu, jours,
+                    plage horaire) et les créer, éditer ou supprimer.</p>
+
+                <div class="mb-3">
+                    <label class="form-label" for="selecteur-enfant-recurrent">Enfant</label>
+                    <select id="selecteur-enfant-recurrent" class="form-select" data-testid="selecteur-enfant-recurrent"
+                            value="@(_recurrentEnfantSelectionne ?? "")"
+                            @onchange="e => ChoisirEnfantRecurrent(e.Value?.ToString())">
+                        <option value="">— Choisir un enfant —</option>
+                        @foreach (var e in _enfants)
+                        {
+                            <option value="@e.Id">@e.Prenom</option>
+                        }
+                    </select>
+                </div>
+
+                @if (_accuseRecurrent is { } acc)
+                {
+                    <div class="alert alert-success py-2" data-testid="accuse-recurrent" role="status">@acc</div>
+                }
+                @if (!_modalRecurrentOuverte && _motifEchecRecurrent is { } echecListe)
+                {
+                    <div class="alert alert-danger py-2" data-testid="motif-echec-recurrent">@echecListe</div>
+                }
+
+                @if (_recurrentEnfantSelectionne is not null)
+                {
+                    <div class="acteurs-defilement">
+                        <table class="acteurs-table" data-testid="liste-recurrents">
+                            <thead>
+                                <tr>
+                                    <th>Lieu</th>
+                                    <th>Jours</th>
+                                    <th>Horaire</th>
+                                    @if (Session.EstParent)
+                                    {
+                                        <th class="acteurs-col-actions">Actions</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var r in _recurrents)
+                                {
+                                    <tr data-testid="recurrent-ligne" data-recurrent-id="@r.Id">
+                                        <td><span class="role-libelle">@r.ActiviteLibelle</span></td>
+                                        <td data-testid="recurrent-jours">@LibelleJours(r.Jours)</td>
+                                        <td>@r.HeureDebut.ToString(@"hh\:mm")–@r.HeureFin.ToString(@"hh\:mm")</td>
+                                        @if (Session.EstParent)
+                                        {
+                                            <td class="acteurs-col-actions">
+                                                <button type="button" class="btn btn-outline-secondary btn-sm acteur-crayon"
+                                                        data-testid="crayon-recurrent" data-recurrent-id="@r.Id"
+                                                        @onclick="() => OuvrirEditionRecurrent(r)" aria-label="Modifier">✏️</button>
+                                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                                        data-testid="vacances-recurrent" data-recurrent-id="@r.Id"
+                                                        @onclick="() => OuvrirVacances(r.Id)" aria-label="Gérer les vacances">🏖️</button>
+                                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                                        data-testid="supprimer-recurrent" data-recurrent-id="@r.Id"
+                                                        @onclick="() => SupprimerRecurrent(r.Id)" aria-label="Supprimer">🗑️</button>
+                                            </td>
+                                        }
+                                    </tr>
+                                }
+                                @if (_recurrents.Count == 0)
+                                {
+                                    <tr>
+                                        <td colspan="4" class="text-muted" data-testid="recurrents-vide">Aucune activité récurrente pour cet enfant.</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+
+                    @if (Session.EstParent)
+                    {
+                        <div class="acteurs-ajout">
+                            <button type="button" class="btn btn-primary" data-testid="bouton-ajouter-recurrent"
+                                    @onclick="OuvrirAjoutRecurrent">Ajouter une activité récurrente</button>
+                        </div>
+
+                        @if (_modalRecurrentOuverte)
+                        {
+                            <ModalConfig TestId="dialog-recurrent" OnFermer="FermerModalRecurrent">
+                                <h2 class="h4 mb-3">@(_modalRecurrentId is null ? "Ajouter une activité récurrente" : "Modifier l'activité récurrente")</h2>
+                                <form id="form-recurrent" @onsubmit="SoumettreRecurrent">
+                                    <div class="mb-2">
+                                        <label class="form-label" for="champ-lieu-recurrent">Lieu</label>
+                                        <select id="champ-lieu-recurrent" class="form-select" data-testid="champ-lieu-recurrent" @bind="_formRecurrent.LieuId">
+                                            <option value="">— Choisir —</option>
+                                            @foreach (var a in _activites)
+                                            {
+                                                <option value="@a.Id">@a.Libelle</option>
+                                            }
+                                        </select>
+                                    </div>
+                                    <div class="mb-2">
+                                        <span class="form-label d-block">Jours</span>
+                                        @foreach (var j in JoursSemaine)
+                                        {
+                                            <label class="me-2">
+                                                <input type="checkbox" data-testid="jour-@j.Jour"
+                                                       checked="@_formRecurrent.Jours.Contains(j.Jour)"
+                                                       @onchange="e => BasculerJourRecurrent(j.Jour, (bool)e.Value!)" /> @j.Libelle
+                                            </label>
+                                        }
+                                    </div>
+                                    <div class="mb-2 d-flex gap-2">
+                                        <div>
+                                            <label class="form-label" for="champ-debut-recurrent">Début</label>
+                                            <input id="champ-debut-recurrent" type="time" class="form-control" data-testid="champ-debut-recurrent" @bind="_formRecurrent.HeureDebut" />
+                                        </div>
+                                        <div>
+                                            <label class="form-label" for="champ-fin-recurrent">Fin</label>
+                                            <input id="champ-fin-recurrent" type="time" class="form-control" data-testid="champ-fin-recurrent" @bind="_formRecurrent.HeureFin" />
+                                        </div>
+                                    </div>
+                                    @if (_motifEchecRecurrent is { } echecModal)
+                                    {
+                                        <div class="alert alert-danger py-1" data-testid="motif-echec-recurrent-modal">@echecModal</div>
+                                    }
+                                    <button type="submit" class="btn btn-primary" data-testid="valider-recurrent">Enregistrer</button>
+                                </form>
+                            </ModalConfig>
+                        }
+
+                        @* Modal VACANCES (s54 S8) : plages d'exclusion d'un récurrent. Liste des plages
+                           (retrait par plage) + formulaire d'ajout [du..au] → POST/DELETE .../exclusions.
+                           La grille cesse / reprend de projeter l'activité sur l'intervalle. *@
+                        @if (_modalVacancesId is not null && VacancesRecurrent is { } vr)
+                        {
+                            <ModalConfig TestId="dialog-vacances" OnFermer="FermerVacancesModal">
+                                <h2 class="h4 mb-3">Vacances — @vr.ActiviteLibelle</h2>
+                                <p class="text-muted">Déclarez des plages où l'activité ne doit pas avoir lieu
+                                    (vacances scolaires). La grille cesse de projeter l'activité sur l'intervalle.</p>
+
+                                <ul class="list-unstyled" data-testid="liste-vacances">
+                                    @foreach (var plage in vr.Exclusions)
+                                    {
+                                        <li class="d-flex align-items-center gap-2 mb-1" data-testid="vacances-plage">
+                                            <span>du @plage.Debut.ToString("dd/MM/yyyy") au @plage.Fin.ToString("dd/MM/yyyy")</span>
+                                            <button type="button" class="btn btn-outline-danger btn-sm" data-testid="retirer-vacances"
+                                                    @onclick="() => SupprimerVacances(plage)" aria-label="Retirer cette plage">🗑️</button>
+                                        </li>
+                                    }
+                                    @if (vr.Exclusions.Count == 0)
+                                    {
+                                        <li class="text-muted" data-testid="vacances-vide">Aucune plage de vacances déclarée.</li>
+                                    }
+                                </ul>
+
+                                <div class="d-flex gap-2 align-items-end">
+                                    <div>
+                                        <label class="form-label" for="champ-vacances-du">Du</label>
+                                        <input id="champ-vacances-du" type="date" class="form-control" data-testid="champ-vacances-du" @bind="_vacancesDu" />
+                                    </div>
+                                    <div>
+                                        <label class="form-label" for="champ-vacances-au">Au</label>
+                                        <input id="champ-vacances-au" type="date" class="form-control" data-testid="champ-vacances-au" @bind="_vacancesAu" />
+                                    </div>
+                                    <button type="button" class="btn btn-primary" data-testid="ajouter-vacances"
+                                            @onclick="AjouterVacances">Ajouter une plage</button>
+                                </div>
+                                @if (_motifEchecRecurrent is { } echecVac)
+                                {
+                                    <div class="alert alert-danger py-1 mt-2" data-testid="motif-echec-vacances">@echecVac</div>
+                                }
+                            </ModalConfig>
+                        }
                     }
                 }
             </section>

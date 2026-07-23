@@ -27,6 +27,15 @@ public sealed class InMemorySlotRecurrentRepository : ISlotRecurrentRepository
         lock (_verrou) return _slots.ToList();
     }
 
+    public void Remplacer(string slotId, SlotRecurrent slot)
+    {
+        lock (_verrou)
+        {
+            var index = _slots.FindIndex(s => s.Id == slotId);
+            if (index >= 0) _slots[index] = slot.ToSnapshot() with { Id = slotId }; // id stable conservé
+        }
+    }
+
     public void Supprimer(string slotId)
     {
         lock (_verrou) _slots.RemoveAll(s => s.Id == slotId);

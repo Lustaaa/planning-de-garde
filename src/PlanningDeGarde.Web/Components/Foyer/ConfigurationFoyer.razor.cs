@@ -490,7 +490,7 @@ public partial class ConfigurationFoyer
         _ => "vide",
     };
 
-    /// <summary>Activités du référentiel du foyer énumérées <b>depuis le store vivant</b> (GET /api/foyer/activites),
+    /// <summary>Activités du référentiel du foyer énumérées <b>depuis le store vivant</b> (GET /api/foyer/lieux),
     /// jamais une activité en dur : alimente le tableau de l'onglet Activités (ajoutées / éditées / supprimées
     /// suivent sans rechargement) — même source que les sélecteurs de lieu des dialogs.</summary>
     private IReadOnlyList<ActiviteFoyer> _activites = Array.Empty<ActiviteFoyer>();
@@ -611,11 +611,11 @@ public partial class ConfigurationFoyer
         => _enfants = await Canal.GetFromJsonAsync<List<EnfantFoyer>>("api/foyer/enfants")
             ?? new List<EnfantFoyer>();
 
-    /// <summary>Ré-énumère les activités du référentiel depuis le store vivant (GET /api/foyer/activites) :
+    /// <summary>Ré-énumère les activités du référentiel depuis le store vivant (GET /api/foyer/lieux) :
     /// c'est cette relecture qui fait suivre le tableau des activités après ajout / édition / suppression,
     /// sans rechargement.</summary>
     private async Task RechargerActivites()
-        => _activites = await Canal.GetFromJsonAsync<List<ActiviteFoyer>>("api/foyer/activites")
+        => _activites = await Canal.GetFromJsonAsync<List<ActiviteFoyer>>("api/foyer/lieux")
             ?? new List<ActiviteFoyer>();
 
     private async Task RechargerActeurs()
@@ -1112,8 +1112,8 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Enregistre la modal activité via le <b>canal d'écriture HTTP</b> de l'API distante :
-    /// en mode CRÉATION émet <c>POST /api/foyer/activites</c> (id stable neuf posé côté handler), en mode
-    /// ÉDITION émet <c>PUT /api/foyer/activites/{id}</c> sur l'id stable (jamais éditable) — libellé + adresse.
+    /// en mode CRÉATION émet <c>POST /api/foyer/lieux</c> (id stable neuf posé côté handler), en mode
+    /// ÉDITION émet <c>PUT /api/foyer/lieux/{id}</c> sur l'id stable (jamais éditable) — libellé + adresse.
     /// Réutilise les commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le référentiel (le tableau
     /// suit sans rechargement) et la modal se ferme. Sur refus métier (libellé vide) ou service injoignable, le
     /// motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée.
@@ -1125,7 +1125,7 @@ public partial class ConfigurationFoyer
         if (_modalActiviteAjout)
         {
             // Création : ajouter-activite seul (les liens enfant se posent ensuite en édition, Sc.5).
-            if (!await PosterActivite(() => Canal.PostAsJsonAsync("api/foyer/activites", new AjouterActiviteRequete(_activite.Libelle))))
+            if (!await PosterActivite(() => Canal.PostAsJsonAsync("api/foyer/lieux", new AjouterActiviteRequete(_activite.Libelle))))
                 return;
         }
         else
@@ -1133,7 +1133,7 @@ public partial class ConfigurationFoyer
             // Édition : libellé + adresse (editer-activite) PUIS les diffs d'enfants liés (lier/délier). Sur le
             // PREMIER refus (métier ou injoignable), on s'arrête, motif dans la modal restée ouverte (Sc.6) — le
             // tableau n'est relu qu'après le succès complet.
-            if (!await PosterActivite(() => Canal.PutAsJsonAsync($"api/foyer/activites/{_modalActiviteId!}",
+            if (!await PosterActivite(() => Canal.PutAsJsonAsync($"api/foyer/lieux/{_modalActiviteId!}",
                 new EditerActiviteCorps(_activite.Libelle, _activite.Adresse))))
                 return;
 
@@ -1141,11 +1141,11 @@ public partial class ConfigurationFoyer
                 ?? (IReadOnlyCollection<string>)Array.Empty<string>();
 
             foreach (var enfantId in _selectionEnfants.Where(id => !courant.Contains(id)).ToList())
-                if (!await PosterActivite(() => Canal.PutAsync($"api/foyer/activites/{_modalActiviteId!}/enfants/{enfantId}", null)))
+                if (!await PosterActivite(() => Canal.PutAsync($"api/foyer/lieux/{_modalActiviteId!}/enfants/{enfantId}", null)))
                     return;
 
             foreach (var enfantId in courant.Where(id => !_selectionEnfants.Contains(id)).ToList())
-                if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/activites/{_modalActiviteId!}/enfants/{enfantId}")))
+                if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/lieux/{_modalActiviteId!}/enfants/{enfantId}")))
                     return;
         }
 
@@ -1179,13 +1179,13 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Supprime une activité du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>DELETE /api/foyer/activites/{id}</c>) depuis la modal d'édition : la clé est l'identifiant
+    /// (<c>DELETE /api/foyer/lieux/{id}</c>) depuis la modal d'édition : la clé est l'identifiant
     /// stable. Sur succès, on relit le référentiel (l'activité quitte le tableau et n'est plus proposée à la
     /// saisie, sans rechargement —), puis la modal se ferme. Idempotence côté handler ; borne : les slots
     /// déjà posés sur cette activité conservent leur lieu. Sur refus / injoignable, le motif reste DANS la modal.</summary>
     private async Task SupprimerActivite(string activiteId)
     {
-        if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/activites/{activiteId}")))
+        if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/lieux/{activiteId}")))
             return;
 
         await RechargerActivites();
@@ -1330,4 +1330,190 @@ public partial class ConfigurationFoyer
     /// l'UI : simple lecture du statut projeté ; l'activation est tranchée côté handler.</summary>
     private static bool EstInactif(CompteFoyer compte)
         => string.Equals(compte.Statut, "inactif", StringComparison.OrdinalIgnoreCase);
+
+    // ===== Activités récurrentes PAR ENFANT (s54 S6) — navigation par enfant, comble le trou s31 =====
+
+    /// <summary>Vue Web d'une activité récurrente d'un enfant (miroir du read model
+    /// <c>ActiviteRecurrenteVue</c> : id + lieu résolu + set de jours + plage horaire + plages d'exclusion).</summary>
+    public sealed record ActiviteRecurrenteVueWeb(
+        string Id, string LieuId, string ActiviteLibelle, List<DayOfWeek> Jours, TimeSpan HeureDebut, TimeSpan HeureFin,
+        List<PlageVacancesWeb> Exclusions);
+
+    /// <summary>Vue Web d'une plage d'exclusion (vacances) — bornes calendaires incluses.</summary>
+    public sealed record PlageVacancesWeb(DateOnly Debut, DateOnly Fin);
+
+    private string? _recurrentEnfantSelectionne;
+    private IReadOnlyList<ActiviteRecurrenteVueWeb> _recurrents = Array.Empty<ActiviteRecurrenteVueWeb>();
+    private string? _accuseRecurrent;
+    private string? _motifEchecRecurrent;
+
+    private bool _modalRecurrentOuverte;
+    private string? _modalRecurrentId; // null = création ; sinon édition de la série d'id stable
+    private readonly FormRecurrent _formRecurrent = new();
+
+    private sealed class FormRecurrent
+    {
+        public string LieuId { get; set; } = "";
+        public HashSet<DayOfWeek> Jours { get; } = new();
+        public TimeOnly HeureDebut { get; set; } = new(8, 30);
+        public TimeOnly HeureFin { get; set; } = new(16, 30);
+
+        public void Reinitialiser(string? lieuId = null, IEnumerable<DayOfWeek>? jours = null, TimeOnly? debut = null, TimeOnly? fin = null)
+        {
+            LieuId = lieuId ?? "";
+            Jours.Clear();
+            if (jours is not null) foreach (var j in jours) Jours.Add(j);
+            HeureDebut = debut ?? new(8, 30);
+            HeureFin = fin ?? new(16, 30);
+        }
+    }
+
+    /// <summary>Jours de la semaine dans l'ordre lundi→dimanche (sélecteur de récurrence).</summary>
+    private static readonly (DayOfWeek Jour, string Libelle)[] JoursSemaine =
+    {
+        (DayOfWeek.Monday, "Lun"), (DayOfWeek.Tuesday, "Mar"), (DayOfWeek.Wednesday, "Mer"),
+        (DayOfWeek.Thursday, "Jeu"), (DayOfWeek.Friday, "Ven"), (DayOfWeek.Saturday, "Sam"), (DayOfWeek.Sunday, "Dim"),
+    };
+
+    private static string LibelleJours(IEnumerable<DayOfWeek> jours)
+    {
+        var set = jours.ToHashSet();
+        return string.Join(", ", JoursSemaine.Where(j => set.Contains(j.Jour)).Select(j => j.Libelle));
+    }
+
+    private async Task ChoisirEnfantRecurrent(string? enfantId)
+    {
+        _recurrentEnfantSelectionne = string.IsNullOrEmpty(enfantId) ? null : enfantId;
+        _accuseRecurrent = null;
+        _motifEchecRecurrent = null;
+        await ChargerRecurrents();
+    }
+
+    private async Task ChargerRecurrents()
+    {
+        if (string.IsNullOrEmpty(_recurrentEnfantSelectionne))
+        {
+            _recurrents = Array.Empty<ActiviteRecurrenteVueWeb>();
+            return;
+        }
+        _recurrents = await Canal.GetFromJsonAsync<List<ActiviteRecurrenteVueWeb>>(
+            $"api/enfants/{_recurrentEnfantSelectionne}/activites/recurrentes") ?? new List<ActiviteRecurrenteVueWeb>();
+    }
+
+    private async Task SupprimerRecurrent(string id)
+    {
+        _motifEchecRecurrent = null;
+        var reponse = await Canal.DeleteAsync($"api/enfants/{_recurrentEnfantSelectionne}/activites/recurrentes/{id}");
+        if (reponse.IsSuccessStatusCode)
+        {
+            _accuseRecurrent = "Activité récurrente supprimée";
+            await ChargerRecurrents();
+        }
+        else
+        {
+            _motifEchecRecurrent = await reponse.Content.ReadAsStringAsync();
+        }
+    }
+
+    private void OuvrirAjoutRecurrent()
+    {
+        _modalRecurrentId = null;
+        _formRecurrent.Reinitialiser();
+        _motifEchecRecurrent = null;
+        _modalRecurrentOuverte = true;
+    }
+
+    private void OuvrirEditionRecurrent(ActiviteRecurrenteVueWeb r)
+    {
+        _modalRecurrentId = r.Id;
+        _formRecurrent.Reinitialiser(r.LieuId, r.Jours, TimeOnly.FromTimeSpan(r.HeureDebut), TimeOnly.FromTimeSpan(r.HeureFin));
+        _motifEchecRecurrent = null;
+        _modalRecurrentOuverte = true;
+    }
+
+    private void FermerModalRecurrent() => _modalRecurrentOuverte = false;
+
+    private void BasculerJourRecurrent(DayOfWeek jour, bool coche)
+    {
+        if (coche) _formRecurrent.Jours.Add(jour);
+        else _formRecurrent.Jours.Remove(jour);
+    }
+
+    private async Task SoumettreRecurrent()
+    {
+        _motifEchecRecurrent = null;
+        var jours = JoursSemaine.Select(j => j.Jour).Where(_formRecurrent.Jours.Contains).ToList();
+
+        HttpResponseMessage reponse;
+        if (_modalRecurrentId is null)
+        {
+            reponse = await Canal.PostAsJsonAsync(
+                $"api/enfants/{_recurrentEnfantSelectionne}/activites/recurrentes",
+                new PoserSlotRecurrentRequete(
+                    _formRecurrent.LieuId, jours.FirstOrDefault(), _formRecurrent.HeureDebut.ToTimeSpan(),
+                    _formRecurrent.HeureFin.ToTimeSpan(), JoursDeSemaine: jours));
+        }
+        else
+        {
+            reponse = await Canal.PutAsJsonAsync(
+                $"api/enfants/{_recurrentEnfantSelectionne}/activites/recurrentes/{_modalRecurrentId}",
+                new ModifierSlotRecurrentCorps(
+                    _formRecurrent.LieuId, jours, _formRecurrent.HeureDebut.ToTimeSpan(), _formRecurrent.HeureFin.ToTimeSpan()));
+        }
+
+        if (reponse.IsSuccessStatusCode)
+        {
+            _modalRecurrentOuverte = false;
+            await ChargerRecurrents();
+        }
+        else
+        {
+            _motifEchecRecurrent = await reponse.Content.ReadAsStringAsync();
+        }
+    }
+
+    // ---- Vacances (plages d'exclusion) d'un récurrent (s54 S8) ----
+
+    private string? _modalVacancesId; // id du récurrent dont on gère les vacances ; null = fermé
+    private DateOnly _vacancesDu = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly _vacancesAu = DateOnly.FromDateTime(DateTime.Today).AddDays(7);
+
+    /// <summary>Le récurrent dont la modal vacances est ouverte (relu depuis la liste rafraîchie).</summary>
+    private ActiviteRecurrenteVueWeb? VacancesRecurrent => _recurrents.FirstOrDefault(r => r.Id == _modalVacancesId);
+
+    private void OuvrirVacances(string id)
+    {
+        _modalVacancesId = id;
+        _motifEchecRecurrent = null;
+    }
+
+    private void FermerVacancesModal() => _modalVacancesId = null;
+
+    private async Task AjouterVacances()
+    {
+        _motifEchecRecurrent = null;
+        var reponse = await Canal.PostAsJsonAsync(
+            $"api/enfants/{_recurrentEnfantSelectionne}/activites/recurrentes/{_modalVacancesId}/exclusions",
+            new ExclusionCorps(_vacancesDu, _vacancesAu));
+        if (reponse.IsSuccessStatusCode)
+            await ChargerRecurrents();
+        else
+            _motifEchecRecurrent = await reponse.Content.ReadAsStringAsync();
+    }
+
+    private async Task SupprimerVacances(PlageVacancesWeb plage)
+    {
+        _motifEchecRecurrent = null;
+        var requete = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"api/enfants/{_recurrentEnfantSelectionne}/activites/recurrentes/{_modalVacancesId}/exclusions")
+        {
+            Content = JsonContent.Create(new ExclusionCorps(plage.Debut, plage.Fin)),
+        };
+        var reponse = await Canal.SendAsync(requete);
+        if (reponse.IsSuccessStatusCode)
+            await ChargerRecurrents();
+        else
+            _motifEchecRecurrent = await reponse.Content.ReadAsStringAsync();
+    }
 }

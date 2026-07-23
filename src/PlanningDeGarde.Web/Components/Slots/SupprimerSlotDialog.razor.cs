@@ -30,6 +30,11 @@ public partial class SupprimerSlotDialog
     [Parameter, EditorRequired]
     public DateOnly DateContexte { get; set; }
 
+    /// <summary>Enfant courant du planning (s53) : l'activité est une sous-ressource de l'enfant (s54),
+    /// la lecture / la suppression sont scopées sous <c>/api/enfants/{EnfantId}/activites</c>.</summary>
+    [Parameter, EditorRequired]
+    public string EnfantId { get; set; } = "";
+
     /// <summary>Notifié sur suppression aboutie : le parent ferme la dialog, accuse et relit la grille.</summary>
     [Parameter]
     public EventCallback OnValide { get; set; }
@@ -45,7 +50,7 @@ public partial class SupprimerSlotDialog
         try
         {
             _slots = await Canal.GetFromJsonAsync<List<SlotDuJourVue>>(
-                $"api/slots/{DateContexte.Year}/{DateContexte.Month}/{DateContexte.Day}");
+                $"api/enfants/{EnfantId}/activites/{DateContexte.Year}/{DateContexte.Month}/{DateContexte.Day}");
         }
         catch (HttpRequestException)
         {
@@ -63,7 +68,7 @@ public partial class SupprimerSlotDialog
         HttpResponseMessage reponse;
         try
         {
-            reponse = await Canal.DeleteAsync($"api/slots/{slotId}");
+            reponse = await Canal.DeleteAsync($"api/enfants/{EnfantId}/activites/{slotId}");
         }
         catch (HttpRequestException)
         {

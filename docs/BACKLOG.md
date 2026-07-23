@@ -11,7 +11,7 @@
 
 ## État courant
 
-**53 sprints livrés/mergés** (suite complète verte à chaque merge, `main` à jour). L'épic **Refonte
+**54 sprints livrés/mergés** (suite complète verte à chaque merge, `main` à jour). L'épic **Refonte
 Config foyer** a Acteurs / Rôles / Cycle / Enfants / Activités harmonisés + vue graphe foyer + badge
 complétude + commandes inverses actif/admin. Le **noyau produit « qui récupère »** est livré : grille
 agenda (seule surface de lecture du planning), **délégation** d'un jour (s44) / d'une plage (s45) /
@@ -19,10 +19,19 @@ reprise (s46), **cloche** de notifications avec journal de changements + digest 
 **échange** consenti proposition→accord d'un jour puis d'une plage (s47/s52), **signalement d'imprévu**
 malade/retard + action de suivi (s48/s51). **R1 multi-enfants dé-risqué de bout en bout** (s53) :
 isolation stricte par enfant sur tous les chemins d'écriture et de lecture ; un enfant sans cycle
-propre → NEUTRE (le PO doit configurer le cycle de chaque enfant).
+propre → NEUTRE (le PO doit configurer le cycle de chaque enfant). **Volet « activités » terminé**
+(s54) : vocabulaire IHM « slot »→« activité » + référentiel « Lieux », **routes REST nested sous
+l'enfant** (`/api/enfants/{id}/activites*`), **récurrence multi-jours**, **édition de série**,
+**exclusion vacances scolaires**, **exceptions d'occurrence « cette occurrence / série »**, **config
+foyer par enfant** (créer/éditer/**supprimer** — D2 + trou s31 soldés).
 
 ## Candidats de tête au prochain `/planning`
 
+- **Passe de retours PO sur les activités (s54) — À PLANIFIER AVEC L'ARCHITECTE (hors pipeline).** Au
+  gate s54 le PO a annoncé « plein de retours » sur les activités récurrentes mais a **choisi de les
+  traiter séparément avec l'agent technique un autre jour** (section `# Retours produit (PO)` du fichier
+  s54 laissée **vide** volontairement). ⬜ **Récupérer ces retours** (passe architecte dédiée) **avant**
+  de reprendre la boucle `/planning` sur ce volet, pour ne pas re-cadrer à l'aveugle. *(gate s54)*
 - **VUE multi-enfants SIMULTANÉE** (lanes / colonnes sur la grille) — surface de LECTURE **neuve**
   (décision PO au coût gate). s53 a livré la vue **MONO-enfant** (sélecteur s30) ; voir plusieurs
   enfants d'un coup est un incrément séparable. *(porte de conception P1 s53, retours s53)*
@@ -34,9 +43,10 @@ propre → NEUTRE (le PO doit configurer le cycle de chaque enfant).
   la fenêtre de grille chargée ; naviguer hors du jour courant fait disparaître la section
   « aujourd'hui ». **À arbitrer** : persistance hors vue **vs** coût d'un GET sur push (risque flake).
 - **Reste Config foyer** : arbitrage **inline vs modal** (à trancher en G2), **graphe étendu** /
-  édition depuis le graphe, **liste de slots par activité**, **lien adresse acteur↔lieu**, **suppression
-  slot récurrent depuis l'IHM**, **suppression d'un enfant** (+ borne R1 au Delete), **R3 « exactement
-  2 » imposée à l'écriture** (choix produit, non imposée).
+  édition depuis le graphe, **liste de slots par activité**, **lien adresse acteur↔lieu**,
+  **suppression d'un enfant** (+ borne R1 au Delete), **R3 « exactement 2 » imposée à l'écriture**
+  (choix produit, non imposée). *(suppression slot récurrent IHM + récurrence multi-jours + config
+  foyer par enfant = **livrés s54**.)*
 - **P0 auth** : **Google OAuth réel** + écran consommateur `definir-mot-de-passe`.
 
 ## Petits ajustements / retours ponctuels
@@ -66,7 +76,6 @@ propre → NEUTRE (le PO doit configurer le cycle de chaque enfant).
 
 | Rang | Sujet envisagé | Épics | Pourquoi maintenant |
 |-----:|----------------|-------|---------------------|
-| +0 (D2 — dette ouverte séparée) | **Configurer les slots récurrents dans la Config du foyer + récurrence MULTI-JOURS** (ex. École lun/mar/jeu/ven) = nouvelle **surface IHM** (onglet config) + extension du modèle de récurrence (hebdo simple → set de jours). Aucun changement de cœur de résolution — peut être séquencé indépendamment. | É6, É2 | Retour PO gate s29 |
 | +1 (P0 — reliquat câblage auth) | **Câblage auth réel — RESTE (P0)** : (1) **provider Google OAuth réel** (le placeholder `FournisseurOAuthGoogleNonCable` renvoie `null` : échange client secret / redirect_uri / callback en env. déployé non câblé) ; (2) **écran consommateur de `definir-mot-de-passe`** (endpoint livré, sans IHM). **Reste (hors P0)** : relais SMTP externe réel (choix PO = **rester Smtp4dev**, dette assumée), boutons MS / Apple OAuth → **404**, écran d'inscription libre-service. | É10, É5, É2 | **Google réel** = seul volet OAuth non branché ; le reste est de la surface ou une dette assumée |
 | +1 (P0 — ÉPIC) | **Refonte de la Configuration du foyer — RESTE** (brief : [`docs/briefs/refonte-configuration-foyer.md`](briefs/refonte-configuration-foyer.md)). Acteurs / Rôles / Cycle / Enfants / Activités **harmonisés** (tableau lecture + crayon→modal) + vue graphe foyer + badge complétude + commandes inverses actif/admin **livrés**. **Reste** : arbitrage **inline vs modal** (G2), **graphe étendu** (grands-parents, parents liés entre eux, lien enfant↔activité dans le graphe) + **édition depuis le graphe**, **liste de slots par activité**, **lien adresse acteur↔lieu/domicile**, **suppression slot récurrent IHM**, **suppression d'un enfant**, contrainte **R3 « exactement 2 » imposée à l'écriture** (choix produit). | É1, É2, É7, É6 | Épic structuré (brief PO) ; reste à découper au `/planning` en incréments verticaux |
 | +3 | **Convergence `EditerPeriodeHandler` / `ModifierPeriodeHandler`** — deux handlers de mutation de période coexistent (le second legacy s02, même port + même modèle de concurrence) ; converger vers un seul chemin d'écriture — **dette de code** (DDD : un seul modèle de concurrence par agrégat). | É7 | Évite la dérive de deux chemins d'édition divergents ; ménage hygiénique post-s17 |
@@ -120,10 +129,13 @@ propre → NEUTRE (le PO doit configurer le cycle de chaque enfant).
 
 | Besoin | Statut | Palier | Origine |
 |--------|:------:|--------|---------|
-| **Slot récurrent MULTI-JOURS + configuration en Config du foyer** (ex. École lun/mar/jeu/ven) — extension récurrence + nouvelle surface IHM (D2) | ⬜ | dette ouverte (D2, séparée) | retours s29 |
-| **Liste de slots par activité** (une activité « avec une liste de slots » récurrents/non) — le référentiel Activités s35 porte libellé + adresse + lien enfant, **pas** de slots ; brancher une liste de slots portée par l'activité = extension du modèle de slots + surface modal Activités | ⬜ | épic Refonte Config foyer | retours s29 (PO) · brief · hors scope s35 |
-| **Supprimer un slot récurrent depuis l'IHM** (affordance manquante) + **nuance occurrence unique vs série** : le back sait déjà supprimer par id stable (s29), mais le PO **ne trouve pas comment** le faire dans l'IHM (re-signalé gate s31) ; clarifier **une seule occurrence** vs **toute la série** (sémantique à trancher). | ⬜ | **candidat goal /planning** | retours s29 · re-signalé s31 (PO) |
+| **Liste de slots par activité** (une activité/lieu « avec une liste de slots » récurrents/non) — le référentiel « Lieux » (ex-« Activités » s35, re-renommé s54) porte libellé + adresse + lien enfant, **pas** de slots ; brancher une liste de slots portée par le lieu = extension du modèle de slots + surface modal | ⬜ | épic Refonte Config foyer | retours s29 (PO) · brief · hors scope s35 |
 | **Slot imbriqué** — un slot peut en contenir un autre (ex. chez mamie **et** cours de natation) | ⬜ | à séquencer | retours s07 (idée) |
+
+> **Livrés s54 (« terminer tout ce qui est lié aux activités »)** : slot récurrent **MULTI-JOURS** (set
+> de jours) + **configuration en Config du foyer PAR ENFANT** (D2) ; **suppression d'un récurrent depuis
+> l'IHM** + **nuance « cette occurrence » vs « toute la série »** (trou re-signalé s31) ; + édition de
+> série, exclusion vacances, vocabulaire « activité »/« Lieux », routes REST nested sous l'enfant.
 
 ### Épic 7 — Périodes de garde & responsabilité récurrente
 
@@ -202,6 +214,18 @@ propre → NEUTRE (le PO doit configurer le cycle de chaque enfant).
 
 ## Dettes ouvertes
 
+- **⚠️ Flake P1 SignalR *TempsReel* — MONTÉE DE SÉVÉRITÉ RÉ-OUVERTE (s54, à prioriser).** La dette
+  soldée s39 (collection `SignalRTempsReelCollection` non parallèle) **remonte** : full-suite **rouge
+  intermittent** (0→6 échecs selon les runs) par **concurrence SignalR intra-`Web.Tests`**, mais
+  **TOUJOURS vert en isolation** (`Web.Tests` 354/354) et **vert déterministe en série** (945/945,
+  `-Serial`). **Non imputable au sprint** (triage x3 discriminé, pas une régression produit). Rétrofit =
+  **sérialisation des assemblies I/O intra-`Web.Tests`** (étendre la non-parallélisation aux
+  assemblies I/O sous charge, cf. blast-radius s29/s36). *(s54)*
+- **Réserve de gate NON exercée par bUnit (s54)** — la **saisie manuelle** des `input[type=time]` (heures
+  create/edit d'un récurrent) et `input[type=date]` (plages de vacances) n'est **pas** prouvée par bUnit :
+  le **câblage POST/PUT est prouvé côté store réel**, mais la **frappe des champs** reste à confirmer.
+  **Candidat SMOKE Playwright** (projet E2E `tests/PlanningDeGarde.Web.E2E`, hors `.slnx`, cf. leçon s49).
+  *(s54)*
 - **Données en dur restantes dans `Foyer.cs`** (É1) — à persister : **set couleurs par défaut** (reste).
   *(config foyer acteurs persistée s09/s15 ; lieux hissés en référentiel éditable + persisté s27.)* — retours s03 (#11).
 - **Cycle de fond riche réclamé** (É7) — au-delà du plus petit incrément livré s10 : ancre/début,

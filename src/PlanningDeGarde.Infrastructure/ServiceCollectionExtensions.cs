@@ -239,6 +239,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PoserSlotHandler>();
         services.AddScoped<PoserSlotRecurrentHandler>();
         services.AddScoped<SupprimerSlotRecurrentHandler>();
+        services.AddScoped<ModifierSlotRecurrentHandler>();
+        services.AddScoped<AjouterExclusionRecurrentHandler>();
+        services.AddScoped<SupprimerExclusionRecurrentHandler>();
+        services.AddScoped<ExclureOccurrenceRecurrentHandler>();
         services.AddScoped<AjouterActiviteHandler>();
         services.AddScoped<SupprimerActiviteHandler>();
         services.AddScoped<EditerActiviteHandler>();
@@ -285,6 +289,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GrapheFoyerQuery>();
         services.AddScoped<PeriodesDuJourQuery>();
         services.AddScoped<SlotsDuJourQuery>();
+        services.AddScoped<SlotsRecurrentsParEnfantQuery>();
         services.AddScoped<DigestImmediatQuery>();
 
         // Cloche s47 : lecture du flux de notifications par utilisateur (+ compteur non-lus), marquer-lu,

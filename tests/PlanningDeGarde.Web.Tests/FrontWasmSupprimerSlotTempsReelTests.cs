@@ -58,8 +58,10 @@ public sealed class FrontWasmSupprimerSlotTempsReelTests : TestContext
         // When — écran 1 = le canal d'écriture réel (le POST exact que la dialog émet, prouvée en Sc.6) :
         // on supprime le slot par son identifiant stable, relu du store partagé.
         var client1 = GrilleRuntimeHarness.ClientVers(api);
-        var idSlot = api.Services.GetRequiredService<ISlotRepository>()
-            .AllSnapshots().Single(s => s.LieuId == "École").Id;
+        var slotEcole = api.Services.GetRequiredService<ISlotRepository>()
+            .AllSnapshots().Single(s => s.LieuId == "École");
+        var idSlot = slotEcole.Id;
+        var enfantSlot = slotEcole.EnfantId;
 
         // … pompe de diffusion : ré-émet la suppression (idempotente) jusqu'à ce que le push SignalR tombe
         // APRÈS l'établissement de la connexion long polling du second écran. La diffusion vient de
@@ -69,7 +71,7 @@ public sealed class FrontWasmSupprimerSlotTempsReelTests : TestContext
         {
             while (!diffusionContinue.IsCancellationRequested)
             {
-                await client1.DeleteAsync($"api/slots/{idSlot}");
+                await client1.DeleteAsync($"api/enfants/{enfantSlot}/activites/{idSlot}");
                 try { await Task.Delay(150, diffusionContinue.Token); }
                 catch (TaskCanceledException) { break; }
             }

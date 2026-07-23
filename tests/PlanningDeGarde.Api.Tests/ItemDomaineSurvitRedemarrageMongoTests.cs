@@ -72,8 +72,8 @@ public sealed class ItemDomaineSurvitRedemarrageMongoTests : IDisposable
             // déjà pratiqué ici. La pose valide désormais l'existence de l'enfant (s30 S7), plus un fantôme.
             serveur1.Services.GetRequiredService<IEditeurActivites>().Ajouter("école", "école");
             serveur1.Services.GetRequiredService<IEditeurEnfants>().Ajouter("Léa", "Léa");
-            var pose = await c1.PostAsJsonAsync("/api/slots",
-                new { EnfantId = "Léa", LieuId = "école", Debut = new DateTime(2026, 6, 10, 8, 0, 0), Fin = new DateTime(2026, 6, 10, 17, 0, 0) });
+            var pose = await c1.PostAsJsonAsync("/api/enfants/Léa/activites",
+                new { LieuId = "école", Debut = new DateTime(2026, 6, 10, 8, 0, 0), Fin = new DateTime(2026, 6, 10, 17, 0, 0) });
             Assert.True(pose.IsSuccessStatusCode, $"la pose du slot doit aboutir, statut {(int)pose.StatusCode}.");
         }
 

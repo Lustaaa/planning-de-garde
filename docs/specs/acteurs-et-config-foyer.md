@@ -528,6 +528,26 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
     rechargement, 0 GET ajouté). Le **gating impersonation R8/R9** (droit d'écriture dérivé du `TypeActeur`
     cantonné, s36) est **préservé, non modifié** — dé-désigner / désactiver ne fait gagner ni perdre aucun droit.
 
+- **Config foyer PAR ENFANT des activités récurrentes + référentiel « Lieux » (ré-)assumé** *(livré s54)* :
+  - **Onglet « Activités récurrentes » PAR ENFANT.** L'ancien placeholder **« Slot récurrent »** (réservé
+    s20, sans fonctionnalité) est **repurposé** en un onglet **piloté par un sélecteur d'enfant** : choisir
+    un enfant affiche **la LISTE de SES activités récurrentes** (lieu + jours + plage) avec **créer / éditer /
+    SUPPRIMER** par ligne. La **suppression depuis l'IHM comble le trou re-signalé gate s31** (le back sait
+    supprimer par id stable depuis s29, l'affordance IHM manquait). **Surface arbitrée AU CADRAGE** (porte de
+    conception PO — Q3 « navigation par enfant », alternatives « regroupé sous Lieux » / placeholder unique s20
+    **écartées**), pas au gate. **Parent-gated** (Invité = lecture seule, ni créer / éditer / supprimer).
+    Émet les commandes CRUD récurrent via le canal HTTP nested `…/api/enfants/{enfantId}/activites/recurrentes*`
+    (cf. [`ecriture-en-contexte.md`](ecriture-en-contexte.md) : multi-jours, édition de série, exclusion
+    vacances, exceptions d'occurrence). **Isolation par enfant** stricte : l'onglet ne liste/écrit **que** les
+    récurrentes de l'enfant sélectionné (invariant s53).
+  - **Référentiel « Activités » (s35) → « Lieux ».** Le référentiel foyer plat renommé **« Activités »** en s35
+    **redevient « Lieux »** (libellé onglet **et** routes `/api/foyer/activites* → /api/foyer/lieux*`, DTOs, record
+    Web) — **iso-comportement** (CRUD, validation de pose, adresse, lien enfant↔activité préservés) : seul le **nom
+    du concept** rechange, pour **libérer le mot « activités »** au profit de la ressource **posée sur l'enfant**
+    (sans quoi `/api/enfants/{id}/activites` et `/api/foyer/activites` porteraient le **même mot pour deux
+    concepts**). Le référentiel reste **PLAT** (appartient au **foyer**, liens N-M vers les enfants), l'activité
+    **posée** est **NESTED** sous l'enfant.
+
 - **Fondation identité — compte utilisateur ↔ acteur** *(livré s22, auth tranche 1)* : agrégat
   **`CompteUtilisateur`** = petit agrégat de config foyer (miroir du CRUD acteurs et du référentiel de
   rôles), doté d'un **id stable opaque** + **email** + **statut** (`Actif`/`Inactif`, défaut **Inactif** —

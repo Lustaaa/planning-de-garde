@@ -14,10 +14,9 @@ namespace PlanningDeGarde.Api.Tests;
 /// </summary>
 public sealed class PoserSlotCanalApiTests
 {
-    // Mercredi 24/06/2026, école, 08:30 → 16:30 (commande de pose de Léa).
+    // Mercredi 24/06/2026, école, 08:30 → 16:30 (corps de pose de Léa — l'EnfantId voyage par l'URL, s54).
     private static readonly object CommandePoseLea = new
     {
-        EnfantId = "Léa",
         LieuId = "école",
         Debut = new DateTime(2026, 6, 24, 8, 30, 0),
         Fin = new DateTime(2026, 6, 24, 16, 30, 0),
@@ -29,7 +28,7 @@ public sealed class PoserSlotCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/slots", CommandePoseLea);
+        var reponse = await client.PostAsJsonAsync("/api/enfants/Léa/activites", CommandePoseLea);
 
         Assert.True(reponse.IsSuccessStatusCode, $"statut HTTP attendu de succès, obtenu {(int)reponse.StatusCode}.");
     }
@@ -40,7 +39,7 @@ public sealed class PoserSlotCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/slots", CommandePoseLea);
+        var reponse = await client.PostAsJsonAsync("/api/enfants/Léa/activites", CommandePoseLea);
         Assert.True(reponse.IsSuccessStatusCode, $"la pose via le canal doit aboutir, statut {(int)reponse.StatusCode}.");
 
         // Observable de bout en bout : la projection réelle lit le store réel singleton de l'hôte
@@ -58,7 +57,6 @@ public sealed class PoserSlotCanalApiTests
     // Pose au lieu « piscine » absent du foyer : refus propagé par le canal + aucun effet de bord.
     private static readonly object CommandePoseLieuAbsent = new
     {
-        EnfantId = "Léa",
         LieuId = "piscine", // absent du référentiel réel du foyer (école, domicile A/B, nounou)
         Debut = new DateTime(2026, 6, 24, 8, 30, 0),
         Fin = new DateTime(2026, 6, 24, 16, 30, 0),
@@ -70,7 +68,7 @@ public sealed class PoserSlotCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/slots", CommandePoseLieuAbsent);
+        var reponse = await client.PostAsJsonAsync("/api/enfants/Léa/activites", CommandePoseLieuAbsent);
 
         Assert.False(reponse.IsSuccessStatusCode, $"un lieu absent doit être refusé, statut obtenu {(int)reponse.StatusCode}.");
         var motif = await reponse.Content.ReadAsStringAsync();
@@ -84,7 +82,7 @@ public sealed class PoserSlotCanalApiTests
         using var hote = new ApiHoteFactory();
         var client = hote.CreateClient();
 
-        var reponse = await client.PostAsJsonAsync("/api/slots", CommandePoseLieuAbsent);
+        var reponse = await client.PostAsJsonAsync("/api/enfants/Léa/activites", CommandePoseLieuAbsent);
         Assert.False(reponse.IsSuccessStatusCode, "la pose au lieu absent doit être refusée.");
 
         // Absence d'effet de bord observée sur le store réel via la projection réelle.

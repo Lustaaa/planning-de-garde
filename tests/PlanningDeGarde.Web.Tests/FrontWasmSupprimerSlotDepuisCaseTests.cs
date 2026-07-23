@@ -77,7 +77,7 @@ public sealed class FrontWasmSupprimerSlotDepuisCaseTests : TestContext
         grille.WaitForAssertion(
             () =>
             {
-                Assert.Equal("Slot supprimé",
+                Assert.Equal("Activité supprimée",
                     grille.Find("[data-testid='accuse-slot-supprime']").TextContent.Trim().TrimEnd('×').Trim());
                 var caseMardi = GrilleRuntimeHarness.CaseDuJour(grille, "16/06");
                 Assert.False(CaseContientSlot(caseMardi, "Piscine"), "la case du 16/06 ne doit plus rendre Piscine.");
