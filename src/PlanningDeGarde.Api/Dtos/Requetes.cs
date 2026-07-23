@@ -29,6 +29,10 @@ public sealed record ModifierSlotRecurrentCorps(
     string LieuId, IReadOnlyList<DayOfWeek> JoursDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
     bool ConditionneGarde = false, string PoseurId = "");
 
+/// <summary>Corps d'une plage d'exclusion (vacances) d'une activité récurrente
+/// (POST/DELETE /api/enfants/{enfantId}/activites/recurrentes/{id}/exclusions) : bornes calendaires incluses.</summary>
+public sealed record ExclusionCorps(DateOnly Debut, DateOnly Fin);
+
 /// <summary>Corps de l'affectation de période (POST /api/periodes).</summary>
 public sealed record AffecterPeriodeRequete(string ResponsableId, DateTime Debut, DateTime Fin, string EnfantId = "");
 

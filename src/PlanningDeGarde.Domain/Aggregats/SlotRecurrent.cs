@@ -12,6 +12,15 @@ namespace PlanningDeGarde.Domain;
 /// que le slot n'a pas été persisté. <paramref name="JourDeSemaine"/> (positionnel, hérité s29) reste le
 /// premier jour du set, pour les consommateurs qui lisent encore un jour unique.
 /// </summary>
+/// <summary>Plage d'exclusion [<see cref="Debut"/>..<see cref="Fin"/>] (bornes incluses) d'une série
+/// récurrente (s54) : une activité type école ne produit AUCUNE occurrence sur cet intervalle (vacances
+/// scolaires saisies manuellement). Dates calendaires (pas d'heure).</summary>
+public sealed record PlageExclusion(DateOnly Debut, DateOnly Fin)
+{
+    /// <summary>Vrai si la <paramref name="date"/> tombe dans la plage (bornes incluses).</summary>
+    public bool Couvre(DateOnly date) => date >= Debut && date <= Fin;
+}
+
 public sealed record SlotRecurrentSnapshot(
     string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
     bool ConditionneGarde = false, string PoseurId = "", string Id = "")
@@ -19,6 +28,10 @@ public sealed record SlotRecurrentSnapshot(
     /// <summary>Jours de semaine de la série (set multi-jours s54). Vide par défaut (snapshot mono-jour
     /// hérité : le jour effectif est porté par <see cref="JourDeSemaine"/>).</summary>
     public IReadOnlyList<DayOfWeek> JoursDeSemaine { get; init; } = Array.Empty<DayOfWeek>();
+
+    /// <summary>Plages d'exclusion (vacances) de la série (s54). Vide par défaut : la projection matérialise
+    /// alors toutes les occurrences des jours de récurrence.</summary>
+    public IReadOnlyList<PlageExclusion> Exclusions { get; init; } = Array.Empty<PlageExclusion>();
 }
 
 /// <summary>
@@ -42,10 +55,11 @@ public sealed class SlotRecurrent
     private readonly TimeSpan _heureFin;
     private readonly bool _conditionneGarde;
     private readonly string _poseurId;
+    private readonly IReadOnlyList<PlageExclusion> _exclusions;
 
     private SlotRecurrent(
         string enfantId, string lieuId, IReadOnlyList<DayOfWeek> joursDeSemaine, TimeSpan heureDebut, TimeSpan heureFin,
-        bool conditionneGarde, string poseurId)
+        bool conditionneGarde, string poseurId, IReadOnlyList<PlageExclusion>? exclusions = null)
     {
         _enfantId = enfantId;
         _lieuId = lieuId;
@@ -54,6 +68,7 @@ public sealed class SlotRecurrent
         _heureFin = heureFin;
         _conditionneGarde = conditionneGarde;
         _poseurId = poseurId;
+        _exclusions = exclusions ?? Array.Empty<PlageExclusion>();
     }
 
     /// <summary>
@@ -84,11 +99,43 @@ public sealed class SlotRecurrent
         bool conditionneGarde = false, string poseurId = "")
         => Poser(enfantId, lieuId, new[] { jourDeSemaine }, heureDebut, heureFin, conditionneGarde, poseurId);
 
+    /// <summary>Reconstruit l'agrégat depuis un snapshot persisté (édition / ajout d'exclusion s54) : le
+    /// set de jours et les exclusions sont restaurés (réconciliation mono-jour héritée si le set est vide).</summary>
+    public static SlotRecurrent FromSnapshot(SlotRecurrentSnapshot s)
+    {
+        var jours = s.JoursDeSemaine.Count > 0 ? s.JoursDeSemaine : new[] { s.JourDeSemaine };
+        return new SlotRecurrent(
+            s.EnfantId, s.LieuId, jours, s.HeureDebut, s.HeureFin, s.ConditionneGarde, s.PoseurId, s.Exclusions.ToList());
+    }
+
+    /// <summary>Ajoute une plage d'exclusion [<paramref name="debut"/>..<paramref name="fin"/>] (vacances) à la
+    /// série (s54). Idempotent : une plage identique déjà présente n'est pas dupliquée. Retourne l'agrégat muté.</summary>
+    public SlotRecurrent AjouterExclusion(DateOnly debut, DateOnly fin)
+    {
+        var plage = new PlageExclusion(debut, fin);
+        if (_exclusions.Contains(plage))
+            return this;
+        return new SlotRecurrent(
+            _enfantId, _lieuId, _joursDeSemaine, _heureDebut, _heureFin, _conditionneGarde, _poseurId,
+            _exclusions.Append(plage).ToList());
+    }
+
+    /// <summary>Retire la plage d'exclusion [<paramref name="debut"/>..<paramref name="fin"/>] de la série
+    /// (s54). Idempotent : une plage absente est un no-op. Retourne l'agrégat muté.</summary>
+    public SlotRecurrent RetirerExclusion(DateOnly debut, DateOnly fin)
+    {
+        var plage = new PlageExclusion(debut, fin);
+        return new SlotRecurrent(
+            _enfantId, _lieuId, _joursDeSemaine, _heureDebut, _heureFin, _conditionneGarde, _poseurId,
+            _exclusions.Where(p => p != plage).ToList());
+    }
+
     public SlotRecurrentSnapshot ToSnapshot()
         // JourDeSemaine (positionnel, mono-jour hérité) = premier jour du set — parité de persistance pour
         // les consommateurs qui lisent encore le jour unique ; JoursDeSemaine porte le set complet.
         => new(_enfantId, _lieuId, _joursDeSemaine[0], _heureDebut, _heureFin, _conditionneGarde, _poseurId)
         {
             JoursDeSemaine = _joursDeSemaine,
+            Exclusions = _exclusions,
         };
 }

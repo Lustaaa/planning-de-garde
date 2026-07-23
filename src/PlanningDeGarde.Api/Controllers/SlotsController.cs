@@ -14,6 +14,8 @@ public sealed class SlotsController(
     PoserSlotHandler poserSlot,
     PoserSlotRecurrentHandler poserSlotRecurrent,
     ModifierSlotRecurrentHandler modifierSlotRecurrent,
+    AjouterExclusionRecurrentHandler ajouterExclusion,
+    SupprimerExclusionRecurrentHandler supprimerExclusion,
     SupprimerSlotHandler supprimerSlot,
     SupprimerSlotRecurrentHandler supprimerSlotRecurrent,
     JourneeEnfantQuery journee,
@@ -96,6 +98,33 @@ public sealed class SlotsController(
         var resultat = modifierSlotRecurrent.Handle(new ModifierSlotRecurrentCommand(
             id, corps.LieuId, corps.JoursDeSemaine, corps.HeureDebut, corps.HeureFin,
             corps.ConditionneGarde, corps.PoseurId));
+        return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
+    }
+
+    /// <summary>Ajout d'une plage d'exclusion (vacances) à une série (POST). Scope défensif : un id existant
+    /// sous un AUTRE enfant → 404. Le handler diffuse la mise à jour temps réel (la grille cesse de projeter
+    /// l'activité sur l'intervalle).</summary>
+    [HttpPost("/api/enfants/{enfantId}/activites/recurrentes/{id}/exclusions")]
+    public IActionResult AjouterExclusion(string enfantId, string id, [FromBody] ExclusionCorps corps)
+    {
+        var possede = slotRecurrentRepository.AllSnapshots().FirstOrDefault(s => s.Id == id);
+        if (possede is not null && possede.EnfantId != enfantId)
+            return NotFound();
+
+        var resultat = ajouterExclusion.Handle(new AjouterExclusionRecurrentCommand(id, corps.Debut, corps.Fin));
+        return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
+    }
+
+    /// <summary>Retrait d'une plage d'exclusion d'une série (DELETE). Scope défensif : un id existant sous un
+    /// AUTRE enfant → 404. Le handler diffuse la mise à jour temps réel (l'activité reprend sur l'intervalle).</summary>
+    [HttpDelete("/api/enfants/{enfantId}/activites/recurrentes/{id}/exclusions")]
+    public IActionResult SupprimerExclusion(string enfantId, string id, [FromBody] ExclusionCorps corps)
+    {
+        var possede = slotRecurrentRepository.AllSnapshots().FirstOrDefault(s => s.Id == id);
+        if (possede is not null && possede.EnfantId != enfantId)
+            return NotFound();
+
+        var resultat = supprimerExclusion.Handle(new SupprimerExclusionRecurrentCommand(id, corps.Debut, corps.Fin));
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 

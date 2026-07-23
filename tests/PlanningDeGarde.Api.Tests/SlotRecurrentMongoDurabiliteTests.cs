@@ -71,6 +71,25 @@ public sealed class SlotRecurrentMongoDurabiliteTests : IDisposable
         Assert.Equal(jours, relu.JoursDeSemaine);
     }
 
+    // Sprint 54 — S7 — durabilité des PLAGES D'EXCLUSION (vacances) : une série avec une plage d'exclusion
+    // rattachée survit au redémarrage avec sa plage intacte. Prouvé contre un Mongo réel.
+    [MongoRequisFact]
+    public void Should_Relire_la_plage_d_exclusion_intacte_apres_un_redemarrage_When_un_recurrent_avec_exclusion_est_enregistre_sur_le_store_Mongo_reel()
+    {
+        var exclusion = new PlageExclusion(new DateOnly(2026, 6, 29), new DateOnly(2026, 7, 5));
+        {
+            var store1 = NouveauStore();
+            var slot = SlotRecurrent.Poser("lea", "ecole", new[] { DayOfWeek.Monday }, new TimeSpan(8, 30, 0), new TimeSpan(16, 30, 0)).Valeur!
+                .AjouterExclusion(exclusion.Debut, exclusion.Fin);
+            store1.Enregistrer(slot);
+        }
+
+        var store2 = NouveauStore();
+
+        var relu = Assert.Single(store2.AllSnapshots());
+        Assert.Contains(exclusion, relu.Exclusions);
+    }
+
     public void Dispose()
     {
         try { new MongoClient(ConnectionString).DropDatabase(_baseDeTest); }

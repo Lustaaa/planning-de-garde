@@ -240,6 +240,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PoserSlotRecurrentHandler>();
         services.AddScoped<SupprimerSlotRecurrentHandler>();
         services.AddScoped<ModifierSlotRecurrentHandler>();
+        services.AddScoped<AjouterExclusionRecurrentHandler>();
+        services.AddScoped<SupprimerExclusionRecurrentHandler>();
         services.AddScoped<AjouterActiviteHandler>();
         services.AddScoped<SupprimerActiviteHandler>();
         services.AddScoped<EditerActiviteHandler>();

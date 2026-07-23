@@ -9,7 +9,7 @@
 > routes API + 17h sont en forte tension. Aucun scénario n'est optionnel ; l'**ordre** ci-dessous fait
 > tomber la valeur tôt si le temps venait malgré tout à manquer.
 
-## Avancement — 6/10
+## Avancement — 7/10
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -19,7 +19,7 @@
 | 4 | Récurrence **multi-jours** : un récurrent porte un **set de jours** (école lun/mar/jeu/ven) | @back | ✅ |
 | 5 | **Éditer** une activité récurrente — **toute la série** (jours + plage + lieu) | @back | ✅ |
 | 6 | Config foyer **par enfant** : liste + **créer / éditer / SUPPRIMER** (comble le trou s31) | 🖥️ IHM | ✅ |
-| 7 | Exclusion **vacances scolaires** : plages d'exclusion par activité récurrente, projection les saute | @back | ⏳ |
+| 7 | Exclusion **vacances scolaires** : plages d'exclusion par activité récurrente, projection les saute | @back | ✅ |
 | 8 | Saisie des **plages de vacances** dans la config de l'activité récurrente | 🖥️ IHM | ⏳ |
 | 9 | **Exceptions d'occurrence** (Q4 « cette occurrence ») : modèle d'exceptions par date | @back | ⏳ |
 | 10 | Choix **« cette occurrence / toute la série »** dans l'IHM (édition + suppression) | 🖥️ IHM | ⏳ |
@@ -187,7 +187,7 @@ Scénario gating: Invité en lecture seule → affordances créer/éditer/suppri
 ```
 > **Gate visuel G3** (PO, direct) après S6. Rebuild du build servi AVANT le gate *(leçon s49)*.
 
-### 7. Exclusion vacances scolaires — modèle minimal `@back @pending`
+### 7. Exclusion vacances scolaires — modèle minimal `@back @vert`
 ```gherkin
 Scénario nominal: « École » ne tombe pas pendant les vacances
   Étant donné « École » lun→ven pour Léa

@@ -237,6 +237,8 @@ public sealed class GrilleAgendaQuery
             // MULTI-JOURS (s54) : une occurrence par jour du SET de la série tombant sur cette date. Un
             // snapshot legacy au set vide (retombée mono-jour) est réconcilié sur son JourDeSemaine unique.
             .Where(r => JoursDeLaSerie(r).Contains(date.DayOfWeek))
+            // VACANCES (s54) : aucune occurrence sur une date couverte par une plage d'exclusion de la série.
+            .Where(r => !r.Exclusions.Any(p => p.Couvre(date)))
             .Where(r => !r.ConditionneGarde || ResoudreResponsable(date, periodes, enfantId) == r.PoseurId)
             .Select(r => new SlotSnapshot(
                 r.EnfantId, r.LieuId, date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureDebut)), date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureFin))));
