@@ -106,15 +106,15 @@ public partial class PoserSlotDialog
         {
             reponse = _form.Repeter
                 ? await Canal.PostAsJsonAsync(
-                    "api/slots/recurrents",
+                    $"api/enfants/{_form.EnfantId}/activites/recurrentes",
                     new PoserSlotRecurrentRequete(
-                        _form.EnfantId, _form.LieuId, DateContexte.DayOfWeek, _form.HeureDebut.ToTimeSpan(), _form.HeureFin.ToTimeSpan(),
+                        _form.LieuId, DateContexte.DayOfWeek, _form.HeureDebut.ToTimeSpan(), _form.HeureFin.ToTimeSpan(),
                         // D1 (s31) : le conditionnement à la garde porte l'identité du parent COURANT (identité
                         // effective de la session) comme poseur — sa responsabilité pilote la projection du slot.
                         _form.ConditionneGarde, Session.IdentiteEffective.Id))
                 : await Canal.PostAsJsonAsync(
-                    "api/slots",
-                    new PoserSlotRequete(_form.EnfantId, _form.LieuId, _form.Debut, _form.Fin));
+                    $"api/enfants/{_form.EnfantId}/activites",
+                    new PoserSlotRequete(_form.LieuId, _form.Debut, _form.Fin));
         }
         catch (HttpRequestException)
         {

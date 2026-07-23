@@ -490,7 +490,7 @@ public partial class ConfigurationFoyer
         _ => "vide",
     };
 
-    /// <summary>Activités du référentiel du foyer énumérées <b>depuis le store vivant</b> (GET /api/foyer/activites),
+    /// <summary>Activités du référentiel du foyer énumérées <b>depuis le store vivant</b> (GET /api/foyer/lieux),
     /// jamais une activité en dur : alimente le tableau de l'onglet Activités (ajoutées / éditées / supprimées
     /// suivent sans rechargement) — même source que les sélecteurs de lieu des dialogs.</summary>
     private IReadOnlyList<ActiviteFoyer> _activites = Array.Empty<ActiviteFoyer>();
@@ -611,11 +611,11 @@ public partial class ConfigurationFoyer
         => _enfants = await Canal.GetFromJsonAsync<List<EnfantFoyer>>("api/foyer/enfants")
             ?? new List<EnfantFoyer>();
 
-    /// <summary>Ré-énumère les activités du référentiel depuis le store vivant (GET /api/foyer/activites) :
+    /// <summary>Ré-énumère les activités du référentiel depuis le store vivant (GET /api/foyer/lieux) :
     /// c'est cette relecture qui fait suivre le tableau des activités après ajout / édition / suppression,
     /// sans rechargement.</summary>
     private async Task RechargerActivites()
-        => _activites = await Canal.GetFromJsonAsync<List<ActiviteFoyer>>("api/foyer/activites")
+        => _activites = await Canal.GetFromJsonAsync<List<ActiviteFoyer>>("api/foyer/lieux")
             ?? new List<ActiviteFoyer>();
 
     private async Task RechargerActeurs()
@@ -1112,8 +1112,8 @@ public partial class ConfigurationFoyer
 
     /// <summary>
     /// Enregistre la modal activité via le <b>canal d'écriture HTTP</b> de l'API distante :
-    /// en mode CRÉATION émet <c>POST /api/foyer/activites</c> (id stable neuf posé côté handler), en mode
-    /// ÉDITION émet <c>PUT /api/foyer/activites/{id}</c> sur l'id stable (jamais éditable) — libellé + adresse.
+    /// en mode CRÉATION émet <c>POST /api/foyer/lieux</c> (id stable neuf posé côté handler), en mode
+    /// ÉDITION émet <c>PUT /api/foyer/lieux/{id}</c> sur l'id stable (jamais éditable) — libellé + adresse.
     /// Réutilise les commandes EXISTANTES (aucun handler neuf). Sur succès, on relit le référentiel (le tableau
     /// suit sans rechargement) et la modal se ferme. Sur refus métier (libellé vide) ou service injoignable, le
     /// motif est surfacé DANS la modal, qui reste ouverte et la saisie conservée.
@@ -1125,7 +1125,7 @@ public partial class ConfigurationFoyer
         if (_modalActiviteAjout)
         {
             // Création : ajouter-activite seul (les liens enfant se posent ensuite en édition, Sc.5).
-            if (!await PosterActivite(() => Canal.PostAsJsonAsync("api/foyer/activites", new AjouterActiviteRequete(_activite.Libelle))))
+            if (!await PosterActivite(() => Canal.PostAsJsonAsync("api/foyer/lieux", new AjouterActiviteRequete(_activite.Libelle))))
                 return;
         }
         else
@@ -1133,7 +1133,7 @@ public partial class ConfigurationFoyer
             // Édition : libellé + adresse (editer-activite) PUIS les diffs d'enfants liés (lier/délier). Sur le
             // PREMIER refus (métier ou injoignable), on s'arrête, motif dans la modal restée ouverte (Sc.6) — le
             // tableau n'est relu qu'après le succès complet.
-            if (!await PosterActivite(() => Canal.PutAsJsonAsync($"api/foyer/activites/{_modalActiviteId!}",
+            if (!await PosterActivite(() => Canal.PutAsJsonAsync($"api/foyer/lieux/{_modalActiviteId!}",
                 new EditerActiviteCorps(_activite.Libelle, _activite.Adresse))))
                 return;
 
@@ -1141,11 +1141,11 @@ public partial class ConfigurationFoyer
                 ?? (IReadOnlyCollection<string>)Array.Empty<string>();
 
             foreach (var enfantId in _selectionEnfants.Where(id => !courant.Contains(id)).ToList())
-                if (!await PosterActivite(() => Canal.PutAsync($"api/foyer/activites/{_modalActiviteId!}/enfants/{enfantId}", null)))
+                if (!await PosterActivite(() => Canal.PutAsync($"api/foyer/lieux/{_modalActiviteId!}/enfants/{enfantId}", null)))
                     return;
 
             foreach (var enfantId in courant.Where(id => !_selectionEnfants.Contains(id)).ToList())
-                if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/activites/{_modalActiviteId!}/enfants/{enfantId}")))
+                if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/lieux/{_modalActiviteId!}/enfants/{enfantId}")))
                     return;
         }
 
@@ -1179,13 +1179,13 @@ public partial class ConfigurationFoyer
     }
 
     /// <summary>Supprime une activité du référentiel via le <b>canal d'écriture HTTP</b>
-    /// (<c>DELETE /api/foyer/activites/{id}</c>) depuis la modal d'édition : la clé est l'identifiant
+    /// (<c>DELETE /api/foyer/lieux/{id}</c>) depuis la modal d'édition : la clé est l'identifiant
     /// stable. Sur succès, on relit le référentiel (l'activité quitte le tableau et n'est plus proposée à la
     /// saisie, sans rechargement —), puis la modal se ferme. Idempotence côté handler ; borne : les slots
     /// déjà posés sur cette activité conservent leur lieu. Sur refus / injoignable, le motif reste DANS la modal.</summary>
     private async Task SupprimerActivite(string activiteId)
     {
-        if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/activites/{activiteId}")))
+        if (!await PosterActivite(() => Canal.DeleteAsync($"api/foyer/lieux/{activiteId}")))
             return;
 
         await RechargerActivites();

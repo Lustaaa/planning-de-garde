@@ -22,9 +22,9 @@ namespace PlanningDeGarde.Web.Tests;
 /// </summary>
 public sealed class FrontWasmApiDistanteTests
 {
-    // Mercredi 24/06/2026, école, 08:30 → 16:30 (pose de Léa émise par le front).
+    // Mercredi 24/06/2026, école, 08:30 → 16:30 (corps de pose — l'EnfantId voyage par l'URL, s54).
     private static readonly PoserSlotRequete PoseLea =
-        new("Léa", "école", new DateTime(2026, 6, 24, 8, 30, 0), new DateTime(2026, 6, 24, 16, 30, 0));
+        new("école", new DateTime(2026, 6, 24, 8, 30, 0), new DateTime(2026, 6, 24, 16, 30, 0));
 
     [Fact]
     public async Task Should_Faire_apparaitre_le_slot_ecole_08h30_16h30_dans_la_case_du_mercredi_24_06_2026_When_le_front_WASM_pose_un_slot_via_l_API_distante()
@@ -48,7 +48,7 @@ public sealed class FrontWasmApiDistanteTests
         var clientFront = ClientCanalEcriture.Construire(configFront, transportVersApiDistante);
 
         // When — le front émet, vers l'API distante, une pose de slot pour Léa.
-        var reponse = await clientFront.PostAsJsonAsync("api/slots", PoseLea);
+        var reponse = await clientFront.PostAsJsonAsync("api/enfants/Léa/activites", PoseLea);
 
         // Then — l'API distante confirme l'effet par un succès.
         Assert.True(reponse.IsSuccessStatusCode,

@@ -30,7 +30,7 @@ public sealed class FrontWasmEchecDialogResteOuverteTests : TestContext
         // Given — la grille réellement câblée, mais dont l'écriture poser-slot subit un échec de
         // transport déterministe (la lecture initiale de la grille passe normalement).
         using var api = new ApiDistanteFactory();
-        var clientEcritureCoupee = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "api/slots");
+        var clientEcritureCoupee = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "activites");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Vendredi_19_06_2026, clientEcritureCoupee);
 
         // When — un Parent ouvre la dialog depuis la case du 19/06, choisit « école » et valide ;

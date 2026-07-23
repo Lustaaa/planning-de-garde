@@ -1,9 +1,10 @@
 namespace PlanningDeGarde.Api.Controllers;
 
 /// <summary>
-/// Ressource <b>Activités du foyer</b> (BC Activites, ex-« lieux ») — controller MVC REST. CRUD des
-/// activités + liaison d'un enfant (sous-ressource <c>/enfants/{enfantId}</c>). Écritures via handlers
-/// inchangés + diffusion temps réel (lecture seule) sur succès.
+/// Ressource <b>Lieux du foyer</b> (BC Activites, référentiel de localisation — <c>/api/foyer/lieux</c>
+/// depuis s54, wording PO). Reste <b>plat</b> (foyer-level, liens N-M vers les enfants). CRUD des lieux +
+/// liaison d'un enfant (sous-ressource <c>/enfants/{enfantId}</c>). Écritures via handlers inchangés +
+/// diffusion temps réel (lecture seule) sur succès.
 /// </summary>
 [ApiController]
 public sealed class ActivitesController(
@@ -16,7 +17,7 @@ public sealed class ActivitesController(
     INotificateurPlanning notificateur) : ControllerBase
 {
     /// <summary>Énumération des activités du référentiel depuis le store vivant (lecture seule).</summary>
-    [HttpGet("/api/foyer/activites")]
+    [HttpGet("/api/foyer/lieux")]
     public IActionResult Lister()
     {
         var vues = activites.EnumererActivites()
@@ -26,7 +27,7 @@ public sealed class ActivitesController(
     }
 
     /// <summary>Ajout d'une activité (POST). L'id stable neuf est posé côté handler.</summary>
-    [HttpPost("/api/foyer/activites")]
+    [HttpPost("/api/foyer/lieux")]
     public IActionResult Ajouter([FromBody] AjouterActiviteRequete requete)
     {
         var resultat = ajouter.Handle(new AjouterActiviteCommand(requete.Libelle));
@@ -34,7 +35,7 @@ public sealed class ActivitesController(
     }
 
     /// <summary>Édition d'une activité par id (PUT) : libellé + adresse optionnels indépendants.</summary>
-    [HttpPut("/api/foyer/activites/{id}")]
+    [HttpPut("/api/foyer/lieux/{id}")]
     public IActionResult Editer(string id, [FromBody] EditerActiviteCorps corps)
     {
         var resultat = editer.Handle(new EditerActiviteCommand(id, corps.Libelle, corps.Adresse));
@@ -42,7 +43,7 @@ public sealed class ActivitesController(
     }
 
     /// <summary>Suppression d'une activité par id (DELETE). Idempotente ; slots déjà posés conservent leur lieu.</summary>
-    [HttpDelete("/api/foyer/activites/{id}")]
+    [HttpDelete("/api/foyer/lieux/{id}")]
     public IActionResult Supprimer(string id)
     {
         var resultat = supprimer.Handle(new SupprimerActiviteCommand(id));
@@ -50,7 +51,7 @@ public sealed class ActivitesController(
     }
 
     /// <summary>Liaison d'un enfant à une activité (PUT sous-ressource). Lien N-M ; déjà lié = neutre.</summary>
-    [HttpPut("/api/foyer/activites/{id}/enfants/{enfantId}")]
+    [HttpPut("/api/foyer/lieux/{id}/enfants/{enfantId}")]
     public IActionResult LierEnfant(string id, string enfantId)
     {
         var resultat = lierEnfant.Handle(new LierEnfantActiviteCommand(enfantId, id));
@@ -58,7 +59,7 @@ public sealed class ActivitesController(
     }
 
     /// <summary>Retrait du lien enfant↔activité (DELETE sous-ressource). Idempotent côté handler.</summary>
-    [HttpDelete("/api/foyer/activites/{id}/enfants/{enfantId}")]
+    [HttpDelete("/api/foyer/lieux/{id}/enfants/{enfantId}")]
     public IActionResult DelierEnfant(string id, string enfantId)
     {
         var resultat = delierEnfant.Handle(new DelierEnfantActiviteCommand(enfantId, id));

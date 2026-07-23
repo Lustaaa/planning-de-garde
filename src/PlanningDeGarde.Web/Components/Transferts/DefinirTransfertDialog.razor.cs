@@ -50,7 +50,7 @@ public partial class DefinirTransfertDialog
     public DateOnly DateContexte { get; set; }
 
     /// <summary>Activités du référentiel du foyer (id stable + libellé), fournies par le parent depuis le store
-    /// vivant (GET /api/foyer/activites) : le sélecteur de lieu (axe LOCALISATION du slot, préservé) ne
+    /// vivant (GET /api/foyer/lieux) : le sélecteur de lieu (axe LOCALISATION du slot, préservé) ne
     /// propose que ces activités réelles (jamais la liste en dur), suivant en temps réel un ajout / une
     /// suppression en config.</summary>
     [Parameter]

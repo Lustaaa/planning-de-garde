@@ -9,15 +9,15 @@
    → message DANS la dialog, la dialog reste ouverte (Sc.9). *@
 <div class="dialog-backdrop" data-testid="dialog-supprimer-slot">
     <div class="dialog-panneau">
-        <h2 class="h4 mb-3">Supprimer un slot — @DateContexte.ToString("dd/MM/yyyy")</h2>
+        <h2 class="h4 mb-3">Supprimer une activité — @DateContexte.ToString("dd/MM/yyyy")</h2>
 
         @if (_slots is null)
         {
-            <p class="text-muted" data-testid="slots-chargement">Chargement des slots…</p>
+            <p class="text-muted" data-testid="slots-chargement">Chargement des activités…</p>
         }
         else if (_slots.Count == 0)
         {
-            <p class="text-muted" data-testid="slots-vide">Aucun slot ne couvre ce jour.</p>
+            <p class="text-muted" data-testid="slots-vide">Aucune activité ne couvre ce jour.</p>
         }
         else
         {

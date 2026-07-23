@@ -32,7 +32,6 @@ public sealed class CorsOrigineFrontTests
     // Mercredi 24/06/2026, école, 08:30 → 16:30 (pose de Léa émise par le front cross-origin).
     private static readonly object PoseLea = new
     {
-        EnfantId = "Léa",
         LieuId = "école",
         Debut = new DateTime(2026, 6, 24, 8, 30, 0),
         Fin = new DateTime(2026, 6, 24, 16, 30, 0),
@@ -63,7 +62,7 @@ public sealed class CorsOrigineFrontTests
         using var hote = new ApiCorsFrontFactory();
         var client = hote.CreateClient();
 
-        var requete = new HttpRequestMessage(HttpMethod.Post, "/api/slots")
+        var requete = new HttpRequestMessage(HttpMethod.Post, "/api/enfants/Léa/activites")
         {
             Content = JsonContent.Create(PoseLea),
         };
@@ -88,7 +87,7 @@ public sealed class CorsOrigineFrontTests
         using var hote = new ApiCorsFrontFactory();
         var client = hote.CreateClient();
 
-        var requete = new HttpRequestMessage(HttpMethod.Post, "/api/slots")
+        var requete = new HttpRequestMessage(HttpMethod.Post, "/api/enfants/Léa/activites")
         {
             Content = JsonContent.Create(PoseLea),
         };

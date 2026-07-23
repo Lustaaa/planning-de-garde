@@ -8,15 +8,17 @@ namespace PlanningDeGarde.Api;
 // par DELETE /api/slots/{id}, pas dans le body). La forme JSON des champs restants est inchangée
 // (compatibilité front). Les handlers invoqués derrière restent STRICTEMENT les mêmes.
 
-/// <summary>Corps de la requête de pose de slot (POST /api/slots).</summary>
-public sealed record PoserSlotRequete(string EnfantId, string LieuId, DateTime Debut, DateTime Fin);
+/// <summary>Corps de la pose d'une activité (POST /api/enfants/{enfantId}/activites) : l'EnfantId est
+/// porté par l'URL (sous-ressource de l'enfant, s54), plus dans le corps.</summary>
+public sealed record PoserSlotRequete(string LieuId, DateTime Debut, DateTime Fin);
 
 /// <summary>Réponse de succès de la pose : porte l'avertissement de chevauchement.</summary>
 public sealed record PoserSlotReponse(bool Chevauchement);
 
-/// <summary>Corps de la pose d'un slot RÉCURRENT hebdo (POST /api/slots/recurrents).</summary>
+/// <summary>Corps de la pose d'une activité RÉCURRENTE hebdo (POST /api/enfants/{enfantId}/activites/recurrentes) :
+/// l'EnfantId est porté par l'URL.</summary>
 public sealed record PoserSlotRecurrentRequete(
-    string EnfantId, string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
+    string LieuId, DayOfWeek JourDeSemaine, TimeSpan HeureDebut, TimeSpan HeureFin,
     bool ConditionneGarde = false, string PoseurId = "");
 
 /// <summary>Corps de l'affectation de période (POST /api/periodes).</summary>

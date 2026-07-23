@@ -9,12 +9,12 @@
 > routes API + 17h sont en forte tension. Aucun scénario n'est optionnel ; l'**ordre** ci-dessous fait
 > tomber la valeur tôt si le temps venait malgré tout à manquer.
 
-## Avancement — 0/10
+## Avancement — 2/10
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
-| 1 | Renommage **libellés IHM** « slot → activité » / référentiel « Activités → Lieux » (lot atomique) | 🖥️ IHM | ⏳ |
-| 2 | Renommage **routes REST NESTED** `/api/slots* → /api/enfants/{id}/activites*` + client HTTP Web (lot atomique) | @back | ⏳ |
+| 1 | Renommage **libellés IHM** « slot → activité » / référentiel « Activités → Lieux » (lot atomique) | 🖥️ IHM | ✅ |
+| 2 | Renommage **routes REST NESTED** `/api/slots* → /api/enfants/{id}/activites*` + client HTTP Web (lot atomique) | @back | ✅ |
 | 3 | Lister les activités récurrentes **d'un enfant** (query scopée `EnfantId`) | @back | ⏳ |
 | 4 | Récurrence **multi-jours** : un récurrent porte un **set de jours** (école lun/mar/jeu/ven) | @back | ⏳ |
 | 5 | **Éditer** une activité récurrente — **toute la série** (jours + plage + lieu) | @back | ⏳ |
@@ -106,7 +106,7 @@
 
 ## Scénarios (ordre = valeur PO tôt ; tous à livrer)
 
-### 1. Renommage des libellés IHM — lot atomique de surface `@ihm @pending`
+### 1. Renommage des libellés IHM — lot atomique de surface `@ihm @vert`
 ```gherkin
 Scénario: le menu et les dialogs parlent d'« activité », pas de « slot »
   Étant donné un parent sur le planning
@@ -121,7 +121,7 @@ Scénario: le référentiel de lieux s'intitule « Lieux »
   Alors il s'intitule « Lieux »
 ```
 
-### 2. Renommage des routes REST NESTED + client HTTP — lot atomique `@back @pending`
+### 2. Renommage des routes REST NESTED + client HTTP — lot atomique `@back @vert`
 ```gherkin
 Scénario nominal: les routes « activités » sont imbriquées sous l'enfant
   Étant donné le mapping de routes nested fixé ci-dessus

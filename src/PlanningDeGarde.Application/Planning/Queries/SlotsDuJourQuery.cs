@@ -25,4 +25,11 @@ public sealed class SlotsDuJourQuery
             .Where(s => date >= DateOnly.FromDateTime(s.Debut) && date <= DateOnly.FromDateTime(s.Fin))
             .ToList();
     }
+
+    /// <summary>Slots couvrant la <paramref name="date"/> pour le seul enfant <paramref name="enfantId"/>
+    /// (isolation par enfant, s53 — l'activité est une sous-ressource de l'enfant depuis s54).</summary>
+    public IReadOnlyList<SlotSnapshot> Lister(DateOnly date, string enfantId)
+    {
+        return Lister(date).Where(s => s.EnfantId == enfantId).ToList();
+    }
 }

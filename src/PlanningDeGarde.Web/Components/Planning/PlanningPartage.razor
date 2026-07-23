@@ -124,7 +124,7 @@
 @if (_accuseSlotSupprime)
 {
     <div class="alert alert-success alert-dismissible py-2" data-testid="accuse-slot-supprime" role="status">
-        Slot supprimé
+        Activité supprimée
         <button type="button" class="btn-close" aria-label="Fermer" @onclick="FermerAccuseSlotSupprime"></button>
     </div>
 }
@@ -375,7 +375,7 @@ else
                lire tout le menu. Libellés, data-testid et commandes INCHANGÉS (présentation seule, Sc.5). *@
             <div class="menu-groupe menu-groupe-primaire" data-testid="menu-groupe-primaire">
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-poser-slot"
-                        @onclick="@(() => OuvrirPoserSlot(dateMenu))">Poser un slot</button>
+                        @onclick="@(() => OuvrirPoserSlot(dateMenu))">Ajouter une activité</button>
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-affecter-periode"
                         @onclick="@(() => OuvrirAffecterPeriode(dateMenu))">Affecter une période</button>
                 <button type="button" class="btn btn-outline-primary w-100 mb-2" data-testid="action-definir-transfert"
@@ -418,7 +418,7 @@ else
                 <button type="button" class="btn btn-outline-danger w-100 mb-2" data-testid="action-supprimer-periode"
                         @onclick="@(() => OuvrirSupprimerPeriode(dateMenu))">Supprimer une période</button>
                 <button type="button" class="btn btn-outline-danger w-100" data-testid="action-supprimer-slot"
-                        @onclick="@(() => OuvrirSupprimerSlot(dateMenu))">Supprimer un slot</button>
+                        @onclick="@(() => OuvrirSupprimerSlot(dateMenu))">Supprimer une activité</button>
             </div>
         </div>
     </div>
@@ -471,9 +471,10 @@ else
                          OnAnnule="FermerDialog" />
 }
 
-@if (_dateDialogSupprimerSlot is { } dateSupprimerSlot)
+@if (_dateDialogSupprimerSlot is { } dateSupprimerSlot && _enfantSelectionne is { } enfantSupprimerSlot)
 {
     <SupprimerSlotDialog DateContexte="dateSupprimerSlot"
+                         EnfantId="@enfantSupprimerSlot"
                          OnValide="FermerSuppressionSlotEtAccuser"
                          OnAnnule="FermerDialog" />
 }

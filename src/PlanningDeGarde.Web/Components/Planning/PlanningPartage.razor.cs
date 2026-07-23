@@ -38,7 +38,7 @@ public partial class PlanningPartage
     private List<ActeurFoyer> _acteursFoyer = new();
     private bool _acteursFoyerCharges;
 
-    // Activités du référentiel du foyer (énumérées depuis le store vivant via api/foyer/activites, s35) : source UNIQUE
+    // Activités du référentiel du foyer (énumérées depuis le store vivant via api/foyer/lieux, s35) : source UNIQUE
     // des sélecteurs de lieu des dialogs Poser un slot / Définir un transfert, passée en paramètre (les
     // dialogs ne lisent plus la liste en dur Foyer.Lieux). Rafraîchie à l'init, à l'ouverture de dialog et à
     // chaque diffusion temps réel — un lieu ajouté / supprimé en config suit sans rechargement (S6).
@@ -227,13 +227,13 @@ public partial class PlanningPartage
     }
 
     /// <summary>Charge les activités du référentiel du foyer depuis le store vivant via le canal de lecture HTTP
-    /// (<c>GET /api/foyer/activites</c>, — ex-« lieux ») : alimente le sélecteur de lieu (axe LOCALISATION du
+    /// (<c>GET /api/foyer/lieux</c>, — ex-« lieux ») : alimente le sélecteur de lieu (axe LOCALISATION du
     /// slot, préservé) des dialogs. Lecture seule ; sur référentiel distant injoignable, la liste reste inchangée.</summary>
     private async Task ChargerLieuxAsync()
     {
         try
         {
-            var lieux = await Canal.GetFromJsonAsync<List<ActiviteFoyer>>("api/foyer/activites");
+            var lieux = await Canal.GetFromJsonAsync<List<ActiviteFoyer>>("api/foyer/lieux");
             if (lieux is not null)
                 _lieuxFoyer = lieux;
         }

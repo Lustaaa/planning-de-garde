@@ -15,7 +15,6 @@ public sealed class CanalLectureApiTests
 {
     private static readonly object CommandePoseLea = new
     {
-        EnfantId = "Léa",
         LieuId = "école",
         Debut = new DateTime(2026, 6, 24, 8, 30, 0),
         Fin = new DateTime(2026, 6, 24, 16, 30, 0),
@@ -28,7 +27,7 @@ public sealed class CanalLectureApiTests
         var client = hote.CreateClient();
 
         // Given/When — pose émise via le canal d'écriture de l'API distante.
-        var pose = await client.PostAsJsonAsync("/api/slots", CommandePoseLea);
+        var pose = await client.PostAsJsonAsync("/api/enfants/Léa/activites", CommandePoseLea);
         Assert.True(pose.IsSuccessStatusCode, $"la pose doit aboutir, statut {(int)pose.StatusCode}.");
 
         // Then — la grille relue via le canal de LECTURE HTTP (comme le front WASM) porte le slot.

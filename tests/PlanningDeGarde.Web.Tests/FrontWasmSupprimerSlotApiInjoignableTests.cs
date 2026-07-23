@@ -35,7 +35,7 @@ public sealed class FrontWasmSupprimerSlotApiInjoignableTests : TestContext
         // transport) ; un slot « École » 08h30-16h30 pour Léa le mardi 16/06/2026.
         using var api = new ApiDistanteFactory();
         GrilleRuntimeHarness.SemerSlot(api, GrilleRuntimeHarness.EnfantParDefaut, "École", new DateTime(2026, 6, 16, 8, 30, 0), new DateTime(2026, 6, 16, 16, 30, 0));
-        var client = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/slots/");
+        var client = GrilleRuntimeHarness.ClientVersAvecEcritureInjoignable(api, "/activites/");
         var grille = GrilleRuntimeHarness.RendreGrille(this, api, Mardi_16_06_2026, client);
 
         // … baseline : la case du 16/06 rend le slot « École ».

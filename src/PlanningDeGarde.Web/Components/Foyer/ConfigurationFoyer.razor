@@ -52,7 +52,7 @@
             </button>
             <button type="button" class="config-nav-item @(_onglet == "activites" ? "actif" : null)"
                     data-testid="onglet-activites" @onclick='() => ChoisirOnglet("activites")'>
-                <span class="config-nav-ic" aria-hidden="true">📍</span>Activités
+                <span class="config-nav-ic" aria-hidden="true">📍</span>Lieux
             </button>
             <button type="button" class="config-nav-item @(_onglet == "enfants" ? "actif" : null)"
                     data-testid="onglet-enfants" @onclick='() => ChoisirOnglet("enfants")'>
@@ -622,9 +622,9 @@
                    « Ajouter une activité » (création). Les activités disponibles à la saisie (sélecteurs des
                    dialogs Poser un slot / Définir un transfert, axe LOCALISATION du slot préservé) proviennent
                    EXCLUSIVEMENT de ce référentiel vivant. Écritures via le canal HTTP (POST
-                   /api/foyer/activites (POST/PUT/DELETE)). Gating d'identité EFFECTIVE (règle 9) : crayon,
+                   /api/foyer/lieux (POST/PUT/DELETE)). Gating d'identité EFFECTIVE (règle 9) : crayon,
                    bouton d'ajout et modal ne sont rendus que Parent ; la table reste visible en lecture pour tous. *@
-                <h2 class="config-panneau-titre">Activités du foyer</h2>
+                <h2 class="config-panneau-titre">Lieux du foyer</h2>
                 <p class="text-muted">Le référentiel d'activités (école, nounou, piscine…) et, pour chacune, son
                     adresse et les enfants liés. Une activité ajoutée devient aussitôt disponible à la saisie d'un
                     slot ou d'un transfert ; une activité supprimée n'est plus proposée. La table suit sans

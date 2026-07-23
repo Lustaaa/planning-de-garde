@@ -68,8 +68,8 @@ public sealed class SupprimerSlotIdempotenteMongoIntegrationTests : IDisposable
 
     private static async Task Poser(HttpClient client, string lieuId, DateTime debut, DateTime fin)
     {
-        var reponse = await client.PostAsJsonAsync("/api/slots",
-            new { EnfantId = "Léa", LieuId = lieuId, Debut = debut, Fin = fin });
+        var reponse = await client.PostAsJsonAsync("/api/enfants/Léa/activites",
+            new { LieuId = lieuId, Debut = debut, Fin = fin });
         Assert.True(reponse.IsSuccessStatusCode, $"la pose du slot doit aboutir, statut {(int)reponse.StatusCode}.");
     }
 
