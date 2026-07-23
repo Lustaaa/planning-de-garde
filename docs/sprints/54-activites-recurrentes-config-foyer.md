@@ -9,7 +9,7 @@
 > routes API + 17h sont en forte tension. Aucun scénario n'est optionnel ; l'**ordre** ci-dessous fait
 > tomber la valeur tôt si le temps venait malgré tout à manquer.
 
-## Avancement — 9/10
+## Avancement — 10/10
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -22,7 +22,7 @@
 | 7 | Exclusion **vacances scolaires** : plages d'exclusion par activité récurrente, projection les saute | @back | ✅ |
 | 8 | Saisie des **plages de vacances** dans la config de l'activité récurrente | 🖥️ IHM | ✅ |
 | 9 | **Exceptions d'occurrence** (Q4 « cette occurrence ») : modèle d'exceptions par date | @back | ✅ |
-| 10 | Choix **« cette occurrence / toute la série »** dans l'IHM (édition + suppression) | 🖥️ IHM | ⏳ |
+| 10 | Choix **« cette occurrence / toute la série »** dans l'IHM (édition + suppression) | 🖥️ IHM | ✅ |
 
 `@back` = 6 (2,3,4,5,7,9) · `@ihm` = 4 (1,6,8,10).
 
@@ -219,7 +219,7 @@ Scénario nominal: supprimer une seule occurrence sans toucher la série
 Scénario limite: ré-exclure la même occurrence = idempotent (no-op)
 ```
 
-### 10. Choix « cette occurrence / toute la série » dans l'IHM `@ihm @pending`
+### 10. Choix « cette occurrence / toute la série » dans l'IHM `@ihm @vert`
 ```gherkin
 Scénario: l'IHM propose la portée à l'édition/suppression d'un récurrent
   Quand le parent édite ou supprime une occurrence d'une série depuis la grille

@@ -812,6 +812,49 @@ public partial class PlanningPartage
     /// <summary>Referme l'accusé « Slot supprimé » (non bloquant).</summary>
     private void FermerAccuseSlotSupprime() => _accuseSlotSupprime = false;
 
+    // ===== Suppression d'une occurrence RÉCURRENTE avec PORTÉE (s54 S10) =====
+    // Cliquer la corbeille d'une occurrence récurrente de la grille ouvre une invite « cette occurrence /
+    // toute la série » ; le front applique le chemin correspondant (exception S9 vs suppression de série).
+
+    private string? _inviteScopeRecurrentId;   // id de la série ciblée ; null = invite fermée
+    private DateOnly _inviteScopeDate;          // date de l'occurrence ciblée (« cette occurrence »)
+    private bool _accuseOccurrenceSupprimee;
+
+    /// <summary>Ouvre l'invite de portée pour l'occurrence récurrente cliquée (série + date).</summary>
+    private void OuvrirInviteScope(string recurrentId, DateOnly date)
+    {
+        _accuseOccurrenceSupprimee = false;
+        _inviteScopeRecurrentId = recurrentId;
+        _inviteScopeDate = date;
+    }
+
+    private void FermerInviteScope() => _inviteScopeRecurrentId = null;
+
+    /// <summary>« Cette occurrence » → exception par date (S9) : DELETE de l'occurrence, la série continue.</summary>
+    private async Task SupprimerCetteOccurrence()
+    {
+        await Canal.DeleteAsync(
+            $"api/enfants/{_enfantSelectionne}/activites/recurrentes/{_inviteScopeRecurrentId}/occurrences/{_inviteScopeDate.Year}/{_inviteScopeDate.Month}/{_inviteScopeDate.Day}");
+        await FinaliserSuppressionOccurrence();
+    }
+
+    /// <summary>« Toute la série » → suppression du récurrent (S5) : DELETE de la série entière.</summary>
+    private async Task SupprimerLaSerie()
+    {
+        await Canal.DeleteAsync(
+            $"api/enfants/{_enfantSelectionne}/activites/recurrentes/{_inviteScopeRecurrentId}");
+        await FinaliserSuppressionOccurrence();
+    }
+
+    private async Task FinaliserSuppressionOccurrence()
+    {
+        _inviteScopeRecurrentId = null;
+        await ChargerAsync();
+        _accuseOccurrenceSupprimee = true;
+    }
+
+    private void FermerAccuseOccurrenceSupprimee() => _accuseOccurrenceSupprimee = false;
+
     /// <summary>Depuis le menu (5ᵉ entrée), ouvre la dialog « Éditer une période » sur la date de la
     /// case : elle listera les périodes couvrant ce jour, chaque ligne ouvrant un formulaire pré-rempli. Un
     /// accusé précédent ne survit pas à l'ouverture.</summary>

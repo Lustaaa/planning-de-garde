@@ -110,7 +110,7 @@ public sealed class GrilleAgendaQuery
 
         var jours = Enumerable.Range(0, nbJours)
             .Select(offset => premierJour.AddDays(offset))
-            .Select(date => CaseJourAu(date, periodes, slotsParJour[date].Concat(OccurrencesRecurrentes(recurrents, date, periodes, enfantId)), transferts, enfantId))
+            .Select(date => CaseJourAu(date, periodes, slotsParJour[date], OccurrencesRecurrentes(recurrents, date, periodes, enfantId), transferts, enfantId))
             .ToList();
 
         var semaines = jours
@@ -125,7 +125,8 @@ public sealed class GrilleAgendaQuery
     }
 
     private JourCase CaseJourAu(
-        DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slots, IReadOnlyList<TransfertSnapshot> transferts, string? enfantId = null)
+        DateOnly date, IReadOnlyList<PeriodeSnapshot> periodes, IEnumerable<SlotSnapshot> slotsPonctuels,
+        IEnumerable<SlotSnapshot> occurrencesRecurrentes, IReadOnlyList<TransfertSnapshot> transferts, string? enfantId = null)
     {
         var responsableId = ResoudreResponsable(date, periodes, enfantId);
         var couleur = responsableId is null ? _palette.CouleurNeutre : _palette.CouleurDe(responsableId);
@@ -136,7 +137,13 @@ public sealed class GrilleAgendaQuery
         var porteSurcharge = periodes.Any(p => CouvreLeJour(p, date) && Resolvable(p.ResponsableId) is not null);
         // ResponsableId (id stable résolu, ou null si neutre) surfacé pour la COMPOSITION en lecture (carte
         // « qui récupère ce soir », s42) : la carte compose la résolution ici même, sans la réimplémenter.
-        return new JourCase(date, couleur, nom, SlotsCasePour(slots), InfoTransfertDuJour(transferts, periodes, date, enfantId), responsableId, porteSurcharge);
+        // Les occurrences RÉCURRENTES portent leur RecurrentId (S10 : suppression « cette occurrence » vs
+        // « toute la série » depuis la grille) ; les slots ponctuels n'en portent pas. Fusionnées et ordonnées.
+        var slots = SlotsCasePour(slotsPonctuels, recurrent: false)
+            .Concat(SlotsCasePour(occurrencesRecurrentes, recurrent: true))
+            .OrderBy(s => s.Debut)
+            .ToList();
+        return new JourCase(date, couleur, nom, slots, InfoTransfertDuJour(transferts, periodes, date, enfantId), responsableId, porteSurcharge);
     }
 
     /// <summary>
@@ -241,7 +248,7 @@ public sealed class GrilleAgendaQuery
             .Where(r => !r.Exclusions.Any(p => p.Couvre(date)))
             .Where(r => !r.ConditionneGarde || ResoudreResponsable(date, periodes, enfantId) == r.PoseurId)
             .Select(r => new SlotSnapshot(
-                r.EnfantId, r.LieuId, date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureDebut)), date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureFin))));
+                r.EnfantId, r.LieuId, date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureDebut)), date.ToDateTime(TimeOnly.FromTimeSpan(r.HeureFin)), r.Id));
 
     /// <summary>Jours de récurrence effectifs d'une série : le SET (s54) s'il est renseigné, sinon la
     /// retombée mono-jour héritée sur <see cref="SlotRecurrentSnapshot.JourDeSemaine"/>.</summary>
@@ -366,7 +373,7 @@ public sealed class GrilleAgendaQuery
             : Array.Empty<EntreeLegendeMotif>();
     }
 
-    private IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots)
+    private IReadOnlyList<SlotCase> SlotsCasePour(IEnumerable<SlotSnapshot> snapshots, bool recurrent)
         => snapshots
             .OrderBy(s => s.Debut.TimeOfDay)
             .Select(s => new SlotCase(
@@ -374,7 +381,8 @@ public sealed class GrilleAgendaQuery
                 TimeOnly.FromDateTime(s.Debut),
                 TimeOnly.FromDateTime(s.Fin),
                 _palette.CouleurDe(s.LieuId),
-                s.EnfantId)) // EnfantId surfacé pour la composition « où de l'enfant sélectionné » (carte s42)
+                s.EnfantId, // EnfantId surfacé pour la composition « où de l'enfant sélectionné » (carte s42)
+                recurrent ? s.Id : "")) // RecurrentId : seulement pour les occurrences récurrentes (S10)
             .ToList();
 
     private static DateOnly LundiDeLaSemaineDe(DateOnly date)

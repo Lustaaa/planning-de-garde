@@ -57,7 +57,7 @@ public sealed record InfoTransfert(
 /// case-jour : la case porte la responsabilité, le créneau porte l'acteur).
 /// </summary>
 public sealed record SlotCase(
-    string Libelle, TimeOnly Debut, TimeOnly Fin, string CouleurActeur, string EnfantId = "");
+    string Libelle, TimeOnly Debut, TimeOnly Fin, string CouleurActeur, string EnfantId = "", string RecurrentId = "");
 
 /// <summary>Une ligne-semaine : 7 cases-jour consécutives, du lundi au dimanche.</summary>
 public sealed record SemaineLigne(IReadOnlyList<JourCase> Jours);

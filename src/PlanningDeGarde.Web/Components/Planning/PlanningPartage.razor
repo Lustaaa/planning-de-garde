@@ -280,6 +280,12 @@
                                      style="background-color:@Couleur(slot.CouleurActeur); top:@(HautSlotPx(slot, heureDebut))px; height:@(HauteurSlotPx(slot))px;">
                                     <span class="grille-slot-libelle nom-tronque">@slot.Libelle</span>
                                     <span class="grille-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
+                                    @if (Session.EstParent && !string.IsNullOrEmpty(slot.RecurrentId))
+                                    {
+                                        <button type="button" class="grille-slot-suppr" data-testid="supprimer-occurrence-recurrente"
+                                                @onclick="() => OuvrirInviteScope(slot.RecurrentId, jourCase.Date)"
+                                                aria-label="Supprimer cette activité récurrente">🗑️</button>
+                                    }
                                 </div>
                             }
                         </div>
@@ -350,6 +356,12 @@ else
                                      style="background-color:@Couleur(slot.CouleurActeur);">
                                     <span class="grille-slot-libelle">@slot.Libelle</span>
                                     <span class="grille-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
+                                    @if (Session.EstParent && !string.IsNullOrEmpty(slot.RecurrentId))
+                                    {
+                                        <button type="button" class="grille-slot-suppr" data-testid="supprimer-occurrence-recurrente"
+                                                @onclick="() => OuvrirInviteScope(slot.RecurrentId, jourCase.Date)"
+                                                aria-label="Supprimer cette activité récurrente">🗑️</button>
+                                    }
                                 </div>
                             }
                         </div>
@@ -477,6 +489,27 @@ else
                          EnfantId="@enfantSupprimerSlot"
                          OnValide="FermerSuppressionSlotEtAccuser"
                          OnAnnule="FermerDialog" />
+}
+
+@* Invite de PORTÉE (s54 S10) : supprimer une occurrence d'une série depuis la grille → « cette
+   occurrence » (exception par date, S9) OU « toute la série » (suppression du récurrent). Le front
+   route vers le chemin correspondant ; la grille relue reflète l'effet. Aucune règle métier ici. *@
+@if (_inviteScopeRecurrentId is not null)
+{
+    <div class="dialog-backdrop" data-testid="invite-scope-recurrent">
+        <div class="dialog-panneau">
+            <h2 class="h4 mb-3">Supprimer cette activité récurrente</h2>
+            <p class="text-muted">Voulez-vous retirer seulement cette occurrence, ou toute la série ?</p>
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-outline-danger" data-testid="scope-cette-occurrence"
+                        @onclick="SupprimerCetteOccurrence">Cette occurrence</button>
+                <button type="button" class="btn btn-danger" data-testid="scope-toute-la-serie"
+                        @onclick="SupprimerLaSerie">Toute la série</button>
+                <button type="button" class="btn btn-outline-secondary" data-testid="scope-annuler"
+                        @onclick="FermerInviteScope">Annuler</button>
+            </div>
+        </div>
+    </div>
 }
 
 @if (_dateDialogDeleguer is { } dateDeleguer && _enfantSelectionne is { } enfantDeleguer)
