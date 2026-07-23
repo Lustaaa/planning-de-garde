@@ -9,7 +9,7 @@
 > routes API + 17h sont en forte tension. Aucun scénario n'est optionnel ; l'**ordre** ci-dessous fait
 > tomber la valeur tôt si le temps venait malgré tout à manquer.
 
-## Avancement — 7/10
+## Avancement — 8/10
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -20,7 +20,7 @@
 | 5 | **Éditer** une activité récurrente — **toute la série** (jours + plage + lieu) | @back | ✅ |
 | 6 | Config foyer **par enfant** : liste + **créer / éditer / SUPPRIMER** (comble le trou s31) | 🖥️ IHM | ✅ |
 | 7 | Exclusion **vacances scolaires** : plages d'exclusion par activité récurrente, projection les saute | @back | ✅ |
-| 8 | Saisie des **plages de vacances** dans la config de l'activité récurrente | 🖥️ IHM | ⏳ |
+| 8 | Saisie des **plages de vacances** dans la config de l'activité récurrente | 🖥️ IHM | ✅ |
 | 9 | **Exceptions d'occurrence** (Q4 « cette occurrence ») : modèle d'exceptions par date | @back | ⏳ |
 | 10 | Choix **« cette occurrence / toute la série »** dans l'IHM (édition + suppression) | 🖥️ IHM | ⏳ |
 
@@ -201,7 +201,7 @@ Scénario limite: hors plage d'exclusion → occurrences projetées normalement
 > récurrente** (pas d'import d'un calendrier officiel). Alternative écartée : calendrier de vacances
 > **du foyer** partagé → non retenu ce sprint (backlog si besoin ultérieur).
 
-### 8. Saisie des plages de vacances par activité `@ihm @pending`
+### 8. Saisie des plages de vacances par activité `@ihm @vert`
 ```gherkin
 Scénario: déclarer une plage de vacances depuis la config de l'activité récurrente
   Quand le parent ajoute une plage [du .. au ..] à une activité récurrente

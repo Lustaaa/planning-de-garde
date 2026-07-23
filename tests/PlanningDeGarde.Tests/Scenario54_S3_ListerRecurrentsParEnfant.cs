@@ -65,6 +65,23 @@ public sealed class Scenario54_S3_ListerRecurrentsParEnfant
     }
 
     [Fact]
+    public void Should_Exposer_les_plages_d_exclusion_de_la_serie_When_le_recurrent_a_des_vacances()
+    {
+        // Given — un récurrent de Léa avec une plage d'exclusion (vacances) rattachée.
+        var repo = new FakeSlotRecurrentRepository();
+        var referentiel = new FakeReferentielActivites();
+        referentiel.Ajouter("ecole", "École");
+        repo.Enregistrer(SlotRecurrent.Poser("Léa", "ecole", new[] { DayOfWeek.Monday }, new TimeSpan(8, 30, 0), new TimeSpan(16, 30, 0)).Valeur!
+            .AjouterExclusion(new DateOnly(2026, 6, 29), new DateOnly(2026, 7, 5)));
+
+        // When — on liste les récurrents de Léa.
+        var vue = Assert.Single(new SlotsRecurrentsParEnfantQuery(repo, referentiel).PourEnfant("Léa"));
+
+        // Then — la vue expose la plage d'exclusion (pour l'afficher / la retirer dans la config).
+        Assert.Contains(new PlageExclusion(new DateOnly(2026, 6, 29), new DateOnly(2026, 7, 5)), vue.Exclusions);
+    }
+
+    [Fact]
     public void Should_Retourner_une_liste_vide_sans_erreur_When_l_enfant_n_a_aucun_recurrent()
     {
         // Given — Léa a un récurrent, Tom n'en a aucun.

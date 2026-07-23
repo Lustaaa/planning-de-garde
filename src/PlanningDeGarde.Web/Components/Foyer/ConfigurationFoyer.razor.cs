@@ -1334,9 +1334,13 @@ public partial class ConfigurationFoyer
     // ===== Activités récurrentes PAR ENFANT (s54 S6) — navigation par enfant, comble le trou s31 =====
 
     /// <summary>Vue Web d'une activité récurrente d'un enfant (miroir du read model
-    /// <c>ActiviteRecurrenteVue</c> : id + lieu résolu + set de jours + plage horaire).</summary>
+    /// <c>ActiviteRecurrenteVue</c> : id + lieu résolu + set de jours + plage horaire + plages d'exclusion).</summary>
     public sealed record ActiviteRecurrenteVueWeb(
-        string Id, string LieuId, string ActiviteLibelle, List<DayOfWeek> Jours, TimeSpan HeureDebut, TimeSpan HeureFin);
+        string Id, string LieuId, string ActiviteLibelle, List<DayOfWeek> Jours, TimeSpan HeureDebut, TimeSpan HeureFin,
+        List<PlageVacancesWeb> Exclusions);
+
+    /// <summary>Vue Web d'une plage d'exclusion (vacances) — bornes calendaires incluses.</summary>
+    public sealed record PlageVacancesWeb(DateOnly Debut, DateOnly Fin);
 
     private string? _recurrentEnfantSelectionne;
     private IReadOnlyList<ActiviteRecurrenteVueWeb> _recurrents = Array.Empty<ActiviteRecurrenteVueWeb>();
@@ -1466,5 +1470,50 @@ public partial class ConfigurationFoyer
         {
             _motifEchecRecurrent = await reponse.Content.ReadAsStringAsync();
         }
+    }
+
+    // ---- Vacances (plages d'exclusion) d'un récurrent (s54 S8) ----
+
+    private string? _modalVacancesId; // id du récurrent dont on gère les vacances ; null = fermé
+    private DateOnly _vacancesDu = DateOnly.FromDateTime(DateTime.Today);
+    private DateOnly _vacancesAu = DateOnly.FromDateTime(DateTime.Today).AddDays(7);
+
+    /// <summary>Le récurrent dont la modal vacances est ouverte (relu depuis la liste rafraîchie).</summary>
+    private ActiviteRecurrenteVueWeb? VacancesRecurrent => _recurrents.FirstOrDefault(r => r.Id == _modalVacancesId);
+
+    private void OuvrirVacances(string id)
+    {
+        _modalVacancesId = id;
+        _motifEchecRecurrent = null;
+    }
+
+    private void FermerVacancesModal() => _modalVacancesId = null;
+
+    private async Task AjouterVacances()
+    {
+        _motifEchecRecurrent = null;
+        var reponse = await Canal.PostAsJsonAsync(
+            $"api/enfants/{_recurrentEnfantSelectionne}/activites/recurrentes/{_modalVacancesId}/exclusions",
+            new ExclusionCorps(_vacancesDu, _vacancesAu));
+        if (reponse.IsSuccessStatusCode)
+            await ChargerRecurrents();
+        else
+            _motifEchecRecurrent = await reponse.Content.ReadAsStringAsync();
+    }
+
+    private async Task SupprimerVacances(PlageVacancesWeb plage)
+    {
+        _motifEchecRecurrent = null;
+        var requete = new HttpRequestMessage(
+            HttpMethod.Delete,
+            $"api/enfants/{_recurrentEnfantSelectionne}/activites/recurrentes/{_modalVacancesId}/exclusions")
+        {
+            Content = JsonContent.Create(new ExclusionCorps(plage.Debut, plage.Fin)),
+        };
+        var reponse = await Canal.SendAsync(requete);
+        if (reponse.IsSuccessStatusCode)
+            await ChargerRecurrents();
+        else
+            _motifEchecRecurrent = await reponse.Content.ReadAsStringAsync();
     }
 }

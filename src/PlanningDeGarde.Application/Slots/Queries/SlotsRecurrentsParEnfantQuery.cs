@@ -19,7 +19,8 @@ public sealed record ActiviteRecurrenteVue(
     string ActiviteLibelle,
     IReadOnlyList<DayOfWeek> Jours,
     TimeSpan HeureDebut,
-    TimeSpan HeureFin);
+    TimeSpan HeureFin,
+    IReadOnlyList<PlageExclusion> Exclusions);
 
 /// <summary>
 /// Read model (CQRS) des activités récurrentes d'UN enfant pour la config foyer (s54). Projection de
@@ -50,7 +51,8 @@ public sealed class SlotsRecurrentsParEnfantQuery
                 libelles.TryGetValue(s.LieuId, out var libelle) ? libelle : s.LieuId,
                 JoursDeLaSerie(s),
                 s.HeureDebut,
-                s.HeureFin))
+                s.HeureFin,
+                s.Exclusions))
             .ToList();
     }
 
