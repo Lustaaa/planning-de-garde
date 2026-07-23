@@ -9,7 +9,7 @@
 > routes API + 17h sont en forte tension. Aucun scénario n'est optionnel ; l'**ordre** ci-dessous fait
 > tomber la valeur tôt si le temps venait malgré tout à manquer.
 
-## Avancement — 8/10
+## Avancement — 9/10
 
 | # | Scénario | Type | Statut |
 |--:|----------|:----:|:------:|
@@ -21,7 +21,7 @@
 | 6 | Config foyer **par enfant** : liste + **créer / éditer / SUPPRIMER** (comble le trou s31) | 🖥️ IHM | ✅ |
 | 7 | Exclusion **vacances scolaires** : plages d'exclusion par activité récurrente, projection les saute | @back | ✅ |
 | 8 | Saisie des **plages de vacances** dans la config de l'activité récurrente | 🖥️ IHM | ✅ |
-| 9 | **Exceptions d'occurrence** (Q4 « cette occurrence ») : modèle d'exceptions par date | @back | ⏳ |
+| 9 | **Exceptions d'occurrence** (Q4 « cette occurrence ») : modèle d'exceptions par date | @back | ✅ |
 | 10 | Choix **« cette occurrence / toute la série »** dans l'IHM (édition + suppression) | 🖥️ IHM | ⏳ |
 
 `@back` = 6 (2,3,4,5,7,9) · `@ihm` = 4 (1,6,8,10).
@@ -208,7 +208,7 @@ Scénario: déclarer une plage de vacances depuis la config de l'activité récu
   Alors la plage est persistée et la grille cesse de projeter l'activité sur cet intervalle
 ```
 
-### 9. Exceptions d'occurrence — « cette occurrence » `@back @pending`
+### 9. Exceptions d'occurrence — « cette occurrence » `@back @vert`
 ```gherkin
 Scénario nominal: supprimer une seule occurrence sans toucher la série
   Étant donné « École » lun→ven

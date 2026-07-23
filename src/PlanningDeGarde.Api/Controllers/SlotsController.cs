@@ -16,6 +16,7 @@ public sealed class SlotsController(
     ModifierSlotRecurrentHandler modifierSlotRecurrent,
     AjouterExclusionRecurrentHandler ajouterExclusion,
     SupprimerExclusionRecurrentHandler supprimerExclusion,
+    ExclureOccurrenceRecurrentHandler exclureOccurrence,
     SupprimerSlotHandler supprimerSlot,
     SupprimerSlotRecurrentHandler supprimerSlotRecurrent,
     JourneeEnfantQuery journee,
@@ -125,6 +126,20 @@ public sealed class SlotsController(
             return NotFound();
 
         var resultat = supprimerExclusion.Handle(new SupprimerExclusionRecurrentCommand(id, corps.Debut, corps.Fin));
+        return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
+    }
+
+    /// <summary>Suppression d'UNE occurrence d'une série (« cette occurrence », s54 Q4) : DELETE par date.
+    /// Scope défensif : un id existant sous un AUTRE enfant → 404. La série d'origine reste inchangée
+    /// (exception par date) ; le handler diffuse la mise à jour temps réel.</summary>
+    [HttpDelete("/api/enfants/{enfantId}/activites/recurrentes/{id}/occurrences/{annee:int}/{mois:int}/{jour:int}")]
+    public IActionResult SupprimerOccurrence(string enfantId, string id, int annee, int mois, int jour)
+    {
+        var possede = slotRecurrentRepository.AllSnapshots().FirstOrDefault(s => s.Id == id);
+        if (possede is not null && possede.EnfantId != enfantId)
+            return NotFound();
+
+        var resultat = exclureOccurrence.Handle(new ExclureOccurrenceRecurrentCommand(id, new DateOnly(annee, mois, jour)));
         return resultat.EstSucces ? Ok() : BadRequest(resultat.Motif);
     }
 
