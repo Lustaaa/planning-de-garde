@@ -53,4 +53,45 @@ public sealed class ExclusionVacancesCanalEtGrilleRuntimeTests
         Assert.DoesNotContain(lundiExclu.Slots, s => s.Libelle == "ecole");
         Assert.Contains(lundiHorsPlage.Slots, s => s.Libelle == "ecole");
     }
+
+    // RÉGRESSION du retour PO (gate) — geste EXACT : ajouter une plage de vacances PUIS « Enregistrer » la
+    // série (édition de TOUTE la série), et vérifier que la grille exclut TOUJOURS l'occurrence. Avant le
+    // correctif, l'édition de série rasait les exclusions → l'occurrence réapparaissait sur le planning.
+    [Fact]
+    public async Task Should_conserver_l_exclusion_When_on_edite_la_serie_apres_avoir_ajoute_la_plage()
+    {
+        using var hote = new HoteApi();
+        var client = hote.CreateClient();
+        hote.Services.GetRequiredService<IEditeurActivites>().Ajouter("ecole", "ecole");
+        hote.Services.GetRequiredService<IEditeurEnfants>().Ajouter("lea", "lea");
+
+        var pose = await client.PostAsJsonAsync("/api/enfants/lea/activites/recurrentes", new
+        {
+            LieuId = "ecole",
+            JourDeSemaine = DayOfWeek.Monday,
+            HeureDebut = new TimeSpan(8, 30, 0),
+            HeureFin = new TimeSpan(16, 30, 0),
+        });
+        Assert.True(pose.IsSuccessStatusCode);
+        var id = hote.Services.GetRequiredService<ISlotRecurrentRepository>().AllSnapshots().Single().Id;
+
+        // 1) le PO ajoute la plage de vacances (lundi 29/06 exclu).
+        var exclusion = await client.PostAsJsonAsync(
+            $"/api/enfants/lea/activites/recurrentes/{id}/exclusions",
+            new { Debut = new DateOnly(2026, 6, 29), Fin = new DateOnly(2026, 7, 5) });
+        Assert.True(exclusion.IsSuccessStatusCode);
+
+        // 2) le PO clique « Enregistrer » (édition de TOUTE la série) — change la plage horaire.
+        var edition = await client.PutAsJsonAsync(
+            $"/api/enfants/lea/activites/recurrentes/{id}",
+            new { LieuId = "ecole", JoursDeSemaine = new[] { DayOfWeek.Monday }, HeureDebut = new TimeSpan(9, 0, 0), HeureFin = new TimeSpan(12, 0, 0) });
+        Assert.True(edition.IsSuccessStatusCode);
+
+        // 3) sur le planning, le lundi 29/06 exclu ne porte TOUJOURS pas « ecole » (l'exclusion a survécu) ;
+        //    le lundi 06/07 hors plage le porte (avec la nouvelle plage horaire).
+        var grille = await client.GetFromJsonAsync<GrilleAgenda>("/api/grille/2026/6/24");
+        Assert.NotNull(grille);
+        Assert.DoesNotContain(grille!.Jours.Single(j => j.Date == new DateOnly(2026, 6, 29)).Slots, s => s.Libelle == "ecole");
+        Assert.Contains(grille!.Jours.Single(j => j.Date == new DateOnly(2026, 7, 6)).Slots, s => s.Libelle == "ecole");
+    }
 }

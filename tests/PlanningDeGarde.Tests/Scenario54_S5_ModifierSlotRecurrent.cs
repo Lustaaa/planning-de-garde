@@ -105,4 +105,32 @@ public sealed class Scenario54_S5_ModifierSlotRecurrent
         Assert.False(resultat.EstSucces);
         Assert.Equal(avant, slots.AllSnapshots().Single(s => s.Id == leaId)); // série intacte
     }
+
+    // RÉGRESSION (retour PO gate, passe architecte) : éditer la série (« Enregistrer ») NE DOIT PAS effacer
+    // les plages de vacances déjà déclarées — le trou révélé par la fusion vacances↔dialog d'édition (n°3).
+    // Le geste PO « ajouter une plage → Enregistrer → /planning » doit garder l'occurrence exclue.
+    [Fact]
+    public void Should_preserver_les_plages_de_vacances_When_on_edite_la_serie()
+    {
+        // Given — Léa « École » le mercredi AVEC une plage de vacances couvrant le mercredi 01/07/2026.
+        var slots = new FakeSlotRecurrentRepository();
+        slots.Enregistrer(SlotRecurrent
+            .Poser("lea", "ecole", new[] { DayOfWeek.Wednesday }, new TimeSpan(8, 30, 0), new TimeSpan(16, 30, 0)).Valeur!
+            .AjouterExclusion(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 1)));
+        var leaId = slots.AllSnapshots().Single().Id;
+
+        // When — on ÉDITE la série (change la plage horaire), sans toucher aux vacances.
+        var resultat = new ModifierSlotRecurrentHandler(slots, LieuxDuFoyer(), new FakeNotificateurPlanning())
+            .Handle(new ModifierSlotRecurrentCommand(leaId, "ecole", new[] { DayOfWeek.Wednesday }, H09h00, H12h00));
+        Assert.True(resultat.EstSucces);
+
+        // Then — la plage de vacances SURVIT à l'édition (n'est pas rasée).
+        var edite = slots.AllSnapshots().Single(s => s.Id == leaId);
+        Assert.Contains(new PlageExclusion(new DateOnly(2026, 7, 1), new DateOnly(2026, 7, 1)), edite.Exclusions);
+
+        // And — la grille n'affiche toujours PAS l'occurrence du mercredi 01/07 (exclue), mais l'affiche le 24/06.
+        var grille = Grille(slots).Projeter(Reference_24_06_2026);
+        Assert.DoesNotContain(grille.Jours.Single(j => j.Date == new DateOnly(2026, 7, 1)).Slots, s => s.Libelle == "ecole");
+        Assert.Contains(grille.Jours.Single(j => j.Date == new DateOnly(2026, 6, 24)).Slots, s => s.Libelle == "ecole");
+    }
 }
