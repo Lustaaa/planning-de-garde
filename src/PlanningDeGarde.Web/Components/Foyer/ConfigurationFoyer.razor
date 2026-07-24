@@ -985,12 +985,13 @@
                                         @if (Session.EstParent)
                                         {
                                             <td class="acteurs-col-actions">
+                                                @* Crayon → dialog d'édition PARTAGÉE (édition série + vacances +
+                                                   suppression de la série y vivent désormais, n°3). La 🏖️ autonome
+                                                   a disparu (vacances dans la dialog) ; le 🗑️ reste un raccourci de
+                                                   suppression de série depuis la liste. *@
                                                 <button type="button" class="btn btn-outline-secondary btn-sm acteur-crayon"
                                                         data-testid="crayon-recurrent" data-recurrent-id="@r.Id"
-                                                        @onclick="() => OuvrirEditionRecurrent(r)" aria-label="Modifier">✏️</button>
-                                                <button type="button" class="btn btn-outline-secondary btn-sm"
-                                                        data-testid="vacances-recurrent" data-recurrent-id="@r.Id"
-                                                        @onclick="() => OuvrirVacances(r.Id)" aria-label="Gérer les vacances">🏖️</button>
+                                                        @onclick="() => OuvrirEditionRecurrent(r.Id)" aria-label="Modifier">✏️</button>
                                                 <button type="button" class="btn btn-outline-danger btn-sm"
                                                         data-testid="supprimer-recurrent" data-recurrent-id="@r.Id"
                                                         @onclick="() => SupprimerRecurrent(r.Id)" aria-label="Supprimer">🗑️</button>
@@ -1015,104 +1016,13 @@
                                     @onclick="OuvrirAjoutRecurrent">Ajouter une activité récurrente</button>
                         </div>
 
-                        @if (_modalRecurrentOuverte)
+                        @* Dialog d'édition/ajout PARTAGÉE (réutilisée aussi depuis la grille) : porte l'édition
+                           de la série, la gestion des vacances (édition seule) et la suppression de la série.
+                           Ouverte sans date de contexte ici → pas de « cette occurrence » (config). *@
+                        @if (_modalRecurrentOuverte && _recurrentEnfantSelectionne is { } enfantModal)
                         {
-                            <ModalConfig TestId="dialog-recurrent" OnFermer="FermerModalRecurrent">
-                                <h2 class="h4 mb-3">@(_modalRecurrentId is null ? "Ajouter une activité récurrente" : "Modifier l'activité récurrente")</h2>
-                                <form id="form-recurrent" @onsubmit="SoumettreRecurrent">
-                                    <div class="mb-2">
-                                        <label class="form-label" for="champ-lieu-recurrent">Lieu</label>
-                                        <select id="champ-lieu-recurrent" class="form-select" data-testid="champ-lieu-recurrent" @bind="_formRecurrent.LieuId">
-                                            <option value="">— Choisir —</option>
-                                            @foreach (var a in _activites)
-                                            {
-                                                <option value="@a.Id">@a.Libelle</option>
-                                            }
-                                        </select>
-                                    </div>
-                                    <div class="mb-2">
-                                        <span class="form-label d-block">Jours</span>
-                                        @foreach (var j in JoursSemaine)
-                                        {
-                                            <label class="me-2">
-                                                <input type="checkbox" data-testid="jour-@j.Jour"
-                                                       checked="@_formRecurrent.Jours.Contains(j.Jour)"
-                                                       @onchange="e => BasculerJourRecurrent(j.Jour, (bool)e.Value!)" /> @j.Libelle
-                                            </label>
-                                        }
-                                    </div>
-                                    <div class="mb-2 d-flex gap-2">
-                                        <div>
-                                            <label class="form-label" for="champ-debut-recurrent">Début</label>
-                                            <input id="champ-debut-recurrent" type="time" class="form-control" data-testid="champ-debut-recurrent" @bind="_formRecurrent.HeureDebut" />
-                                        </div>
-                                        <div>
-                                            <label class="form-label" for="champ-fin-recurrent">Fin</label>
-                                            <input id="champ-fin-recurrent" type="time" class="form-control" data-testid="champ-fin-recurrent" @bind="_formRecurrent.HeureFin" />
-                                        </div>
-                                    </div>
-                                    @if (_motifEchecRecurrent is { } echecModal)
-                                    {
-                                        <div class="alert alert-danger py-1" data-testid="motif-echec-recurrent-modal">@echecModal</div>
-                                    }
-                                    <div class="d-flex gap-2">
-                                        <button type="submit" class="btn btn-primary" data-testid="valider-recurrent">Enregistrer</button>
-                                        <button type="button" class="btn btn-link" data-testid="dialog-recurrent-annuler"
-                                                @onclick="FermerModalRecurrent">Annuler</button>
-                                    </div>
-                                </form>
-                            </ModalConfig>
-                        }
-
-                        @* Modal VACANCES (s54 S8) : plages d'exclusion d'un récurrent. Liste des plages
-                           (retrait par plage) + formulaire d'ajout [du..au] → POST/DELETE .../exclusions.
-                           La grille cesse / reprend de projeter l'activité sur l'intervalle. *@
-                        @if (_modalVacancesId is not null && VacancesRecurrent is { } vr)
-                        {
-                            <ModalConfig TestId="dialog-vacances" OnFermer="FermerVacancesModal">
-                                <h2 class="h4 mb-3">Vacances — @vr.ActiviteLibelle</h2>
-                                <p class="text-muted">Déclarez des plages où l'activité ne doit pas avoir lieu
-                                    (vacances scolaires). La grille cesse de projeter l'activité sur l'intervalle.</p>
-
-                                <ul class="list-unstyled" data-testid="liste-vacances">
-                                    @foreach (var plage in vr.Exclusions)
-                                    {
-                                        <li class="d-flex align-items-center gap-2 mb-1" data-testid="vacances-plage">
-                                            <span>du @plage.Debut.ToString("dd/MM/yyyy") au @plage.Fin.ToString("dd/MM/yyyy")</span>
-                                            <button type="button" class="btn btn-outline-danger btn-sm" data-testid="retirer-vacances"
-                                                    @onclick="() => SupprimerVacances(plage)" aria-label="Retirer cette plage">🗑️</button>
-                                        </li>
-                                    }
-                                    @if (vr.Exclusions.Count == 0)
-                                    {
-                                        <li class="text-muted" data-testid="vacances-vide">Aucune plage de vacances déclarée.</li>
-                                    }
-                                </ul>
-
-                                <div class="d-flex gap-2 align-items-end">
-                                    <div>
-                                        <label class="form-label" for="champ-vacances-du">Du</label>
-                                        <input id="champ-vacances-du" type="date" class="form-control" data-testid="champ-vacances-du" @bind="_vacancesDu" />
-                                    </div>
-                                    <div>
-                                        <label class="form-label" for="champ-vacances-au">Au</label>
-                                        <input id="champ-vacances-au" type="date" class="form-control" data-testid="champ-vacances-au" @bind="_vacancesAu" />
-                                    </div>
-                                    <button type="button" class="btn btn-primary" data-testid="ajouter-vacances"
-                                            @onclick="AjouterVacances">Ajouter une plage</button>
-                                </div>
-                                @if (_motifEchecRecurrent is { } echecVac)
-                                {
-                                    <div class="alert alert-danger py-1 mt-2" data-testid="motif-echec-vacances">@echecVac</div>
-                                }
-
-                                @* Bouton Annuler/Fermer (retour PO s54, uniformisation des dialogs) : referme la
-                                   modal sans autre effet (les plages sont déjà persistées à leur ajout/retrait). *@
-                                <div class="d-flex gap-2 mt-3">
-                                    <button type="button" class="btn btn-link" data-testid="dialog-vacances-annuler"
-                                            @onclick="FermerVacancesModal">Fermer</button>
-                                </div>
-                            </ModalConfig>
+                            <EditerSerieRecurrenteDialog EnfantId="@enfantModal" SerieId="@_modalRecurrentId"
+                                                         OnFerme="FermerModalRecurrentEtRecharger" />
                         }
                     }
                 }

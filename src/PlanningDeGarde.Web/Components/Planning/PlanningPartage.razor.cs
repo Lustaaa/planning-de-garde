@@ -812,48 +812,46 @@ public partial class PlanningPartage
     /// <summary>Referme l'accusé « Slot supprimé » (non bloquant).</summary>
     private void FermerAccuseSlotSupprime() => _accuseSlotSupprime = false;
 
-    // ===== Suppression d'une occurrence RÉCURRENTE avec PORTÉE (s54 S10) =====
-    // Cliquer la corbeille d'une occurrence récurrente de la grille ouvre une invite « cette occurrence /
-    // toute la série » ; le front applique le chemin correspondant (exception S9 vs suppression de série).
+    // ===== Édition d'une série RÉCURRENTE AU CLIC depuis la grille (décision PO post-s54) =====
+    // Cliquer une activité récurrente de la grille ouvre la dialog PARTAGÉE d'édition de la série. Elle
+    // porte l'édition (lieu/jours/horaires), la gestion des vacances ET la suppression avec portée (« cette
+    // occurrence » — exception par date S9, la date cliquée voyage en contexte — vs « toute la série » S5).
+    // Plus de corbeille sur la grille ni d'invite de portée séparée : tout est dans la dialog.
 
-    private string? _inviteScopeRecurrentId;   // id de la série ciblée ; null = invite fermée
-    private DateOnly _inviteScopeDate;          // date de l'occurrence ciblée (« cette occurrence »)
-    private bool _accuseOccurrenceSupprimee;
+    private string? _editionSerieId;    // série ciblée par le clic ; null = dialog fermée
+    private DateOnly? _editionSerieDate; // date de l'occurrence cliquée (contexte « cette occurrence »)
+    private bool _editionSerieOuverte;
 
-    /// <summary>Ouvre l'invite de portée pour l'occurrence récurrente cliquée (série + date).</summary>
-    private void OuvrirInviteScope(string recurrentId, DateOnly date)
+    /// <summary>Vrai si le slot est une occurrence récurrente éditable pour l'identité effective (Parent) :
+    /// pilote l'ouverture au clic + l'affordance visuelle. Un slot ponctuel (sans RecurrentId) n'est pas
+    /// concerné (le clic retombe sur le menu de la case).</summary>
+    private bool EstRecurrentEditable(SlotCase slot)
+        => Session.EstParent && !string.IsNullOrEmpty(slot.RecurrentId);
+
+    /// <summary>Clic sur un slot : une occurrence récurrente éditable (Parent) ouvre la dialog d'édition de
+    /// sa série (propagation stoppée côté markup) ; sinon le clic retombe sur le menu de la case (bulle).</summary>
+    private void CliquerSlot(SlotCase slot, DateOnly date)
     {
-        _accuseOccurrenceSupprimee = false;
-        _inviteScopeRecurrentId = recurrentId;
-        _inviteScopeDate = date;
+        if (EstRecurrentEditable(slot))
+            OuvrirEditionSerie(slot.RecurrentId, date);
     }
 
-    private void FermerInviteScope() => _inviteScopeRecurrentId = null;
-
-    /// <summary>« Cette occurrence » → exception par date (S9) : DELETE de l'occurrence, la série continue.</summary>
-    private async Task SupprimerCetteOccurrence()
+    private void OuvrirEditionSerie(string recurrentId, DateOnly date)
     {
-        await Canal.DeleteAsync(
-            $"api/enfants/{_enfantSelectionne}/activites/recurrentes/{_inviteScopeRecurrentId}/occurrences/{_inviteScopeDate.Year}/{_inviteScopeDate.Month}/{_inviteScopeDate.Day}");
-        await FinaliserSuppressionOccurrence();
+        _editionSerieId = recurrentId;
+        _editionSerieDate = date;
+        _editionSerieOuverte = true;
     }
 
-    /// <summary>« Toute la série » → suppression du récurrent (S5) : DELETE de la série entière.</summary>
-    private async Task SupprimerLaSerie()
+    /// <summary>Ferme la dialog (annulation / enregistrement / suppression aboutis) et relit la grille —
+    /// l'effet (édition, retrait d'occurrence ou de série) suit sans rechargement.</summary>
+    private async Task FermerEditionSerieEtRecharger()
     {
-        await Canal.DeleteAsync(
-            $"api/enfants/{_enfantSelectionne}/activites/recurrentes/{_inviteScopeRecurrentId}");
-        await FinaliserSuppressionOccurrence();
-    }
-
-    private async Task FinaliserSuppressionOccurrence()
-    {
-        _inviteScopeRecurrentId = null;
+        _editionSerieOuverte = false;
+        _editionSerieId = null;
+        _editionSerieDate = null;
         await ChargerAsync();
-        _accuseOccurrenceSupprimee = true;
     }
-
-    private void FermerAccuseOccurrenceSupprimee() => _accuseOccurrenceSupprimee = false;
 
     /// <summary>Depuis le menu (5ᵉ entrée), ouvre la dialog « Éditer une période » sur la date de la
     /// case : elle listera les périodes couvrant ce jour, chaque ligne ouvrant un formulaire pré-rempli. Un

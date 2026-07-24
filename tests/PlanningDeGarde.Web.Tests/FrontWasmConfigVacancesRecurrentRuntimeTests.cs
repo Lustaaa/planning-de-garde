@@ -43,11 +43,13 @@ public sealed class FrontWasmConfigVacancesRecurrentRuntimeTests : TestContext
         this.SurDispatcher(() => config
             .FindAll("[data-testid='onglet-enfant-recurrent']")
             .Single(o => o.GetAttribute("data-enfant-id") == "lea").Click());
+        // Post-s54 : la gestion des vacances vit désormais DANS la dialog d'édition de la série (fusion, n°3) —
+        // plus de 🏖️ ni de dialog Vacances autonome. On ouvre l'édition (crayon) et on attend la section vacances.
         config.WaitForAssertion(
-            () => Assert.NotEmpty(config.FindAll("[data-testid='vacances-recurrent']")), TimeSpan.FromSeconds(10));
-        this.SurDispatcher(() => config.Find("[data-testid='vacances-recurrent']").Click());
+            () => Assert.NotEmpty(config.FindAll("[data-testid='crayon-recurrent']")), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config.Find("[data-testid='crayon-recurrent']").Click());
         config.WaitForAssertion(
-            () => Assert.NotEmpty(config.FindAll("[data-testid='dialog-vacances']")), TimeSpan.FromSeconds(10));
+            () => Assert.NotEmpty(config.FindAll("[data-testid='section-vacances-recurrent']")), TimeSpan.FromSeconds(10));
         return config;
     }
 
