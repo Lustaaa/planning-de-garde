@@ -256,7 +256,7 @@
                                                 }
                                             </div>
                                         </div>
-                                        <div class="d-flex gap-2">
+                                        <div class="dialog-actions">
                                             <button type="submit" class="btn btn-primary">Enregistrer</button>
                                             <button type="button" class="btn btn-link" data-testid="dialog-acteur-annuler"
                                                     @onclick="FermerModal">Annuler</button>
@@ -319,11 +319,6 @@
                                                     <option value="@r.Id">@r.Libelle</option>
                                                 }
                                             </select>
-                                        </div>
-                                        <div class="d-flex gap-2">
-                                            <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                            <button type="button" class="btn btn-link" data-testid="dialog-acteur-annuler"
-                                                    @onclick="FermerModal">Annuler</button>
                                         </div>
                                     </EditForm>
                                     @if (_motifEchec is not null)
@@ -401,6 +396,13 @@
                                     <button type="button" class="btn btn-outline-danger btn-sm acteur-supprimer"
                                             data-testid="bouton-supprimer" data-acteur-id="@a.Id"
                                             @onclick="() => Supprimer(a.Id)" aria-label="Supprimer @a.Nom">Supprimer cet acteur</button>
+
+                                    @* Footer d'actions UNIFORMISÉ (retour PO s54) : Enregistrer + Annuler EN BAS. *@
+                                    <div class="dialog-actions">
+                                        <button type="submit" form="form-edition" class="btn btn-primary">Enregistrer</button>
+                                        <button type="button" class="btn btn-link" data-testid="dialog-acteur-annuler"
+                                                @onclick="FermerModal">Annuler</button>
+                                    </div>
                                 }
                         </ModalConfig>
                     }
@@ -482,11 +484,6 @@
                                                 Rôle parent (les acteurs qui le portent sont liables comme parents d'un enfant)</label>
                                         </div>
                                     }
-                                    <div class="d-flex gap-2">
-                                        <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                        <button type="button" class="btn btn-link" data-testid="dialog-role-annuler"
-                                                @onclick="FermerModalRole">Annuler</button>
-                                    </div>
                                 </EditForm>
                                 @if (_motifEchecRole is not null)
                                 {
@@ -499,6 +496,13 @@
                                             data-testid="bouton-supprimer-role" data-role-id="@rid"
                                             @onclick="() => SupprimerRole(rid)">Supprimer ce rôle</button>
                                 }
+
+                                @* Footer d'actions UNIFORMISÉ (retour PO s54) : Enregistrer + Annuler EN BAS. *@
+                                <div class="dialog-actions">
+                                    <button type="submit" form="form-role" class="btn btn-primary">Enregistrer</button>
+                                    <button type="button" class="btn btn-link" data-testid="dialog-role-annuler"
+                                            @onclick="FermerModalRole">Annuler</button>
+                                </div>
                         </ModalConfig>
                     }
                 }
@@ -605,7 +609,7 @@
                                             </div>
                                         }
                                     </div>
-                                    <div class="d-flex gap-2 mt-3">
+                                    <div class="dialog-actions">
                                         <button type="submit" class="btn btn-primary">Définir le cycle</button>
                                         <button type="button" class="btn btn-link" data-testid="dialog-cycle-annuler"
                                                 @onclick="FermerModalCycle">Annuler</button>
@@ -718,11 +722,6 @@
                                     <InputText class="form-control" @bind-Value="_activite.Adresse" data-testid="champ-adresse-activite"
                                                placeholder="Adresse de l'activité (optionnelle)" />
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                    <button type="button" class="btn btn-link" data-testid="dialog-activite-annuler"
-                                            @onclick="FermerModalActivite">Annuler</button>
-                                </div>
                             </EditForm>
 
                             @if (_motifEchecActivite is not null)
@@ -770,6 +769,13 @@
                                         data-testid="bouton-supprimer-activite" data-activite-id="@act2.Id"
                                         @onclick="() => SupprimerActivite(act2.Id)" aria-label="Supprimer @act2.Libelle">Supprimer cette activité</button>
                             }
+
+                            @* Footer d'actions UNIFORMISÉ (retour PO s54) : Enregistrer + Annuler EN BAS. *@
+                            <div class="dialog-actions">
+                                <button type="submit" form="form-activite" class="btn btn-primary">Enregistrer</button>
+                                <button type="button" class="btn btn-link" data-testid="dialog-activite-annuler"
+                                        @onclick="FermerModalActivite">Annuler</button>
+                            </div>
                         </ModalConfig>
                     }
                 }
@@ -855,11 +861,6 @@
                                     <InputText class="form-control" @bind-Value="_enfant.Prenom" data-testid="champ-prenom-enfant"
                                                placeholder="Prénom de l'enfant (ex. Tom)" />
                                 </div>
-                                <div class="d-flex gap-2">
-                                    <button type="submit" class="btn btn-primary">Enregistrer</button>
-                                    <button type="button" class="btn btn-link" data-testid="dialog-enfant-annuler"
-                                            @onclick="FermerModalEnfant">Annuler</button>
-                                </div>
                             </EditForm>
 
                             @if (_motifEchecEnfant is not null)
@@ -918,6 +919,14 @@
                                     }
                                 </div>
                             }
+
+                            @* Footer d'actions UNIFORMISÉ (retour PO s54) : Enregistrer + Annuler EN BAS ; le submit
+                               reste rattaché au formulaire via l'attribut form (bouton hors du EditForm). *@
+                            <div class="dialog-actions">
+                                <button type="submit" form="form-enfant" class="btn btn-primary">Enregistrer</button>
+                                <button type="button" class="btn btn-link" data-testid="dialog-enfant-annuler"
+                                        @onclick="FermerModalEnfant">Annuler</button>
+                            </div>
                         </ModalConfig>
                     }
                 }
@@ -1138,15 +1147,17 @@
     .cycle-carte-label { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em;
         color: var(--pdg-muted); font-weight: 700; margin-bottom: .4rem; }
 
-    /* Onglets par enfant (retour PO s54) : bandeau horizontal d'onglets pilule, l'actif en accent —
-       remplace les dropdowns de sélection d'enfant (Cycle + Activités récurrentes). Tokenisé clair/sombre. */
-    .pdg-onglets-enfant { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .35rem; }
-    .pdg-onglet-enfant { background: var(--pdg-surface-2); border: 1px solid var(--pdg-border);
-        color: var(--pdg-ink); border-radius: 999px; padding: .35rem .95rem; font-weight: 600;
-        font-size: .88rem; cursor: pointer; }
-    .pdg-onglet-enfant:hover { background: var(--pdg-accent-soft); }
-    .pdg-onglet-enfant.actif { background: var(--pdg-accent-soft); color: var(--pdg-accent);
-        border-color: var(--pdg-accent); }
+    /* Onglets par enfant (retour PO s54, 2ᵉ passe) : VRAIE barre d'onglets horizontale (façon « tab »),
+       posée sur une ligne de base, l'onglet actif souligné d'un trait d'accent + encre pleine. Remplace la
+       dropdown de sélection d'enfant (Cycle + Activités récurrentes). Tokenisé clair/sombre. */
+    .pdg-onglets-enfant { display: flex; flex-wrap: wrap; gap: .25rem; margin-top: .35rem;
+        border-bottom: 2px solid var(--pdg-border); }
+    .pdg-onglet-enfant { background: transparent; border: none; border-bottom: 2px solid transparent;
+        margin-bottom: -2px; color: var(--pdg-muted); padding: .5rem 1rem; font-weight: 600; font-size: .9rem;
+        cursor: pointer; border-top-left-radius: 8px; border-top-right-radius: 8px; }
+    .pdg-onglet-enfant:hover { color: var(--pdg-ink); background: var(--pdg-surface-2); }
+    .pdg-onglet-enfant.actif { color: var(--pdg-accent); border-bottom-color: var(--pdg-accent);
+        background: var(--pdg-accent-soft); font-weight: 700; }
 
     .cacher { display: none; }
 
