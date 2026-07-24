@@ -39,7 +39,12 @@ public sealed class FrontWasmConfigRecurrentsParEnfantRuntimeTests : TestContext
 
         // When — on ouvre l'onglet « Activités récurrentes » et on sélectionne l'enfant Léa.
         this.SurDispatcher(() => config.Find("[data-testid='onglet-recurrents']").Click());
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-enfant-recurrent']").Change("lea"));
+        config.WaitForState(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Any(o => o.GetAttribute("data-enfant-id") == "lea"), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Single(o => o.GetAttribute("data-enfant-id") == "lea").Click());
 
         // Then — la liste relue (GET réel) porte le récurrent « École » de Léa avec ses jours (Lun, Mar).
         config.WaitForAssertion(
@@ -78,7 +83,12 @@ public sealed class FrontWasmConfigRecurrentsParEnfantRuntimeTests : TestContext
         var config = RenderComponent<ConfigurationFoyer>();
         config.WaitForState(() => config.FindAll("[data-testid='onglet-recurrents']").Count > 0, TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => config.Find("[data-testid='onglet-recurrents']").Click());
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-enfant-recurrent']").Change("lea"));
+        config.WaitForState(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Any(o => o.GetAttribute("data-enfant-id") == "lea"), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Single(o => o.GetAttribute("data-enfant-id") == "lea").Click());
         config.WaitForAssertion(
             () => Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-recurrent']")), TimeSpan.FromSeconds(10));
 
@@ -118,7 +128,12 @@ public sealed class FrontWasmConfigRecurrentsParEnfantRuntimeTests : TestContext
         var config = RenderComponent<ConfigurationFoyer>();
         config.WaitForState(() => config.FindAll("[data-testid='onglet-recurrents']").Count > 0, TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => config.Find("[data-testid='onglet-recurrents']").Click());
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-enfant-recurrent']").Change("lea"));
+        config.WaitForState(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Any(o => o.GetAttribute("data-enfant-id") == "lea"), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Single(o => o.GetAttribute("data-enfant-id") == "lea").Click());
 
         // Then — la LISTE reste visible en lecture (le récurrent est là), mais AUCUNE affordance d'écriture :
         // ni « Ajouter », ni crayon, ni corbeille.

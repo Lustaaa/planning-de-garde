@@ -520,18 +520,24 @@
                 @* Sélecteur d'enfant (s53, gate G3) : chaque enfant a SON cycle de fond propre (familles
                    recomposées). Le tableau + l'éditeur ci-dessous sont scopés à l'enfant sélectionné ici ;
                    éditer en vue X ne change QUE le cycle de X. *@
+                @* Onglets par enfant (retour PO s54, remplace la dropdown) : un onglet par enfant, le cycle
+                   affiché + édité est scopé à l'onglet actif. *@
                 @if (_enfants.Count > 0)
                 {
-                    <label class="pdg-controle mb-3 d-inline-flex align-items-center gap-2">
-                        <span class="pdg-controle-label">Enfant</span>
-                        <select class="form-select form-select-sm w-auto" data-testid="selecteur-enfant-cycle"
-                                @onchange="ChangerCycleEnfant" value="@_cycleEnfantSelectionne">
+                    <div class="mb-3">
+                        <span class="form-label d-block">Enfant</span>
+                        <div class="pdg-onglets-enfant" role="tablist" aria-label="Enfant" data-testid="onglets-enfant-cycle">
                             @foreach (var enfant in _enfants)
                             {
-                                <option value="@enfant.Id">@enfant.Prenom</option>
+                                var e = enfant;
+                                <button type="button" role="tab"
+                                        class="pdg-onglet-enfant @(_cycleEnfantSelectionne == e.Id ? "actif" : null)"
+                                        aria-selected="@(_cycleEnfantSelectionne == e.Id)"
+                                        data-testid="onglet-enfant-cycle" data-enfant-id="@e.Id"
+                                        @onclick="() => ChoisirCycleEnfant(e.Id)">@e.Prenom</button>
                             }
-                        </select>
-                    </label>
+                        </div>
+                    </div>
                 }
 
                 <div class="acteurs-defilement">
@@ -928,17 +934,21 @@
                 <p class="text-muted">Choisissez un enfant pour voir ses activités récurrentes (lieu, jours,
                     plage horaire) et les créer, éditer ou supprimer.</p>
 
+                @* Onglets par enfant (retour PO s54, remplace la dropdown) : un onglet par enfant, la
+                   sélection courante active. Même geste que le sélecteur d'enfant du cycle. *@
                 <div class="mb-3">
-                    <label class="form-label" for="selecteur-enfant-recurrent">Enfant</label>
-                    <select id="selecteur-enfant-recurrent" class="form-select" data-testid="selecteur-enfant-recurrent"
-                            value="@(_recurrentEnfantSelectionne ?? "")"
-                            @onchange="e => ChoisirEnfantRecurrent(e.Value?.ToString())">
-                        <option value="">— Choisir un enfant —</option>
+                    <span class="form-label d-block">Enfant</span>
+                    <div class="pdg-onglets-enfant" role="tablist" aria-label="Enfant" data-testid="onglets-enfant-recurrent">
                         @foreach (var e in _enfants)
                         {
-                            <option value="@e.Id">@e.Prenom</option>
+                            var enfant = e;
+                            <button type="button" role="tab"
+                                    class="pdg-onglet-enfant @(_recurrentEnfantSelectionne == enfant.Id ? "actif" : null)"
+                                    aria-selected="@(_recurrentEnfantSelectionne == enfant.Id)"
+                                    data-testid="onglet-enfant-recurrent" data-enfant-id="@enfant.Id"
+                                    @onclick="() => ChoisirEnfantRecurrent(enfant.Id)">@enfant.Prenom</button>
                         }
-                    </select>
+                    </div>
                 </div>
 
                 @if (_accuseRecurrent is { } acc)
@@ -1045,7 +1055,11 @@
                                     {
                                         <div class="alert alert-danger py-1" data-testid="motif-echec-recurrent-modal">@echecModal</div>
                                     }
-                                    <button type="submit" class="btn btn-primary" data-testid="valider-recurrent">Enregistrer</button>
+                                    <div class="d-flex gap-2">
+                                        <button type="submit" class="btn btn-primary" data-testid="valider-recurrent">Enregistrer</button>
+                                        <button type="button" class="btn btn-link" data-testid="dialog-recurrent-annuler"
+                                                @onclick="FermerModalRecurrent">Annuler</button>
+                                    </div>
                                 </form>
                             </ModalConfig>
                         }
@@ -1091,6 +1105,13 @@
                                 {
                                     <div class="alert alert-danger py-1 mt-2" data-testid="motif-echec-vacances">@echecVac</div>
                                 }
+
+                                @* Bouton Annuler/Fermer (retour PO s54, uniformisation des dialogs) : referme la
+                                   modal sans autre effet (les plages sont déjà persistées à leur ajout/retrait). *@
+                                <div class="d-flex gap-2 mt-3">
+                                    <button type="button" class="btn btn-link" data-testid="dialog-vacances-annuler"
+                                            @onclick="FermerVacancesModal">Fermer</button>
+                                </div>
                             </ModalConfig>
                         }
                     }
@@ -1206,6 +1227,16 @@
         padding: .7rem .85rem; }
     .cycle-carte-label { display: block; font-size: .7rem; text-transform: uppercase; letter-spacing: .05em;
         color: var(--pdg-muted); font-weight: 700; margin-bottom: .4rem; }
+
+    /* Onglets par enfant (retour PO s54) : bandeau horizontal d'onglets pilule, l'actif en accent —
+       remplace les dropdowns de sélection d'enfant (Cycle + Activités récurrentes). Tokenisé clair/sombre. */
+    .pdg-onglets-enfant { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .35rem; }
+    .pdg-onglet-enfant { background: var(--pdg-surface-2); border: 1px solid var(--pdg-border);
+        color: var(--pdg-ink); border-radius: 999px; padding: .35rem .95rem; font-weight: 600;
+        font-size: .88rem; cursor: pointer; }
+    .pdg-onglet-enfant:hover { background: var(--pdg-accent-soft); }
+    .pdg-onglet-enfant.actif { background: var(--pdg-accent-soft); color: var(--pdg-accent);
+        border-color: var(--pdg-accent); }
 
     .cacher { display: none; }
 

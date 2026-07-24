@@ -37,7 +37,12 @@ public sealed class FrontWasmConfigVacancesRecurrentRuntimeTests : TestContext
         var config = RenderComponent<ConfigurationFoyer>();
         config.WaitForState(() => config.FindAll("[data-testid='onglet-recurrents']").Count > 0, TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => config.Find("[data-testid='onglet-recurrents']").Click());
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-enfant-recurrent']").Change("lea"));
+        config.WaitForState(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Any(o => o.GetAttribute("data-enfant-id") == "lea"), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Single(o => o.GetAttribute("data-enfant-id") == "lea").Click());
         config.WaitForAssertion(
             () => Assert.NotEmpty(config.FindAll("[data-testid='vacances-recurrent']")), TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => config.Find("[data-testid='vacances-recurrent']").Click());

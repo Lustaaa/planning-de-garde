@@ -578,10 +578,11 @@ public partial class ConfigurationFoyer
     private string PrenomCycleEnfant
         => _enfants.FirstOrDefault(e => e.Id == _cycleEnfantSelectionne)?.Prenom ?? _cycleEnfantSelectionne ?? "";
 
-    /// <summary>Bascule de l'enfant courant de l'onglet Cycle : relit SON cycle et re-synchronise l'éditeur.</summary>
-    private async Task ChangerCycleEnfant(ChangeEventArgs e)
+    /// <summary>Bascule de l'enfant courant de l'onglet Cycle (clic sur un onglet enfant, s54) : relit SON
+    /// cycle et re-synchronise l'éditeur. Remplace l'ancienne dropdown (retour PO).</summary>
+    private async Task ChoisirCycleEnfant(string enfantId)
     {
-        _cycleEnfantSelectionne = e.Value?.ToString();
+        _cycleEnfantSelectionne = enfantId;
         await RechargerCycles();
     }
 
