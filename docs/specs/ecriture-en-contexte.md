@@ -113,7 +113,12 @@ aucune persistance tirée en avant. Texte complet :
     **Set vide refusé AVANT écriture** (store intact). Un set d'un seul jour = comportement s29 inchangé.
   - **Éditer une série (toute la série)** (`PUT …/activites/recurrentes/{id}`) : jours + plage + lieu
     modifiés en place, **l'`EnfantId` est PRÉSERVÉ** (jamais réaffecté par l'édition) ; **durée non
-    positive OU lieu inconnu → refus AVANT écriture**, série intacte.
+    positive OU lieu inconnu → refus AVANT écriture**, série intacte. **[correctif passe architecte post-s54]**
+    l'édition **PRÉSERVE aussi les plages de vacances** déjà déclarées : le handler ré-attache les exclusions
+    existantes à l'agrégat reconstruit (auparavant `SlotRecurrent.Poser` en repartait sans exclusion → le
+    « Enregistrer » qui suivait un ajout de plage **rasait** les vacances et la grille reprojetait les
+    occurrences censées être exclues — trou révélé par la fusion vacances↔dialog d'édition, corrigé + prouvé
+    en runtime sur Mongo réel, exclusion survivant à un redémarrage d'instance).
   - **Exclusion vacances scolaires** (`POST/DELETE …/activites/recurrentes/{id}/exclusions`) : des
     **plages d'exclusion** saisies manuellement, **rattachées à la série** (pas d'import d'un calendrier
     officiel) ; la projection **ne produit AUCUNE occurrence** sur l'intervalle exclu ; hors plage,

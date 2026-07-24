@@ -260,3 +260,15 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   édition seule) ; dialog Vacances autonome supprimée. **Leçon** : quand un même geste (éditer/supprimer une
   série) est offert depuis **deux écrans**, extraire un **composant dialog partagé autonome** (params +
   `OnFerme`) plutôt que dupliquer l'état/handlers — un seul chemin d'écriture, deux points d'entrée.
+- **2026-07-24 (ter) — passe architecte, 3ᵉ lot : gate visuel PO (2a onglets, 2b bug vacances, 5 boutons)**
+  (même branche `ia-fix/retours-s54-activites`, 949 verts + flake SignalR/digest connu confirmé isolé 3/3).
+  **2b (bug prioritaire)** : diagnostic par reproduction du geste EXACT sur Mongo RÉEL (curl) — l'ajout de
+  plage + la projection étaient corrects, mais **le « Enregistrer » de la série RASAIT les vacances**
+  (`ModifierSlotRecurrentHandler` reconstruisait via `Poser`, sans exclusions) ; correctif = ré-attacher les
+  exclusions existantes, prouvé bout-en-bout + durabilité (survit au redémarrage d'instance). **Leçon** : un
+  test qui « affirme la persistance » en ne comptant que la présence, avec les valeurs PAR DÉFAUT, masque une
+  perte des valeurs SAISIES ET une écrasure par un chemin d'écriture voisin — tester le geste COMPLET (saisir
+  des valeurs précises + enchaîner l'action suivante), pas l'écriture isolée. **2a** : pilules → **vraie barre
+  d'onglets** (ligne de base + underline d'accent). **5** : barre d'actions Enregistrer/Annuler **en pied**
+  uniformisée sur toutes les dialogs (submit rattaché au form via l'attribut `form` quand le bouton sort du
+  formulaire — les modals de config à sections annexes gardent leurs tests qui submit via `#form-…`).
