@@ -272,3 +272,10 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   d'onglets** (ligne de base + underline d'accent). **5** : barre d'actions Enregistrer/Annuler **en pied**
   uniformisée sur toutes les dialogs (submit rattaché au form via l'attribut `form` quand le bouton sort du
   formulaire — les modals de config à sections annexes gardent leurs tests qui submit via `#form-…`).
+- **2026-07-24 (quater) — passe architecte, retour gate : présélection d'office de l'enfant** (même branche,
+  950 verts). Bug : l'onglet **Activités récurrentes** n'avait **aucun enfant présélectionné** à l'arrivée
+  (contrairement au Cycle qui se défaute déjà) → liste vide, pas de crayon, dialog d'édition gatée sur une
+  sélection non nulle → **édition inaccessible**. Correctif : `ChargerRecurrents` défaute la sélection sur le
+  1er enfant (miroir du Cycle), appelée dès `OnInitializedAsync` + sur diffusion. **Leçon** : deux surfaces
+  jumelles (Cycle / Activités récurrentes) doivent partager la **même règle de présélection** — un invariant
+  « toujours un onglet actif » codé d'un seul côté laisse l'autre régresser ; le tester des deux côtés.
