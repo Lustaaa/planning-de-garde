@@ -238,3 +238,15 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   `src/`, `CS1591` masqué). Config sous `docfx/`, sortie git-ignorée. `Web` (Blazor) écarté de
   l'extraction (Razor SG non exécuté par Roslyn) ; OpenAPI intégré sur chemin documenté (exposé au
   runtime via Scalar). Génération prouvée (377 pages). **Programme de refonte COMPLET 8/8**, 917/917 vert.
+- **2026-07-24 — passe architecte hors-sprint : retours PO s54 sur activités récurrentes / config foyer**
+  (branche `ia-fix/retours-s54-activites`, PR au PO ; retours = `docs/briefs/sprint 55 - revue.md`).
+  **Faits, 949/949 vert** : **trou backend** — l'adresse d'un lieu saisie **à la création** était perdue
+  (`AjouterActiviteCommand`/`Requete` ne portaient pas l'adresse ; l'édition, elle, la persistait déjà) →
+  adresse optionnelle threadée dans la commande + write-through, prouvé sur **Mongo réel** (durabilité) ;
+  dropdown de sélection d'enfant → **onglets** (Cycle + Activités récurrentes) ; boutons **Annuler/Fermer**
+  ajoutés (dialogs récurrent + vacances) — toute dialog a désormais une sortie explicite. **Renvoyés au PO
+  pour arbitrage** (non implémentés) : retirer les corbeilles de la grille + « éditer au clic » (cross-page
+  vers `/configuration` + perte de la suppression d'occurrence livrée s54 → cible à confirmer) ; fusionner
+  la dialog Vacances dans la dialog du récurrent (faisable en édition seule) ; largeur des dialogs (**déjà**
+  uniforme via `.dialog-panneau` partagée). **Leçon** : un formulaire de **création** qui affiche un champ
+  non porté par sa commande = **perte silencieuse** — auditer la parité champs-affichés / champs-commande.

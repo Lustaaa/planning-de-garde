@@ -27,11 +27,19 @@ foyer par enfant** (créer/éditer/**supprimer** — D2 + trou s31 soldés).
 
 ## Candidats de tête au prochain `/planning`
 
-- **Passe de retours PO sur les activités (s54) — À PLANIFIER AVEC L'ARCHITECTE (hors pipeline).** Au
-  gate s54 le PO a annoncé « plein de retours » sur les activités récurrentes mais a **choisi de les
-  traiter séparément avec l'agent technique un autre jour** (section `# Retours produit (PO)` du fichier
-  s54 laissée **vide** volontairement). ⬜ **Récupérer ces retours** (passe architecte dédiée) **avant**
-  de reprendre la boucle `/planning` sur ce volet, pour ne pas re-cadrer à l'aveugle. *(gate s54)*
+- **Passe de retours PO sur les activités (s54) — PASSE ARCHITECTE FAITE (hors pipeline), branche
+  `ia-fix/retours-s54-activites`, PR au PO.** Retours recueillis dans `docs/briefs/sprint 55 - revue.md`.
+  **Faits** : ✅ n°6 adresse d'un lieu persistée **à la création** (trou backend — la commande d'ajout ne
+  portait pas l'adresse) ; ✅ n°2 & n°8 dropdown de sélection d'enfant → **onglets** (Activités récurrentes
+  + Cycle de fond) ; ✅ n°4 bouton **Annuler** sur la dialog d'activité récurrente ; ✅ n°5 sortie explicite
+  sur **toutes** les dialogs (dialog Vacances : bouton **Fermer** ajouté — les autres en avaient déjà une).
+  **En attente d'arbitrage PO** : ⬜ n°1 grille /planning — retirer les corbeilles des récurrents et
+  « entrer en édition au clic » : la seule dialog d'édition d'une série vit dans `/configuration` →
+  **cross-page** + perte de la suppression d'occurrence depuis la grille (livrée s54 S9/S10) → **cible du
+  clic à confirmer** ; ⬜ n°3 **fusionner la dialog Vacances dans la dialog d'ajout/modif du récurrent** :
+  faisable en **mode édition seule** (une série n'a d'id qu'après création → rien à quoi rattacher les
+  plages en mode ajout) → **UX à valider**. ⬜ n°7 largeur des dialogs : **déjà uniforme** (`.dialog-panneau`
+  partagée, `min(520px, 94vw)`, aucun override par dialog) — confirmer si une autre largeur cible est voulue. *(gate s54)*
 - **VUE multi-enfants SIMULTANÉE** (lanes / colonnes sur la grille) — surface de LECTURE **neuve**
   (décision PO au coût gate). s53 a livré la vue **MONO-enfant** (sélecteur s30) ; voir plusieurs
   enfants d'un coup est un incrément séparable. *(porte de conception P1 s53, retours s53)*

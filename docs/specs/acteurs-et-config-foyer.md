@@ -328,7 +328,12 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   - **Champ « adresse » sur l'agrégat Activité** (**miroir strict de l'adresse acteur s33**) : **persisté Mongo
     durable**, relu par la query de config, **vide accepté** (optionnel), éditer l'adresse **ne touche aucun
     autre champ** (id + libellé inchangés, aucune écriture partielle ; un refus concomitant laisse le store
-    inchangé).
+    inchangé). **[diff passe architecte post-s54]** l'adresse est aussi persistée **à la CRÉATION** : la
+    commande/requête d'ajout (`AjouterActiviteCommand` / `AjouterActiviteRequete`) porte une **adresse
+    optionnelle** écrite dans la foulée (write-through, même clé stable) — corrige le **trou** où l'adresse
+    saisie au formulaire de création était **silencieusement perdue** (seul le libellé était écrit ;
+    l'édition, elle, persistait déjà l'adresse). Une adresse **tout-espaces** fournie à la création n'est pas
+    écrite (pas de bruit).
   - **Lien enfant↔activité N-M** : commandes/handlers **lier / délier** (canal requête/réponse : `enfantId`,
     `activiteId`), lien **persisté Mongo durable** (relu par la query de config), **id stables enfant et
     activité inchangés** (enrichissement). Le lien est **N-M** (plusieurs enfants partagent une même activité ;
