@@ -513,6 +513,9 @@ public partial class ConfigurationFoyer
         await RechargerActivites();
         await RechargerEnfants();
         await RechargerCycles();
+        // Charge les récurrents dès l'arrivée : présélectionne le 1er enfant (onglet actif garanti) et
+        // affiche sa liste + les affordances d'édition sans clic préalable (retour PO gate).
+        await ChargerRecurrents();
         await RechargerGraphe();
     }
 
@@ -684,6 +687,9 @@ public partial class ConfigurationFoyer
                 // Une édition du cycle aboutie sur un autre écran fait converger le tableau des cycles déclarés
                 // sans rechargement (Sc.11) — diffusion en LECTURE SEULE (ré-énumération du store).
                 await RechargerCycles();
+                // Idem pour les activités récurrentes : re-défaute l'onglet enfant si l'enfant courant a
+                // disparu du référentiel (jamais « aucun onglet actif »), et relit la liste (retour PO gate).
+                await ChargerRecurrents();
                 // Un lien enfant↔parent ajouté / supprimé ou un rôle-du-lien modifié (modal Enfants) sur un autre
                 // écran fait CONVERGER le graphe foyer sans rechargement (s38 Sc.5) — diffusion LECTURE SEULE.
                 // Reprojection LOCALE à partir des enfants + acteurs déjà rechargés ci-dessus (aucun GET de plus
@@ -1370,6 +1376,13 @@ public partial class ConfigurationFoyer
 
     private async Task ChargerRecurrents()
     {
+        // TOUJOURS un enfant sélectionné par défaut (1er du référentiel, comme le Cycle de fond s53) — jamais
+        // « aucun onglet actif » : sinon la liste reste vide et l'édition d'une série est inaccessible (le
+        // crayon n'apparaît pas, la dialog — gatée sur une sélection non nulle — ne s'ouvre pas). Retour PO
+        // gate. Se re-défaute aussi si l'enfant courant a disparu du référentiel (changement de foyer).
+        if (string.IsNullOrEmpty(_recurrentEnfantSelectionne) || _enfants.All(e => e.Id != _recurrentEnfantSelectionne))
+            _recurrentEnfantSelectionne = _enfants.FirstOrDefault()?.Id;
+
         if (string.IsNullOrEmpty(_recurrentEnfantSelectionne))
         {
             _recurrents = Array.Empty<ActiviteRecurrenteVueWeb>();
