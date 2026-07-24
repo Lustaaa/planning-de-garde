@@ -226,6 +226,15 @@ a, .btn-link {
 .dialog-panneau .btn-link { color: var(--pdg-muted); text-decoration: none; }
 .dialog-panneau .btn-link:hover { color: var(--pdg-ink); text-decoration: underline; }
 
+/* Barre d'actions de PIED de dialog (retour PO s54, uniformisation) : les boutons d'action (au minimum
+   « Enregistrer » et « Annuler ») sont REGROUPÉS EN BAS de la dialog, façon footer — même geste partout
+   (dialogs config ET dialogs de la grille/planning). Séparée du contenu par un filet, boutons alignés à
+   droite. S'applique aussi bien dans .dialog-panneau (dialogs standalone) que dans la modal de config. */
+.dialog-actions { display: flex; gap: .5rem; justify-content: flex-end; align-items: center;
+    margin-top: 1.25rem; padding-top: .9rem; border-top: 1px solid var(--pdg-border); }
+/* Une action destructive isolée (ex. « Supprimer ») se pousse à gauche, la paire Enregistrer/Annuler restant à droite. */
+.dialog-actions .dialog-actions-destructif { margin-right: auto; }
+
 /* Safari iOS / WebKit — cibles tactiles confortables (sprint 26, Sc.13) : sur pointeur grossier (tactile),
    les contrôles interactifs font au moins 44px de haut (recommandation d'accessibilité tactile Apple).
    Sur pointeur fin (souris), la densité PC est préservée. */

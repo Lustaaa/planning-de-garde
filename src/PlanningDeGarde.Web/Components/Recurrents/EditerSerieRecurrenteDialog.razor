@@ -1,0 +1,109 @@
+@namespace PlanningDeGarde.Web.Components.Recurrents
+@using PlanningDeGarde.Web.Components.Shared
+
+@* Dialog PARTAGÉE d'édition d'une série récurrente (réutilisée depuis la config ET la grille, décision PO
+   post-s54). Portée par ModalConfig : Échap = « Annuler » (ferme sans muter). En mode ÉDITION elle héberge
+   la gestion des vacances (fusion de l'ex-dialog Vacances autonome, n°3) et la suppression avec portée
+   (« cette occurrence » si ouverte depuis la grille + « toute la série »). Testids préservés des dialogs
+   d'origine (champ-lieu-recurrent, jour-*, valider-recurrent, liste-vacances, scope-*…). *@
+<ModalConfig TestId="dialog-recurrent" OnFermer="OnFerme">
+    <h2 class="h4 mb-3">@(EstEdition ? "Modifier l'activité récurrente" : "Ajouter une activité récurrente")</h2>
+
+    <form id="form-recurrent" @onsubmit="Enregistrer">
+        <div class="mb-2">
+            <label class="form-label" for="champ-lieu-recurrent">Lieu</label>
+            <select id="champ-lieu-recurrent" class="form-select" data-testid="champ-lieu-recurrent" @bind="_lieuId">
+                <option value="">— Choisir —</option>
+                @foreach (var a in _lieux)
+                {
+                    <option value="@a.Id">@a.Libelle</option>
+                }
+            </select>
+        </div>
+        <div class="mb-2">
+            <span class="form-label d-block">Jours</span>
+            @foreach (var j in JoursSemaine)
+            {
+                <label class="me-2">
+                    <input type="checkbox" data-testid="jour-@j.Jour"
+                           checked="@_jours.Contains(j.Jour)"
+                           @onchange="e => BasculerJour(j.Jour, (bool)e.Value!)" /> @j.Libelle
+                </label>
+            }
+        </div>
+        <div class="mb-2 d-flex gap-2">
+            <div>
+                <label class="form-label" for="champ-debut-recurrent">Début</label>
+                <input id="champ-debut-recurrent" type="time" class="form-control" data-testid="champ-debut-recurrent" @bind="_heureDebut" />
+            </div>
+            <div>
+                <label class="form-label" for="champ-fin-recurrent">Fin</label>
+                <input id="champ-fin-recurrent" type="time" class="form-control" data-testid="champ-fin-recurrent" @bind="_heureFin" />
+            </div>
+        </div>
+        @if (_motifEchec is { } echec)
+        {
+            <div class="alert alert-danger py-1" data-testid="motif-echec-recurrent-modal">@echec</div>
+        }
+    </form>
+
+    @* ─── Vacances + suppression : uniquement en ÉDITION (une série n'a d'id qu'après création) ─── *@
+    @if (EstEdition)
+    {
+        <hr />
+        <section data-testid="section-vacances-recurrent">
+            <h3 class="h6">Vacances (l'activité n'a pas lieu)</h3>
+            <p class="text-muted small mb-2">Déclarez des plages où l'activité ne doit pas avoir lieu
+                (vacances scolaires). La grille cesse de projeter l'activité sur l'intervalle.</p>
+
+            <ul class="list-unstyled" data-testid="liste-vacances">
+                @foreach (var plage in _exclusions)
+                {
+                    <li class="d-flex align-items-center gap-2 mb-1" data-testid="vacances-plage">
+                        <span>du @plage.Debut.ToString("dd/MM/yyyy") au @plage.Fin.ToString("dd/MM/yyyy")</span>
+                        <button type="button" class="btn btn-outline-danger btn-sm" data-testid="retirer-vacances"
+                                @onclick="() => SupprimerVacances(plage)" aria-label="Retirer cette plage">🗑️</button>
+                    </li>
+                }
+                @if (_exclusions.Count == 0)
+                {
+                    <li class="text-muted" data-testid="vacances-vide">Aucune plage de vacances déclarée.</li>
+                }
+            </ul>
+
+            <div class="d-flex gap-2 align-items-end">
+                <div>
+                    <label class="form-label" for="champ-vacances-du">Du</label>
+                    <input id="champ-vacances-du" type="date" class="form-control" data-testid="champ-vacances-du" @bind="_vacancesDu" />
+                </div>
+                <div>
+                    <label class="form-label" for="champ-vacances-au">Au</label>
+                    <input id="champ-vacances-au" type="date" class="form-control" data-testid="champ-vacances-au" @bind="_vacancesAu" />
+                </div>
+                <button type="button" class="btn btn-primary" data-testid="ajouter-vacances" @onclick="AjouterVacances">Ajouter une plage</button>
+            </div>
+        </section>
+
+        <hr />
+        <section data-testid="section-suppression-recurrent">
+            <h3 class="h6 text-danger">Suppression</h3>
+            <div class="d-flex gap-2 flex-wrap">
+                @* « Cette occurrence » seulement quand on vient de la grille (date de contexte connue). *@
+                @if (DateOccurrence is not null)
+                {
+                    <button type="button" class="btn btn-outline-danger" data-testid="scope-cette-occurrence"
+                            @onclick="SupprimerCetteOccurrence">Supprimer cette occurrence</button>
+                }
+                <button type="button" class="btn btn-danger" data-testid="scope-toute-la-serie"
+                        @onclick="SupprimerSerie">Supprimer toute la série</button>
+            </div>
+        </section>
+    }
+
+    @* Footer d'actions UNIFORMISÉ (retour PO s54) : Enregistrer + Annuler regroupés EN BAS. Le submit reste
+       associé au formulaire ci-dessus via l'attribut form (bouton hors du <form>). *@
+    <div class="dialog-actions">
+        <button type="submit" form="form-recurrent" class="btn btn-primary" data-testid="valider-recurrent">Enregistrer</button>
+        <button type="button" class="btn btn-link" data-testid="dialog-recurrent-annuler" @onclick="Annuler">Annuler</button>
+    </div>
+</ModalConfig>

@@ -328,7 +328,12 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
   - **Champ « adresse » sur l'agrégat Activité** (**miroir strict de l'adresse acteur s33**) : **persisté Mongo
     durable**, relu par la query de config, **vide accepté** (optionnel), éditer l'adresse **ne touche aucun
     autre champ** (id + libellé inchangés, aucune écriture partielle ; un refus concomitant laisse le store
-    inchangé).
+    inchangé). **[diff passe architecte post-s54]** l'adresse est aussi persistée **à la CRÉATION** : la
+    commande/requête d'ajout (`AjouterActiviteCommand` / `AjouterActiviteRequete`) porte une **adresse
+    optionnelle** écrite dans la foulée (write-through, même clé stable) — corrige le **trou** où l'adresse
+    saisie au formulaire de création était **silencieusement perdue** (seul le libellé était écrit ;
+    l'édition, elle, persistait déjà l'adresse). Une adresse **tout-espaces** fournie à la création n'est pas
+    écrite (pas de bruit).
   - **Lien enfant↔activité N-M** : commandes/handlers **lier / délier** (canal requête/réponse : `enfantId`,
     `activiteId`), lien **persisté Mongo durable** (relu par la query de config), **id stables enfant et
     activité inchangés** (enrichissement). Le lien est **N-M** (plusieurs enfants partagent une même activité ;
@@ -539,7 +544,10 @@ Texte complet : [`sequence-de-livraison.md` § paliers 4/5/8](sequence-de-livrai
     Émet les commandes CRUD récurrent via le canal HTTP nested `…/api/enfants/{enfantId}/activites/recurrentes*`
     (cf. [`ecriture-en-contexte.md`](ecriture-en-contexte.md) : multi-jours, édition de série, exclusion
     vacances, exceptions d'occurrence). **Isolation par enfant** stricte : l'onglet ne liste/écrit **que** les
-    récurrentes de l'enfant sélectionné (invariant s53).
+    récurrentes de l'enfant sélectionné (invariant s53). **[diff passe architecte post-s54]** la **navigation
+    par enfant** est en **onglets** (plus de dropdown) ; le crayon d'une ligne ouvre la **dialog d'édition de
+    série PARTAGÉE** (même composant que la grille) qui héberge l'édition, les **vacances** (fusionnées, plus
+    de 🏖️ ni de dialog Vacances autonome) et la suppression de la série (le 🗑️ de ligne reste un raccourci).
   - **Référentiel « Activités » (s35) → « Lieux ».** Le référentiel foyer plat renommé **« Activités »** en s35
     **redevient « Lieux »** (libellé onglet **et** routes `/api/foyer/activites* → /api/foyer/lieux*`, DTOs, record
     Web) — **iso-comportement** (CRUD, validation de pose, adresse, lien enfant↔activité préservés) : seul le **nom

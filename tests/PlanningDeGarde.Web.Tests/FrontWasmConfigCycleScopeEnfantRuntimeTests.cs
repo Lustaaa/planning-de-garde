@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Bunit;
 using Microsoft.AspNetCore.Http.Connections;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,10 +39,14 @@ public sealed class FrontWasmConfigCycleScopeEnfantRuntimeTests : TestContext
 
     private void EditerCyclePourEnfant(IRenderedComponent<ConfigurationFoyer> config, string enfantId, string prenom, string responsableId)
     {
-        // Onglet Cycle actif + sélection de l'enfant courant du cycle.
+        // Onglet Cycle actif + sélection de l'enfant courant du cycle (onglets par enfant, s54).
         this.SurDispatcher(() => config.Find("[data-testid='onglet-cycles']").Click());
-        config.WaitForElement("[data-testid='selecteur-enfant-cycle']", TimeSpan.FromSeconds(10));
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-enfant-cycle']").Change(enfantId));
+        config.WaitForState(() => config
+            .FindAll("[data-testid='onglet-enfant-cycle']")
+            .Any(o => o.GetAttribute("data-enfant-id") == enfantId), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config
+            .FindAll("[data-testid='onglet-enfant-cycle']")
+            .Single(o => o.GetAttribute("data-enfant-id") == enfantId).Click());
 
         // Ouvre la modal, affiche l'enfant courant en LECTURE SEULE, édite N=1 index0 → responsable, valide.
         this.SurDispatcher(() => config.Find("[data-testid='crayon-cycle']").Click());

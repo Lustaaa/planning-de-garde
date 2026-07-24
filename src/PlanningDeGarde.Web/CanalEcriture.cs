@@ -46,8 +46,9 @@ public static class CanalEcriture
     /// <summary>Corps de la définition d'un transfert de bascule (POST /api/transferts).</summary>
     public sealed record DefinirTransfertRequete(string DeposeParId, string RecupereParId, string LieuId, TimeSpan Heure, DateTime Date, string EnfantId = "");
 
-    /// <summary>Corps de l'ajout d'une activité au référentiel (POST /api/foyer/activites).</summary>
-    public sealed record AjouterActiviteRequete(string Libelle);
+    /// <summary>Corps de l'ajout d'une activité au référentiel (POST /api/foyer/activites) : libellé requis,
+    /// adresse optionnelle persistée dans la foulée (corrige la perte de l'adresse à la création, s54).</summary>
+    public sealed record AjouterActiviteRequete(string Libelle, string? Adresse = null);
 
     /// <summary>Corps de l'édition d'une activité (PUT /api/foyer/activites/{id}) : id porté par l'URL.</summary>
     public sealed record EditerActiviteCorps(string? Libelle = null, string? Adresse = null);

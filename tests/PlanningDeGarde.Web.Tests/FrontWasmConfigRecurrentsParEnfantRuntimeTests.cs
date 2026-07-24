@@ -39,7 +39,12 @@ public sealed class FrontWasmConfigRecurrentsParEnfantRuntimeTests : TestContext
 
         // When — on ouvre l'onglet « Activités récurrentes » et on sélectionne l'enfant Léa.
         this.SurDispatcher(() => config.Find("[data-testid='onglet-recurrents']").Click());
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-enfant-recurrent']").Change("lea"));
+        config.WaitForState(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Any(o => o.GetAttribute("data-enfant-id") == "lea"), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Single(o => o.GetAttribute("data-enfant-id") == "lea").Click());
 
         // Then — la liste relue (GET réel) porte le récurrent « École » de Léa avec ses jours (Lun, Mar).
         config.WaitForAssertion(
@@ -78,7 +83,12 @@ public sealed class FrontWasmConfigRecurrentsParEnfantRuntimeTests : TestContext
         var config = RenderComponent<ConfigurationFoyer>();
         config.WaitForState(() => config.FindAll("[data-testid='onglet-recurrents']").Count > 0, TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => config.Find("[data-testid='onglet-recurrents']").Click());
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-enfant-recurrent']").Change("lea"));
+        config.WaitForState(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Any(o => o.GetAttribute("data-enfant-id") == "lea"), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Single(o => o.GetAttribute("data-enfant-id") == "lea").Click());
         config.WaitForAssertion(
             () => Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-recurrent']")), TimeSpan.FromSeconds(10));
 
@@ -118,7 +128,12 @@ public sealed class FrontWasmConfigRecurrentsParEnfantRuntimeTests : TestContext
         var config = RenderComponent<ConfigurationFoyer>();
         config.WaitForState(() => config.FindAll("[data-testid='onglet-recurrents']").Count > 0, TimeSpan.FromSeconds(10));
         this.SurDispatcher(() => config.Find("[data-testid='onglet-recurrents']").Click());
-        this.SurDispatcher(() => config.Find("[data-testid='selecteur-enfant-recurrent']").Change("lea"));
+        config.WaitForState(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Any(o => o.GetAttribute("data-enfant-id") == "lea"), TimeSpan.FromSeconds(10));
+        this.SurDispatcher(() => config
+            .FindAll("[data-testid='onglet-enfant-recurrent']")
+            .Single(o => o.GetAttribute("data-enfant-id") == "lea").Click());
 
         // Then — la LISTE reste visible en lecture (le récurrent est là), mais AUCUNE affordance d'écriture :
         // ni « Ajouter », ni crayon, ni corbeille.
@@ -127,5 +142,42 @@ public sealed class FrontWasmConfigRecurrentsParEnfantRuntimeTests : TestContext
         Assert.Empty(config.FindAll("[data-testid='bouton-ajouter-recurrent']"));
         Assert.Empty(config.FindAll("[data-testid='crayon-recurrent']"));
         Assert.Empty(config.FindAll("[data-testid='supprimer-recurrent']"));
+    }
+
+    // RÉGRESSION (retour PO gate) : à l'arrivée sur l'onglet « Activités récurrentes », un enfant doit être
+    // présélectionné D'OFFICE (onglet actif garanti) — SANS clic préalable — sinon la liste reste vide et
+    // l'édition d'une série est inaccessible (pas de crayon, dialog gatée sur une sélection non nulle).
+    [Fact]
+    public void Should_preselectionner_le_premier_enfant_d_office_et_rendre_l_edition_accessible_sans_clic_d_onglet()
+    {
+        // Given — le foyer a un enfant (le 1er du référentiel) avec un récurrent « École » dans le store réel.
+        using var api = new ApiDistanteFactory();
+        api.Services.GetRequiredService<IEditeurActivites>().Ajouter("ecole", "École");
+        var premierEnfant = api.Services.GetRequiredService<IEnumerationEnfants>().EnumererEnfants().First().Id;
+        api.Services.GetRequiredService<ISlotRecurrentRepository>().Enregistrer(
+            SlotRecurrent.Poser(premierEnfant, "ecole", new[] { DayOfWeek.Monday }, new TimeSpan(8, 30, 0), new TimeSpan(16, 30, 0)).Valeur!);
+        Services.AddSingleton(GrilleRuntimeHarness.ClientVers(api));
+        Services.AddSingleton(new SessionPlanning());
+
+        var config = RenderComponent<ConfigurationFoyer>();
+        config.WaitForState(() => config.FindAll("[data-testid='onglet-recurrents']").Count > 0, TimeSpan.FromSeconds(10));
+
+        // When — on ouvre l'onglet « Activités récurrentes » SANS cliquer aucun onglet d'enfant.
+        this.SurDispatcher(() => config.Find("[data-testid='onglet-recurrents']").Click());
+
+        // Then — la liste du 1er enfant est chargée D'OFFICE (preuve de la présélection) et les affordances
+        // d'édition sont là — l'édition est accessible sans clic préalable d'onglet.
+        config.WaitForAssertion(
+            () => Assert.NotEmpty(config.FindAll("[data-testid='recurrent-ligne']")), TimeSpan.FromSeconds(10));
+        Assert.NotEmpty(config.FindAll("[data-testid='bouton-ajouter-recurrent']"));
+        Assert.NotEmpty(config.FindAll("[data-testid='crayon-recurrent']"));
+        // … et un onglet enfant est ACTIF d'office (le 1er du référentiel) — jamais « aucun onglet actif ».
+        var actif = config.FindAll("[data-testid='onglet-enfant-recurrent']").Single(o => o.ClassList.Contains("actif"));
+        Assert.Equal(premierEnfant, actif.GetAttribute("data-enfant-id"));
+
+        // And — le crayon ouvre bien la dialog d'édition (gatée sur une sélection non nulle) : édition accessible.
+        this.SurDispatcher(() => config.Find("[data-testid='crayon-recurrent']").Click());
+        config.WaitForAssertion(
+            () => Assert.NotEmpty(config.FindAll("[data-testid='section-vacances-recurrent']")), TimeSpan.FromSeconds(10));
     }
 }

@@ -54,8 +54,17 @@ public sealed class ModifierSlotRecurrentHandler
         if (!pose.EstSucces)
             return Result<SlotRecurrentSnapshot>.Echec(pose.Motif!);
 
-        _slots.Remplacer(commande.SlotId, pose.Valeur!);
+        // PRÉSERVATION DES VACANCES (correctif passe architecte) : éditer la série (lieu / jours / plage) ne
+        // doit PAS effacer ses plages d'exclusion déjà déclarées. Poser reconstruit un agrégat SANS exclusion ;
+        // on réattache donc celles du slot existant avant de réécrire en place. Sans cela, le geste PO
+        // « ajouter une plage de vacances → Enregistrer » écrasait silencieusement les exclusions (la série
+        // relue par la grille reprojetait les occurrences censées être exclues) — trou révélé par la fusion
+        // de la gestion des vacances dans la dialog d'édition (n°3), le « Enregistrer » suivant les rasait.
+        var modifie = existant.Exclusions.Aggregate(
+            pose.Valeur!, (slot, plage) => slot.AjouterExclusion(plage.Debut, plage.Fin));
+
+        _slots.Remplacer(commande.SlotId, modifie);
         _notificateur.NotifierMiseAJour();
-        return Result<SlotRecurrentSnapshot>.Succes(pose.Valeur!.ToSnapshot() with { Id = commande.SlotId });
+        return Result<SlotRecurrentSnapshot>.Succes(modifie.ToSnapshot() with { Id = commande.SlotId });
     }
 }

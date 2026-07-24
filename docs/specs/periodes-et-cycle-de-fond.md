@@ -107,7 +107,13 @@ la portion **encore couverte** affiche le responsable (ré)affecté.
   `DefinirCycle` écrit le cycle de **l'enfant courant** (Option A, hérité du sélecteur) ; un enfant
   **non-null** ne lit **QUE** son cycle (`CycleCourant(enfant)`), **sans cycle propre → NEUTRE**
   (jamais le cycle d'un autre ni le legacy partagé `''`, désormais inerte). L'onglet Cycle de la config
-  porte un **sélecteur d'enfant** (familles recomposées : chaque enfant a son cycle).
+  porte un **sélecteur d'enfant** (familles recomposées : chaque enfant a son cycle) — **[diff passe
+  architecte post-s54]** ce sélecteur est présenté en **vrais onglets par enfant** (barre horizontale, onglet
+  actif souligné) et non plus en dropdown (retour PO ; **même geste** pour la navigation par enfant de
+  l'onglet **Activités récurrentes**). **Invariant de présélection** : dès qu'au moins un enfant existe, un
+  onglet est **actif d'office** (le 1er du référentiel), jamais « aucun onglet actif » — la liste + les
+  affordances d'édition sont disponibles **sans clic préalable** (Cycle **et** Activités récurrentes). Zéro
+  enfant → zéro onglet (pas de faux état). Se re-défaute si l'enfant courant disparaît du référentiel.
 
 - **Chemins d'écriture SCOPÉS PAR ENFANT *(dé-risqué de bout en bout s53, R1, Option A)*.** **TOUS** les
   chemins d'écriture portent et propagent l'`EnfantId` **hérité de l'enfant courant du sélecteur**

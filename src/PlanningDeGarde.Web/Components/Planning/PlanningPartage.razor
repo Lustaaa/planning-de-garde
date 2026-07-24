@@ -276,16 +276,14 @@
                             }
                             @foreach (var slot in jourCase.Slots)
                             {
-                                <div class="grille-slot grille-slot-bloc" data-testid="slot-case"
+                                <div class="grille-slot grille-slot-bloc @(EstRecurrentEditable(slot) ? "grille-slot-editable" : null)" data-testid="slot-case"
+                                     data-recurrent-id="@slot.RecurrentId"
+                                     @onclick="() => CliquerSlot(slot, jourCase.Date)"
+                                     @onclick:stopPropagation="EstRecurrentEditable(slot)"
+                                     title="@(EstRecurrentEditable(slot) ? "Éditer cette activité récurrente" : null)"
                                      style="background-color:@Couleur(slot.CouleurActeur); top:@(HautSlotPx(slot, heureDebut))px; height:@(HauteurSlotPx(slot))px;">
                                     <span class="grille-slot-libelle nom-tronque">@slot.Libelle</span>
                                     <span class="grille-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
-                                    @if (Session.EstParent && !string.IsNullOrEmpty(slot.RecurrentId))
-                                    {
-                                        <button type="button" class="grille-slot-suppr" data-testid="supprimer-occurrence-recurrente"
-                                                @onclick="() => OuvrirInviteScope(slot.RecurrentId, jourCase.Date)"
-                                                aria-label="Supprimer cette activité récurrente">🗑️</button>
-                                    }
                                 </div>
                             }
                         </div>
@@ -352,16 +350,14 @@ else
                         <div class="grille-jour-slots">
                             @foreach (var slot in jourCase.Slots)
                             {
-                                <div class="grille-slot" data-testid="slot-case"
+                                <div class="grille-slot @(EstRecurrentEditable(slot) ? "grille-slot-editable" : null)" data-testid="slot-case"
+                                     data-recurrent-id="@slot.RecurrentId"
+                                     @onclick="() => CliquerSlot(slot, jourCase.Date)"
+                                     @onclick:stopPropagation="EstRecurrentEditable(slot)"
+                                     title="@(EstRecurrentEditable(slot) ? "Éditer cette activité récurrente" : null)"
                                      style="background-color:@Couleur(slot.CouleurActeur);">
                                     <span class="grille-slot-libelle">@slot.Libelle</span>
                                     <span class="grille-slot-horaire">@slot.Debut.ToString("HH:mm")–@slot.Fin.ToString("HH:mm")</span>
-                                    @if (Session.EstParent && !string.IsNullOrEmpty(slot.RecurrentId))
-                                    {
-                                        <button type="button" class="grille-slot-suppr" data-testid="supprimer-occurrence-recurrente"
-                                                @onclick="() => OuvrirInviteScope(slot.RecurrentId, jourCase.Date)"
-                                                aria-label="Supprimer cette activité récurrente">🗑️</button>
-                                    }
                                 </div>
                             }
                         </div>
@@ -491,25 +487,15 @@ else
                          OnAnnule="FermerDialog" />
 }
 
-@* Invite de PORTÉE (s54 S10) : supprimer une occurrence d'une série depuis la grille → « cette
-   occurrence » (exception par date, S9) OU « toute la série » (suppression du récurrent). Le front
-   route vers le chemin correspondant ; la grille relue reflète l'effet. Aucune règle métier ici. *@
-@if (_inviteScopeRecurrentId is not null)
+@* Édition d'une série récurrente AU CLIC sur l'activité dans la grille (décision PO post-s54) : ouvre la
+   dialog PARTAGÉE (mêmes édition + vacances + suppression avec portée que la config). La DATE cliquée est
+   passée en contexte → la dialog offre « cette occurrence » (exception S9) EN PLUS de « toute la série ».
+   Sur fermeture (annulation / enregistrement / suppression aboutis), la grille est relue. *@
+@if (_editionSerieOuverte && _enfantSelectionne is { } enfantSerie && _editionSerieId is { } serieId)
 {
-    <div class="dialog-backdrop" data-testid="invite-scope-recurrent">
-        <div class="dialog-panneau">
-            <h2 class="h4 mb-3">Supprimer cette activité récurrente</h2>
-            <p class="text-muted">Voulez-vous retirer seulement cette occurrence, ou toute la série ?</p>
-            <div class="d-flex gap-2">
-                <button type="button" class="btn btn-outline-danger" data-testid="scope-cette-occurrence"
-                        @onclick="SupprimerCetteOccurrence">Cette occurrence</button>
-                <button type="button" class="btn btn-danger" data-testid="scope-toute-la-serie"
-                        @onclick="SupprimerLaSerie">Toute la série</button>
-                <button type="button" class="btn btn-outline-secondary" data-testid="scope-annuler"
-                        @onclick="FermerInviteScope">Annuler</button>
-            </div>
-        </div>
-    </div>
+    <EditerSerieRecurrenteDialog EnfantId="@enfantSerie" SerieId="@serieId"
+                                 DateOccurrence="_editionSerieDate"
+                                 OnFerme="FermerEditionSerieEtRecharger" />
 }
 
 @if (_dateDialogDeleguer is { } dateDeleguer && _enfantSelectionne is { } enfantDeleguer)
@@ -616,6 +602,9 @@ else
                    flex-direction: column; line-height: 1.18; box-shadow: 0 1px 2px rgba(16,24,40,.14); }
     .grille-slot-libelle { font-weight: 700; }
     .grille-slot-horaire { opacity: .92; font-variant-numeric: tabular-nums; }
+    /* Activité récurrente éditable (Parent) : cliquable → dialog d'édition de la série (décision PO post-s54). */
+    .grille-slot-editable { cursor: pointer; }
+    .grille-slot-editable:hover { box-shadow: 0 0 0 2px rgba(255,255,255,.55), 0 1px 3px rgba(16,24,40,.28); }
 
     /* ════════ Vue SEMAINE : grille horaire ════════ */
     .grille-horaire-defilement { overflow-x: auto; border: 1px solid var(--pdg-border); border-radius: 16px;

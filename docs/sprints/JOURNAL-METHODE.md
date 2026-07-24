@@ -238,3 +238,44 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   `src/`, `CS1591` masqué). Config sous `docfx/`, sortie git-ignorée. `Web` (Blazor) écarté de
   l'extraction (Razor SG non exécuté par Roslyn) ; OpenAPI intégré sur chemin documenté (exposé au
   runtime via Scalar). Génération prouvée (377 pages). **Programme de refonte COMPLET 8/8**, 917/917 vert.
+- **2026-07-24 — passe architecte hors-sprint : retours PO s54 sur activités récurrentes / config foyer**
+  (branche `ia-fix/retours-s54-activites`, PR au PO ; retours = `docs/briefs/sprint 55 - revue.md`).
+  **Faits, 949/949 vert** : **trou backend** — l'adresse d'un lieu saisie **à la création** était perdue
+  (`AjouterActiviteCommand`/`Requete` ne portaient pas l'adresse ; l'édition, elle, la persistait déjà) →
+  adresse optionnelle threadée dans la commande + write-through, prouvé sur **Mongo réel** (durabilité) ;
+  dropdown de sélection d'enfant → **onglets** (Cycle + Activités récurrentes) ; boutons **Annuler/Fermer**
+  ajoutés (dialogs récurrent + vacances) — toute dialog a désormais une sortie explicite. **Renvoyés au PO
+  pour arbitrage** (non implémentés) : retirer les corbeilles de la grille + « éditer au clic » (cross-page
+  vers `/configuration` + perte de la suppression d'occurrence livrée s54 → cible à confirmer) ; fusionner
+  la dialog Vacances dans la dialog du récurrent (faisable en édition seule) ; largeur des dialogs (**déjà**
+  uniforme via `.dialog-panneau` partagée). **Leçon** : un formulaire de **création** qui affiche un champ
+  non porté par sa commande = **perte silencieuse** — auditer la parité champs-affichés / champs-commande.
+- **2026-07-24 (bis) — passe architecte, 2ᵉ lot : arbitrages PO n°1 & n°3** (même branche
+  `ia-fix/retours-s54-activites`, 949/949 vert). **n°1** — au **clic sur une activité récurrente de la
+  grille**, ouverture d'une **dialog d'édition de série PARTAGÉE** (`EditerSerieRecurrenteDialog`, composant
+  réutilisé hors `/configuration`, autonome : charge lieux + série, écrit via le canal HTTP, prévient le
+  parent par `OnFerme`) ; elle **conserve la suppression avec portée** (« cette occurrence » — la date du
+  clic voyage en contexte — + « toute la série »). Corbeilles de la grille + invite-scope autonome
+  **retirées**, **aucune capacité s54 perdue**. **n°3** — **vacances fusionnées** dans cette dialog (mode
+  édition seule) ; dialog Vacances autonome supprimée. **Leçon** : quand un même geste (éditer/supprimer une
+  série) est offert depuis **deux écrans**, extraire un **composant dialog partagé autonome** (params +
+  `OnFerme`) plutôt que dupliquer l'état/handlers — un seul chemin d'écriture, deux points d'entrée.
+- **2026-07-24 (ter) — passe architecte, 3ᵉ lot : gate visuel PO (2a onglets, 2b bug vacances, 5 boutons)**
+  (même branche `ia-fix/retours-s54-activites`, 949 verts + flake SignalR/digest connu confirmé isolé 3/3).
+  **2b (bug prioritaire)** : diagnostic par reproduction du geste EXACT sur Mongo RÉEL (curl) — l'ajout de
+  plage + la projection étaient corrects, mais **le « Enregistrer » de la série RASAIT les vacances**
+  (`ModifierSlotRecurrentHandler` reconstruisait via `Poser`, sans exclusions) ; correctif = ré-attacher les
+  exclusions existantes, prouvé bout-en-bout + durabilité (survit au redémarrage d'instance). **Leçon** : un
+  test qui « affirme la persistance » en ne comptant que la présence, avec les valeurs PAR DÉFAUT, masque une
+  perte des valeurs SAISIES ET une écrasure par un chemin d'écriture voisin — tester le geste COMPLET (saisir
+  des valeurs précises + enchaîner l'action suivante), pas l'écriture isolée. **2a** : pilules → **vraie barre
+  d'onglets** (ligne de base + underline d'accent). **5** : barre d'actions Enregistrer/Annuler **en pied**
+  uniformisée sur toutes les dialogs (submit rattaché au form via l'attribut `form` quand le bouton sort du
+  formulaire — les modals de config à sections annexes gardent leurs tests qui submit via `#form-…`).
+- **2026-07-24 (quater) — passe architecte, retour gate : présélection d'office de l'enfant** (même branche,
+  950 verts). Bug : l'onglet **Activités récurrentes** n'avait **aucun enfant présélectionné** à l'arrivée
+  (contrairement au Cycle qui se défaute déjà) → liste vide, pas de crayon, dialog d'édition gatée sur une
+  sélection non nulle → **édition inaccessible**. Correctif : `ChargerRecurrents` défaute la sélection sur le
+  1er enfant (miroir du Cycle), appelée dès `OnInitializedAsync` + sur diffusion. **Leçon** : deux surfaces
+  jumelles (Cycle / Activités récurrentes) doivent partager la **même règle de présélection** — un invariant
+  « toujours un onglet actif » codé d'un seul côté laisse l'autre régresser ; le tester des deux côtés.
