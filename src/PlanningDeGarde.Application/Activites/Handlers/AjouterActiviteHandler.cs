@@ -6,9 +6,12 @@ namespace PlanningDeGarde.Application.Activites.Handlers;
 /// <summary>
 /// Commande d'ajout d'un lieu au référentiel du foyer (config). Le handler persiste le libellé
 /// sur un identifiant stable via le port d'écriture <see cref="IEditeurActivites"/>, pour que le lieu
-/// devienne disponible à la saisie (validation de pose + sélecteurs).
+/// devienne disponible à la saisie (validation de pose + sélecteurs). L'<b>adresse</b> est optionnelle
+/// (<c>null</c> = non renseignée) : quand elle est fournie à la création, elle est persistée dans la
+/// foulée (write-through durable) — corrige le trou où l'adresse saisie au formulaire de création était
+/// silencieusement perdue (retour PO s54 : « les adresses des lieux ne sont pas persistées »).
 /// </summary>
-public sealed record AjouterActiviteCommand(string Libelle);
+public sealed record AjouterActiviteCommand(string Libelle, string? Adresse = null);
 
 /// <summary>Confirmation d'un ajout abouti : l'identifiant stable du lieu.</summary>
 public sealed record AjouterActiviteResultat(string LieuId);
@@ -43,6 +46,11 @@ public sealed class AjouterActiviteHandler
         // les slots déjà posés).
         var lieuId = commande.Libelle;
         _referentiel.Ajouter(lieuId, commande.Libelle);
+        // Adresse fournie à la création : write-through immédiat sur la MÊME clé stable (surface distincte
+        // du libellé, miroir de l'édition). Non fournie (null) = rien à écrire (adresse « vide » à la lecture).
+        // Une adresse vide/tout-espaces fournie n'est pas persistée (pas de bruit) mais reste licite en édition.
+        if (!string.IsNullOrWhiteSpace(commande.Adresse))
+            _referentiel.ChangerAdresse(lieuId, commande.Adresse);
         return Result<AjouterActiviteResultat>.Succes(new AjouterActiviteResultat(lieuId));
     }
 }

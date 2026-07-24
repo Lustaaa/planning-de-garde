@@ -43,6 +43,25 @@ public sealed class Scenario35_S2_ActiviteAdresseMongoDurabiliteTests : IDisposa
         Assert.Equal("piscine", activite.Libelle);
     }
 
+    // Retour PO s54 : l'adresse fournie À LA CRÉATION (handler d'ajout) doit atteindre le store durable —
+    // preuve write-through contre Mongo réel (le trou corrigé perdait l'adresse à la création).
+    [MongoRequisFact]
+    public void Should_Relire_l_adresse_fournie_a_la_creation_apres_redemarrage_sur_le_store_Mongo_reel()
+    {
+        // --- Serveur #1 : création « piscine » AVEC adresse en une commande d'ajout ---
+        {
+            var store1 = NouveauStore();
+            new AjouterActiviteHandler(store1, store1).Handle(new AjouterActiviteCommand("piscine", "3 allée du Bassin"));
+        }
+
+        // --- Redémarrage : nouvelle instance sur la même base persistée ---
+        var store2 = NouveauStore();
+
+        var activite = store2.EnumererActivites().Single(a => a.Id == "piscine");
+        Assert.Equal("3 allée du Bassin", activite.Adresse); // adresse persistée dès la création
+        Assert.Equal("piscine", activite.Libelle);
+    }
+
     [MongoRequisFact]
     public void Should_Accepter_une_adresse_vide_durable_When_l_adresse_est_videe_sur_le_store_Mongo_reel()
     {

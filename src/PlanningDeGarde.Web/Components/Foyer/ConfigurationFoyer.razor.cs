@@ -1124,8 +1124,10 @@ public partial class ConfigurationFoyer
 
         if (_modalActiviteAjout)
         {
-            // Création : ajouter-activite seul (les liens enfant se posent ensuite en édition, Sc.5).
-            if (!await PosterActivite(() => Canal.PostAsJsonAsync("api/foyer/lieux", new AjouterActiviteRequete(_activite.Libelle))))
+            // Création : ajouter-activite AVEC l'adresse saisie (corrige la perte de l'adresse à la création,
+            // retour PO s54) — le libellé + l'adresse sont persistés en une écriture ; les liens enfant se
+            // posent ensuite en édition (Sc.5).
+            if (!await PosterActivite(() => Canal.PostAsJsonAsync("api/foyer/lieux", new AjouterActiviteRequete(_activite.Libelle, _activite.Adresse))))
                 return;
         }
         else

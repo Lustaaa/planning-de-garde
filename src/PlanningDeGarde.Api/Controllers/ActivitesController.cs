@@ -30,7 +30,7 @@ public sealed class ActivitesController(
     [HttpPost("/api/foyer/lieux")]
     public IActionResult Ajouter([FromBody] AjouterActiviteRequete requete)
     {
-        var resultat = ajouter.Handle(new AjouterActiviteCommand(requete.Libelle));
+        var resultat = ajouter.Handle(new AjouterActiviteCommand(requete.Libelle, requete.Adresse));
         return Diffuser(resultat);
     }
 
