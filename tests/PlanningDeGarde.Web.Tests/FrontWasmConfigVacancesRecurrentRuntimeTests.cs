@@ -73,6 +73,32 @@ public sealed class FrontWasmConfigVacancesRecurrentRuntimeTests : TestContext
         Assert.Single(api.Services.GetRequiredService<ISlotRecurrentRepository>().AllSnapshots().Single().Exclusions);
     }
 
+    // Rempart contre le retour PO (« vacances pas correctement persistées ») : ce test CHANGE les dates du
+    // formulaire (geste réel du PO) et vérifie que ce sont EXACTEMENT ces dates qui atteignent le store — le
+    // test précédent se contentait des dates PAR DÉFAUT et ne comptait que le nombre d'exclusions (il masquait
+    // une éventuelle perte des dates saisies).
+    [Fact]
+    public void Should_persister_les_dates_EXACTES_saisies_au_formulaire_de_vacances()
+    {
+        using var api = new ApiDistanteFactory();
+        SeederFoyer(api);
+        api.Services.GetRequiredService<ISlotRecurrentRepository>().Enregistrer(
+            SlotRecurrent.Poser("lea", "ecole", new[] { DayOfWeek.Monday }, new TimeSpan(8, 30, 0), new TimeSpan(16, 30, 0)).Valeur!);
+
+        var config = RendreEtOuvrirVacances(api);
+
+        // When — le PO SAISIT des dates précises (du 29/06/2026 au 05/07/2026) puis ajoute la plage.
+        this.SurDispatcher(() => config.Find("[data-testid='champ-vacances-du']").Change("2026-06-29"));
+        this.SurDispatcher(() => config.Find("[data-testid='champ-vacances-au']").Change("2026-07-05"));
+        this.SurDispatcher(() => config.Find("[data-testid='ajouter-vacances']").Click());
+
+        // Then — la plage persistée porte EXACTEMENT les dates saisies (pas les dates par défaut).
+        config.WaitForAssertion(
+            () => Assert.NotEmpty(config.FindAll("[data-testid='vacances-plage']")), TimeSpan.FromSeconds(10));
+        var exclusions = api.Services.GetRequiredService<ISlotRecurrentRepository>().AllSnapshots().Single().Exclusions;
+        Assert.Equal(new PlageExclusion(new DateOnly(2026, 6, 29), new DateOnly(2026, 7, 5)), Assert.Single(exclusions));
+    }
+
     [Fact]
     public void Should_retirer_une_plage_de_vacances_du_store_When_on_la_supprime_depuis_la_config()
     {
