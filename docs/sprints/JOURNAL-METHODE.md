@@ -250,3 +250,13 @@ Pas de doc de rétro dédié : « amélioration ou rien ». Format : `AAAA-MM-JJ
   la dialog Vacances dans la dialog du récurrent (faisable en édition seule) ; largeur des dialogs (**déjà**
   uniforme via `.dialog-panneau` partagée). **Leçon** : un formulaire de **création** qui affiche un champ
   non porté par sa commande = **perte silencieuse** — auditer la parité champs-affichés / champs-commande.
+- **2026-07-24 (bis) — passe architecte, 2ᵉ lot : arbitrages PO n°1 & n°3** (même branche
+  `ia-fix/retours-s54-activites`, 949/949 vert). **n°1** — au **clic sur une activité récurrente de la
+  grille**, ouverture d'une **dialog d'édition de série PARTAGÉE** (`EditerSerieRecurrenteDialog`, composant
+  réutilisé hors `/configuration`, autonome : charge lieux + série, écrit via le canal HTTP, prévient le
+  parent par `OnFerme`) ; elle **conserve la suppression avec portée** (« cette occurrence » — la date du
+  clic voyage en contexte — + « toute la série »). Corbeilles de la grille + invite-scope autonome
+  **retirées**, **aucune capacité s54 perdue**. **n°3** — **vacances fusionnées** dans cette dialog (mode
+  édition seule) ; dialog Vacances autonome supprimée. **Leçon** : quand un même geste (éditer/supprimer une
+  série) est offert depuis **deux écrans**, extraire un **composant dialog partagé autonome** (params +
+  `OnFerme`) plutôt que dupliquer l'état/handlers — un seul chemin d'écriture, deux points d'entrée.

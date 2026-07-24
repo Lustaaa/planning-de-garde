@@ -33,13 +33,14 @@ foyer par enfant** (créer/éditer/**supprimer** — D2 + trou s31 soldés).
   portait pas l'adresse) ; ✅ n°2 & n°8 dropdown de sélection d'enfant → **onglets** (Activités récurrentes
   + Cycle de fond) ; ✅ n°4 bouton **Annuler** sur la dialog d'activité récurrente ; ✅ n°5 sortie explicite
   sur **toutes** les dialogs (dialog Vacances : bouton **Fermer** ajouté — les autres en avaient déjà une).
-  **En attente d'arbitrage PO** : ⬜ n°1 grille /planning — retirer les corbeilles des récurrents et
-  « entrer en édition au clic » : la seule dialog d'édition d'une série vit dans `/configuration` →
-  **cross-page** + perte de la suppression d'occurrence depuis la grille (livrée s54 S9/S10) → **cible du
-  clic à confirmer** ; ⬜ n°3 **fusionner la dialog Vacances dans la dialog d'ajout/modif du récurrent** :
-  faisable en **mode édition seule** (une série n'a d'id qu'après création → rien à quoi rattacher les
-  plages en mode ajout) → **UX à valider**. ⬜ n°7 largeur des dialogs : **déjà uniforme** (`.dialog-panneau`
-  partagée, `min(520px, 94vw)`, aucun override par dialog) — confirmer si une autre largeur cible est voulue. *(gate s54)*
+  **Arbitrages PO reçus et implémentés** (2ᵉ lot de la même passe) : ✅ n°1 grille /planning — **clic sur une
+  activité récurrente → dialog d'édition de la SÉRIE** (composant **partagé** `EditerSerieRecurrenteDialog`,
+  réutilisé hors `/configuration`) ; la dialog **conserve la suppression** avec portée « cette occurrence »
+  (exception S9, date du clic) ET « toute la série » (S5) — **corbeilles retirées** de la grille, invite-scope
+  autonome supprimée, **aucune capacité s54 perdue** ; ✅ n°3 **vacances fusionnées** dans la dialog d'édition
+  (mode **édition seule**) — la dialog Vacances autonome + le bouton 🏖️ disparaissent. ✅ n°7 largeur déjà
+  uniforme (`.dialog-panneau`, `min(520px, 94vw)`) — clos, rien à faire. **Tout le lot de retours s54 est
+  soldé** (949/949 vert) ; PR au PO sur `ia-fix/retours-s54-activites`. *(gate s54)*
 - **VUE multi-enfants SIMULTANÉE** (lanes / colonnes sur la grille) — surface de LECTURE **neuve**
   (décision PO au coût gate). s53 a livré la vue **MONO-enfant** (sélecteur s30) ; voir plusieurs
   enfants d'un coup est un incrément séparable. *(porte de conception P1 s53, retours s53)*

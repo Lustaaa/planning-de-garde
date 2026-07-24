@@ -118,12 +118,20 @@ aucune persistance tirée en avant. Texte complet :
     **plages d'exclusion** saisies manuellement, **rattachées à la série** (pas d'import d'un calendrier
     officiel) ; la projection **ne produit AUCUNE occurrence** sur l'intervalle exclu ; hors plage,
     occurrences normales. *(Alternative écartée : calendrier de vacances partagé du foyer — backlog.)*
+    **[diff passe architecte post-s54]** la gestion des vacances n'a **plus de dialog autonome** : elle vit
+    **dans la dialog d'édition de la série** (section « Vacances »), en **mode édition seule** (une série
+    n'a d'id qu'après création → rien à rattacher en mode ajout).
   - **Exceptions d'occurrence « cette occurrence / toute la série »**
     (`DELETE …/activites/recurrentes/{id}/occurrences/{a}/{m}/{j}`) : supprimer **une seule occurrence**
     (une date précise) **sans toucher la série** — les autres jours du même jour-de-semaine restent
     projetés, la série d'origine inchangée (**exception par date, persistée**) ; ré-exclure la même
     occurrence = **idempotent (no-op)**. L'IHM propose la **portée** (« cette occurrence » = exception s54
-    · « toute la série » = édition en place) à l'édition/suppression depuis la grille.
+    · « toute la série » = édition en place) à l'édition/suppression depuis la grille. **[diff passe
+    architecte post-s54]** le geste grille change (décision PO) : **cliquer une activité récurrente ouvre la
+    dialog d'édition de la SÉRIE** (composant **partagé** `EditerSerieRecurrenteDialog`, réutilisé hors
+    `/configuration`) ; la dialog porte l'édition, les vacances ET la suppression avec portée (« cette
+    occurrence » — la **date cliquée** voyage en contexte — + « toute la série »). Les **corbeilles** sur la
+    grille et l'invite de portée autonome sont **retirées** (aucune capacité perdue).
   - **Config foyer PAR ENFANT** (onglet « Activités récurrentes », sélecteur par enfant) : liste +
     **créer / éditer / SUPPRIMER** par ligne, gating Invité — **comble le trou re-signalé s31** (le back
     savait supprimer par id ; l'IHM ne l'exposait pas). Texte : [`acteurs-et-config-foyer.md`](acteurs-et-config-foyer.md).
